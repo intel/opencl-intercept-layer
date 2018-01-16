@@ -1,0 +1,202 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#include ""CLIConfig_version.rc2""\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUT_PAGE DIALOGEX 0, 0, 393, 301
+STYLE DS_SETFONT | DS_MODALFRAME | DS_3DLOOK | WS_CHILD | WS_CAPTION
+CAPTION "Information"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    LTEXT           "Platform:",IDC_PLATFORM_LABEL,13,40,28,8
+    LTEXT           "Device:",IDC_DEVICE_LABEL,13,59,28,8
+    LISTBOX         IDC_DEVICE_INFO,229,27,150,40,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP,WS_EX_CLIENTEDGE
+    GROUPBOX        "Device Info",IDC_DEVICE_INFO_FRAME,222,15,164,58
+    COMBOBOX        IDC_PLATFORM_LIST,48,38,167,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_DEVICE_LIST,48,58,167,100,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "https://github.com/intel/opencl-intercept-layer",IDC_URL,
+                    "MfcLink",WS_TABSTOP,48,18,167,15
+    LTEXT           "Link:",IDC_URL_LABEL,13,19,28,8
+    LISTBOX         IDC_CONFIG_SUMMARY,13,97,366,188,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP,WS_EX_CLIENTEDGE
+    GROUPBOX        "Configuration Summary",IDC_CONFIGURATION_SUMMARY_FRAME,7,86,379,208
+END
+
+IDD_VARS_PAGE DIALOGEX 0, 0, 399, 302
+STYLE DS_SETFONT | WS_CHILD | WS_CAPTION
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "List1",IDC_VAR_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOLABELWRAP | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,9,18,274,185
+    CONTROL         "Enabled",IDC_CHECK_CUR_ENABLED,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,301,20,67,15
+    EDITTEXT        IDC_CUR_EDIT,301,20,69,15,ES_MULTILINE | ES_AUTOHSCROLL | NOT WS_VISIBLE
+    PUSHBUTTON      "Reset Defaults",IDC_CMD_DEFAULTS,316,271,68,21
+    GROUPBOX        "Default Value",IDC_STATIC_DEF,294,46,90,36
+    GROUPBOX        "Current Value",IDC_STATIC_CUR,294,5,90,36
+    GROUPBOX        "Control Variable",IDC_VAR_FRAME,4,5,284,204
+    GROUPBOX        "Description",IDC_STATIC_HELP_GROUP,4,212,284,80
+    EDITTEXT        IDC_DEF_EDIT,300,60,70,15,ES_AUTOHSCROLL | NOT WS_VISIBLE | WS_DISABLED | NOT WS_TABSTOP
+    CONTROL         "Enabled",IDC_CHECK_DEF_ENABLED,"Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,300,60,70,15
+    GROUPBOX        "Legend for Variable States",IDC_STATIC_L0,294,117,90,92
+    ICON            IDI_STATE_NONDEFAULT,IDC_STATIC_L4,349,157,21,20,SS_SUNKEN,WS_EX_CLIENTEDGE
+    ICON            IDI_STATE_DEFAULT,IDC_STATIC_L8,349,131,21,20,SS_SUNKEN,WS_EX_CLIENTEDGE
+    ICON            IDI_STATE_MODIFIED,IDC_STATIC_L2,349,183,21,20,SS_SUNKEN,WS_EX_CLIENTEDGE
+    LTEXT           "Default State",IDC_STATIC_L7,297,131,35,19
+    LTEXT           "Non-Default State",IDC_STATIC_L3,297,157,41,22
+    LTEXT           "Unsaved Variable",IDC_STATIC_L1,297,183,48,21
+    EDITTEXT        IDC_EDIT_HELP,8,223,276,61,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | WS_VSCROLL | NOT WS_TABSTOP
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_ABOUT_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 386
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 294
+    END
+
+    IDD_VARS_PAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 384
+        BOTTOMMARGIN, 292
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_LOGO                ICON                    "clintercept_logo.ico"
+
+IDI_STATE_NONDEFAULT    ICON                    "nondefault.ico"
+
+IDI_STATE_DEFAULT       ICON                    "default.ico"
+
+IDI_STATE_DISABLED      ICON                    "disabled.ico"
+
+IDI_STATE_MODIFIED      ICON                    "modified.ico"
+
+IDI_STATE_MODIFIED_DEFAULT ICON                    "modified_default.ico"
+
+IDI_STATE_MODIFIED_NONDEFAULT ICON                    "modified_nondefault.ico"
+
+IDI_STATE_SEPARATOR     ICON                    "separator.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_ABOUT_PAGE DLGINIT
+BEGIN
+    IDC_URL, 0x37c, 204, 0
+0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x683e, 0x7474, 0x7370, 
+0x2f3a, 0x672f, 0x7469, 0x7568, 0x2e62, 0x6f63, 0x2f6d, 0x6e69, 0x6574, 
+0x2f6c, 0x706f, 0x6e65, 0x6c63, 0x692d, 0x746e, 0x7265, 0x6563, 0x7470, 
+0x6c2d, 0x7961, 0x7265, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7255, 
+0x3e6c, 0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 0x6665, 
+0x7869, 0x3c3e, 0x4d2f, 0x4346, 0x694c, 0x6b6e, 0x555f, 0x6c72, 0x7250, 
+0x6665, 0x7869, 0x3c3e, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 
+0x6974, 0x3e70, 0x2f3c, 0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x6f54, 0x6c6f, 
+0x6974, 0x3e70, 0x4d3c, 0x4346, 0x694c, 0x6b6e, 0x465f, 0x6c75, 0x546c, 
+0x7865, 0x5474, 0x6f6f, 0x746c, 0x7069, 0x463e, 0x4c41, 0x4553, 0x2f3c, 
+0x464d, 0x4c43, 0x6e69, 0x5f6b, 0x7546, 0x6c6c, 0x6554, 0x7478, 0x6f54, 
+0x6c6f, 0x6974, 0x3e70, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_ABOUT_PAGE AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_USER                "User Settings"
+    IDS_INFO                "Information"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#include "CLIConfig_version.rc2"
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
