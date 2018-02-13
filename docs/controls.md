@@ -180,6 +180,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dist
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between OpenCL NDRange kernels using information such as the kernel's Preferred Work Group Size Multiple (AKA SIMD size).
 
+##### `DevicePerformanceTimeGWOTracking` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between OpenCL NDRange kernels with different global work offsets for the purpose of device performance timing.
+
 ##### `DevicePerformanceTimeGWSTracking` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between OpenCL NDRange kernels with different global work sizes for the purpose of device performance timing.

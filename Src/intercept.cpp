@@ -3942,6 +3942,7 @@ void CLIntercept::addTimingEvent(
     const uint64_t queuedTime,
     const cl_kernel kernel,
     const cl_uint workDim,
+    const size_t* gwo,
     const size_t* gws,
     const size_t* lws,
     cl_event event )
@@ -4069,6 +4070,33 @@ void CLIntercept::addTimingEvent(
                         pNode->KernelName += ss.str();
                     }
                 }
+            }
+
+            if( config().DevicePerformanceTimeGWOTracking )
+            {
+                std::ostringstream  ss;
+                ss << " GWO[ ";
+                if( gwo )
+                {
+                    if( workDim >= 1 )
+                    {
+                        ss << gwo[0];
+                    }
+                    if( workDim >= 2 )
+                    {
+                        ss << " x " << gwo[1];
+                    }
+                    if( workDim >= 3 )
+                    {
+                        ss << " x " << gwo[2];
+                    }
+                }
+                else
+                {
+                    ss << "NULL";
+                }
+                ss << " ]";
+                pNode->KernelName += ss.str();
             }
 
             if( config().DevicePerformanceTimeGWSTracking && gws )
