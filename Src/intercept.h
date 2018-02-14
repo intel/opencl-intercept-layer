@@ -313,6 +313,7 @@ public:
                 const uint64_t queuedTime,
                 const cl_kernel kernel,
                 const cl_uint workDim,
+                const size_t* gwo,
                 const size_t* gws,
                 const size_t* lws,
                 cl_event event );
@@ -1700,7 +1701,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
                 __FUNCTION__,                                               \
                 queuedTime,                                                 \
                 NULL,                                                       \
-                0, NULL, NULL,                                              \
+                0, NULL, NULL, NULL,                                        \
                 pEvent[0] );                                                \
             if( retainAppEvent )                                            \
             {                                                               \
@@ -1713,7 +1714,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         }                                                                   \
     }
 
-#define DEVICE_PERFORMANCE_TIMING_END_KERNEL( pEvent, kernel, wd, gws, lws )\
+#define DEVICE_PERFORMANCE_TIMING_END_KERNEL( pEvent, kernel, wd, gwo, gws, lws )\
     if( ( pIntercept->config().DevicePerformanceTiming ||                   \
           pIntercept->config().ITTPerformanceTiming ||                      \
           pIntercept->config().ChromePerformanceTiming ||                   \
@@ -1725,7 +1726,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
             __FUNCTION__,                                                   \
             queuedTime,                                                     \
             kernel,                                                         \
-            wd, gws, lws,                                                   \
+            wd, gwo, gws, lws,                                              \
             pEvent[0] );                                                    \
         if( retainAppEvent )                                                \
         {                                                                   \

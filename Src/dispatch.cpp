@@ -4976,7 +4976,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
             }
 
             CPU_PERFORMANCE_TIMING_END_KERNEL(kernel);
-            DEVICE_PERFORMANCE_TIMING_END_KERNEL(event, kernel, work_dim, global_work_size, local_work_size);
+            DEVICE_PERFORMANCE_TIMING_END_KERNEL(
+                event, 
+                kernel, 
+                work_dim, 
+                global_work_offset, 
+                global_work_size, 
+                local_work_size );
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT_EVENT( event );
         }
@@ -5034,7 +5040,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
                 event );
 
             CPU_PERFORMANCE_TIMING_END_KERNEL(kernel);
-            DEVICE_PERFORMANCE_TIMING_END_KERNEL(event, kernel, 0, NULL, NULL);
+            DEVICE_PERFORMANCE_TIMING_END_KERNEL(
+                event, 
+                kernel, 
+                0, 
+                NULL, 
+                NULL,
+                NULL );
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT_EVENT( event );
         }
