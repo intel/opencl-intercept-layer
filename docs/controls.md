@@ -430,6 +430,10 @@ The Intercept Layer for OpenCL Applications will wait for this many milliseconds
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will cause all OpenCL APIs to return a successful error status.
 
+##### `NullContextCallback` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will force the context callback to be NULL.  With both context callback logging and NULL context callback set, the context callback will still be logged, but any application context callback will not be called.
+
 ##### `FinishAfterEnqueue` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications inserts a call to clFinish() after every enqueue.  The command queue that the command was just enqueued to is passed to clFinish().  This can be used to debug possible timing or resource management issues and will likely impact performance.
