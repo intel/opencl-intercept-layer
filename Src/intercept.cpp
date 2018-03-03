@@ -2153,15 +2153,18 @@ void CLIntercept::contextCallbackOverrideInit(
     SContextCallbackInfo*& pContextCallbackInfo,
     cl_context_properties*& pLocalContextProperties )
 {
-    pContextCallbackInfo = new SContextCallbackInfo;
-    if( pContextCallbackInfo )
+    if( m_Config.ContextCallbackLogging )
     {
-        pContextCallbackInfo->pIntercept = this;
-        pContextCallbackInfo->pApplicationCallback = pCallback;
-        pContextCallbackInfo->pUserData = pUserData;
+        pContextCallbackInfo = new SContextCallbackInfo;
+        if( pContextCallbackInfo )
+        {
+            pContextCallbackInfo->pIntercept = this;
+            pContextCallbackInfo->pApplicationCallback = pCallback;
+            pContextCallbackInfo->pUserData = pUserData;
 
-        pCallback = CLIntercept::contextCallbackCaller;
-        pUserData = pContextCallbackInfo;
+            pCallback = CLIntercept::contextCallbackCaller;
+            pUserData = pContextCallbackInfo;
+        }
     }
 
     if( m_Config.ContextHintLevel )
