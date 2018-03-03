@@ -1011,7 +1011,8 @@ inline bool CLIntercept::callLogging() const
 //
 #define CREATE_CONTEXT_OVERRIDE_INIT( _props, _func, _data, _newprops )     \
     CLIntercept::SContextCallbackInfo*  pContextCallbackInfo = NULL;        \
-    if( pIntercept->config().ContextCallbackLogging )                       \
+    if( pIntercept->config().ContextCallbackLogging ||                      \
+        pIntercept->config().ContextHintLevel )                             \
     {                                                                       \
         pIntercept->contextCallbackOverrideInit(                            \
             _props,                                                         \
@@ -1022,7 +1023,8 @@ inline bool CLIntercept::callLogging() const
     }
 
 #define CREATE_CONTEXT_OVERRIDE_CLEANUP( _context, _newprops )              \
-    if( pIntercept->config().ContextCallbackLogging )                       \
+    if( pIntercept->config().ContextCallbackLogging ||                      \
+        pIntercept->config().ContextHintLevel )                             \
     {                                                                       \
         pIntercept->contextCallbackOverrideCleanup(                         \
             _context,                                                       \
