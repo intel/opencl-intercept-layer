@@ -4269,23 +4269,27 @@ void CLIntercept::checkTimingEvents()
                             cl_ulong    queuedDelta = commandSubmit - commandQueued;
                             cl_ulong    submitDelta = commandStart - commandSubmit;
 
-                            logf( "Device Time for call %u to %s = %u ns (queued -> submit), %u ns (submit -> start), %u ns (start -> end)\n",
-                                (cl_uint)numberOfCalls,
-                                key.c_str(),
-                                (cl_uint)queuedDelta,
-                                (cl_uint)submitDelta,
-                                (cl_uint)delta );
+                            std::ostringstream  ss;
+
+                            ss << "Device Time for call " << numberOfCalls << " to " << key << " = "
+                                << queuedDelta << " ns (queued -> submit), "
+                                << submitDelta << " ns (submit -> start), "
+                                << delta << " ns (start -> end)\n";
+
+                            log( ss.str() );
                         }
 
                         if( config().DevicePerformanceTimelineLogging )
                         {
-                            logf( "Device Timeline for call %u to %s = %lu ns (queued), %lu ns (submit), %lu ns (start), %lu ns (end)\n",
-                                (cl_uint)numberOfCalls,
-                                key.c_str(),
-                                commandQueued,
-                                commandSubmit,
-                                commandStart,
-                                commandEnd );
+                            std::ostringstream  ss;
+
+                            ss << "Device Timeline for call " << numberOfCalls << " to " << key << " = "
+                                << commandQueued << " ns (queued), "
+                                << commandSubmit << " ns (submit), "
+                                << commandStart << " ns (start), "
+                                << commandEnd << " ns (end)\n";
+
+                            log( ss.str() );
                         }
 
                         if( config().SIMDSurvey &&
