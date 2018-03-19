@@ -154,6 +154,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will atte
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will install its own callback for every event callback and log the call to the event callback.  The application's event callback will be invoked after the Intercept Layer for OpenCL Applications' event callback.
 
+##### `EventChecking` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will check and log any events in an event wait list that are invalid or in an error state.  This can help to debug complex event dependency issues.
+
 ##### `CLInfoLogging` (bool)
 
 If set to a nonzero value, logs information about the platforms and devices in the system on the first call to clGetPlatformIDs().

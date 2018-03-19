@@ -1265,17 +1265,19 @@ void CLIntercept::getEventListString(
         ss << " )[ ";
         str += ss.str();
     }
-    unsigned int i = 0;
-    for( i = 0; i < numEvents; i++ )
+    if( eventList )
     {
-        if( i += 0 )
+        for( cl_uint i = 0; i < numEvents; i++ )
         {
-            str += ", ";
-        }
-        {
-            char temp[ CLI_MAX_STRING_SIZE ] = "";
-            CLI_SPRINTF( temp, CLI_MAX_STRING_SIZE, "%p", eventList[i] );
-            str += temp;
+            if( i > 0 )
+            {
+                str += ", ";
+            }
+            {
+                char temp[ CLI_MAX_STRING_SIZE ] = "";
+                CLI_SPRINTF( temp, CLI_MAX_STRING_SIZE, "%p", eventList[i] );
+                str += temp;
+            }
         }
     }
     str += " ]";
@@ -5336,6 +5338,55 @@ void CLIntercept::dumpBuffer(
     }
 
     m_OS.LeaveCriticalSection();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::checkEventList(
+    const std::string& functionName,
+    cl_uint numEvents,
+    const cl_event* eventList )
+{
+    if( numEvents != 0 && eventList == NULL )
+    {
+        m_OS.EnterCriticalSection();
+        logf( "Check Events for %s: Num Events is %d, but Event List is NULL!\n", 
+            functionName.c_str(),
+            numEvents );
+        m_OS.LeaveCriticalSection();
+    }
+    else
+    {
+        for( cl_uint i = 0; i < numEvents; i++ )
+        {
+            cl_int  eventCommandExecutionStatus = 0;
+            cl_int  errorCode = dispatch().clGetEventInfo(
+                eventList[i],
+                CL_EVENT_COMMAND_EXECUTION_STATUS,
+                sizeof(eventCommandExecutionStatus),
+                &eventCommandExecutionStatus,
+                NULL );
+            if( errorCode != CL_SUCCESS )
+            {
+                m_OS.EnterCriticalSection();
+                logf( "Check Events for %s: clGetEventInfo for event %p returned %s (%d)!\n",
+                    functionName.c_str(),
+                    eventList[i],
+                    enumName().name(errorCode).c_str(),
+                    errorCode );
+                m_OS.LeaveCriticalSection();
+            }
+            else if( eventCommandExecutionStatus < 0 )
+            {
+                m_OS.EnterCriticalSection();
+                logf( "Check Events for %s: event %p is in an error state (%d)!\n",
+                    functionName.c_str(),
+                    eventList[i],
+                    eventCommandExecutionStatus );
+                m_OS.LeaveCriticalSection();
+            }
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
