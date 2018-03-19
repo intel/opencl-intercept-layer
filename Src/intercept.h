@@ -379,6 +379,11 @@ public:
                 size_t size,
                 const void *pBuffer );
 
+    void    checkEventList(
+                const std::string& functionName,
+                cl_uint numEvents,
+                const cl_event* eventList );
+
     void    startAubCapture(
                 const std::string& functionName,
                 const cl_kernel kernel,
@@ -942,34 +947,34 @@ inline bool CLIntercept::callLogging() const
 }
 
 #define CALL_LOGGING_ENTER(...)                                             \
-    if( pIntercept->callLogging() )                                         \
+    if( pIntercept->config().CallLogging )                                  \
     {                                                                       \
         pIntercept->callLoggingEnter( __FUNCTION__, NULL, ##__VA_ARGS__ );  \
     }                                                                       \
     ITT_CALL_LOGGING_ENTER( NULL );
 
 #define CALL_LOGGING_ENTER_KERNEL(kernel, ...)                              \
-    if( pIntercept->callLogging() )                                         \
+    if( pIntercept->config().CallLogging )                                  \
     {                                                                       \
         pIntercept->callLoggingEnter( __FUNCTION__, kernel, ##__VA_ARGS__ );\
     }                                                                       \
     ITT_CALL_LOGGING_ENTER( kernel );
 
 #define CALL_LOGGING_INFO(...)                                              \
-    if( pIntercept->callLogging() )                                         \
+    if( pIntercept->config().CallLogging )                                  \
     {                                                                       \
         pIntercept->callLoggingInfo( __VA_ARGS__ );                         \
     }                                                                       \
 
 #define CALL_LOGGING_EXIT(...)                                                  \
-    if( pIntercept->callLogging() )                                             \
+    if( pIntercept->config().CallLogging )                                      \
     {                                                                           \
         pIntercept->callLoggingExit( __FUNCTION__, NULL, NULL, ##__VA_ARGS__ ); \
     }                                                                           \
     ITT_CALL_LOGGING_EXIT();
 
 #define CALL_LOGGING_EXIT_EVENT(event, ...)                                     \
-    if( pIntercept->callLogging() )                                             \
+    if( pIntercept->config().CallLogging )                                      \
     {                                                                           \
         pIntercept->callLoggingExit( __FUNCTION__, NULL, event, ##__VA_ARGS__ );\
     }                                                                           \
@@ -1170,14 +1175,14 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits() const
 
 #define ADD_SAMPLER( sampler, str )                                         \
     if( sampler &&                                                          \
-        pIntercept->callLogging() )                                         \
+        pIntercept->config().CallLogging )                                         \
     {                                                                       \
         pIntercept->addSampler( sampler, str );                             \
     }
 
 #define REMOVE_SAMPLER( sampler )                                           \
     if( sampler &&                                                          \
-        pIntercept->callLogging() )                                         \
+        pIntercept->config().CallLogging )                                         \
     {                                                                       \
         pIntercept->removeSampler( sampler );                               \
     }
@@ -1803,6 +1808,14 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
     if( pIntercept->config().SIMDSurvey )                                   \
     {                                                                       \
         pIntercept->SIMDSurveyNDRangeKernel( _kernel );                     \
+    }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+#define CHECK_EVENT_LIST( _numEvents, _eventList )                          \
+    if( pIntercept->config().EventChecking )                                \
+    {                                                                       \
+        pIntercept->checkEventList( __FUNCTION__, _numEvents, _eventList ); \
     }
 
 ///////////////////////////////////////////////////////////////////////////////
