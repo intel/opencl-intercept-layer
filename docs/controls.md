@@ -82,6 +82,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will brea
 
 ### Logging Controls
 
+##### `SuppressLogging` (bool)
+
+If set to a nonzero value, suppresses all logging output from the Intercept Layer for OpenCL Applications.  This is particularly useful for tools that only want report data.
+
 ##### `AppendFiles` (bool)
 
 By default, the Intercept Layer for OpenCL Applications log files will be created from scratch when the intercept DLL is loaded, and any Intercept Layer for OpenCL Applications report files will be created from scratch when the intercept DLL is unloaded. If AppendFiles is set to a nonzero value, the Intercept Layer for OpenCL Applications will append to an existing file instead of recreating it. This can be useful if an application loads and unloads the intercept DLL multiple times, or to simply preserve log or report data from run-to-run.
@@ -165,6 +169,16 @@ If set to a nonzero value, logs information about the platforms and devices in t
 ##### `LogDir` (string)
 
 If set, the Intercept Layer for OpenCL Applications will emit logs to this directory instead of the default log directory.
+
+### Reporting Controls
+
+##### `ReportToStderr` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will emit reports to stderr.
+
+##### `ReportToFile` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will write results to the file "clintercept\_report.txt".
 
 ### Performance Timing Controls
 

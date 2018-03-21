@@ -29,6 +29,7 @@
 #endif
 
 CLI_CONTROL_SEPARATOR( Logging Controls: )
+CLI_CONTROL( bool,          SuppressLogging,                        false, "If set to a nonzero value, suppresses all logging output from the Intercept Layer for OpenCL Applications.  This is particularly useful for tools that only want report data." )
 CLI_CONTROL( bool,          AppendFiles,                            false, "By default, the Intercept Layer for OpenCL Applications log files will be created from scratch when the intercept DLL is loaded, and any Intercept Layer for OpenCL Applications report files will be created from scratch when the intercept DLL is unloaded. If AppendFiles is set to a nonzero value, the Intercept Layer for OpenCL Applications will append to an existing file instead of recreating it. This can be useful if an application loads and unloads the intercept DLL multiple times, or to simply preserve log or report data from run-to-run." )
 CLI_CONTROL( bool,          LogToFile,                              false, "If set to a nonzero value, sends log information to the file \"clintercept_log.txt\" instead of to stderr.  The log file will be placed in the directory \"%SYSTEMDRIVE%\\Intel\\CLIntercept_Dump\\<Process Name>\"." )
 CLI_CONTROL( bool,          LogToDebugger,                          false, "If set to a nonzero value, sends log information to the debugger instead of to stderr.  If both LogToFile and LogToDebugger are nonzero then log information will be sent both to a file and to the debugger." )
@@ -50,6 +51,10 @@ CLI_CONTROL( bool,          EventCallbackLogging,                   false, "If s
 CLI_CONTROL( bool,          EventChecking,                          false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will check and log any events in an event wait list that are invalid or in an error state.  This can help to debug complex event dependency issues." )
 CLI_CONTROL( bool,          CLInfoLogging,                          false, "If set to a nonzero value, logs information about the platforms and devices in the system on the first call to clGetPlatformIDs()." )
 CLI_CONTROL( std::string,   LogDir,                                 "",    "If set, the Intercept Layer for OpenCL Applications will emit logs to this directory instead of the default log directory." )
+
+CLI_CONTROL_SEPARATOR( Reporting Controls: )
+CLI_CONTROL( bool,          ReportToStderr,                         false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emit reports to stderr." )
+CLI_CONTROL( bool,          ReportToFile,                           true,  "If set to a nonzero value, the Intercept Layer for OpenCL Applications will write results to the file \"clintercept_report.txt\"." )
 
 CLI_CONTROL_SEPARATOR( Performance Timing Controls: )
 CLI_CONTROL( bool,          HostPerformanceTiming,                  false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will track the minimum, maximum, and average host CPU time for each OpenCL entry point.  When the process exits, this information will be printed to the file \"clIntercept_report.txt\" in the directory \"%SYSTEMDRIVE%\\Intel\\CLIntercept_Dump\\<Process Name>\"." )

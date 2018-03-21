@@ -48,8 +48,15 @@ configure_file(Src/git_version.rc.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.rc
 # Build the CLIntercept config app for 32-bit Windows builds, but not for 64-bit or other OSes.
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     if(CMAKE_SIZEOF_VOID_P EQUAL 4)
-        add_subdirectory(config)
+        add_subdirectory(cliconfig)
     endif()
+endif()
+
+# clprof Executable (optional)
+set( BUILD_CLPROF CACHE BOOL "Build clprof Executable" )
+if( BUILD_CLPROF )
+    add_definitions("-DCLINTERCEPT_CLIPROF")
+    add_subdirectory(cliprof)
 endif()
 
 include_directories(
@@ -128,6 +135,7 @@ set( CLINTERCEPT_SOURCE_FILES
     Src/clIntercept.def
     Src/clIntercept.map
     Src/cli_ext.h
+    Src/cliprof_init.cpp
     Src/common.h
     Src/controls.h
     Src/dispatch.cpp
