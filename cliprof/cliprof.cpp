@@ -194,15 +194,14 @@ static bool parseArguments(int argc, char *argv[])
 
     SETENV("CLI_ReportToStderr", "1");
 
+    // Track device timing by default:
+    SETENV("CLI_DevicePerformanceTiming", "1");
+
     for (int i = 1; i < argc; i++)
     {
         if( !strcmp(argv[i], "--debug") )
         {
             debug = true;
-        }
-        else if( !strcmp(argv[i], "-d") || !strcmp(argv[i], "--device-timing") )
-        {
-            SETENV("CLI_DevicePerformanceTiming", "1");
         }
         else if( !strcmp(argv[i], "-h") || !strcmp(argv[i], "--host-timing") )
         {
@@ -260,7 +259,6 @@ static bool parseArguments(int argc, char *argv[])
             "\n"
             "Options:\n"
             "  --debug                      Enable cliprof Debug Messages\n"
-            "  --device-timing [-d]         Report Device Execution Time\n"
             "  --host-timing [-h]           Report Host API Execution Time\n"
             "  --verbose [-v]               Verbose Output\n"
             "\n"
