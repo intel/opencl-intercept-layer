@@ -72,6 +72,9 @@ static void die(const char *op)
 #else
 
 #include <limits.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
@@ -129,7 +132,7 @@ static std::string getProcessDirectory()
     DEBUG("process directory is: %s\n", processName);
     return std::string(processName);
 
-#elif defined(__APPLE__
+#elif defined(__APPLE__)
 
     // TODO: This has not been tested!
 
@@ -168,6 +171,7 @@ static std::string getProcessDirectory()
     }
 
     processName[ bytes] = '\0';
+    DEBUG("full path to executable is: %s\n", processName);
 
     char*   pProcessName = processName;
     pProcessName = strrchr( processName, '/' );
@@ -177,7 +181,7 @@ static std::string getProcessDirectory()
         *pProcessName = '\0';
     }
 
-    DEBUG("process directory is %s\n", pProcessName);
+    DEBUG("process directory is %s\n", processName);
     return std::string(processName);
 
 #endif
@@ -455,9 +459,12 @@ int main(int argc, char *argv[])
     const char *odl_ld_preload = getenv(LD_PRELOAD_ENV);
     if( odl_ld_preload )
     {
-        odl_ld_preload += ":";
-        odl_ld_preload += odl_ld_preload;
+        ld_preload += ":";
+        ld_preload += odl_ld_preload;
     }
+
+    DEBUG("New %s is %s\n", LD_LIBRARY_PATH_ENV, ld_library_path.c_str());
+    DEBUG("New %s is %s\n", LD_PRELOAD_ENV, ld_preload.c_str());
 
     SETENV(LD_LIBRARY_PATH_ENV, ld_library_path.c_str());
     SETENV(LD_PRELOAD_ENV, ld_preload.c_str());
