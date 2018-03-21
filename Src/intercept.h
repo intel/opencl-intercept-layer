@@ -673,6 +673,9 @@ private:
     void    getCallLoggingPrefix(
                 std::string& str );
 
+    void    writeReport(
+                std::ostream& os ) const;
+
     OS::Services    m_OS;
     CLdispatch      m_Dispatch;
     CEnumNameMap    m_EnumNameMap;
