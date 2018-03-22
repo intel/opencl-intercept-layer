@@ -1,4 +1,4 @@
-# Intercept Layer for OpenCL™ Applications
+# Intercept Layer for OpenCL<sup>TM</sup> Applications
 
 The Intercept Layer for OpenCL Applications is a tool that can intercept 
 and modify OpenCL calls for debugging and performance analysis.  Using the
@@ -23,6 +23,8 @@ uphold this code.
 All controls are documented [here](docs/controls.md).
 
 Instructions to build the Intercept Layer for OpenCL Applications can be found [here](docs/build.md).
+
+Instructions to use the Intercept Layer for OpenCL Applications Loader (cliprof) can be found [here](docs/cliprof.md).
 
 Instructions to install the Intercept Layer for OpenCL Applications can be found [here](docs/install.md).
 
