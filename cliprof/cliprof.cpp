@@ -77,6 +77,7 @@ static void die(const char *op)
 #include <string.h>
 #include <unistd.h>
 #ifdef __APPLE__
+#include <libproc.h>
 #include <mach-o/dyld.h>
 #endif
 
@@ -137,8 +138,6 @@ static std::string getProcessDirectory()
     // TODO: This has not been tested!
 
     char    processName[ 1024 ];
-    char*   pProcessName = processName;
-
     pid_t   pid = getpid();
     int     ret = proc_pidpath( pid, processName, sizeof(processName) );
     if( ret <= 0 )

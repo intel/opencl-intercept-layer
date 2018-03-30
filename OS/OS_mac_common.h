@@ -71,7 +71,10 @@ public:
     void    EnterCriticalSection();
     void    LeaveCriticalSection();
 
+    uint64_t    GetProcessID() const;
     uint64_t    GetThreadID() const;
+
+    std::string GetProcessName() const;
 
     bool    ReadRegistry(
                 const std::string& name,
@@ -131,10 +134,36 @@ inline void Services_Common::LeaveCriticalSection()
     pthread_mutex_unlock( &m_CriticalSection );
 }
 
+inline uint64_t Services_Common::GetProcessID() const
+{
+    return getpid();
+}
+
 inline uint64_t Services_Common::GetThreadID() const
 {
-    // TODO
-    return 0;
+    uint64_t tid = 0;
+    pthread_threadid_np(NULL, &tid);
+    return tid;
+}
+
+inline std::string Services_Common::GetProcessName() const
+{
+    char    processName[ 1024 ];
+    char*   pProcessName = processName;
+
+    pid_t   pid = getpid();
+    int     ret = proc_pidpath( pid, processName, sizeof(processName) );
+    if( ret > 0 )
+    {
+        pProcessName = strrchr( processName, '/' );
+    }
+    else
+    {
+        strncpy( processName, "process.exe", sizeof( processName ) );
+        processName[ sizeof( processName ) - 1 ] = 0;
+    }
+
+    return std::string(pProcessName);
 }
 
 inline void Services_Common::OutputDebugString(

@@ -81,6 +81,12 @@ extern "C" {
         #define CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED   CL_EXTENSION_WEAK_LINK AVAILABLE_MAC_OS_X_VERSION_10_7_AND_LATER
     #endif
 
+    // Silence the deprecation warnings, which are not particularly useful.
+    #undef CL_EXT_SUFFIX__VERSION_1_0_DEPRECATED
+    #undef CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED
+    #define CL_EXT_SUFFIX__VERSION_1_0_DEPRECATED CL_EXT_SUFFIX__VERSION_1_0
+    #define CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED CL_EXT_SUFFIX__VERSION_1_1
+
     // These aren't in the Khronos header file, but are needed to avoid 
     // build errors on OSX.
     #define CL_API_SUFFIX__VERSION_2_0
@@ -95,6 +101,7 @@ extern "C" {
     #define CL_EXT_PREFIX__VERSION_2_0_DEPRECATED
     #define CL_EXT_SUFFIX__VERSION_2_1_DEPRECATED
     #define CL_EXT_PREFIX__VERSION_2_1_DEPRECATED
+
 #else
     #define CL_EXTENSION_WEAK_LINK  
     #define CL_API_SUFFIX__VERSION_1_0
