@@ -135,8 +135,6 @@ static std::string getProcessDirectory()
 
 #elif defined(__APPLE__)
 
-    // TODO: This has not been tested!
-
     char    processName[ 1024 ];
     pid_t   pid = getpid();
     int     ret = proc_pidpath( pid, processName, sizeof(processName) );
