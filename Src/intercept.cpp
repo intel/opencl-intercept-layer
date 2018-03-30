@@ -356,7 +356,7 @@ bool CLIntercept::init()
 #if defined(_WIN32)
     OS::Services_Common::ENV_PREFIX = "CLI_";
     OS::Services_Common::REGISTRY_KEY = "SOFTWARE\\INTEL\\IGFX\\CLINTERCEPT";
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
     OS::Services_Common::ENV_PREFIX = "CLI_";
     OS::Services_Common::CONFIG_FILE = "clintercept.conf";
 #endif
@@ -385,7 +385,7 @@ bool CLIntercept::init()
     {
         std::string fileName = "";
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
         if( !m_Config.LogDir.empty() )
         {
             std::replace( m_Config.LogDir.begin(), m_Config.LogDir.end(), '\\', '/' );
@@ -455,7 +455,7 @@ bool CLIntercept::init()
 #if defined(_WIN32)
     log( "CLIntercept environment variable prefix: " + std::string( OS::Services_Common::ENV_PREFIX ) + "\n"  );
     log( "CLIntercept registry key: " + std::string( OS::Services_Common::REGISTRY_KEY ) + "\n" );
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
     log( "CLIntercept environment variable prefix: " + std::string( OS::Services_Common::ENV_PREFIX ) + "\n"  );
     log( "CLIntercept config file: " + std::string( OS::Services_Common::CONFIG_FILE ) + "\n" );
 #endif
