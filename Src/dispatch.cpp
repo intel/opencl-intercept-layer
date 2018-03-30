@@ -6621,7 +6621,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
 //
 // cl_khr_create_command_queue
 // This function should stay in sync with clCreateCommandQueueWithProperties, above.
-CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithPropertiesKHR) (
+CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
     cl_context context,
     cl_device_id device,
     const cl_queue_properties_khr* properties,
@@ -6901,7 +6901,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithIL) (
 //
 // cl_khr_il_program
 // This function should stay in sync with clCreateProgramWithIL, above.
-CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithILKHR) (
+CL_API_ENTRY cl_program CL_API_CALL clCreateProgramWithILKHR(
     cl_context context,
     const void* il,
     size_t length,
