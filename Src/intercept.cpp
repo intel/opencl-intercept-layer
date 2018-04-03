@@ -507,6 +507,8 @@ bool CLIntercept::init()
         const std::string dllNames[] =
         {
             "./real_libOpenCL.so",
+            "/usr/lib/x86_64-linux-gnu/libOpenCL.so",
+            "/opt/intel/opencl/lib64/libOpenCL.so",
         };
 
 #else
