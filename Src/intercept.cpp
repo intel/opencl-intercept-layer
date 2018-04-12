@@ -452,6 +452,23 @@ bool CLIntercept::init()
     log( "CLIntercept git refspec: " + std::string(sc_GitRefSpec) + "\n" );
     log( "CLInterecpt git hash: " + std::string(sc_GitHash) + "\n" );
 #endif
+    log( "CLIntercept optional features: "
+#if defined(CLINTERCEPT_CLIPROF) || !defined(_WIN32)    // extra code only needed for Windows
+        "cliprof(supported) "
+#else
+        "cliprof(NOT supported) "
+#endif
+#if defined(USE_ITT)
+        "ITT tracing(supported) "
+#else
+        "ITT tracing(NOT supported) "
+#endif
+#if defined(USE_MDAPI)
+        "MDAPI(supported) "
+#else
+        "MDAPI(NOT supported) "
+#endif
+        "\n" );
 #if defined(_WIN32)
     log( "CLIntercept environment variable prefix: " + std::string( OS::Services_Common::ENV_PREFIX ) + "\n"  );
     log( "CLIntercept registry key: " + std::string( OS::Services_Common::REGISTRY_KEY ) + "\n" );
