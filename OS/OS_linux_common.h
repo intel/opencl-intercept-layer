@@ -196,10 +196,10 @@ inline void* Services_Common::LoadLibrary(
     const std::string& libraryName ) const
 {
     void* pLibrary = dlopen( libraryName.c_str(), RTLD_NOW | RTLD_GLOBAL );
-    if( pLibrary == NULL )
-    {
-        fprintf(stderr, "dlopen() error: %s\n", dlerror());
-    }
+    //if( pLibrary == NULL )
+    //{
+    //    fprintf(stderr, "dlopen() error: %s\n", dlerror());
+    //}
     return pLibrary;
 }
 
