@@ -107,22 +107,20 @@ set( CLINTERCEPT_RESOURCE_FILES
 source_group( Resources FILES
     ${CLINTERCEPT_RESOURCE_FILES}
 )
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" AND NOT ${CMAKE_SYSTEM_PROCESSOR} MATCHES "arm")
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Kernels)
-    #TODO: This is currently hard-coded for 64-bit Linux builds.
-    set(CLINTERCEPT_KERNELS_OUTPUT_FORMAT elf64-x86-64)
     add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
         COMMAND mkdir -p ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-        COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && objcopy -I binary -O ${CLINTERCEPT_KERNELS_OUTPUT_FORMAT} --binary-architecture i386 
+        COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ld -r -b binary
             Kernels/precompiled_kernels.cl 
-            ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
+            -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/precompiled_kernels.cl
     )
     add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
         COMMAND mkdir -p ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-        COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && objcopy -I binary -O ${CLINTERCEPT_KERNELS_OUTPUT_FORMAT} --binary-architecture i386 
+        COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ld -r -b binary
             Kernels/builtin_kernels.cl 
-            ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
+            -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
         DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/builtin_kernels.cl
     )
     list( APPEND CLINTERCEPT_RESOURCE_FILES 

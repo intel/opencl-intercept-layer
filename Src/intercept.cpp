@@ -5628,6 +5628,7 @@ void CLIntercept::initPrecompiledKernelOverrides(
     const cl_context context )
 {
     m_OS.EnterCriticalSection();
+    log( "Initializing precompiled kernel overrides...\n" );
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -5847,6 +5848,7 @@ void CLIntercept::initPrecompiledKernelOverrides(
         }
     }
 
+    log( "... precompiled kernel override initialization complete.\n" );
     m_OS.LeaveCriticalSection();
 }
 
@@ -5856,6 +5858,7 @@ void CLIntercept::initBuiltinKernelOverrides(
     const cl_context context )
 {
     m_OS.EnterCriticalSection();
+    log( "Initializing builtin kernel overrides...\n" );
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -6004,6 +6007,7 @@ void CLIntercept::initBuiltinKernelOverrides(
         }
     }
 
+    log( "... builtin kernel override initialization complete.\n" );
     m_OS.LeaveCriticalSection();
 }
 
