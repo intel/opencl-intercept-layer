@@ -76,7 +76,7 @@ inline bool Services::GetCLInterceptName(
     return false;
 }
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__ARM__)
 extern "C" char _binary_Kernels_precompiled_kernels_cl_start;
 extern "C" char _binary_Kernels_precompiled_kernels_cl_end;
 #endif
@@ -85,7 +85,7 @@ inline bool Services::GetPrecompiledKernelString(
     const char*& str,
     size_t& length ) const
 {
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__ARM__)
     str = &_binary_Kernels_precompiled_kernels_cl_start;
     length = &_binary_Kernels_precompiled_kernels_cl_end - &_binary_Kernels_precompiled_kernels_cl_start;
 #endif
@@ -93,7 +93,7 @@ inline bool Services::GetPrecompiledKernelString(
     return true;
 }
 
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__ARM__)
 extern "C" char _binary_Kernels_builtin_kernels_cl_start;
 extern "C" char _binary_Kernels_builtin_kernels_cl_end;
 #endif
@@ -102,7 +102,7 @@ inline bool Services::GetBuiltinKernelString(
     const char*& str,
     size_t& length ) const
 {
-#ifndef __ANDROID__
+#if !defined(__ANDROID__) && !defined(__ARM__)
     str = &_binary_Kernels_builtin_kernels_cl_start;
     length = &_binary_Kernels_builtin_kernels_cl_end - &_binary_Kernels_builtin_kernels_cl_start;
 #endif
