@@ -41,6 +41,24 @@ example:
 If this doesn't work, or if you'd rather not bother with command lines, the CMake
 gui (`cmake-gui`) or `ccmake` is always an option.
 
+## CMake Variables
+
+The following CMake variables are supported.  To specify one of these variables
+via the command line generator, use the CMake syntax `-D<option name>=<value>`.
+See your CMake documentation for more details.
+
+| Variable | Type | Description |
+|:---------|:-----|:------------|
+| CMAKE\_BUILD\_TYPE | STRING | Build type.  Does not affect multi-configuration generators, such as Visual Studio solution files.  Default: `Release`.  Other options: `Debug`
+| CMAKE\_INSTALL\_PREFIX | PATH | Install directory prefix.
+| ENABLE_CLIPROF | BOOL | Enables building the cliprof loader utility.  Additionally, when required, enables code in the Intercept Layer for OpenCL Applications itself to enable cliprof functionality.  Default: `FALSE`
+| ENABLE_ITT | BOOL | Enables support for Instrumentation and Tracing Techology APIs, which can be used to display OpenCL events on Intel(R) VTune(tm) timegraphs.  Default: `FALSE`
+| ENABLE_KERNEL_OVERRIDES | BOOL | Enables embedding kernel strings to override precompiled kernels and built-in kernels.  Supported for Linux builds only, since Windows builds always embeds kernel strings, and embedding kernel strings is not support for OSX (yet!).  Default: `TRUE`
+| ENABLE_MDAPI | BOOL | For internal use only.  Default: `FALSE`
+| VTUNE_INCLUDE_DIR | PATH | Path to the directory containing `ittnotify.h`.  Only used when ENABLE_ITT is set.
+| VTUNE_ITTNOTIFY_LIB | FILEPATH | Path to the `ittnotify` lib.  Only used when ENABLE_ITT is set.
+
+
 ## Android
 
 Android support is experimental, has not been ported to CMake, and is not regularly

@@ -107,26 +107,39 @@ set( CLINTERCEPT_RESOURCE_FILES
 source_group( Resources FILES
     ${CLINTERCEPT_RESOURCE_FILES}
 )
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    set(CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Kernels)
-    add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
-        COMMAND mkdir -p ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-        COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ld -r -b binary
-            Kernels/precompiled_kernels.cl 
-            -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/precompiled_kernels.cl
-    )
-    add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
-        COMMAND mkdir -p ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-        COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ld -r -b binary
-            Kernels/builtin_kernels.cl 
-            -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
-        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/builtin_kernels.cl
-    )
-    list( APPEND CLINTERCEPT_RESOURCE_FILES 
-        ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
-        ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
-    )
+# Kernel Override Support (optional)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    # always enabled on Windows
+    add_definitions("-DUSE_KERNEL_OVERRIDES")
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    # conditionally enabled on Linux
+    set( ENABLE_KERNEL_OVERRIDES TRUE CACHE BOOL "Enable Embedding Kernel Override Strings" )
+    if( ENABLE_KERNEL_OVERRIDES )
+        add_definitions("-DUSE_KERNEL_OVERRIDES")
+        if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+            set(CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Kernels)
+            add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
+                COMMAND mkdir -p ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
+                COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ld -r -b binary
+                    Kernels/precompiled_kernels.cl
+                    -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
+                DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/precompiled_kernels.cl
+            )
+            add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
+                COMMAND mkdir -p ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
+                COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ld -r -b binary
+                    Kernels/builtin_kernels.cl
+                    -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
+                DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/builtin_kernels.cl
+            )
+            list( APPEND CLINTERCEPT_RESOURCE_FILES
+                ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
+                ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
+            )
+        endif()
+    endif()
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    # never enabled on OSX (for now)
 endif()
 
 set( CLINTERCEPT_SOURCE_FILES
