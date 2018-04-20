@@ -5,17 +5,17 @@ the Intercept Layer for OpenCL Applications.
 
 ## How to Build cliprof
 
-cliprof is currently not built by default.  To build cliprof, set `BUILD_CLIPROF`
+cliprof is currently not built by default.  To build cliprof, set `ENABLE_CLIPROF`
 when generating build files using CMake.  For example:
 
 ````
-> cmake -DBUILD_CLIPROF=1 ..
+> cmake -DENABLE_CLIPROF=1 ..
 ````
 
 Some operating systems require additional code in the Intercept Layer
 for OpenCL Applications DLL / shared library to function correctly with the
 cliprof loader utility.  When needed, this additional code is included when
-build files are generated when `BUILD_CLIPROF` is set.
+build files are generated when `ENABLE_CLIPROF` is set.
 
 ## How to Use cliprof
 
@@ -70,8 +70,6 @@ OpenCL Applications DLL / shared library.
 The Windows cliprof occasionally crashes.  This appears to happen more often
 with a debug cliprof executable.  Running cliprof again usually executes
 successfully.
-
-The OSX cliprof has not been tested (yet).
 
 If you encounter other bugs or issues running cliprof, including the `--debug`
 command line argument enables cliprof debug output and may help to
