@@ -840,7 +840,8 @@ void CAboutPage::OnPlatformListChange()
 
         if( errorCode == CL_SUCCESS &&
             dclGetDeviceIDs &&
-            dclGetDeviceInfo )
+            dclGetDeviceInfo &&
+            platformIndex < m_Platforms.size() )
         {
             errorCode = dclGetDeviceIDs(
                 m_Platforms[platformIndex],
