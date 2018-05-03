@@ -261,6 +261,15 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateSubDevices)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        if( pIntercept->config().LeakChecking &&
+            out_devices &&
+            num_devices_ret )
+        {
+            for( cl_uint d = 0; d < num_devices_ret[0]; d++ )
+            {
+                ADD_OBJECT_ALLOCATION( out_devices[d] );
+            }
+        }
         CALL_LOGGING_EXIT();
 
         return retVal;
@@ -307,6 +316,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainDevice)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RETAIN( device );
         if( pIntercept->callLogging() )
         {
             ref_count = 0;
@@ -360,6 +370,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RELEASE( device );
         if( pIntercept->callLogging() && ref_count != 0 )
         {
             // This isn't strictly correct, but it's pretty close, and it
@@ -450,6 +461,7 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContext)(
         CPU_PERFORMANCE_TIMING_END();
         CREATE_CONTEXT_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
 #ifdef __ANDROID__
@@ -531,6 +543,7 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContextFromType)(
         CPU_PERFORMANCE_TIMING_END();
         CREATE_CONTEXT_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -576,6 +589,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainContext)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RETAIN( context );
         if( pIntercept->callLogging() )
         {
             ref_count = 0;
@@ -628,6 +642,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RELEASE( context );
         if( pIntercept->callLogging() && ref_count != 0 )
         {
             // This isn't strictly correct, but it's pretty close, and it
@@ -758,6 +773,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
         CHECK_ERROR( errcode_ret[0] );
         ITT_REGISTER_COMMAND_QUEUE( retVal, false );
         CHROME_REGISTER_COMMAND_QUEUE( retVal );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -802,6 +818,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainCommandQueue)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RETAIN( command_queue );
         if( pIntercept->callLogging() )
         {
             ref_count = 0;
@@ -855,6 +872,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseCommandQueue)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ITT_RELEASE_COMMAND_QUEUE( command_queue );
+        ADD_OBJECT_RELEASE( command_queue );
         if( pIntercept->callLogging() && ref_count != 0 )
         {
             // This isn't strictly correct, but it's pretty close, and it
@@ -986,6 +1004,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
         INITIALIZE_BUFFER_CONTENTS_CLEANUP( flags, host_ptr );
         DUMP_BUFFER_AFTER_CREATE( retVal, flags, host_ptr, size );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -1041,6 +1060,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateSubBuffer)(
         CPU_PERFORMANCE_TIMING_END();
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -1123,6 +1143,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -1195,6 +1216,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage2D)(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -1276,6 +1298,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage3D)(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -1326,6 +1349,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainMemObject)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RETAIN( memobj );
         if( pIntercept->callLogging() )
         {
             ref_count = 0;
@@ -1380,6 +1404,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseMemObject)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RELEASE( memobj );
         if( pIntercept->callLogging() && ref_count != 0 )
         {
             // This isn't strictly correct, but it's pretty close, and it
@@ -1607,6 +1632,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
         ADD_SAMPLER(retVal, samplerProperties);
 
@@ -1653,6 +1679,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainSampler)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RETAIN( sampler );
         if( pIntercept->callLogging() )
         {
             ref_count = 0;
@@ -1709,6 +1736,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseSampler)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RELEASE( sampler );
         if( pIntercept->callLogging() && ref_count != 0 )
         {
             // This isn't strictly correct, but it's pretty close, and it
@@ -1827,6 +1855,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithSource)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         SIMD_SURVEY_CREATE_PROGRAM_FROM_SOURCE(
             retVal,
             context,
@@ -1902,6 +1931,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBinary)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         DUMP_INPUT_PROGRAM_BINARIES(
@@ -1970,6 +2000,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBuiltInKernels)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -2015,6 +2046,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainProgram)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RETAIN( program );
         if( pIntercept->callLogging() )
         {
             ref_count = 0;
@@ -2067,6 +2099,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseProgram)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RELEASE( program );
         if( pIntercept->callLogging() && ref_count != 0 )
         {
             // This isn't strictly correct, but it's pretty close, and it
@@ -2522,6 +2555,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         SIMD_SURVEY_CREATE_KERNEL( program, retVal, kernel_name );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
@@ -2579,6 +2613,15 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateKernelsInProgram)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        if( pIntercept->config().LeakChecking &&
+            kernels &&
+            num_kernels_ret )
+        {
+            for( cl_uint k = 0; k < num_kernels_ret[0]; k++ )
+            {
+                ADD_OBJECT_ALLOCATION( kernels[k] );
+            }
+        }
 
         std::string retString;
         if( pIntercept->callLogging() )
@@ -2647,6 +2690,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainKernel)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RETAIN( kernel );
         if( pIntercept->callLogging() )
         {
             ref_count = 0;
@@ -2701,6 +2745,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseKernel)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RELEASE( kernel );
         if( pIntercept->callLogging() && ref_count != 0 )
         {
             // This isn't strictly correct, but it's pretty close, and it
@@ -3035,6 +3080,7 @@ CL_API_ENTRY cl_event CL_API_CALL CLIRN(clCreateUserEvent)(
 
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( errcode_ret[0] );
+            ADD_OBJECT_ALLOCATION( retVal );
             CALL_LOGGING_EXIT( "returned %p", retVal );
         }
 
@@ -3078,6 +3124,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainEvent)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RETAIN( event );
         if( pIntercept->callLogging() )
         {
             ref_count = 0;
@@ -3130,6 +3177,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseEvent)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
+        ADD_OBJECT_RELEASE( event );
         if( pIntercept->callLogging() && ref_count != 0 )
         {
             // This isn't strictly correct, but it's pretty close, and it
@@ -3397,6 +3445,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
 
             if( blocking_read )
@@ -3502,6 +3551,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
 
             if( blocking_read )
@@ -3602,6 +3652,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
 
             if( blocking_write )
@@ -3707,6 +3758,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
 
             if( blocking_write )
@@ -3783,6 +3835,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillBuffer)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -3870,6 +3923,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBuffer)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -3964,6 +4018,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferRect)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -4077,6 +4132,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
 
             if( blocking_read )
@@ -4176,6 +4232,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
 
             if( blocking_write )
@@ -4247,6 +4304,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillImage)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -4327,6 +4385,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImage)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -4392,6 +4451,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImageToBuffer)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -4457,6 +4517,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferToImage)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -4560,6 +4621,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             DUMP_BUFFER_AFTER_MAP( command_queue, buffer, blocking_map, map_flags, retVal, offset, cb );
             CHECK_ERROR( errcode_ret[0] );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             if( pIntercept->callLogging() )
             {
                 map_count = 0;
@@ -4687,6 +4749,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( errcode_ret[0] );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             if( pIntercept->callLogging() )
             {
                 map_count = 0;
@@ -4795,6 +4858,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueUnmapMemObject)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             if( pIntercept->callLogging() )
             {
                 map_count = 0;
@@ -4865,6 +4929,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMigrateMemObjects)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -5005,6 +5070,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
                 global_work_size, 
                 local_work_size );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -5070,6 +5136,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
                 NULL,
                 NULL );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -5133,6 +5200,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNativeKernel)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -5185,6 +5253,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarker)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -5347,6 +5416,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarkerWithWaitList)(
 
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -5410,6 +5480,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrierWithWaitList)(
 
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -5549,6 +5620,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
         CPU_PERFORMANCE_TIMING_END();
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -5606,6 +5678,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
 
         pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
@@ -5666,6 +5739,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture2D)(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
 
         pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
@@ -5726,6 +5800,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture3D)(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
 
         pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
@@ -5774,6 +5849,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLRenderbuffer)(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -5901,6 +5977,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueAcquireGLObjects)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -5958,6 +6035,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -6104,6 +6182,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMFree) (
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -6167,6 +6246,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -6230,6 +6310,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemFill) (
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -6293,6 +6374,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -6350,6 +6432,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMUnmap) (
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -6477,6 +6560,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreatePipe) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT();
 
         return retVal;
@@ -6603,6 +6687,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
         CPU_PERFORMANCE_TIMING_END();
         CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -6685,6 +6770,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
         CPU_PERFORMANCE_TIMING_END();
         CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -6730,6 +6816,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
         ADD_SAMPLER( retVal, samplerProperties );
 
@@ -6879,6 +6966,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithIL) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         DUMP_PROGRAM_SPIRV( retVal, length, il, hash );
@@ -6932,6 +7020,7 @@ CL_API_ENTRY cl_program CL_API_CALL clCreateProgramWithILKHR(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         DUMP_PROGRAM_SPIRV( retVal, length, il, hash );
@@ -7122,6 +7211,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -7204,6 +7294,7 @@ CL_API_ENTRY cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -7291,6 +7382,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
         CPU_PERFORMANCE_TIMING_END();
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -7337,6 +7429,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -7383,6 +7476,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -7435,6 +7529,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -7487,6 +7582,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -7574,6 +7670,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
         CPU_PERFORMANCE_TIMING_END();
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -7620,6 +7717,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -7666,6 +7764,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -7718,6 +7817,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -7770,6 +7870,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -7863,6 +7964,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -7915,6 +8017,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -7967,6 +8070,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -8060,6 +8164,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -8112,6 +8217,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -8164,6 +8270,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -8221,6 +8328,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         ITT_REGISTER_COMMAND_QUEUE( retVal, true );
         CHROME_REGISTER_COMMAND_QUEUE( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
@@ -8318,6 +8426,7 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        //ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -8543,6 +8652,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromVA_APIMediaSurfaceINTEL(
         CPU_PERFORMANCE_TIMING_END();
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( "returned %p", retVal );
 
         return retVal;
@@ -8595,6 +8705,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireVA_APIMediaSurfacesINTEL(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 
@@ -8647,6 +8758,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( event );
         }
 

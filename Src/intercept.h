@@ -34,6 +34,7 @@
 #include "common.h"
 #include "enummap.h"
 #include "dispatch.h"
+#include "objtracker.h"
 
 #include "instrumentation.h"
 
@@ -584,6 +585,8 @@ public:
 
     const Config&   config() const;
 
+    CObjectTracker& objectTracker();
+
     bool    callLogging() const;
 
     bool    nullEnqueue() const;
@@ -679,6 +682,7 @@ private:
     OS::Services    m_OS;
     CLdispatch      m_Dispatch;
     CEnumNameMap    m_EnumNameMap;
+    CObjectTracker  m_ObjectTracker;
 
     void*       m_OpenCLLibraryHandle;
 
@@ -914,6 +918,31 @@ inline const CLIntercept::Config& CLIntercept::config() const
 {
     return m_Config;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+inline CObjectTracker& CLIntercept::objectTracker()
+{
+    return m_ObjectTracker;
+}
+
+#define ADD_OBJECT_ALLOCATION( _obj )                                       \
+    if( pIntercept->config().LeakChecking )                                 \
+    {                                                                       \
+        pIntercept->objectTracker().AddAllocation(_obj);                    \
+    }
+
+#define ADD_OBJECT_RETAIN( _obj )                                           \
+    if( pIntercept->config().LeakChecking )                                 \
+    {                                                                       \
+        pIntercept->objectTracker().AddRetain(_obj);                        \
+    }
+
+#define ADD_OBJECT_RELEASE( _obj )                                          \
+    if( pIntercept->config().LeakChecking )                                 \
+    {                                                                       \
+        pIntercept->objectTracker().AddRelease(_obj);                       \
+    }
 
 ///////////////////////////////////////////////////////////////////////////////
 //

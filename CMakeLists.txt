@@ -157,6 +157,8 @@ set( CLINTERCEPT_SOURCE_FILES
     Src/intercept.cpp
     Src/intercept.h
     Src/main.cpp
+    Src/objtracker.cpp
+    Src/objtracker.h
     Src/stubs.cpp
     "${CMAKE_CURRENT_BINARY_DIR}/git_version.cpp"
 )
