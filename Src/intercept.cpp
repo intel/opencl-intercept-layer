@@ -729,6 +729,12 @@ void CLIntercept::writeReport(
         os << "Total Enqueues: " << numEnqueues << std::endl << std::endl;
     }
 
+    if( config().LeakChecking )
+    {
+        os << std::endl << "Leak Checking:" << std::endl;
+        m_ObjectTracker.writeReport( os );
+    }
+
     if( config().HostPerformanceTiming &&
         !m_CpuTimingStatsMap.empty() )
     {

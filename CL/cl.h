@@ -29,7 +29,7 @@
 #ifndef __OPENCL_CL_H
 #define __OPENCL_CL_H
 
-// Unlike the Khronos header file, we want to unconditonally include the
+// Unlike the Khronos header file, we want to unconditionally include the
 // CLIntercept cl_platform.h, and not the system cl_platform.h.
 #if 0
 #ifdef __APPLE__
