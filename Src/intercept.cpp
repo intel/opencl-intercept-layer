@@ -1133,10 +1133,13 @@ cl_int CLIntercept::allocateAndGetPlatformInfoString(
 
     if( errorCode == CL_SUCCESS )
     {
-        param_value = new char[ size ];
-        if( param_value == NULL )
+        if( size != 0 )
         {
-            errorCode = CL_OUT_OF_HOST_MEMORY;
+            param_value = new char[ size ];
+            if( param_value == NULL )
+            {
+                errorCode = CL_OUT_OF_HOST_MEMORY;
+            }
         }
     }
 
@@ -1191,10 +1194,13 @@ cl_int CLIntercept::allocateAndGetDeviceInfoString(
 
     if( errorCode == CL_SUCCESS )
     {
-        param_value = new char[ size ];
-        if( param_value == NULL )
+        if( size != 0 )
         {
-            errorCode = CL_OUT_OF_HOST_MEMORY;
+            param_value = new char[ size ];
+            if( param_value == NULL )
+            {
+                errorCode = CL_OUT_OF_HOST_MEMORY;
+            }
         }
     }
 
