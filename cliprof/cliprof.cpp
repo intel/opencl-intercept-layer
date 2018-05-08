@@ -204,6 +204,10 @@ static bool parseArguments(int argc, char *argv[])
         {
             SETENV("CLI_HostPerformanceTiming", "1");
         }
+        else if( !strcmp(argv[i], "-l") || !strcmp(argv[i], "--leak-checking") )
+        {
+            SETENV("CLI_LeakChecking", "1");
+        }
         else if( !strcmp(argv[i], "-v") || !strcmp(argv[i], "--verbose") )
         {
             silent = false;
@@ -257,7 +261,8 @@ static bool parseArguments(int argc, char *argv[])
             "Options:\n"
             "  --debug                      Enable cliprof Debug Messages\n"
             "  --host-timing [-h]           Report Host API Execution Time\n"
-            "  --verbose [-v]               Verbose Output\n"
+            "  --leak-checking [-l]         Track and Report OpenCL Leaks\n"
+            "  --verbose [-v]               Verbose Output (No Log Suppression)\n"
             "\n"
             "For more information, please visit the Intercept Layer for OpenCL Applications github page:\n"
             "    %s\n"
