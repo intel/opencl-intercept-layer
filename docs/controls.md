@@ -162,6 +162,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will inst
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will check and log any events in an event wait list that are invalid or in an error state.  This can help to debug complex event dependency issues.
 
+##### `LeakChecking` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will check for leaks of various OpenCL objects, such as memory objects and events.
+
 ##### `CLInfoLogging` (bool)
 
 If set to a nonzero value, logs information about the platforms and devices in the system on the first call to clGetPlatformIDs().
