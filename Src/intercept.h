@@ -674,7 +674,7 @@ private:
                 std::string& str );
 
     void    writeReport(
-                std::ostream& os ) const;
+                std::ostream& os );
 
     OS::Services    m_OS;
     CLdispatch      m_Dispatch;
@@ -752,7 +752,7 @@ private:
                 const std::string& name,
                 const cl_event event );
     void    reportMDAPICounters(
-                std::ofstream& os );
+                std::ostream& os );
 #endif
 
     unsigned int    m_MemAllocNumber;
