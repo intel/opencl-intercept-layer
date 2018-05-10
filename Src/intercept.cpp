@@ -708,7 +708,7 @@ void CLIntercept::report()
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::writeReport(
-    std::ostream& os ) const
+    std::ostream& os )
 {
     if( config().FinishAfterEnqueue )
     {
