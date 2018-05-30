@@ -24,7 +24,12 @@
 
 #include "OS_linux_common.h"
 
-#include "CL/cl.h"  // for clGetPlatformIDs
+// Since we just need the symbol clGetPlatformIDs, we can use any OpenCL
+// version.
+#if !defined(CL_TARGET_OPENCL_VERSION)
+#define CL_TARGET_OPENCL_VERSION 100
+#endif
+#include "CL/cl.h"
 
 namespace OS
 {
