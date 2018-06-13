@@ -36,6 +36,7 @@
 
 const TCHAR* REGISTRY_KEY = L"SOFTWARE\\INTEL\\IGFX\\CLINTERCEPT";
 
+#define CL_TARGET_OPENCL_VERSION 220
 #include <CL\cl.h>
 #include "envVars.h"
 
