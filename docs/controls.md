@@ -312,6 +312,10 @@ If set, the Intercept Layer for OpenCL Applications will add these build options
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump build logs for every device a program is built for to a separate file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Device Type\>\_build\_log.txt".
 
+##### `DumpKernelISABinaries` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump kernel ISA binaries for every kernel, if supported.  An ISA binaries can decoded into ISA text with a disassembler.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Device Type\>\_\<Kernel Name\>.isabin".
+
 ### Controls for Automatically Creating SPIR-V Modules
 
 ##### `AutoCreateSPIRV` (bool)

@@ -1225,6 +1225,231 @@ cl_int CLIntercept::allocateAndGetDeviceInfoString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+cl_int CLIntercept::allocateAndGetKernelInfoString(
+    cl_kernel kernel,
+    cl_kernel_info param_name,
+    char*& param_value ) const
+{
+    cl_int  errorCode = CL_SUCCESS;
+    size_t  size = 0;
+
+    if( errorCode == CL_SUCCESS )
+    {
+        if( param_value != NULL )
+        {
+            CLI_ASSERT( 0 );
+            delete [] param_value;
+            param_value = NULL;
+        }
+    }
+
+    if( errorCode == CL_SUCCESS )
+    {
+        errorCode = dispatch().clGetKernelInfo(
+            kernel,
+            param_name,
+            0,
+            NULL,
+            &size );
+    }
+
+    if( errorCode == CL_SUCCESS )
+    {
+        if( size != 0 )
+        {
+            param_value = new char[ size ];
+            if( param_value == NULL )
+            {
+                errorCode = CL_OUT_OF_HOST_MEMORY;
+            }
+        }
+    }
+
+    if( errorCode == CL_SUCCESS )
+    {
+        errorCode = dispatch().clGetKernelInfo(
+            kernel,
+            param_name,
+            size,
+            param_value,
+            NULL );
+    }
+
+    if( errorCode != CL_SUCCESS )
+    {
+        delete [] param_value;
+        param_value = NULL;
+    }
+
+    return errorCode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+cl_int CLIntercept::allocateAndGetProgramDeviceList(
+    cl_program program,
+    cl_uint& numDevices,
+    cl_device_id*& deviceList ) const
+{
+    cl_int  errorCode = CL_SUCCESS;
+
+    if( errorCode == CL_SUCCESS )
+    {
+        if( deviceList != NULL )
+        {
+            CLI_ASSERT( 0 );
+            delete [] deviceList;
+            deviceList = NULL;
+        }
+    }
+
+    if( errorCode == CL_SUCCESS )
+    {
+        errorCode = dispatch().clGetProgramInfo(
+            program,
+            CL_PROGRAM_NUM_DEVICES,
+            sizeof( numDevices ),
+            &numDevices,
+            NULL );
+    }
+
+    if( errorCode == CL_SUCCESS )
+    {
+        if( numDevices != 0 )
+        {
+            deviceList = new cl_device_id[ numDevices ];
+            if( deviceList == NULL )
+            {
+                errorCode = CL_OUT_OF_HOST_MEMORY;
+            }
+        }
+    }
+
+    if( errorCode == CL_SUCCESS )
+    {
+        errorCode = dispatch().clGetProgramInfo(
+            program,
+            CL_PROGRAM_DEVICES,
+            numDevices * sizeof( cl_device_id ),
+            deviceList,
+            NULL );
+    }
+
+    if( errorCode != CL_SUCCESS )
+    {
+        numDevices = 0;
+
+        delete [] deviceList;
+        deviceList = NULL;
+    }
+
+    return errorCode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+cl_int CLIntercept::allocateAndGetKernelISABinary(
+    cl_kernel kernel,
+    cl_device_id device,
+    size_t& kernelISABinarySize,
+    char*& kernelISABinary ) const
+{
+    cl_int  errorCode = CL_SUCCESS;
+
+    if( errorCode == CL_SUCCESS )
+    {
+        if( kernelISABinary != NULL )
+        {
+            CLI_ASSERT( 0 );
+            delete [] kernelISABinary;
+            kernelISABinary = NULL;
+        }
+    }
+
+    // Prefer to query for the kernel ISA binary using
+    // clGetKernelWorkGroupInfo, which queries for a
+    // specific device.
+    if( errorCode == CL_SUCCESS )
+    {
+        errorCode = dispatch().clGetKernelWorkGroupInfo(
+            kernel,
+            device,
+            CL_KERNEL_BINARY_PROGRAM_INTEL,
+            0,
+            NULL,
+            &kernelISABinarySize );
+        if( errorCode == CL_SUCCESS )
+        {
+            if( kernelISABinarySize != 0 )
+            {
+                kernelISABinary = new char[ kernelISABinarySize ];
+            }
+            if( kernelISABinary )
+            {
+                errorCode = dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    device,
+                    CL_KERNEL_BINARY_PROGRAM_INTEL,
+                    kernelISABinarySize,
+                    kernelISABinary,
+                    NULL );
+                if( errorCode != CL_SUCCESS )
+                {
+                    delete [] kernelISABinary;
+                    kernelISABinary = NULL;
+                }
+            }
+        }
+    }
+
+    // If we weren't successful querying for the kernel ISA
+    // binary using cletKernelWorkGroupInfo, try clGetKernelInfo,
+    // which was supported by some earlier drivers but cannot query
+    // for a specific device.
+    if( errorCode != CL_SUCCESS )
+    {
+        errorCode = dispatch().clGetKernelInfo(
+            kernel,
+            CL_KERNEL_BINARY_PROGRAM_INTEL,
+            0,
+            NULL,
+            &kernelISABinarySize );
+        if( errorCode == CL_SUCCESS )
+        {
+            if( kernelISABinarySize != 0 )
+            {
+                kernelISABinary = new char[ kernelISABinarySize ];
+            }
+            if( kernelISABinary )
+            {
+                errorCode = dispatch().clGetKernelInfo(
+                    kernel,
+                    CL_KERNEL_BINARY_PROGRAM_INTEL,
+                    kernelISABinarySize,
+                    kernelISABinary,
+                    NULL );
+                if( errorCode != CL_SUCCESS )
+                {
+                    delete [] kernelISABinary;
+                    kernelISABinary = NULL;
+                }
+            }
+        }
+    }
+
+    if( errorCode != CL_SUCCESS )
+    {
+        kernelISABinarySize = 0;
+
+        delete [] kernelISABinary;
+        kernelISABinary = NULL;
+    }
+
+    return errorCode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::getPlatformInfoString(
     const cl_platform_id platform,
     std::string& str ) const
@@ -1841,33 +2066,13 @@ void CLIntercept::logBuild(
     if( ( errorCode == CL_SUCCESS ) &&
         ( deviceList == NULL ) )
     {
-        errorCode = dispatch().clGetProgramInfo(
+        errorCode = allocateAndGetProgramDeviceList(
             program,
-            CL_PROGRAM_NUM_DEVICES,
-            sizeof( numDevices ),
-            &numDevices,
-            NULL );
-
+            numDevices,
+            localDeviceList );
         if( errorCode == CL_SUCCESS )
         {
-            localDeviceList = new cl_device_id[ numDevices ];
-            if( localDeviceList == NULL )
-            {
-                errorCode = CL_OUT_OF_HOST_MEMORY;
-            }
-            else
-            {
-                errorCode = dispatch().clGetProgramInfo(
-                    program,
-                    CL_PROGRAM_DEVICES,
-                    numDevices * sizeof( cl_device_id ),
-                    localDeviceList,
-                    NULL );
-                if( errorCode == CL_SUCCESS )
-                {
-                    deviceList = localDeviceList;
-                }
-            }
+            deviceList = localDeviceList;
         }
     }
 
@@ -2082,30 +2287,10 @@ void CLIntercept::logPreferredWorkGroupSizeMultiple(
         cl_device_id*   deviceList = NULL;
         if( errorCode == CL_SUCCESS )
         {
-            errorCode = dispatch().clGetProgramInfo(
+            errorCode = allocateAndGetProgramDeviceList(
                 program,
-                CL_PROGRAM_NUM_DEVICES,
-                sizeof( numDevices ),
-                &numDevices,
-                NULL );
-
-            if( errorCode == CL_SUCCESS )
-            {
-                deviceList = new cl_device_id[ numDevices ];
-                if( deviceList == NULL )
-                {
-                    errorCode = CL_OUT_OF_HOST_MEMORY;
-                }
-                else
-                {
-                    errorCode = dispatch().clGetProgramInfo(
-                        program,
-                        CL_PROGRAM_DEVICES,
-                        numDevices * sizeof( cl_device_id ),
-                        deviceList,
-                        NULL );
-                }
-            }
+                numDevices,
+                deviceList );
         }
 
         // Log the preferred work group size multiple for each kernel, 
@@ -6462,6 +6647,211 @@ void CLIntercept::dumpProgramBinary(
 
     delete [] programBinarySizes;
     programBinarySizes = NULL;
+
+    m_OS.LeaveCriticalSection();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::dumpKernelISABinaries(
+    const cl_program program )
+{
+    m_OS.EnterCriticalSection();
+
+    cl_int  errorCode = CL_SUCCESS;
+
+    // Since the kernel ISA binaries are retrieved via kernel queries, the first
+    // thing we need to do is to create the kernels for this program.
+
+    cl_uint numKernels = 0;
+    if( errorCode == CL_SUCCESS )
+    {
+        errorCode = dispatch().clCreateKernelsInProgram(
+            program,
+            0,
+            NULL,
+            &numKernels );
+    }
+    cl_kernel*  kernels = NULL;
+    if( errorCode == CL_SUCCESS && numKernels != 0 )
+    {
+        kernels = new cl_kernel[ numKernels ];
+        if( kernels )
+        {
+            for( cl_uint k = 0; k < numKernels; k++ )
+            {
+                kernels[k] = NULL;
+            }
+            errorCode = dispatch().clCreateKernelsInProgram(
+                program,
+                numKernels,
+                kernels,
+                NULL );
+        }
+        else
+        {
+            errorCode = CL_OUT_OF_HOST_MEMORY;
+        }
+    }
+
+    // Also, get the list of devices for the program.
+    cl_uint         numDevices = 0;
+    cl_device_id*   deviceList = NULL;
+    if( errorCode == CL_SUCCESS )
+    {
+        errorCode = allocateAndGetProgramDeviceList(
+            program,
+            numDevices,
+            deviceList );
+    }
+
+    if( errorCode == CL_SUCCESS && program != NULL && kernels != NULL )
+    {
+        unsigned int    programNumber = m_ProgramNumberMap[ program ];
+        uint64_t        programHash = m_ProgramHashMap[ program ];
+        unsigned int    compileCount = m_ProgramNumberCompileCountMap[ programNumber ];
+
+        std::string fileNamePrefix;
+
+        // Get the dump directory name.
+        {
+            OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
+        }
+        // Make the filename prefix.  It will have the form:
+        //   CLI_<program number>_<hash>_<compile count>_<device type>_<kernel name>.isabin
+        // We'll fill in the device type and kernel name later.
+        {
+            char    numberString[256] = "";
+
+            if( config().OmitProgramNumber )
+            {
+                CLI_SPRINTF( numberString, 256, "%08X_%04u_",
+                    (unsigned int)programHash,
+                    compileCount );
+            }
+            else
+            {
+                CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_",
+                    programNumber,
+                    (unsigned int)programHash,
+                    compileCount );
+            }
+
+            fileNamePrefix += "/CLI_";
+            fileNamePrefix += numberString;
+        }
+        // Now make directories as appropriate.
+        {
+            OS().MakeDumpDirectories( fileNamePrefix );
+        }
+
+        for( cl_uint k = 0; k < numKernels; k++ )
+        {
+            cl_kernel   kernel = kernels[ k ];
+
+            // Get the kernel name.  We can't use the kernel name map yet, so
+            // use a kernel query instead.
+            char* kernelName = NULL;
+            if( errorCode == CL_SUCCESS )
+            {
+                errorCode = allocateAndGetKernelInfoString(
+                    kernel,
+                    CL_KERNEL_FUNCTION_NAME,
+                    kernelName );
+            }
+
+            for( cl_uint d = 0; d < numDevices; d++ )
+            {
+                size_t      kernelISABinarySize = 0;
+                char*       kernelISABinary = NULL;
+
+                if( errorCode == CL_SUCCESS )
+                {
+                    errorCode = allocateAndGetKernelISABinary(
+                        kernel,
+                        deviceList[d],
+                        kernelISABinarySize,
+                        kernelISABinary );
+                }
+
+                if( errorCode == CL_SUCCESS )
+                {
+                    std::string fileName( fileNamePrefix );
+
+                    cl_device_type  deviceType = CL_DEVICE_TYPE_DEFAULT;
+
+                    // It's OK if this fails.  If it does, it just
+                    // means that our output file won't have a device
+                    // type.
+                    dispatch().clGetDeviceInfo(
+                        deviceList[d],
+                        CL_DEVICE_TYPE,
+                        sizeof( deviceType ),
+                        &deviceType,
+                        NULL );
+
+                    if( deviceType & CL_DEVICE_TYPE_CPU )
+                    {
+                        fileName += "CPU_";
+                    }
+                    if( deviceType & CL_DEVICE_TYPE_GPU )
+                    {
+                        fileName += "GPU_";
+                    }
+                    if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
+                    {
+                        fileName += "ACCELERATOR_";
+                    }
+                    if( deviceType & CL_DEVICE_TYPE_CUSTOM )
+                    {
+                        fileName+= "CUSTOM_";
+                    }
+
+                    fileName += kernelName;
+                    fileName += ".isabin";
+
+                    std::ofstream os;
+                    os.open(
+                        fileName.c_str(),
+                        std::ios::out | std::ios::binary );
+                    if( os.good() )
+                    {
+                        log( "Dumping kernel ISA binary to file: " + fileName + "\n" );
+
+                        os.write(
+                            kernelISABinary,
+                            kernelISABinarySize );
+                        os.close();
+                    }
+                }
+
+                delete [] kernelISABinary;
+                kernelISABinary = NULL;
+            }
+
+            delete [] kernelName;
+            kernelName = NULL;
+        }
+    }
+
+    // If we have kernels, release them.
+    if( kernels )
+    {
+        for( cl_uint k = 0; k < numKernels; k++ )
+        {
+            if( kernels[k] )
+            {
+                dispatch().clReleaseKernel( kernels[k] );
+                kernels[k] = NULL;
+            }
+        }
+    }
+
+    delete [] kernels;
+    kernels = NULL;
+
+    delete [] deviceList;
+    deviceList = NULL;
 
     m_OS.LeaveCriticalSection();
 }
