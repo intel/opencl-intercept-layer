@@ -99,6 +99,19 @@ public:
                 cl_device_id device,
                 cl_device_info param_name, 
                 char*& param_value ) const;
+    cl_int  allocateAndGetKernelInfoString(
+                cl_kernel kernel,
+                cl_kernel_info param_name,
+                char*& param_value ) const;
+    cl_int  allocateAndGetProgramDeviceList(
+                cl_program program,
+                cl_uint& numDevices,
+                cl_device_id*& deviceList ) const;
+    cl_int  allocateAndGetKernelISABinary(
+                cl_kernel kernel,
+                cl_device_id device,
+                size_t& kernelISABinarySize,
+                char*& kernelISABinary ) const;
 
     void    getPlatformInfoString(
                 cl_platform_id platform,
@@ -286,6 +299,9 @@ public:
                 cl_context context,
                 cl_int* errcode_ret );
     void    dumpProgramBinary(
+                const cl_program program );
+
+    void    dumpKernelISABinaries(
                 const cl_program program );
 
     cl_program createProgramWithInjectionSPIRV(
@@ -1391,6 +1407,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().DumpProgramBinaries ||                         \
         pIntercept->config().DumpProgramSPIRV ||                            \
         pIntercept->config().DumpProgramBuildLogs ||                        \
+        pIntercept->config().DumpKernelISABinaries ||                       \
         pIntercept->config().InjectProgramSource ||                         \
         pIntercept->config().AutoCreateSPIRV ||                             \
         pIntercept->config().AubCaptureUniqueKernels )                      \
@@ -1408,6 +1425,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().DumpProgramBinaries ||                         \
         pIntercept->config().DumpProgramSPIRV ||                            \
         pIntercept->config().DumpProgramBuildLogs ||                        \
+        pIntercept->config().DumpKernelISABinaries ||                       \
         pIntercept->config().InjectProgramSource ||                         \
         pIntercept->config().InjectProgramBinaries ||                       \
         pIntercept->config().PrependProgramSource ||                        \
@@ -1571,6 +1589,12 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->dumpProgramBinary( program );                           \
     }
 
+#define DUMP_KERNEL_ISA_BINARIES( program )                                 \
+    if( pIntercept->config().DumpKernelISABinaries )                        \
+    {                                                                       \
+        pIntercept->dumpKernelISABinaries( program );                       \
+    }
+
 #define AUTO_CREATE_SPIRV( _program, _options )                             \
     if( _program && pIntercept->config().AutoCreateSPIRV )                  \
     {                                                                       \
@@ -1587,6 +1611,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
           pIntercept->config().DumpProgramBinaries ||                       \
           pIntercept->config().DumpProgramSPIRV ||                          \
           pIntercept->config().DumpProgramBuildLogs ||                      \
+          pIntercept->config().DumpKernelISABinaries ||                     \
           pIntercept->config().AutoCreateSPIRV ||                           \
           pIntercept->config().AubCaptureUniqueKernels ) )                  \
     {                                                                       \

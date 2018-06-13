@@ -2160,6 +2160,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
         CALL_LOGGING_EXIT();
 
         DUMP_OUTPUT_PROGRAM_BINARIES( program );
+        DUMP_KERNEL_ISA_BINARIES( program );
         AUTO_CREATE_SPIRV( program, options );
         INCREMENT_PROGRAM_COMPILE_COUNT( program );
         DELETE_MODIFIED_OPTIONS( newOptions );
