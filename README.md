@@ -1,21 +1,21 @@
 # Intercept Layer for OpenCL<sup>TM</sup> Applications
 
-The Intercept Layer for OpenCL Applications is a tool that can intercept 
+The Intercept Layer for OpenCL Applications is a tool that can intercept
 and modify OpenCL calls for debugging and performance analysis.  Using the
-Intercept Layer for OpenCL Applications requires no application or driver 
+Intercept Layer for OpenCL Applications requires no application or driver
 modifications.
 
-To operate, the Intercept Layer for OpenCL Applications masquerades as the 
-OpenCL ICD loader (usually) or as an OpenCL implementation (rarely) and is 
-loaded when the application intends to load the real OpenCL ICD loader.  As 
-part of the Intercept Layer for OpenCL Application's initialization, it loads 
-the real OpenCL ICD loader and gets function pointers to the real OpenCL 
-entry points.  Then, whenever the application makes an OpenCL call, the call 
-is intercepted and can be passed through to the real OpenCL with or without 
+To operate, the Intercept Layer for OpenCL Applications masquerades as the
+OpenCL ICD loader (usually) or as an OpenCL implementation (rarely) and is
+loaded when the application intends to load the real OpenCL ICD loader.  As
+part of the Intercept Layer for OpenCL Application's initialization, it loads
+the real OpenCL ICD loader and gets function pointers to the real OpenCL
+entry points.  Then, whenever the application makes an OpenCL call, the call
+is intercepted and can be passed through to the real OpenCL with or without
 changes.
 
-This project adheres to the Intercept Layer for OpenCL Application's 
-[code of conduct](CODE_OF_CONDUCT.md).  By participating, you are expected to 
+This project adheres to the Intercept Layer for OpenCL Application's
+[code of conduct](CODE_OF_CONDUCT.md).  By participating, you are expected to
 uphold this code.
 
 ## Documentation
@@ -30,6 +30,7 @@ Instructions to install the Intercept Layer for OpenCL Applications can be found
 
 Detailed instructions:
 * [How to Inject Modified Programs](docs/injecting_programs.md)
+* [How to Dump and Disassemble Kernel ISA](docs/kernel_isa.md)
 * [How to Use the Intercept Layer for OpenCL Applications with VTune](docs/vtune_logging.md)
 * [How to Use the Intercept Layer for OpenCL Applications with Chrome](docs/chrome_tracing.md)
 
