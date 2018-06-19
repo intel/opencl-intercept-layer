@@ -89,6 +89,11 @@ Here is a helpful link that describes the Intel GPU ISA:
 
 https://software.intel.com/en-us/articles/introduction-to-gen-assembly
 
+### Disassembling Many Kernel ISA Binaries
+
+The Python script [../scripts/disassemble_all.py](../scripts/disassemble_all.py)
+may be useful to invoke a disassembler on all ISA binaries in a specified directory.
+
 ---
 
 \* Other names and brands may be claimed as the property of others.
