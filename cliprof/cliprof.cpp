@@ -456,11 +456,11 @@ int main(int argc, char *argv[])
 
     // Add intercept library to LD_PRELOAD:
     std::string ld_preload = path + "/libOpenCL." + LIB_EXTENSION;
-    const char *odl_ld_preload = getenv(LD_PRELOAD_ENV);
-    if( odl_ld_preload )
+    const char *old_ld_preload = getenv(LD_PRELOAD_ENV);
+    if( old_ld_preload )
     {
         ld_preload += ":";
-        ld_preload += odl_ld_preload;
+        ld_preload += old_ld_preload;
     }
 
     DEBUG("New %s is %s\n", LD_LIBRARY_PATH_ENV, ld_library_path.c_str());
