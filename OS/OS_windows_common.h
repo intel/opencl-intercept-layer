@@ -183,12 +183,14 @@ inline bool Services_Common::ReadRegistry(
             {
                 unsigned int *puVal = (unsigned int *)pValue;
                 *puVal = atoi(envVal);
+                free( envVal );
                 return true;
             }
             else if( ( envVal != NULL ) && ( strlen(envVal) < size ) )
             {
                 char* pStr = (char*)pValue;
                 strcpy_s( pStr, size, envVal );
+                free( envVal );
                 return true;
             }
             free( envVal );
