@@ -160,7 +160,70 @@ inline bool Services::ExecuteCommand( const std::string& command ) const
     return res != -1;
 }
 
-inline bool Services::StartAubCapture(
+static inline bool SetAubcaptureRegistryKey(
+    DWORD dwValue )
+{
+    // For NEO Aubcapture:
+    // As setup, need to set AUBDumpSubcaptureMode = 2.  This will be the client's responsibility.
+    //
+    // To start/stop aubcapture, set AUBDumpToggleCaptureOnOff = 1/0.  This is CLIntercept's responsibility.
+
+    // There is no way to set the aubcapture file name at the moment.
+
+    // Registry keys are written to:
+    const char* const AUBCAPTURE_REGISTRY_KEY = "SOFTWARE\\INTEL\\IGFX\\OCL";
+
+    LSTATUS success = ERROR_SUCCESS;
+    HKEY    key;
+
+    if( success == ERROR_SUCCESS )
+    {
+        success = RegCreateKeyEx(
+            HKEY_LOCAL_MACHINE,
+            AUBCAPTURE_REGISTRY_KEY,
+            0,
+            NULL,
+            REG_OPTION_NON_VOLATILE,
+            KEY_SET_VALUE,
+            NULL,
+            &key,
+            NULL );
+        if( success == ERROR_SUCCESS )
+        {
+            success = RegSetValueEx(
+                key,
+                "AUBDumpToggleCaptureOnOff",
+                0,
+                REG_DWORD,
+                (CONST BYTE *)&dwValue,
+                sizeof(DWORD));
+            RegCloseKey(key);
+        }
+    }
+
+    if( success != ERROR_SUCCESS )
+    {
+        LPVOID lpMsgBuf = NULL;
+
+        FormatMessage(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER |
+            FORMAT_MESSAGE_FROM_SYSTEM |
+            FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL,
+            success,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            (LPSTR)&lpMsgBuf,
+            0, NULL );
+
+        OutputDebugString((LPCSTR)lpMsgBuf);
+
+        LocalFree(lpMsgBuf);
+    }
+
+    return success == ERROR_SUCCESS;
+}
+
+inline bool Services::StartAubCapture( 
     const std::string& fileName,
     uint64_t delay ) const
 {
@@ -169,10 +232,14 @@ inline bool Services::StartAubCapture(
         Sleep( (DWORD)delay );
     }
 
+#if 0
     std::string command = "kdc.exe " + fileName;
     int res = system(command.c_str());
     //fprintf(stderr, "Running the command: %s returned %d\n", command.c_str(), res );
     return res != -1;
+#else
+    return SetAubcaptureRegistryKey( 1 );
+#endif
 }
 
 inline bool Services::StopAubCapture(
@@ -183,10 +250,14 @@ inline bool Services::StopAubCapture(
         Sleep( (DWORD)delay );
     }
 
+#if 0
     std::string command = "kdc.exe -off";
     int res = system(command.c_str());
     //fprintf(stderr, "Running the command: %s returned %d\n", command.c_str(), res );
     return res != -1;
+#else
+    return SetAubcaptureRegistryKey( 0 );
+#endif
 }
 
 }
