@@ -121,19 +121,47 @@ inline bool Services::ExecuteCommand( const std::string& command ) const
     return res != -1;
 }
 
-// TODO
+static inline bool SetAubCaptureEnvironmentVariable( uint64_t delay, bool start )
+{
+    if( delay )
+    {
+        usleep( delay );
+    }
+
+    // For NEO Aubcapture:
+    // As setup, need to set AUBDumpSubcaptureMode = 2.  This will be the client's responsibility.
+    //
+    // To start/stop aubcapture, set AUBDumpToggleCaptureOnOff = 1/0.  This is CLIntercept's responsibility.
+
+    // There is no way to set the aubcapture file name at the moment.
+
+    const char * const AUBCAPTURE_ENV_VAR = "AUBDumpToggleCaptureOnOff";
+    int status = 0;
+
+    if( start )
+    {
+        status = setenv( AUBCAPTURE_ENV_VAR, "1", 1 );
+    }
+    else
+    {
+        // TODO: Should this unset the environment variable instead?
+        status = setenv( AUBCAPTURE_ENV_VAR, "0", 1 );
+    }
+
+    return status == 0;
+}
 
 inline bool Services::StartAubCapture(
     const std::string& fileName,
     uint64_t delay ) const
 {
-    return false;
+    return SetAubCaptureEnvironmentVariable( delay, true );
 }
 
 inline bool Services::StopAubCapture(
     uint64_t delay ) const
 {
-    return false;
+    return SetAubCaptureEnvironmentVariable( delay, false );
 }
 
 }
