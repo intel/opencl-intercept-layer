@@ -1,4 +1,5 @@
 # Intercept Layer for OpenCL<sup>TM</sup> Applications
+Linux and OSX: [![Linux OSX Build Status](https://travis-ci.org/msriram/opencl-intercept-layer.svg?branch=travis)](https://travis-ci.org/msriram/opencl-intercept-layer) | Windows: [![Windows Build status](https://ci.appveyor.com/api/projects/status/k9bnhdcwl60hf8t5/branch/travis?svg=true)](https://ci.appveyor.com/project/msriram/opencl-intercept-layer/branch/travis)
 
 The Intercept Layer for OpenCL Applications is a tool that can intercept
 and modify OpenCL calls for debugging and performance analysis.  Using the

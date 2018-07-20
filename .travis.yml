@@ -1,0 +1,15 @@
+language: cpp
+
+compiler:
+  - gcc
+  - clang
+
+os:
+  - linux
+  - osx
+
+script:
+  - mkdir -p build
+  - cd build
+  - cmake -DENABLE_CLIPROF=1 ..
+  - make -j 4
