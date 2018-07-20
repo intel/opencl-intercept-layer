@@ -166,6 +166,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will chec
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will check for leaks of various OpenCL objects, such as memory objects and events.
 
+##### `IndexLongKernelNames` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will create a mapping to each kernel name longer than 32 characters to a shortName that will replace the kernel name in the logging. In addition, the mapping will be displayed on the clintercept_report.txt for easy reference.
+
 ##### `CLInfoLogging` (bool)
 
 If set to a nonzero value, logs information about the platforms and devices in the system on the first call to clGetPlatformIDs().

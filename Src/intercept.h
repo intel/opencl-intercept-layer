@@ -689,6 +689,9 @@ private:
 #error Unknown OS!
 #endif
 
+    std::string getKernelName(
+                  const cl_kernel kernel );
+
     void    getCallLoggingPrefix(
                 std::string& str );
 
@@ -737,6 +740,7 @@ private:
 
     struct SDeviceTimingStats
     {
+        std::string KernelId;
         uint64_t    NumberOfCalls;
         cl_ulong    MinNS;
         cl_ulong    MaxNS;
@@ -746,13 +750,21 @@ private:
     typedef std::map< std::string, SDeviceTimingStats* >   CDeviceTimingStatsMap;
     CDeviceTimingStatsMap   m_DeviceTimingStatsMap;
 
-    typedef std::map< const cl_kernel, std::string >    CKernelNameMap;
+    struct kernelNameInfo
+    {
+      std::string kernelId;
+      std::string kernelName;
+    };
+    typedef std::map< const cl_kernel, kernelNameInfo >    CKernelNameMap;
     CKernelNameMap  m_KernelNameMap;
+    int m_kernelId;
+    uint m_maxKernelLength;
 
     struct SEventListNode
     {
         std::string FunctionName;
         std::string KernelName;
+        std::string KernelId;
         uint64_t    QueuedTime;
         cl_kernel   Kernel;
         cl_event    Event;
@@ -1168,13 +1180,13 @@ inline bool CLIntercept::nullEnqueue() const
 inline bool CLIntercept::dumpBufferForKernel( const cl_kernel kernel )
 {
     return m_Config.DumpBuffersForKernel.empty() ||
-        m_KernelNameMap[ kernel ] == m_Config.DumpBuffersForKernel;
+        m_KernelNameMap[ kernel ].kernelName == m_Config.DumpBuffersForKernel;
 }
 
 inline bool CLIntercept::dumpImagesForKernel( const cl_kernel kernel )
 {
     return m_Config.DumpImagesForKernel.empty() ||
-        m_KernelNameMap[ kernel ] == m_Config.DumpImagesForKernel;
+        m_KernelNameMap[ kernel ].kernelName == m_Config.DumpImagesForKernel;
 }
 
 inline bool CLIntercept::checkDumpBufferEnqueueLimits() const
