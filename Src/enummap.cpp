@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -499,7 +499,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE );
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE );
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_LOCAL_SIZE_FOR_SUB_GROUP_COUNT );
-    
+
     /* cl_kernel_exec_info */
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_SVM_PTRS );
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_SVM_FINE_GRAIN_SYSTEM );
@@ -581,7 +581,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_BINARY_SIZES_INTEL );
 
     // VME and VA
-    
+
     // clGetDeviceInfo
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ME_VERSION_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TRANSFORM_MASK_MAX_WIDTH_INTEL );
@@ -622,12 +622,12 @@ CEnumNameMap::CEnumNameMap()
 
     //CL_ME_CHROMA_INTRA_PREDICT_ENABLED_INTEL        0x1
     //CL_ME_LUMA_INTRA_PREDICT_ENABLED_INTEL          0x2
-    
+
     //CL_ME_COST_PENALTY_NONE_INTEL                   0x0
     //CL_ME_COST_PENALTY_LOW_INTEL                    0x1
     //CL_ME_COST_PENALTY_NORMAL_INTEL                 0x2
     //CL_ME_COST_PENALTY_HIGH_INTEL                   0x3
-    
+
     //CL_ME_COST_PRECISION_QPEL_INTEL                 0x0
     //CL_ME_COST_PRECISION_HPEL_INTEL                 0x1
     //CL_ME_COST_PRECISION_PEL_INTEL                  0x2
@@ -690,31 +690,31 @@ CEnumNameMap::CEnumNameMap()
     // cl_intelx_video_enhancement
     // This is the base-functionality VEBox extension.
     // Note: These are preview enum names and values!
-     
+
     // cl_device_info
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_VE_VERSION_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_VE_ENGINE_COUNT_INTEL );
-     
+
     // cl_queue_properties - TBD: is this a general purpose enum or a bit?
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_VE_ENABLE_INTEL );
-     
+
     // attribute_ids for cl_vebox_attrib_desc_intel
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_DENOISE_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_DEINTERLACE_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_HOT_PIXEL_CORR_INTEL );
-     
+
     // cl_accelerator_info_intel
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_HISTOGRAMS_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_STATISTICS_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_STMM_INPUT_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_STMM_OUTPUT_INTEL );
-    
+
     // cl_intelx_ve_color_pipeline
     // Note: These are preview enum names and values!
-     
+
     // cl_device_info
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_VE_COLOR_PIPE_VERSION_INTEL );
-     
+
     // attribute_ids for cl_vebox_attrib_desc_intel
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_STD_STE_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_GAMUT_COMP_INTEL );
@@ -728,13 +728,13 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_CCM_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_FWD_GAMMA_CORRECT_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_FRONT_END_CSC_INTEL );
-    
+
     // cl_intelx_ve_camera_pipeline
     // Note, these are preview enum names and values!
-     
+
     // cl_device_info
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_VE_CAMERA_PIPE_VERSION_INTEL );
-     
+
     // attribute_ids for cl_vebox_attrib_desc_intel
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_BLACK_LEVEL_CORR_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_DEMOSAIC_INTEL );
@@ -747,10 +747,10 @@ CEnumNameMap::CEnumNameMap()
     // cl_device_info
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PAK_VERSION_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PAK_AVAILABLE_CODECS_INTEL );
- 
+
     // cl_queue_properties / cl_command_queue_info
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_PAK_ENABLE_INTEL );
- 
+
     // cl_accelerator_info_intel
     ADD_ENUM_NAME( m_cl_int, CL_PAK_CTU_COUNT_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_PAK_CTU_WIDTH_INTEL );
@@ -759,7 +759,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_PAK_MAX_INTER_DEPTH_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_PAK_NUM_CUS_PER_CTU_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_PAK_MV_BUFFER_SIZE_INTEL );
- 
+
     // Error Codes
     // These are currently all mapped to CL_INVALID_VALUE.
     // Need official error code assignment.
@@ -831,7 +831,7 @@ CEnumNameMap::CEnumNameMap()
 
     // cl_khr_initalize_memory
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_MEMORY_INITIALIZE_KHR );
-    
+
     // cl_khr_terminate_context
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TERMINATE_CAPABILITY_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_TERMINATE_KHR );

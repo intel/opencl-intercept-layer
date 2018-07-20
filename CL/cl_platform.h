@@ -99,7 +99,7 @@ extern "C" {
     #define CL_EXT_SUFFIX__VERSION_1_0_DEPRECATED CL_EXT_SUFFIX__VERSION_1_0
     #define CL_EXT_SUFFIX__VERSION_1_1_DEPRECATED CL_EXT_SUFFIX__VERSION_1_1
 
-    // These aren't in the Khronos header file, but are needed to avoid 
+    // These aren't in the Khronos header file, but are needed to avoid
     // build errors on OSX.
     #define CL_API_SUFFIX__VERSION_2_0
     #define CL_EXT_SUFFIX__VERSION_2_0

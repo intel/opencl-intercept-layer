@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -74,7 +74,7 @@ private:
 
     CImageList  m_ImageList;
     CListCtrl*  m_pListCtrl;
-    
+
     int         m_SelectedItem;
 
     void ResetDefaults();
@@ -109,7 +109,7 @@ private:
 
     std::vector<cl_platform_id> m_Platforms;
     std::vector<cl_device_id>   m_Devices;
-    
+
     BOOL OnInitDialog();
     BOOL OnSetActive();
 
@@ -129,9 +129,9 @@ public:
 
     POINT m_baseSize;
     POINT m_lastSize;
-    
+
     // constructor
-    CCLInterceptConfigSheet() : 
+    CCLInterceptConfigSheet() :
         CPropertySheet( L"Intercept Layer for OpenCL Applications Configuration App"),
         m_AboutPage( &m_VariableState ),
         m_UserPage( &m_VariableState )
@@ -141,7 +141,7 @@ public:
         AddPage( &m_UserPage );
         AddPage( &m_AboutPage );
     }
-    
+
     BOOL OnInitDialog();
     void OnSize(UINT nType, int cx, int cy);
     BOOL OnNotify(WPARAM wParam, LPARAM lParam, LRESULT* pResult);
@@ -150,7 +150,7 @@ public:
     afx_msg void OnApplyNow();
     afx_msg LRESULT OnResizePage(WPARAM wParam, LPARAM lParam);
     afx_msg void OnGetMinMaxInfo(MINMAXINFO FAR* lpMMI);
-    
+
     DECLARE_MESSAGE_MAP()
 };
 
@@ -160,12 +160,12 @@ class CLInterceptConfigApp : public CWinApp
 {
 public:
     HANDLE  hMutex;      // to allow only one instance
-    DWORD   mutexState;  // 
-    
+    DWORD   mutexState;  //
+
     CLInterceptConfigApp();
     ~CLInterceptConfigApp();
-    
+
     BOOL IsAnotherInstanceRunning();
-    
+
     virtual BOOL InitInstance();
 };

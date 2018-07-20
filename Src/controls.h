@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -116,7 +116,7 @@ CLI_CONTROL( cl_uint,       DumpBuffersMinEnqueue,                  0,     "The 
 CLI_CONTROL( cl_uint,       DumpBuffersMaxEnqueue,                  UINT_MAX, "The Intercept Layer for OpenCL Applications will only dump buffers when the enqueue counter is less than this value, inclusive." )
 CLI_CONTROL( cl_uint,       DumpImagesMinEnqueue,                   0,     "The Intercept Layer for OpenCL Applications will only dump images when the enqueue counter is greater than this value, inclusive." )
 CLI_CONTROL( cl_uint,       DumpImagesMaxEnqueue,                   UINT_MAX, "The Intercept Layer for OpenCL Applications will only dump images when the enqueue counter is less than this value, inclusive." )
-        
+
 CLI_CONTROL_SEPARATOR( AubCapture Controls: )
 CLI_CONTROL( bool,          AubCapture,                             false, "This is the master control for aub capture.  The Intercept Layer for OpenCL Applications doesn't implement aub capture itself, but can be used to selectively enable and disable aub capture via kdc.exe." )
 CLI_CONTROL( bool,          AubCaptureIndividualEnqueues,           false, "If set, the Intercept Layer for OpenCL Applications will invoke kdc.exe to start aub capture before a kernel enqueue, and will also invoke kdc.exe to stop aub capture immediately after the kernel enqueue.  Each .daf file will have the form \"AubCapture_Enqueue_<Enqueue Number>_kernel_<Kernel Name>.daf\".  Note that non-kernel enqueues such as calls to clEnqueueReadBuffer() and clEnqueueWriteBuffer() will NOT be aub captured when this control is set.  The AubCaptureMinEnqueue and AubCaptureMaxEnqueue controls are still honored when AubCaptureIndividualEnqueues is set." )

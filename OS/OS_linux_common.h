@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -43,10 +43,10 @@
 
 /*****************************************************************************\
 
-MACRO: 
+MACRO:
     DISALLOW_COPY_AND_ASSIGN
 
-Description: 
+Description:
     A macro to disallow the copy constructor and operator= functions
     This should be used in the private: declarations for a class
 
@@ -89,7 +89,7 @@ public:
                 const std::string& str ) const;
 
     uint64_t    GetTimer() const;
-    uint64_t    TickToNS( 
+    uint64_t    TickToNS(
                     uint64_t delta ) const;
 
     void*   LoadLibrary(
@@ -170,7 +170,7 @@ inline std::string Services_Common::GetProcessName() const
     {
         strncpy( processName, "process.exe", sizeof( processName ) );
         processName[ sizeof( processName ) - 1 ] = 0;
-    }    
+    }
 
     return std::string(pProcessName);
 }
@@ -245,7 +245,7 @@ inline void Services_Common::GetDumpDirectoryName(
             {
                 directoryName = "/sdcard/Intel";
             }
-            else 
+            else
             {
                 directoryName = envVal;
             }
@@ -273,7 +273,7 @@ inline void Services_Common::GetDumpDirectoryNameWithoutProcessName(
        // Return log dir override if set in regkeys
         directoryName = LOG_DIR;
     }
-    else 
+    else
     {
         directoryName = getenv("HOME");
         directoryName += "/";

@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -34,7 +34,7 @@ static void replaceFunction(
     MEMORY_BASIC_INFORMATION mbinfo;
     VirtualQuery( thunk, &mbinfo, sizeof(mbinfo) );
     if( !VirtualProtect(
-            mbinfo.BaseAddress, 
+            mbinfo.BaseAddress,
             mbinfo.RegionSize,
             PAGE_EXECUTE_READWRITE,
             &mbinfo.Protect ) )
@@ -59,7 +59,7 @@ static void replaceFunction(
 
 #define REPLACE_FUNCTION( _name, _fname ) if( !strcmp(_name, #_fname) ) { replaceFunction( firstThunk, _fname ); }
 
-extern "C" __declspec(dllexport) 
+extern "C" __declspec(dllexport)
 DWORD cliprof_init( void* dummy )
 {
     char *base = (char*)GetModuleHandle(NULL);
