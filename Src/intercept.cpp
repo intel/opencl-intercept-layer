@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -391,7 +391,7 @@ bool CLIntercept::init()
             std::replace( m_Config.LogDir.begin(), m_Config.LogDir.end(), '\\', '/' );
             OS::Services_Common::LOG_DIR = m_Config.LogDir.c_str();
         }
-#endif 
+#endif
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
         fileName += "/";
         fileName += sc_LogFileName;
@@ -424,14 +424,14 @@ bool CLIntercept::init()
         uint64_t    processId = OS().GetProcessID();
         uint64_t    threadId = OS().GetThreadID();
         std::string processName = OS().GetProcessName();
-        m_InterceptTrace 
+        m_InterceptTrace
             << "{\"ph\":\"M\", \"name\":\"process_name\", \"pid\":" << processId
-            << ", \"tid\":" << threadId 
+            << ", \"tid\":" << threadId
             << ", \"args\":{\"name\":\"" << processName
             << "\"}},\n";
         //m_InterceptTrace
         //    << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << processId
-        //    << ", \"tid\":" << threadId 
+        //    << ", \"tid\":" << threadId
         //    << ", \"args\":{\"name\":\"Host APIs\"}},\n";
     }
 
@@ -789,8 +789,8 @@ void CLIntercept::writeReport(
                     << std::right << std::setw(13) << pCpuTimingStats->TotalTicks << ", "
                     << std::right << std::setw(13) << pCpuTimingStats->MinTicks << ", "
                     << std::right << std::setw(13) << pCpuTimingStats->MaxTicks << ", "
-                    << std::right << std::setw(13) 
-                        << std::fixed << std::setprecision(2) 
+                    << std::right << std::setw(13)
+                        << std::fixed << std::setprecision(2)
                         << ( pCpuTimingStats->TotalTicks * 100.0 ) / ( overallTotalTicks ) << std::endl;
             }
 
@@ -868,7 +868,7 @@ void CLIntercept::getCallLoggingPrefix(
 {
     if( m_Config.CallLoggingElapsedTime )
     {
-        uint64_t    tickDelta = 
+        uint64_t    tickDelta =
             OS().GetTimer() -
             m_StartTime;
         uint64_t    usDelta =
@@ -887,7 +887,7 @@ void CLIntercept::getCallLoggingPrefix(
     {
         uint64_t    threadId = OS().GetThreadID();
         std::ostringstream  ss;
-        
+
         if( m_Config.CallLoggingThreadId )
         {
             ss << "TID = ";
@@ -1024,7 +1024,7 @@ void CLIntercept::callLoggingInfo(
 //
 void CLIntercept::callLoggingExit(
     const std::string& functionName,
-    const cl_kernel kernel, 
+    const cl_kernel kernel,
     const cl_event* event )
 {
     m_OS.EnterCriticalSection();
@@ -1055,7 +1055,7 @@ void CLIntercept::callLoggingExit(
 }
 void CLIntercept::callLoggingExit(
     const std::string& functionName,
-    const cl_kernel kernel, 
+    const cl_kernel kernel,
     const cl_event* event,
     const char* formatStr,
     ... )
@@ -1536,7 +1536,7 @@ void CLIntercept::getDeviceInfoString(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::getEventListString(
-    cl_uint numEvents, 
+    cl_uint numEvents,
     const cl_event* eventList,
     std::string& str ) const
 {
@@ -1787,9 +1787,9 @@ void CLIntercept::getKernelArgString(
 {
     char    s[CLI_MAX_STRING_SIZE] = "";
 
-    if( getSampler( 
-            arg_size, 
-            arg_value, 
+    if( getSampler(
+            arg_size,
+            arg_value,
             str ) )
     {
         CLI_SPRINTF( s, CLI_MAX_STRING_SIZE, "index = %d, size = %d, value = %s\n",
@@ -1924,9 +1924,9 @@ void CLIntercept::getCreateSubBufferArgsString(
     case CL_BUFFER_CREATE_TYPE_REGION:
         {
             cl_buffer_region*   pRegion = (cl_buffer_region*)createInfo;
-            ss << "origin = " 
-                << pRegion->origin 
-                << " size = " 
+            ss << "origin = "
+                << pRegion->origin
+                << " size = "
                 << pRegion->size;
         }
         break;
@@ -1963,7 +1963,7 @@ void CLIntercept::logCLInfo()
 
             if( errorCode == CL_SUCCESS && numPlatforms != 0 )
             {
-                logf( "\nEnumerated %u platform%s.\n\n", 
+                logf( "\nEnumerated %u platform%s.\n\n",
                     numPlatforms,
                     numPlatforms > 1 ? "s" : "" );
 
@@ -2051,7 +2051,7 @@ void CLIntercept::logBuild(
     const cl_device_id* deviceList )
 {
     uint64_t    buildTimeEnd = m_OS.GetTimer();
-    
+
     m_OS.EnterCriticalSection();
 
     cl_device_id*   localDeviceList = NULL;
@@ -2293,7 +2293,7 @@ void CLIntercept::logPreferredWorkGroupSizeMultiple(
                 deviceList );
         }
 
-        // Log the preferred work group size multiple for each kernel, 
+        // Log the preferred work group size multiple for each kernel,
         // for each device.
         while( numKernels-- )
         {
@@ -2346,25 +2346,25 @@ void CLIntercept::logPreferredWorkGroupSizeMultiple(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::contextCallbackCaller( 
-    const char* errinfo, 
-    const void* private_info, 
-    size_t cb, 
+void CLIntercept::contextCallbackCaller(
+    const char* errinfo,
+    const void* private_info,
+    size_t cb,
     void* user_data )
 {
     SContextCallbackInfo*   pContextCallbackInfo =
         (SContextCallbackInfo*)user_data;
 
-    pContextCallbackInfo->pIntercept->contextCallback( 
-        errinfo, 
-        private_info, 
+    pContextCallbackInfo->pIntercept->contextCallback(
+        errinfo,
+        private_info,
         cb );
     if( pContextCallbackInfo->pApplicationCallback )
     {
-        pContextCallbackInfo->pApplicationCallback( 
-            errinfo, 
-            private_info, 
-            cb, 
+        pContextCallbackInfo->pApplicationCallback(
+            errinfo,
+            private_info,
+            cb,
             pContextCallbackInfo->pUserData );
     }
 }
@@ -2518,7 +2518,7 @@ void CLIntercept::contextCallbackOverrideCleanup(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::eventCallbackCaller( 
+void CLIntercept::eventCallbackCaller(
     cl_event event,
     cl_int status,
     void* user_data )
@@ -2533,14 +2533,14 @@ void CLIntercept::eventCallbackCaller(
         pIntercept->enumName().name_command_exec_status( status ).c_str(),
         status );
 
-    pIntercept->eventCallback( 
-        event, 
+    pIntercept->eventCallback(
+        event,
         status );
     if( pEventCallbackInfo->pApplicationCallback )
     {
-        pEventCallbackInfo->pApplicationCallback( 
-            event, 
-            status, 
+        pEventCallbackInfo->pApplicationCallback(
+            event,
+            status,
             pEventCallbackInfo->pUserData );
     }
 
@@ -2553,7 +2553,7 @@ void CLIntercept::eventCallbackCaller(
 //
 void CLIntercept::eventCallback(
     cl_event event,
-    int status ) 
+    int status )
 {
     // TODO: Since we call log the eventCallbackCaller, do we need to do
     //       anything here?
@@ -2713,7 +2713,7 @@ void CLIntercept::combineProgramStrings(
             pDst += length;
             remaining -= length;
         }
-        
+
         // Replace any NULL chars between kernels with spaces.
         if( count > 1 )
         {
@@ -3300,7 +3300,7 @@ bool CLIntercept::appendBuildOptions(
         // If the options string does not exist, we can simply point it at the
         // options we'd like to "append" to it.  We don't need to allocate any
         // new memory in this case.  We also expect that we haven't allocated
-        // any new options in this case, because if we did, we would have 
+        // any new options in this case, because if we did, we would have
         // pointed the options string to the new options.
 
         CLI_ASSERT( newOptions == NULL );
@@ -3311,13 +3311,13 @@ bool CLIntercept::appendBuildOptions(
     else
     {
         // If the options string does exist, we have two possibilities:
-        // Either we've already modified the options so we've already 
+        // Either we've already modified the options so we've already
         // allocated new options, or we're still working on the application
         // provided options.
 
         size_t  newSize =
-            strlen(options) 
-            + 1     // for a space 
+            strlen(options)
+            + 1     // for a space
             + config().AppendBuildOptions.length()
             + 1;    // for the null terminator
 
@@ -4026,7 +4026,7 @@ void CLIntercept::updateHostTimingStats(
         key += kernelName;
         key += " )";
     }
-        
+
     SCpuTimingStats* pCpuTimingStats = m_CpuTimingStatsMap[ key ];
     if( pCpuTimingStats == NULL )
     {
@@ -4096,10 +4096,10 @@ void CLIntercept::createCommandQueueOverrideInit(
     const cl_queue_properties* properties,
     cl_queue_properties*& pLocalQueueProperties ) const
 {
-    // We want to add command queue properties, unless command queue 
-    // properties already exist (requesting the same property twice is an 
-    // error).  So, look through the queue properties for the command queue 
-    // properties enum.  We need to do this anyways to count the number of 
+    // We want to add command queue properties, unless command queue
+    // properties already exist (requesting the same property twice is an
+    // error).  So, look through the queue properties for the command queue
+    // properties enum.  We need to do this anyways to count the number of
     // property pairs.
     bool    foundCommandQueuePropertiesEnum = false;
     int     numProperties = 0;
@@ -4148,7 +4148,7 @@ void CLIntercept::createCommandQueueOverrideInit(
                 }
                 else
                 {
-                    pLocalQueueProperties[ numProperties + 1 ] = 
+                    pLocalQueueProperties[ numProperties + 1 ] =
                         properties[ numProperties + 1 ];
                 }
                 numProperties += 2;
@@ -4586,7 +4586,7 @@ void CLIntercept::checkTimingEvents()
                 }
 
 #if defined(USE_ITT)
-                if( config().ITTPerformanceTiming )            
+                if( config().ITTPerformanceTiming )
                 {
                     const std::string& name =
                         pNode->KernelName.empty() ?
@@ -4884,7 +4884,7 @@ void CLIntercept::dumpArgument(
         {
             char    enqueueCount[ MAX_PATH ];
 
-            CLI_SPRINTF( enqueueCount, MAX_PATH, "%04u", 
+            CLI_SPRINTF( enqueueCount, MAX_PATH, "%04u",
                 (unsigned int)m_EnqueueCounter );
             fileName += "SetKernelArg_";
             fileName += enqueueCount;
@@ -5195,7 +5195,7 @@ void CLIntercept::dumpBuffersForKernel(
 
             // Add the enqueue count to file name
             {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", 
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
                     (unsigned int)m_EnqueueCounter );
 
                 fileName += "Enqueue_";
@@ -5354,7 +5354,7 @@ void CLIntercept::dumpImagesForKernel(
 
             // Add the enqueue count to file name
             {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", 
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
                     (unsigned int)m_EnqueueCounter );
 
                 fileName += "Enqueue_";
@@ -5492,7 +5492,7 @@ void CLIntercept::dumpBuffer(
         {
             char    offsetName[ MAX_PATH ];
 
-            CLI_SPRINTF( offsetName, MAX_PATH, "%04u", 
+            CLI_SPRINTF( offsetName, MAX_PATH, "%04u",
                 (unsigned int)offset );
 
             fileName += "_Offset_";
@@ -5503,7 +5503,7 @@ void CLIntercept::dumpBuffer(
         {
             char    enqueueCount[ MAX_PATH ];
 
-            CLI_SPRINTF( enqueueCount, MAX_PATH, "%04u", 
+            CLI_SPRINTF( enqueueCount, MAX_PATH, "%04u",
                 (unsigned int)m_EnqueueCounter );
 
             fileName += "_Enqueue_";
@@ -5518,7 +5518,7 @@ void CLIntercept::dumpBuffer(
         // Dump the buffer contents to the file.
         // There are two possibilities:
         // 1) We have a pointer and size already.  This might happen
-        //    when the buffer is being created or was just mapped.  
+        //    when the buffer is being created or was just mapped.
         //    In this case, we can just write this to the file.
         // 2) We have no pointer or size.  This usually happens when
         //    the buffer is being unmapped.  In this case, we'll
@@ -5592,7 +5592,7 @@ void CLIntercept::checkEventList(
     if( numEvents != 0 && eventList == NULL )
     {
         m_OS.EnterCriticalSection();
-        logf( "Check Events for %s: Num Events is %d, but Event List is NULL!\n", 
+        logf( "Check Events for %s: Num Events is %d, but Event List is NULL!\n",
             functionName.c_str(),
             numEvents );
         m_OS.LeaveCriticalSection();
@@ -5675,7 +5675,7 @@ void CLIntercept::startAubCapture(
             }
         }
 
-        if( skip == false && 
+        if( skip == false &&
             m_AubCaptureStarted == false )
         {
             // Try to call clFinish() on the passed-in command queue.
@@ -5781,7 +5781,7 @@ void CLIntercept::startAubCapture(
                 OS().MakeDumpDirectories( fileName );
             }
 
-            OS().StartAubCapture( 
+            OS().StartAubCapture(
                 fileName,
                 config().AubCaptureStartWait );
             log( "AubCapture started... maybe.  Filename is: " + fileName + "\n" );
@@ -7060,7 +7060,7 @@ void CLIntercept::autoCreateSPIRV(
     std::string command;
 
     // Create the command we will use to invoke CLANG with the right options.
-    // How we do this will depend on whether this is an OpenCL 1.x or 2.0 
+    // How we do this will depend on whether this is an OpenCL 1.x or 2.0
     // compilation.  We don't distinguish between different versions of
     // OpenCL 1.x right now, but we can add this in the future, if desired.
     if( options.find( "-cl-std=CL2.0" ) != std::string::npos )
@@ -7521,7 +7521,7 @@ bool CLIntercept::overrideGetDeviceInfo(
                     ptr );
                 override = true;
             }
-                
+
         }
         break;
 #endif
@@ -9110,7 +9110,7 @@ void CLIntercept::SIMDSurveyCreateKernel(
             pSIMDSurveyKernel->ExecutionNumber = 0;
 
             // We'll install the same pointer into the map for the real
-            // parent kernel and for each of the child kernels compiled 
+            // parent kernel and for each of the child kernels compiled
             // for specific SIMD sizes.  The parent kernel is used to
             // look up the kernel to execute, and the child kernels are
             // used to aggregate the results.
@@ -9153,17 +9153,17 @@ void CLIntercept::SIMDSurveySetKernelArg(
         m_SIMDSurveyKernelMap[ kernel ];
     if( pSIMDSurveyKernel )
     {
-        dispatch().clSetKernelArg( 
+        dispatch().clSetKernelArg(
             pSIMDSurveyKernel->SIMD8Kernel,
             argIndex,
             argSize,
             argValue );
-        dispatch().clSetKernelArg( 
+        dispatch().clSetKernelArg(
             pSIMDSurveyKernel->SIMD16Kernel,
             argIndex,
             argSize,
             argValue );
-        dispatch().clSetKernelArg( 
+        dispatch().clSetKernelArg(
             pSIMDSurveyKernel->SIMD32Kernel,
             argIndex,
             argSize,
@@ -9194,11 +9194,11 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
         const uint32_t  cWarmupIterations = config().SIMDSurveyWarmupIterations;
         if( pSIMDSurveyKernel->ExecutionNumber >= cWarmupIterations )
         {
-            const uint32_t  cSample = 
+            const uint32_t  cSample =
                 pSIMDSurveyKernel->ExecutionNumber - cWarmupIterations;
 
             // This just tries the three kernels in order from
-            // 8 -> 16 -> 32, one time each.  
+            // 8 -> 16 -> 32, one time each.
             //
             // Other things we can try:
             // - executing each kernel multiple times
@@ -9216,7 +9216,7 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
                     log( "SIMD Survey: NDRange: Skipping sample, no SIMD8 kernel exists for " + kernelName + ".\n" );
                 }
                 break;
-            case 1: 
+            case 1:
                 if( pSIMDSurveyKernel->SIMD16Kernel )
                 {
                     log( "SIMD Survey: NDRange: Sampling SIMD16 kernel for " + kernelName + "\n" );
@@ -9227,7 +9227,7 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
                     log( "SIMD Survey: NDRange: Skipping sample, no SIMD16 kernel exists for " + kernelName + ".\n" );
                 }
                 break;
-            case 2: 
+            case 2:
                 if( pSIMDSurveyKernel->SIMD32Kernel )
                 {
                     log( "SIMD Survey: NDRange: Sampling SIMD32 kernel for " + kernelName + "\n" );
@@ -10323,7 +10323,7 @@ void CLIntercept::chromeCallLoggingExit(
 
     uint64_t    processId =
         OS().GetProcessID();
-    uint64_t    threadId = 
+    uint64_t    threadId =
         OS().GetThreadID();
 
     uint64_t    usStart =
@@ -10488,7 +10488,7 @@ void CLIntercept::chromeTraceEvent(
 
     if( errorCode == CL_SUCCESS )
     {
-        uint64_t    normalizedQueuedTimeNS = 
+        uint64_t    normalizedQueuedTimeNS =
             OS().TickToNS( queuedTime - m_StartTime );
         uint64_t    normalizedStartTimeNS =
             ( commandStart - commandQueued ) + normalizedQueuedTimeNS;
@@ -10504,7 +10504,7 @@ void CLIntercept::chromeTraceEvent(
             << "\", \"ts\":" << usStart
             << ", \"dur\":" << usDelta
             << "},\n";
-        
+
     }
     else
     {

@@ -1,7 +1,7 @@
 # How to Build the Intercept Layer for OpenCL Applications
 
 CMake is now the primary mechanism to build the Intercept Layer for OpenCL
-Applications.  The CMakefile has been tested on Windows (VS2013 and newer), 
+Applications.  The CMakefile has been tested on Windows (VS2013 and newer),
 Linux, and OSX.
 
 ## Tools
@@ -20,8 +20,8 @@ CMake on Ubuntu all that is needed is:
 ## Recommendations
 
 For Windows, recommended folders for "where to build the binaries" are `_bin32`
-(for 32-bit DLLs) or `_bin64` (for 64-bit DLLs).  Note that for Windows, these 
-directories are only used for project files and intermediate files, and final 
+(for 32-bit DLLs) or `_bin64` (for 64-bit DLLs).  Note that for Windows, these
+directories are only used for project files and intermediate files, and final
 output files are built in the `builds` directory.
 
 For Linux, recommended folders are `_bin32`, `_bin64`, or just plain `_bin`.
@@ -72,8 +72,8 @@ tested.  Building instruction for Android are:
     cd <source folder>
     mm
 
-The shared library will be named: clIntercept.so and placed in 
-`<android repo>/out/target/product/<your build target>/system/lib`. Copy it to target 
+The shared library will be named: clIntercept.so and placed in
+`<android repo>/out/target/product/<your build target>/system/lib`. Copy it to target
 manually.
 
 ---

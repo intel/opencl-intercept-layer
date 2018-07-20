@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -106,7 +106,7 @@ __kernel void CopyBufferUInt4s(
     uint bytesToRead )
 {
     uint    index = get_global_id(0);
-    
+
     pSrc += srcOffsetInUInt4s + index;
     pDst += dstOffsetInUInt4s + index;
 
@@ -151,7 +151,7 @@ __kernel void CopyBufferUInt16s(
     uint bytesToRead )
 {
     uint    index = get_global_id(0);
-    
+
     pSrc += srcOffsetInUInt16s + index;
     pDst += dstOffsetInUInt16s + index;
 
@@ -192,8 +192,8 @@ __kernel void CopyBufferUInt16s(
 __kernel void CopyImage2Dto2DFloat(
     __read_only image2d_t srcImage,
     __write_only image2d_t dstImage,
-    uint srcOriginX, 
-    uint srcOriginY, 
+    uint srcOriginX,
+    uint srcOriginY,
     uint srcOriginZ,
     uint dstOriginX,
     uint dstOriginY,
@@ -227,8 +227,8 @@ __kernel void CopyImage2Dto2DFloat(
 __kernel void CopyImage2Dto2DInt(
     __read_only image2d_t srcImage,
     __write_only image2d_t dstImage,
-    uint srcOriginX, 
-    uint srcOriginY, 
+    uint srcOriginX,
+    uint srcOriginY,
     uint srcOriginZ,
     uint dstOriginX,
     uint dstOriginY,
@@ -262,8 +262,8 @@ __kernel void CopyImage2Dto2DInt(
 __kernel void CopyImage2Dto2DUInt(
     __read_only image2d_t srcImage,
     __write_only image2d_t dstImage,
-    uint srcOriginX, 
-    uint srcOriginY, 
+    uint srcOriginX,
+    uint srcOriginY,
     uint srcOriginZ,
     uint dstOriginX,
     uint dstOriginY,

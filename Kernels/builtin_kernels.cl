@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,7 +23,7 @@
 #if defined(cl_intel_device_side_vme_enable)
 
 __kernel __attribute__((reqd_work_group_size(16,1,1)))
-void block_motion_estimate_intel( 
+void block_motion_estimate_intel(
     sampler_t vmeAccelerator,
     __read_only image2d_t srcImage,
     __read_only image2d_t refImage,
@@ -47,7 +47,7 @@ void block_motion_estimate_intel(
         srcCoord.y = gid_1 * 16 + get_global_offset(1);
 
         short2 predMV = 0;
-    
+
     #ifndef HW_NULL_CHECK
         if( predMVs != NULL )
     #endif
@@ -68,8 +68,8 @@ void block_motion_estimate_intel(
         {
             int x = get_local_id(0) % 4;
             int y = get_local_id(0) / 4;
-            int index = 
-                ( gid_0 * 4 + x ) + 
+            int index =
+                ( gid_0 * 4 + x ) +
                 ( gid_1 * 4 + y ) * get_num_groups(0) * 4;
 
             short2  val = as_short2( dst[ 8 + ( y * 4 + x ) * 2 ] );
@@ -90,7 +90,7 @@ void block_motion_estimate_intel(
             {
                 int x = get_local_id(0) % 2;
                 int y = get_local_id(0) / 2;
-                int index = 
+                int index =
                     ( gid_0 * 2 + x ) +
                     ( gid_1 * 2 + y ) * get_num_groups(0) * 2;
                 short2  val = as_short2( dst[ 8 + ( y * 2 + x ) * 8 ] );
@@ -110,7 +110,7 @@ void block_motion_estimate_intel(
         {
             if( get_local_id(0) == 0 )
             {
-                int index = 
+                int index =
                     gid_0 +
                     gid_1 * get_num_groups(0);
 

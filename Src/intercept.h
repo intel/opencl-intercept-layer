@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -74,19 +74,19 @@ public:
                 const char* formatStr,
                 ... );
 
-    void    callLoggingInfo( 
+    void    callLoggingInfo(
                 const std::string& str );
-    void    callLoggingInfo( 
+    void    callLoggingInfo(
                 const char* formatStr,
                 ... );
 
     void    callLoggingExit(
                 const std::string& functionName,
-                const cl_kernel kernel, 
+                const cl_kernel kernel,
                 const cl_event* event );
     void    callLoggingExit(
                 const std::string& functionName,
-                const cl_kernel kernel, 
+                const cl_kernel kernel,
                 const cl_event* event,
                 const char* formatStr,
                 ... );
@@ -97,7 +97,7 @@ public:
                 char*& param_value ) const;
     cl_int  allocateAndGetDeviceInfoString(
                 cl_device_id device,
-                cl_device_info param_name, 
+                cl_device_info param_name,
                 char*& param_value ) const;
     cl_int  allocateAndGetKernelInfoString(
                 cl_kernel kernel,
@@ -121,7 +121,7 @@ public:
                 const cl_device_id* devices,
                 std::string& str ) const;
     void    getEventListString(
-                cl_uint num_events, 
+                cl_uint num_events,
                 const cl_event* event_list,
                 std::string& str ) const;
     void    getContextPropertiesString(
@@ -152,7 +152,7 @@ public:
     void    getCreateSubBufferArgsString(
                 cl_buffer_create_type createType,
                 const void *createInfo,
-                std::string& str ) const;                
+                std::string& str ) const;
 
     void    logCLInfo();
     void    logBuild(
@@ -182,10 +182,10 @@ public:
         void (CL_CALLBACK*  pApplicationCallback)( const char*, const void*, size_t, void* );
         void*               pUserData;
     };
-    static void CL_CALLBACK contextCallbackCaller( 
-                                const char*, 
-                                const void*, 
-                                size_t, 
+    static void CL_CALLBACK contextCallbackCaller(
+                                const char*,
+                                const void*,
+                                size_t,
                                 void* );
     void    contextCallback(
                 const std::string& errinfo,
@@ -218,7 +218,7 @@ public:
 
     void    incrementEnqueueCounter();
     uint64_t getEnqueueCounter();
-    
+
     void    overrideNullLocalWorkSize(
                 const cl_uint work_dim,
                 const size_t* global_work_size,
@@ -375,11 +375,11 @@ public:
                 cl_kernel kernel,
                 cl_uint arg_index,
                 const void* arg );
-    void    dumpBuffersForKernel( 
+    void    dumpBuffersForKernel(
                 const std::string& name,
                 cl_kernel kernel,
                 cl_command_queue command_queue );
-    void    dumpImagesForKernel( 
+    void    dumpImagesForKernel(
                 const std::string& name,
                 cl_kernel kernel,
                 cl_command_queue command_queue );
@@ -408,7 +408,7 @@ public:
                 const size_t* gws,
                 const size_t* lws,
                 cl_command_queue commandQueue );
-    void    stopAubCapture( 
+    void    stopAubCapture(
                 cl_command_queue commandQueue );
 
     void    initPrecompiledKernelOverrides(
@@ -417,9 +417,9 @@ public:
                 const cl_context context );
 
     cl_int  writeStringToMemory(
-                size_t param_value_size,  
+                size_t param_value_size,
                 const std::string& param,
-                size_t* param_value_size_ret, 
+                size_t* param_value_size_ret,
                 char* pointer ) const;
     template< class T >
     cl_int  writeParamToMemory(
@@ -447,28 +447,28 @@ public:
                 cl_mem srcBuffer,
                 cl_bool blockingRead,
                 size_t srcOffset,
-                size_t bytesToRead, 
+                size_t bytesToRead,
                 void* dstPtr,
                 cl_uint numEventsInWaitList,
                 const cl_event* eventWaitList,
                 cl_event* event );
     cl_int  WriteBuffer(
-                cl_command_queue commandQueue, 
-                cl_mem dstBuffer, 
-                cl_bool blockingWrite, 
-                size_t dstOffset, 
-                size_t bytesToWrite, 
-                const void* srcPtr, 
-                cl_uint numEventsInWaitList, 
-                const cl_event* eventWaitList, 
+                cl_command_queue commandQueue,
+                cl_mem dstBuffer,
+                cl_bool blockingWrite,
+                size_t dstOffset,
+                size_t bytesToWrite,
+                const void* srcPtr,
+                cl_uint numEventsInWaitList,
+                const cl_event* eventWaitList,
                 cl_event* event );
     cl_int  CopyBuffer(
-                cl_command_queue commandQueue, 
+                cl_command_queue commandQueue,
                 cl_mem srcBuffer,
-                cl_mem dstBuffer, 
+                cl_mem dstBuffer,
                 size_t srcOffset,
                 size_t dstOffset,
-                size_t bytesToCopy, 
+                size_t bytesToCopy,
                 cl_uint numEventsInWaitList,
                 const cl_event* eventWaitList,
                 cl_event* event );
@@ -476,10 +476,10 @@ public:
                 cl_context context,
                 cl_command_queue commandQueue,
                 cl_mem srcBuffer,
-                cl_mem dstBuffer, 
+                cl_mem dstBuffer,
                 size_t srcOffset,
                 size_t dstOffset,
-                size_t bytesToCopy, 
+                size_t bytesToCopy,
                 cl_uint numEventsInWaitList,
                 const cl_event* eventWaitList,
                 cl_event* event );
@@ -487,11 +487,11 @@ public:
     cl_int  ReadImage(
                 cl_command_queue commandQueue,
                 cl_mem srcImage,
-                cl_bool blockingRead, 
+                cl_bool blockingRead,
                 const size_t* srcOrigin,
                 const size_t* region,
                 size_t dstRowPitch,
-                size_t dstSlicePitch, 
+                size_t dstSlicePitch,
                 void* dstPtr,
                 cl_uint numEventsInWaitList,
                 const cl_event* eventWaitList,
@@ -499,11 +499,11 @@ public:
     cl_int  WriteImage(
                 cl_command_queue commandQueue,
                 cl_mem dstImage,
-                cl_bool blockingWrite, 
+                cl_bool blockingWrite,
                 const size_t* dstOrigin,
                 const size_t* region,
                 size_t srcRowPitch,
-                size_t srcSlicePitch, 
+                size_t srcSlicePitch,
                 const void* srcPtr,
                 cl_uint numEventsInWaitList,
                 const cl_event* eventWaitList,
@@ -511,10 +511,10 @@ public:
     cl_int  CopyImage(
                 cl_command_queue commandQueue,
                 cl_mem srcImage,
-                cl_mem dstImage, 
+                cl_mem dstImage,
                 const size_t* srcOrigin,
                 const size_t* dstOrigin,
-                const size_t* region, 
+                const size_t* region,
                 cl_uint numEventsInWaitList,
                 const cl_event* eventWaitList,
                 cl_event* event );
@@ -522,10 +522,10 @@ public:
                 cl_context context,
                 cl_command_queue commandQueue,
                 cl_mem srcImage,
-                cl_mem dstImage, 
+                cl_mem dstImage,
                 const size_t* srcOrigin,
                 const size_t* dstOrigin,
-                const size_t* region, 
+                const size_t* region,
                 cl_uint numEventsInWaitList,
                 const cl_event* eventWaitList,
                 cl_event* event );
@@ -621,7 +621,7 @@ public:
 
     void    saveProgramNumber( const cl_program program );
     unsigned int getProgramNumber() const;
-    
+
     cl_device_type filterDeviceType( cl_device_type device_type ) const;
 
 #if defined(USE_ITT)
@@ -878,7 +878,7 @@ private:
     bool                m_ITTInitialized;
 
     __itt_domain*       m_ITTDomain;
-    
+
     //__ittx_task_state*  m_ITTQueuedState;
     //__ittx_task_state*  m_ITTSubmittedState;
     //__ittx_task_state*  m_ITTExecutingState;
@@ -1261,14 +1261,14 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits() const
     {                                                                       \
         cl_mem* pMem = (cl_mem*)arg_value;                                  \
         pIntercept->setKernelArg( kernel, arg_index, pMem[0] );             \
-    }           
+    }
 
 #define SET_KERNEL_ARG_SVM_POINTER( kernel, arg_index, arg_value )          \
     if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
         pIntercept->config().DumpBuffersAfterEnqueue )                      \
     {                                                                       \
         pIntercept->setKernelArgSVMPointer( kernel, arg_index, arg_value ); \
-    }           
+    }
 
 #define INITIALIZE_BUFFER_CONTENTS_INIT( _flags, _size, _ptr )              \
     char*   zeroData = NULL;                                                \
@@ -1920,7 +1920,7 @@ inline __itt_domain* CLIntercept::ittDomain() const
 inline void CLIntercept::logCL_GLTextureDetails( cl_mem image, cl_GLenum target, cl_GLint miplevel, cl_GLuint texture )
 {
     CLIntercept* pIntercept = this;
-    
+
     cl_image_format cl_format = { 0 };
     size_t cl_elementSize = 0;
     size_t cl_rowPitch = 0;
@@ -2021,7 +2021,7 @@ inline void CLIntercept::logCL_GLTextureDetails( cl_mem image, cl_GLenum target,
     // which is only available on windows.
 #ifdef _WIN32
     HMODULE glModule = GetModuleHandle( "Opengl32.dll" );
-        
+
     if( glModule != NULL )
     {
         FARPROC ptrGetTexLevel = GetProcAddress( glModule, "glGetTexLevelParameteriv" );

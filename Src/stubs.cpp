@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -27,8 +27,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyGetPlatformIDs(
-    cl_uint num_entries, 
-    cl_platform_id* platforms, 
+    cl_uint num_entries,
+    cl_platform_id* platforms,
     cl_uint* num_platforms )
 {
     DUMMY_ASSERT();
@@ -38,23 +38,23 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyGetPlatformIDs(
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyGetPlatformInfo(
-    cl_platform_id platform, 
-    cl_platform_info param_name, 
-    size_t param_value_size, 
-    void* param_value, 
+    cl_platform_id platform,
+    cl_platform_info param_name,
+    size_t param_value_size,
+    void* param_value,
     size_t* param_value_size_ret )
 {
     DUMMY_ASSERT();
     return CL_INVALID_OPERATION;
 }
-    
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyGetDeviceIDs(
     cl_platform_id platform,
-    cl_device_type device_type, 
-    cl_uint num_entries, 
-    cl_device_id* devices, 
+    cl_device_type device_type,
+    cl_uint num_entries,
+    cl_device_id* devices,
     cl_uint* num_devices )
 {
     DUMMY_ASSERT();
@@ -65,8 +65,8 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyGetDeviceIDs(
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyGetDeviceInfo(
     cl_device_id device,
-    cl_device_info param_name, 
-    size_t param_value_size, 
+    cl_device_info param_name,
+    size_t param_value_size,
     void* param_value,
     size_t* param_value_size_ret )
 {
@@ -166,10 +166,10 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyReleaseContext(
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyGetContextInfo(
-    cl_context context, 
-    cl_context_info param_name, 
-    size_t param_value_size, 
-    void* param_value, 
+    cl_context context,
+    cl_context_info param_name,
+    size_t param_value_size,
+    void* param_value,
     size_t* param_value_size_ret )
 {
     DUMMY_ASSERT();
@@ -301,7 +301,7 @@ CLI_API_ENTRY cl_mem CLI_API_CALL dummyCreateImage2D(
     const cl_image_format* image_format,
     size_t image_width,
     size_t image_height,
-    size_t image_row_pitch, 
+    size_t image_row_pitch,
     void* host_ptr,
     cl_int* errcode_ret )
 {
@@ -320,11 +320,11 @@ CLI_API_ENTRY cl_mem CLI_API_CALL dummyCreateImage3D(
     cl_context context,
     cl_mem_flags flags,
     const cl_image_format* image_format,
-    size_t image_width, 
+    size_t image_width,
     size_t image_height,
-    size_t image_depth, 
-    size_t image_row_pitch, 
-    size_t image_slice_pitch, 
+    size_t image_depth,
+    size_t image_row_pitch,
+    size_t image_slice_pitch,
     void* host_ptr,
     cl_int* errcode_ret )
 {
@@ -336,7 +336,7 @@ CLI_API_ENTRY cl_mem CLI_API_CALL dummyCreateImage3D(
     DUMMY_ASSERT();
     return NULL;
 }
-                        
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyRetainMemObject(
@@ -373,7 +373,7 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyGetSupportedImageFormats(
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyGetMemObjectInfo(
     cl_mem memobj,
-    cl_mem_info param_name, 
+    cl_mem_info param_name,
     size_t param_value_size,
     void* param_value,
     size_t* param_value_size_ret )
@@ -386,7 +386,7 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyGetMemObjectInfo(
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyGetImageInfo(
     cl_mem image,
-    cl_image_info param_name, 
+    cl_image_info param_name,
     size_t param_value_size,
     void* param_value,
     size_t* param_value_size_ret )
@@ -399,8 +399,8 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyGetImageInfo(
 //
 // OpenCL 1.1
 CLI_API_ENTRY cl_int CLI_API_CALL dummySetMemObjectDestructorCallback(
-    cl_mem memobj, 
-    void (CL_CALLBACK *pfn_notify)( cl_mem, void* ), 
+    cl_mem memobj,
+    void (CL_CALLBACK *pfn_notify)( cl_mem, void* ),
     void *user_data )
 {
     DUMMY_ASSERT();
@@ -411,8 +411,8 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummySetMemObjectDestructorCallback(
 //
 CLI_API_ENTRY cl_sampler CLI_API_CALL dummyCreateSampler(
     cl_context context,
-    cl_bool normalized_coords, 
-    cl_addressing_mode addressing_mode, 
+    cl_bool normalized_coords,
+    cl_addressing_mode addressing_mode,
     cl_filter_mode filter_mode,
     cl_int* errcode_ret )
 {
@@ -537,7 +537,7 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyBuildProgram(
     cl_program program,
     cl_uint num_devices,
     const cl_device_id* device_list,
-    const char* options, 
+    const char* options,
     void (CL_CALLBACK *pfn_notify)(cl_program program, void* user_data),
     void* user_data )
 {
@@ -656,7 +656,7 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyGetProgramBuildInfo(
     return CL_INVALID_OPERATION;
 }
 
-                            
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLI_API_ENTRY cl_kernel CLI_API_CALL dummyCreateKernel(
@@ -850,7 +850,7 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyGetEventProfilingInfo(
     DUMMY_ASSERT();
     return CL_INVALID_OPERATION;
 }
-                                
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyFlush(
@@ -876,7 +876,7 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueReadBuffer(
     cl_mem buffer,
     cl_bool blocking_read,
     size_t offset,
-    size_t cb, 
+    size_t cb,
     void* ptr,
     cl_uint num_events_in_wait_list,
     const cl_event* event_wait_list,
@@ -894,7 +894,7 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueReadBufferRect(
     cl_mem buffer,
     cl_bool blocking_read,
     const size_t *buffer_origin,
-    const size_t *host_origin, 
+    const size_t *host_origin,
     const size_t *region,
     size_t buffer_row_pitch,
     size_t buffer_slice_pitch,
@@ -912,14 +912,14 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueReadBufferRect(
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueWriteBuffer(
-    cl_command_queue command_queue, 
-    cl_mem buffer, 
-    cl_bool blocking_write, 
-    size_t offset, 
-    size_t cb, 
-    const void* ptr, 
-    cl_uint num_events_in_wait_list, 
-    const cl_event* event_wait_list, 
+    cl_command_queue command_queue,
+    cl_mem buffer,
+    cl_bool blocking_write,
+    size_t offset,
+    size_t cb,
+    const void* ptr,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
     cl_event* event )
 {
     DUMMY_ASSERT();
@@ -934,7 +934,7 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueWriteBufferRect(
     cl_mem buffer,
     cl_bool blocking_write,
     const size_t *buffer_origin,
-    const size_t *host_origin, 
+    const size_t *host_origin,
     const size_t *region,
     size_t buffer_row_pitch,
     size_t buffer_slice_pitch,
@@ -970,12 +970,12 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueFillBuffer(
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueCopyBuffer(
-    cl_command_queue command_queue, 
+    cl_command_queue command_queue,
     cl_mem src_buffer,
-    cl_mem dst_buffer, 
+    cl_mem dst_buffer,
     size_t src_offset,
     size_t dst_offset,
-    size_t cb, 
+    size_t cb,
     cl_uint num_events_in_wait_list,
     const cl_event* event_wait_list,
     cl_event* event )
@@ -988,12 +988,12 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueCopyBuffer(
 //
 // OpenCL 1.1
 CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueCopyBufferRect(
-    cl_command_queue command_queue, 
+    cl_command_queue command_queue,
     cl_mem src_buffer,
-    cl_mem dst_buffer, 
+    cl_mem dst_buffer,
     const size_t *src_origin,
     const size_t *dst_origin,
-    const size_t *region, 
+    const size_t *region,
     size_t src_row_pitch,
     size_t src_slice_pitch,
     size_t dst_row_pitch,
@@ -1011,11 +1011,11 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueCopyBufferRect(
 CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueReadImage(
     cl_command_queue command_queue,
     cl_mem image,
-    cl_bool blocking_read, 
+    cl_bool blocking_read,
     const size_t* origin,
     const size_t* region,
     size_t row_pitch,
-    size_t slice_pitch, 
+    size_t slice_pitch,
     void* ptr,
     cl_uint num_events_in_wait_list,
     const cl_event* event_wait_list,
@@ -1030,11 +1030,11 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueReadImage(
 CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueWriteImage(
     cl_command_queue command_queue,
     cl_mem image,
-    cl_bool blocking_write, 
+    cl_bool blocking_write,
     const size_t* origin,
     const size_t* region,
     size_t input_row_pitch,
-    size_t input_slice_pitch, 
+    size_t input_slice_pitch,
     const void* ptr,
     cl_uint num_events_in_wait_list,
     const cl_event* event_wait_list,
@@ -1066,10 +1066,10 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueFillImage(
 CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueCopyImage(
     cl_command_queue command_queue,
     cl_mem src_image,
-    cl_mem  dst_image, 
+    cl_mem  dst_image,
     const size_t* src_origin,
     const size_t* dst_origin,
-    const size_t* region, 
+    const size_t* region,
     cl_uint num_events_in_wait_list,
     const cl_event* event_wait_list,
     cl_event* event )
@@ -1083,9 +1083,9 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueCopyImage(
 CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueCopyImageToBuffer(
     cl_command_queue command_queue,
     cl_mem src_image,
-    cl_mem dst_buffer, 
+    cl_mem dst_buffer,
     const size_t* src_origin,
-    const size_t* region, 
+    const size_t* region,
     size_t dst_offset,
     cl_uint num_events_in_wait_list,
     const cl_event* event_wait_list,
@@ -1100,10 +1100,10 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueCopyImageToBuffer(
 CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueCopyBufferToImage(
     cl_command_queue command_queue,
     cl_mem src_buffer,
-    cl_mem dst_image, 
+    cl_mem dst_image,
     size_t src_offset,
     const size_t* dst_origin,
-    const size_t* region, 
+    const size_t* region,
     cl_uint num_events_in_wait_list,
     const cl_event* event_wait_list,
     cl_event* event )
@@ -1117,7 +1117,7 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueCopyBufferToImage(
 CLI_API_ENTRY void* CLI_API_CALL dummyEnqueueMapBuffer(
     cl_command_queue command_queue,
     cl_mem buffer,
-    cl_bool blocking_map, 
+    cl_bool blocking_map,
     cl_map_flags map_flags,
     size_t offset,
     size_t cb,
@@ -1139,9 +1139,9 @@ CLI_API_ENTRY void* CLI_API_CALL dummyEnqueueMapBuffer(
 //
 CLI_API_ENTRY void* CLI_API_CALL dummyEnqueueMapImage(
     cl_command_queue command_queue,
-    cl_mem image, 
-    cl_bool blocking_map, 
-    cl_map_flags map_flags, 
+    cl_mem image,
+    cl_bool blocking_map,
+    cl_map_flags map_flags,
     const size_t* origin,
     const size_t* region,
     size_t* image_row_pitch,
@@ -1224,9 +1224,9 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueTask(
 //
 CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueNativeKernel(
     cl_command_queue command_queue,
-    void (CL_CALLBACK *user_func)(void *), 
+    void (CL_CALLBACK *user_func)(void *),
     void* args,
-    size_t cb_args, 
+    size_t cb_args,
     cl_uint num_mem_objects,
     const cl_mem* mem_list,
     const void** args_mem_loc,

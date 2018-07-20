@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -2152,10 +2152,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         BUILD_LOGGING( program, num_devices, device_list );
-        SIMD_SURVEY_BUILD_PROGRAM( 
-            program, 
-            num_devices, 
-            device_list, 
+        SIMD_SURVEY_BUILD_PROGRAM(
+            program,
+            num_devices,
+            device_list,
             options );
         CALL_LOGGING_EXIT();
 
@@ -2529,8 +2529,8 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
 
     if( pIntercept )
     {
-        CALL_LOGGING_ENTER( "program = %p, kernel_name = %s", 
-            program, 
+        CALL_LOGGING_ENTER( "program = %p, kernel_name = %s",
+            program,
             kernel_name );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
@@ -2982,7 +2982,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
                     event_list,
                     eventList );
             }
-            CALL_LOGGING_ENTER( "event_list = %s", 
+            CALL_LOGGING_ENTER( "event_list = %s",
                 eventList.c_str() );
             CHECK_EVENT_LIST( num_events, event_list );
             CPU_PERFORMANCE_TIMING_START();
@@ -4972,11 +4972,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
 
         DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue );
         DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue );
-        CHECK_AUBCAPTURE_START_KERNEL( 
-            kernel, 
-            work_dim, 
-            global_work_size, 
-            local_work_size, 
+        CHECK_AUBCAPTURE_START_KERNEL(
+            kernel,
+            work_dim,
+            global_work_size,
+            local_work_size,
             command_queue );
 
         if( pIntercept->nullEnqueue() == false )
@@ -5064,11 +5064,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
 
             CPU_PERFORMANCE_TIMING_END_KERNEL(kernel);
             DEVICE_PERFORMANCE_TIMING_END_KERNEL(
-                event, 
-                kernel, 
-                work_dim, 
-                global_work_offset, 
-                global_work_size, 
+                event,
+                kernel,
+                work_dim,
+                global_work_offset,
+                global_work_size,
                 local_work_size );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
@@ -5130,10 +5130,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
 
             CPU_PERFORMANCE_TIMING_END_KERNEL(kernel);
             DEVICE_PERFORMANCE_TIMING_END_KERNEL(
-                event, 
-                kernel, 
-                0, 
-                NULL, 
+                event,
+                kernel,
+                0,
+                NULL,
                 NULL,
                 NULL );
             CHECK_ERROR( retVal );
@@ -6087,7 +6087,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clSVMAlloc) (
 
         CPU_PERFORMANCE_TIMING_END();
         ADD_SVM_ALLOCATION( retVal, size );
-        // There is no error code returned from clSVMAlloc(), so strictly 
+        // There is no error code returned from clSVMAlloc(), so strictly
         // speaking we have no error to "check" here.  Still, we'll invent
         // one if clSVMAlloc() returned NULL, so something will get logged
         // if ErrorLogging is enabled.
@@ -7208,7 +7208,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
                 num_events_in_wait_list,
                 event_wait_list,
                 event );
-            
+
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );

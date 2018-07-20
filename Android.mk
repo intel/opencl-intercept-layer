@@ -20,4 +20,3 @@ LOCAL_C_INCLUDES += $(LOCAL_PATH)/Src
 include external/libcxx/libcxx.mk
 
 include $(BUILD_SHARED_LIBRARY)
-

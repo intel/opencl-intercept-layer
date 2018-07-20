@@ -1,16 +1,16 @@
 /*
 // Copyright (c) 2018 Intel Corporation
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in all
 // copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -23,7 +23,7 @@
 #pragma once
 
 // cl_khr_gl_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clGetGLContextInfoKHR(
     const cl_context_properties *properties,
     cl_gl_context_info param_name,
@@ -35,7 +35,7 @@ cl_int CL_API_CALL clGetGLContextInfoKHR(
 #define CL_COMMAND_GL_FENCE_SYNC_OBJECT_KHR     0x200D
 
 // cl_khr_gl_event
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
     cl_context context,
     cl_GLsync sync,
@@ -52,18 +52,18 @@ class ID3D10Texture2D;
 class ID3D10Texture3D;
 
 // cl_khr_d3d10_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clGetDeviceIDsFromD3D10KHR(
     cl_platform_id platform,
     cl_d3d10_device_source_khr d3d_device_source,
     void* d3d_object,
     cl_d3d10_device_set_khr d3d_device_set,
-    cl_uint num_entries, 
-    cl_device_id* devices, 
+    cl_uint num_entries,
+    cl_device_id* devices,
     cl_uint* num_devices);
- 
+
 // cl_khr_d3d10_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
     cl_context context,
     cl_mem_flags flags,
@@ -71,7 +71,7 @@ cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
     cl_int* errcode_ret);
 
 // cl_khr_d3d10_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
     cl_context context,
     cl_mem_flags flags,
@@ -80,7 +80,7 @@ cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
     cl_int* errcode_ret);
 
 // cl_khr_d3d10_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
     cl_context context,
     cl_mem_flags flags,
@@ -89,7 +89,7 @@ cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
     cl_int* errcode_ret);
 
 // cl_khr_d3d10_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
     cl_command_queue command_queue,
     cl_uint num_objects,
@@ -99,7 +99,7 @@ cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
     cl_event* event);
 
 // cl_khr_d3d10_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
     cl_command_queue command_queue,
     cl_uint num_objects,
@@ -117,7 +117,7 @@ class ID3D11Texture2D;
 class ID3D11Texture3D;
 
 // cl_khr_d3d11_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clGetDeviceIDsFromD3D11KHR(
     cl_platform_id platform,
     cl_d3d11_device_source_khr d3d_device_source,
@@ -128,7 +128,7 @@ cl_int CL_API_CALL clGetDeviceIDsFromD3D11KHR(
     cl_uint* num_devices);
 
 // cl_khr_d3d11_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
     cl_context context,
     cl_mem_flags flags,
@@ -136,7 +136,7 @@ cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
     cl_int* errcode_ret);
 
 // cl_khr_d3d11_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
     cl_context context,
     cl_mem_flags flags,
@@ -145,7 +145,7 @@ cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
     cl_int* errcode_ret);
 
 // cl_khr_d3d11_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
     cl_context context,
     cl_mem_flags flags,
@@ -154,7 +154,7 @@ cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
     cl_int* errcode_ret);
 
 // cl_khr_d3d11_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
     cl_command_queue command_queue,
     cl_uint num_objects,
@@ -164,7 +164,7 @@ cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
     cl_event* event);
 
 // cl_khr_d3d11_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
     cl_command_queue command_queue,
     cl_uint num_objects,
@@ -181,7 +181,7 @@ typedef cl_uint cl_dx9_media_adapter_type_khr;
 class IDirect3DSurface9;
 
 // cl_khr_dx9_media_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
     cl_platform_id platform,
     cl_uint num_media_adapters,
@@ -193,7 +193,7 @@ cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
     cl_uint* num_devices);
 
 // cl_khr_dx9_media_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
     cl_context context,
     cl_mem_flags flags,
@@ -203,7 +203,7 @@ cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
     cl_int* errcode_ret);
 
 // cl_khr_dx9_media_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
     cl_command_queue command_queue,
     cl_uint num_objects,
@@ -213,7 +213,7 @@ cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
     cl_event* event);
 
 // cl_khr_dx9_media_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
     cl_command_queue command_queue,
     cl_uint num_objects,
@@ -229,18 +229,18 @@ typedef cl_uint cl_dx9_device_set_intel;
 class IDirect3DSurface9;
 
 // cl_intel_dx9_media_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clGetDeviceIDsFromDX9INTEL(
     cl_platform_id platform,
     cl_dx9_device_source_intel d3d_device_source,
     void *dx9_object,
     cl_dx9_device_set_intel d3d_device_set,
-    cl_uint num_entries, 
-    cl_device_id* devices, 
+    cl_uint num_entries,
+    cl_device_id* devices,
     cl_uint* num_devices );
 
 // cl_intel_dx9_media_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
     cl_context context,
     cl_mem_flags flags,
@@ -250,7 +250,7 @@ cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
     cl_int* errcode_ret );
 
 // cl_intel_dx9_media_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
     cl_command_queue command_queue,
     cl_uint num_objects,
@@ -260,7 +260,7 @@ cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
     cl_event* event );
 
 // cl_intel_dx9_media_sharing
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
     cl_command_queue command_queue,
     cl_uint num_objects,
@@ -274,7 +274,7 @@ cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
 // cl_khr_il_program
 #define CL_DEVICE_IL_VERSION_KHR                        0x105B
 #define CL_PROGRAM_IL_KHR                               0x1169
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_program CL_API_CALL clCreateProgramWithILKHR(
     cl_context context,
     const void* il,
@@ -304,7 +304,7 @@ cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
     cl_int* errcode_ret);
 
 // Unofficial MDAPI extension:
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
     cl_context context,
     cl_device_id device,
@@ -312,7 +312,7 @@ cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
     cl_uint configuration,
     cl_int* errcode_ret);
 
-extern CL_API_ENTRY 
+extern CL_API_ENTRY
 cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
     cl_device_id    device,
     cl_uint         count,
@@ -519,19 +519,19 @@ cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 // cl_intelx_video_enhancement
 // This is the base-functionality VEBox extension.
 // Note: These are preview enum names and values!
- 
+
 // cl_device_info
 #define CL_DEVICE_VE_VERSION_INTEL                      0x4160
 #define CL_DEVICE_VE_ENGINE_COUNT_INTEL                 0x4161
- 
+
 // cl_queue_properties / cl_command_queue_info
 #define CL_QUEUE_VE_ENABLE_INTEL                        0x4162
- 
+
 // attribute_ids for cl_vebox_attrib_desc_intel
 #define CL_VE_ACCELERATOR_ATTRIB_DENOISE_INTEL          0x4163
 #define CL_VE_ACCELERATOR_ATTRIB_DEINTERLACE_INTEL      0x4164
 #define CL_VE_ACCELERATOR_ATTRIB_HOT_PIXEL_CORR_INTEL   0x4165
- 
+
 // cl_accelerator_info_intel
 #define CL_VE_ACCELERATOR_HISTOGRAMS_INTEL              0x4166
 #define CL_VE_ACCELERATOR_STATISTICS_INTEL              0x4167
@@ -540,10 +540,10 @@ cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 
 // cl_intelx_ve_color_pipeline
 // Note: These are preview enum names and values!
- 
+
 // cl_device_info
 #define CL_DEVICE_VE_COLOR_PIPE_VERSION_INTEL           0x416A
- 
+
 // attribute_ids for cl_vebox_attrib_desc_intel
 #define CL_VE_ACCELERATOR_ATTRIB_STD_STE_INTEL          0x416B
 #define CL_VE_ACCELERATOR_ATTRIB_GAMUT_COMP_INTEL       0x416C
@@ -560,10 +560,10 @@ cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 
 // cl_intelx_ve_camera_pipeline
 // Note, these are preview enum names and values!
- 
+
 // cl_device_info
 #define CL_DEVICE_VE_CAMERA_PIPE_VERSION_INTEL          0x4177
- 
+
 // attribute_ids for cl_vebox_attrib_desc_intel
 #define CL_VE_ACCELERATOR_ATTRIB_BLACK_LEVEL_CORR_INTEL 0x4178
 #define CL_VE_ACCELERATOR_ATTRIB_DEMOSAIC_INTEL         0x4179
@@ -576,10 +576,10 @@ cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 // cl_device_info
 #define CL_DEVICE_PAK_VERSION_INTEL                     0x4180
 #define CL_DEVICE_PAK_AVAILABLE_CODECS_INTEL            0x4181
- 
+
 // cl_queue_properties / cl_command_queue_info
 #define CL_QUEUE_PAK_ENABLE_INTEL                       0x4189
- 
+
 // cl_accelerator_info_intel
 #define CL_PAK_CTU_COUNT_INTEL                          0x4182
 #define CL_PAK_CTU_WIDTH_INTEL                          0x4183
@@ -588,7 +588,7 @@ cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 #define CL_PAK_MAX_INTER_DEPTH_INTEL                    0x4186
 #define CL_PAK_NUM_CUS_PER_CTU_INTEL                    0x4187
 #define CL_PAK_MV_BUFFER_SIZE_INTEL                     0x4188
- 
+
 // Error Codes
 // These are currently all mapped to CL_INVALID_VALUE.
 // Need official error code assignment.
@@ -619,7 +619,7 @@ cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 
 // cl_khr_initalize_memory
 #define CL_CONTEXT_MEMORY_INITIALIZE_KHR            0x2030
-    
+
 // cl_khr_terminate_context
 #define CL_DEVICE_TERMINATE_CAPABILITY_KHR          0x2031
 #define CL_CONTEXT_TERMINATE_KHR                    0x2032

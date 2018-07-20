@@ -6,37 +6,37 @@ There are multiple ways to install the Intercept Layer for OpenCL Applications:
 
 ### Local Install
 
-The easiest (and least obtrusive!) way to install the Intercept Layer for 
+The easiest (and least obtrusive!) way to install the Intercept Layer for
 OpenCL Applications is to:
 
-1. Put the Intercept Layer for OpenCL Applications OpenCL.dll into your 
-   application's working directory, typically the directory with the 
-   application executable.  Since DLLs are often loaded from the current 
-   working directory before other directories in the system path, the 
-   Intercept Layer for OpenCL Applications OpenCL.dll will be loaded 
+1. Put the Intercept Layer for OpenCL Applications OpenCL.dll into your
+   application's working directory, typically the directory with the
+   application executable.  Since DLLs are often loaded from the current
+   working directory before other directories in the system path, the
+   Intercept Layer for OpenCL Applications OpenCL.dll will be loaded
    instead of the real OpenCL.dll.
 2. To uninstall, simply delete the Intercept Layer for OpenCL Applications
    OpenCL.dll from the application's working directory.
 
 ### Global Install
 
-To install the Intercept Layer for OpenCL Applications globally (for all 
+To install the Intercept Layer for OpenCL Applications globally (for all
 OpenCL applications):
 
-1. Rename your existing OpenCL.dll (typically in c:\windows\system32 for 
+1. Rename your existing OpenCL.dll (typically in c:\windows\system32 for
    32-bit systems or 64-bit DLLs on 64-bit systems, or c:\windows\syswow64 
    for 32-bit DLLs on 64-bit systems).
-    * You may need to rename your existing OpenCL.dll from safe mode, or 
+    * You may need to rename your existing OpenCL.dll from safe mode, or
       from a command prompt with administrative privileges.
-    * If you rename your existing DLL to real_OpenCL.dll then the renamed 
-      DLL will be automatically loaded by the Intercept Layer for OpenCL 
-      Applications, otherwise you'll need to tell the Intercept Layer for 
+    * If you rename your existing DLL to real_OpenCL.dll then the renamed
+      DLL will be automatically loaded by the Intercept Layer for OpenCL
+      Applications, otherwise you'll need to tell the Intercept Layer for
       OpenCL Applications what your real DLL name is.  See below.
-2. After renaming your real OpenCL.dll, copy the Intercept Layer for 
+2. After renaming your real OpenCL.dll, copy the Intercept Layer for
    OpenCL Applications version of OpenCL.dll in its place.
-3. To uninstall the Intercept Layer for OpenCL Applications using this 
-   method, reverse the steps: First, delete the Intercept Layer for OpenCL 
-   Applications version of OpenCL.dll, then rename the real OpenCL.dll 
+3. To uninstall the Intercept Layer for OpenCL Applications using this
+   method, reverse the steps: First, delete the Intercept Layer for OpenCL
+   Applications version of OpenCL.dll, then rename the real OpenCL.dll
    back to OpenCL.dll.
 
 This method also works for applications that load OpenCL.dll from an explicit path.
@@ -62,9 +62,9 @@ This method also works for applications that load OpenCL.dll from an explicit pa
        sudo ln -s /path/to/CLIBin/builds/x86_64/libOpenCL.so.1 /path/to/lib/libOpenCL.so.1.2
 
 4. Create a config file to control the Intercept Layer for OpenCL Applications.
-   Behavior is controlled via a config file on the user's root folder (~). To 
-   change the behavior create/edit the configuration file and set the value 
-   for the desired options. Refer to the list below for the available options. 
+   Behavior is controlled via a config file on the user's root folder (~). To
+   change the behavior create/edit the configuration file and set the value
+   for the desired options. Refer to the list below for the available options.
    To create the config file or open it for edit:
 
        gedit ~/clintercept.conf
@@ -79,9 +79,9 @@ This method also works for applications that load OpenCL.dll from an explicit pa
 
 ### Targeted Usage
 
-To intercept many Linux OpenCL applications, instrumentation can be performed 
-using only environment variables.  If the application specifies an rpath or 
-otherwise circumvents the OS's method of identifying an appropriate 
+To intercept many Linux OpenCL applications, instrumentation can be performed
+using only environment variables.  If the application specifies an rpath or
+otherwise circumvents the OS's method of identifying an appropriate
 libOpenCL.so, this method won't work.  Example:
 
     LD_LIBRARY_PATH=/path/to/clintercept/build/output CLI_DLLName=/opt/intel/opencl/libOpenCL.so \
@@ -89,10 +89,10 @@ libOpenCL.so, this method won't work.  Example:
 
 ## Mac OSX - Experimental
 
-The Intercept Layer for OpenCL Applications on OSX uses an OS capability called 
-"interposition" to intercept OpenCL calls.  As such, there is no "global 
-install" for OSX.  To use the Intercept Layer for OpenCL Applications on OSX, 
-run your application with the environment variable DYLD_INSERT_LIBRARIES set 
+The Intercept Layer for OpenCL Applications on OSX uses an OS capability called
+"interposition" to intercept OpenCL calls.  As such, there is no "global
+install" for OSX.  To use the Intercept Layer for OpenCL Applications on OSX,
+run your application with the environment variable DYLD_INSERT_LIBRARIES set
 to the full path to the CLIntercept library.  For example:
 
     OSX Command Prompt$ DYLD_INSERT_LIBRARIES=/full/path/to/clIntercept/OpenCL ./HelloWorld
