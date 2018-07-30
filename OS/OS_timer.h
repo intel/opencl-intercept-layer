@@ -22,15 +22,11 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #if defined(_WIN32)
 #include <Windows.h>
-// Visual Studio 2008 doesn't support stdint.h, but
-// Visual Studio 2010 does.  When CLIntercept stops
-// supporting Visual Studio 2008 we can remove this
-// typedef and include stdint.h instead.
-typedef unsigned __int64 uint64_t;
 #elif defined(__linux__)
-#include <stdint.h>
 #include <time.h>
 #include <sys/time.h>
 #endif

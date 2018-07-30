@@ -69,10 +69,10 @@ link_directories(
 
 set( CLINTERCEPT_OS_FILES
     OS/OS.h
+    OS/OS_timer.h
 )
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     list( APPEND CLINTERCEPT_OS_FILES
-        OS/OS_timer.h
         OS/OS_windows.cpp
         OS/OS_windows.h
         OS/OS_windows_common.cpp
@@ -170,23 +170,23 @@ set( CLINTERCEPT_CL_HEADERS
     CL/cl.h
     CL/cl_gl.h
     CL/cl_platform.h
+    CL/cl_version.h
 )
 source_group( CL FILES
     ${CLINTERCEPT_CL_HEADERS}
 )
 
 # MDAPI Support (optional)
-set( ENABLE_MDAPI CACHE BOOL "Enable MDAPI Support" )
+set( ENABLE_MDAPI TRUE CACHE BOOL "Enable MDAPI Support" )
 if( ENABLE_MDAPI )
     add_definitions("-DUSE_MDAPI")
-    include_directories( embargo/mdapi )
+    include_directories( mdapi )
     set( CLINTERCEPT_MDAPI_FILES
-        embargo/mdapi/DriverStorePath.h
-        embargo/mdapi/intercept_mdapi.cpp
-        embargo/mdapi/MetricsDiscoveryHelper.cpp
-        embargo/mdapi/MetricsDiscoveryHelper.h
-        embargo/mdapi/metrics_discovery_api.h
-        embargo/mdapi/windef4linux.h
+        mdapi/DriverStorePath.h
+        mdapi/intercept_mdapi.cpp
+        mdapi/MetricsDiscoveryHelper.cpp
+        mdapi/MetricsDiscoveryHelper.h
+        mdapi/metrics_discovery_api.h
     )
     source_group( MDAPI FILES
         ${CLINTERCEPT_MDAPI_FILES}

@@ -130,6 +130,10 @@ CLIntercept::CLIntercept( void* pGlobalData )
 
     m_ProgramNumber = 0;
 
+#if defined(USE_MDAPI)
+    m_pMDHelper = NULL;
+#endif
+
     m_MemAllocNumber = 0;
 
     m_AubCaptureStarted = false;
@@ -176,6 +180,7 @@ CLIntercept::~CLIntercept()
     if( m_OpenCLLibraryHandle != NULL )
     {
         OS().UnloadLibrary( m_OpenCLLibraryHandle );
+        m_OpenCLLibraryHandle = NULL;
     }
 
     {
@@ -9783,6 +9788,7 @@ bool CLIntercept::initDispatch( const std::string& dllName )
         if( m_OpenCLLibraryHandle != NULL )
         {
             OS().UnloadLibrary( m_OpenCLLibraryHandle );
+            m_OpenCLLibraryHandle = NULL;
         }
     }
 
