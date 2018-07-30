@@ -581,8 +581,8 @@ public:
                 const std::string& func_name ) const;
 
 #if defined(USE_MDAPI)
-    GTDI_CONFIGURATION_SET initCustomPerfCounters(
-                const std::string& setName );
+    cl_uint initCustomPerfCounters();
+
     cl_command_queue    createMDAPICommandQueue(
                 cl_context context,
                 cl_device_id device,
@@ -762,11 +762,10 @@ private:
     CEventList  m_EventList;
 
 #if defined(USE_MDAPI)
-    TimingProfile m_DeviceTimingProfile;
+    MetricsDiscovery::MDHelper* m_pMDHelper;
+    MetricsDiscovery::CMetricAggregations m_MetricAggregations;
 
-    typedef std::pair< std::string, char* > CMDDataEntry;
-    typedef std::queue< CMDDataEntry* > CMDDataList;
-    CMDDataList m_MDDataList;
+    std::ofstream   m_MetricDump;
 
     void    saveMDAPICounters(
                 const std::string& name,
