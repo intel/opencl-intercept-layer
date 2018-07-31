@@ -121,31 +121,42 @@ inline bool Services::ExecuteCommand( const std::string& command ) const
     return res != -1;
 }
 
-static inline bool SetAubCaptureEnvironmentVariable( uint64_t delay, bool start )
+static inline bool SetAubCaptureEnvironmentVariables(
+    const std::string& fileName,
+    bool start )
 {
-    if( delay )
-    {
-        usleep( delay );
-    }
-
-    // For NEO Aubcapture:
-    // As setup, need to set AUBDumpSubcaptureMode = 2.  This will be the client's responsibility.
+    // For NEO AubCapture:
+    // As setup, need to set AUBDumpSubcaptureMode = 2.
+    // This will be the client's responsibility.
     //
-    // To start/stop aubcapture, set AUBDumpToggleCaptureOnOff = 1/0.  This is CLIntercept's responsibility.
+    // To start/stop AubCapture:
+    //  set AUBDumpToggleCaptureOnOff = 1/0
+    //  set AUBDumpToggleFileName appropriately
+    // This is CLIntercept's responsibility.
 
-    // There is no way to set the aubcapture file name at the moment.
+    const char* const AUBCAPTURE_TOGGLE_ENV_VAR = "AUBDumpToggleCaptureOnOff";
+    const char* const AUBCAPTURE_FILE_NAME_ENV_VAR = "AUBDumpToggleFileName";
 
-    const char * const AUBCAPTURE_ENV_VAR = "AUBDumpToggleCaptureOnOff";
     int status = 0;
 
     if( start )
     {
-        status = setenv( AUBCAPTURE_ENV_VAR, "1", 1 );
+        status = setenv( AUBCAPTURE_TOGGLE_ENV_VAR, "1", 1 );
     }
     else
     {
-        // TODO: Should this unset the environment variable instead?
-        status = setenv( AUBCAPTURE_ENV_VAR, "0", 1 );
+        status = setenv( AUBCAPTURE_TOGGLE_ENV_VAR, "0", 1 );
+    }
+    if( status == 0 )
+    {
+        if( fileName.empty() )
+        {
+            status = unsetenv( AUBCAPTURE_FILE_NAME_ENV_VAR );
+        }
+        else
+        {
+            status = setenv( AUBCAPTURE_FILE_NAME_ENV_VAR, fileName.c_str(), 1 );
+        }
     }
 
     return status == 0;
@@ -155,13 +166,23 @@ inline bool Services::StartAubCapture(
     const std::string& fileName,
     uint64_t delay ) const
 {
-    return SetAubCaptureEnvironmentVariable( delay, true );
+    if( delay )
+    {
+        usleep( delay );
+    }
+
+    return SetAubCaptureEnvironmentVariables( fileName, true );
 }
 
 inline bool Services::StopAubCapture(
     uint64_t delay ) const
 {
-    return SetAubCaptureEnvironmentVariable( delay, false );
+    if( delay )
+    {
+        usleep( delay );
+    }
+
+    return SetAubCaptureEnvironmentVariables( "", false );
 }
 
 }
