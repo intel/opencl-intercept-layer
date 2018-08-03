@@ -198,9 +198,7 @@ void CLIntercept::saveMDAPICounters(
 {
     if( m_pMDHelper )
     {
-        const size_t reportSize = std::max< unsigned int >(
-            1024,
-            m_pMDHelper->GetQueryReportSize() ); //work around for driver/MDAPI bug
+        const size_t reportSize = m_pMDHelper->GetQueryReportSize();
 
         char*   pReport = new char[ reportSize ];
         if( pReport )
@@ -212,6 +210,8 @@ void CLIntercept::saveMDAPICounters(
                 reportSize,
                 pReport,
                 &outputSize );
+
+            CLI_ASSERT( outputSize == reportSize );
 
             if( errorCode == CL_SUCCESS )
             {
