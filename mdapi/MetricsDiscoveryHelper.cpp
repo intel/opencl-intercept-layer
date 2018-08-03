@@ -30,8 +30,8 @@
 
 #include <stdio.h>
 
-// Enables logs
-#define MD_DEBUG 1
+// Enables logs:
+#define MD_DEBUG 0
 
 #if defined(_WIN32)
 static const wchar_t* cMDLibFileName =
