@@ -89,7 +89,7 @@ static void DebugPrint(const char* formatString, ...)
 /************************************************************************/
 MDHelper::MDHelper() :
     m_Initialized(false),
-    m_APIMask( API_TYPE_OCL | API_TYPE_OGL | API_TYPE_DX12 ),
+    m_APIMask( API_TYPE_OCL ),
     m_CategoryMask( GPU_RENDER | GPU_COMPUTE | GPU_MEDIA | GPU_GENERIC ),
     m_MetricsDevice( NULL ),
     m_MetricSet( NULL )
@@ -127,7 +127,7 @@ bool MDHelper::InitMetricsDiscovery(
 
     TCompletionCode res = CC_OK;
 
-    if (m_APIMask & API_TYPE_IOSTREAM )
+    if (m_APIMask & API_TYPE_IOSTREAM)
     {
         DebugPrint("API type must not be IOSTREAM.");
         return false;
@@ -195,16 +195,6 @@ bool MDHelper::InitMetricsDiscovery(
         deviceParams->Version.MinorNumber,
         deviceParams->Version.BuildNumber);
 
-    {
-        TTypedValue_1_0* euCores = GetGlobalSymbolValue("EuCoresTotalCount");
-        if (euCores == NULL)
-        {
-            DebugPrint("EuCoresTotalCount null, maybe support_enable");
-            return false;
-        }
-        m_EUCoresCount = euCores->ValueUInt32;
-    }
-
     bool found = false;
     for( uint32_t cg = 0; !found && cg < deviceParams->ConcurrentGroupsCount; cg++ )
     {
@@ -251,6 +241,8 @@ bool MDHelper::InitMetricsDiscovery(
         return false;
     }
 
+    m_MetricSet->SetApiFiltering( m_APIMask );
+
     m_Initialized = true;
 
     DebugPrint("MetricsDiscoveryInit End\n");
@@ -295,26 +287,26 @@ void MDHelper::SetMetricSetFiltering( TMetricApiType apiMask )
 /************************************************************************/
 void MDHelper::GetMetricsFromReport(
     const char* pReportData,
-    std::vector<TTypedValue_1_0>& results,
-    std::vector<TTypedValue_1_0>& information )
+    std::vector<TTypedValue_1_0>& results )
 {
     if( !m_Initialized || !m_MetricSet ) return;
+
+    const uint32_t reportSize       = m_MetricSet->GetParams()->QueryReportSize;
 
     const uint32_t metricsCount     = m_MetricSet->GetParams()->MetricsCount;
     const uint32_t informationCount = m_MetricSet->GetParams()->InformationCount;
 
-    std::vector<TTypedValue_1_0>    deltaValues;
+    results.resize( metricsCount + informationCount );
 
-    deltaValues.resize( metricsCount );
-    results.resize( metricsCount );
-    information.resize( informationCount );
-
-    // Read metrics from the report data and normalize:
-    ReadMetrics( pReportData, deltaValues );
-    NormalizeMetrics( deltaValues, results );
-
-    // Read informational from the report data:
-    ReadInformation( pReportData, information );
+    uint32_t    outReportCount = 0;
+    TCompletionCode res = m_MetricSet->CalculateMetrics(
+        (const unsigned char*)pReportData,
+        reportSize,
+        results.data(),
+        results.size() * sizeof(TTypedValue_1_0),
+        &outReportCount,
+        false );
+    if( res != CC_OK ) DebugPrint("CalculateMetrics failed!\n");
 }
 
 /************************************************************************/
@@ -328,8 +320,6 @@ void MDHelper::PrintMetricNames( std::ostream& os )
 
     for( uint32_t i = 0; i < m_MetricSet->GetParams( )->MetricsCount; i++ )
     {
-        // Skip if not supported
-        if ( 0 == ( m_MetricSet->GetMetric( i )->GetParams()->ApiMask & m_APIMask )) continue;
         os << m_MetricSet->GetMetric( i )->GetParams()->SymbolName << ",";
     }
 
@@ -337,8 +327,6 @@ void MDHelper::PrintMetricNames( std::ostream& os )
 
     for(uint32_t i = 0; i < m_MetricSet->GetParams()->InformationCount; i++)
     {
-        // Skip if not supported
-        if ( 0 == ( m_MetricSet->GetInformation( i )->GetParams()->ApiMask & m_APIMask )) continue;
         os << m_MetricSet->GetInformation( i )->GetParams()->SymbolName << ",";
     }
 
@@ -351,8 +339,7 @@ void MDHelper::PrintMetricNames( std::ostream& os )
 void MDHelper::PrintMetricValues(
     std::ostream& os,
     const std::string& name,
-    const std::vector<TTypedValue_1_0>& results,
-    const std::vector<TTypedValue_1_0>& information )
+    const std::vector<TTypedValue_1_0>& results )
 {
     if( !m_Initialized || !m_MetricSet || !os.good() ) return;
 
@@ -361,9 +348,6 @@ void MDHelper::PrintMetricValues(
     uint32_t metricsCount = m_MetricSet->GetParams()->MetricsCount;
     for( uint32_t i = 0; i < metricsCount; i++ )
     {
-        // Skip if not supported
-        if ( 0 == ( m_MetricSet->GetMetric( i )->GetParams()->ApiMask & m_APIMask )) continue;
-
         PrintValue( os, results[ i ] );
 
     }
@@ -372,10 +356,7 @@ void MDHelper::PrintMetricValues(
 
     for( uint32_t i = 0; i < m_MetricSet->GetParams()->InformationCount; i++ )
     {
-        // Skip if not supported
-        if ( 0 == ( m_MetricSet->GetInformation( i )->GetParams()->ApiMask & m_APIMask )) continue;
-
-        PrintValue( os, information[ i ] );
+        PrintValue( os, results[ metricsCount + i ] );
     }
 
     os << std::endl;
@@ -398,9 +379,6 @@ void MDHelper::AggregateMetrics(
     {
         TMetricParams_1_0* metricParams = m_MetricSet->GetMetric( i )->GetParams();
 
-        // Skip if not supported
-        if( 0 == ( metricParams->ApiMask & m_APIMask ) ) continue;
-
         // Find profile data for metric
         const char* metricName = metricParams->SymbolName;
         SMetricAggregationData& aggregationData =
@@ -413,126 +391,6 @@ void MDHelper::AggregateMetrics(
         aggregationData.Sum += value;
         aggregationData.Min = std::min<uint64_t>( aggregationData.Min, value );
         aggregationData.Max = std::max<uint64_t>( aggregationData.Max, value );
-    }
-}
-
-/************************************************************************/
-/* ReadMetrics                                                          */
-/************************************************************************/
-void MDHelper::ReadMetrics(
-    const char* pReportData,
-    std::vector<TTypedValue_1_0>& deltaValues )
-{
-    if( !pReportData ) return;
-
-    uint32_t metricsCount = m_MetricSet->GetParams()->MetricsCount;
-    m_GPUCoreClocks             = 0;
-
-    for( uint32_t i = 0; i < metricsCount; i++ )
-    {
-        TMetricParams_1_0* metricParams = m_MetricSet->GetMetric( i )->GetParams();
-        if ( 0 == ( metricParams->ApiMask & m_APIMask )) continue;
-
-        IEquation_1_0* equation = metricParams->QueryReadEquation;
-
-        if( equation )
-        {
-            deltaValues[ i ] = CalculateReadEquation( equation, pReportData );
-        }
-        else
-        {
-            deltaValues[ i ].ValueType = VALUE_TYPE_UINT64;
-            deltaValues[ i ].ValueUInt64 = 0ULL;
-        }
-
-        if( strcmp( metricParams->SymbolName, "GpuCoreClocks" ) == 0 )
-        {
-            m_GPUCoreClocks = deltaValues[ i ].ValueUInt64;
-        }
-    }
-}
-
-/************************************************************************/
-/* NormalizeMetrics                                                     */
-/************************************************************************/
-void MDHelper::NormalizeMetrics(
-    std::vector<TTypedValue_1_0>& deltaValues,
-    std::vector<TTypedValue_1_0>& results )
-{
-    uint32_t metricsCount = m_MetricSet->GetParams()->MetricsCount;
-
-    for( uint32_t i = 0; i < metricsCount; i++ )
-    {
-        TMetricParams_1_0* metricParams = m_MetricSet->GetMetric( i )->GetParams();
-        if ( 0 == ( metricParams->ApiMask & m_APIMask )) continue;
-
-        IEquation_1_0* normEquation = metricParams->NormEquation;
-
-        if ( normEquation )
-        {
-            // do final calculation, may refer to global symbols, local delta results and local normalization results
-            results[ i ] = CalculateLocalNormalizationEquation(
-                normEquation,
-                deltaValues.data(),
-                results.data(),
-                i );
-        }
-        else
-        {
-            results[ i ] = deltaValues[ i ];
-        }
-    }
-}
-
-/************************************************************************/
-/* ReadInformation                                                      */
-/************************************************************************/
-void MDHelper::ReadInformation(
-    const char* pReportData,
-    std::vector<TTypedValue_1_0>& results )
-{
-    if( !pReportData ) return;
-
-    uint32_t informationCount = m_MetricSet->GetParams()->InformationCount;
-
-    for( uint32_t i = 0; i < informationCount; i++ )
-    {
-        IInformation_1_0* information = m_MetricSet->GetInformation( i );
-        ReadSingleInformation( pReportData, information, &results[ i ] );
-    }
-}
-
-/************************************************************************/
-/* ReadSingleInformation                                                */
-/************************************************************************/
-void MDHelper::ReadSingleInformation(
-    const char* pReportData,
-    IInformation_1_0* information,
-    TTypedValue_1_0* result )
-{
-    if( !pReportData || !information || !result ) return;
-
-    TInformationParams_1_0* informationParams = information->GetParams();
-    if ( 0 == ( informationParams->ApiMask & m_APIMask )) return;
-
-    IEquation_1_0* equation = informationParams->QueryReadEquation;
-
-    if( equation )
-    {
-        *result = CalculateReadEquation( equation, pReportData );
-    }
-    else
-    {
-        result->ValueUInt64 = 0ULL;
-    }
-
-    if( informationParams->InfoType == INFORMATION_TYPE_FLAG )
-    {
-        result->ValueType = VALUE_TYPE_BOOL;
-    }
-    else
-    {
-        result->ValueType = VALUE_TYPE_UINT64;
     }
 }
 
@@ -570,7 +428,7 @@ void MDHelper::PrintValue( std::ostream& os, const TTypedValue_1_0& value )
 TTypedValue_1_0* MDHelper::GetGlobalSymbolValue(
     const char* SymbolName )
 {
-    for( uint32_t i = 0; i < m_MetricsDevice->GetParams( )->GlobalSymbolsCount; i++ )
+    for( uint32_t i = 0; i < m_MetricsDevice->GetParams()->GlobalSymbolsCount; i++ )
     {
         TGlobalSymbol_1_0* symbol = m_MetricsDevice->GetGlobalSymbol( i );
         if( strcmp( symbol->SymbolName, SymbolName ) == 0 )
@@ -579,510 +437,6 @@ TTypedValue_1_0* MDHelper::GetGlobalSymbolValue(
         }
     }
     return NULL;
-}
-
-/*******************************************************************************/
-/* CalculateReadEquation                                                       */
-/*******************************************************************************/
-TTypedValue_1_0 MDHelper::CalculateReadEquation(
-    IEquation_1_0* equation,
-    const char* pReportData )
-{
-    std::stack<TTypedValue_1_0> equationStack;
-    TTypedValue_1_0 typedValue;
-
-    for( uint32_t i = 0; i < equation->GetEquationElementsCount(); i++ )
-    {
-        TEquationElement_1_0* element = equation->GetEquationElement( i );
-        switch( element->Type )
-        {
-        case EQUATION_ELEM_RD_BITFIELD:
-
-            typedValue.ValueUInt64 = ReadBitfield( (const char *)(pReportData + element->ReadParams.ByteOffset),
-                element->ReadParams.BitOffset, element->ReadParams.BitsCount );
-            typedValue.ValueType   = VALUE_TYPE_UINT64;
-
-            equationStack.push( typedValue );
-            break;
-
-        case EQUATION_ELEM_RD_UINT8:
-            {
-                uint8_t byteValue = *((const uint8_t *)(pReportData + element->ReadParams.ByteOffset));
-                typedValue.ValueUInt64    = (uint64_t) byteValue;
-                typedValue.ValueType      = VALUE_TYPE_UINT64;
-            }
-            equationStack.push( typedValue );
-            break;
-
-        case EQUATION_ELEM_RD_UINT16:
-            {
-                uint16_t shortValue = *((const uint16_t *)(pReportData + element->ReadParams.ByteOffset));
-                typedValue.ValueUInt64      = (uint64_t) shortValue;
-                typedValue.ValueType        = VALUE_TYPE_UINT64;
-            }
-            equationStack.push( typedValue );
-            break;
-
-        case EQUATION_ELEM_RD_UINT32:
-            {
-                uint32_t dwordValue = *((const uint32_t *)(pReportData + element->ReadParams.ByteOffset));
-                typedValue.ValueUInt64  = (uint64_t) dwordValue;
-                typedValue.ValueType    = VALUE_TYPE_UINT64;
-            }
-            equationStack.push( typedValue );
-            break;
-
-        case EQUATION_ELEM_RD_UINT64:
-            typedValue.ValueUInt64 = *((const uint64_t *)(pReportData + element->ReadParams.ByteOffset));
-            typedValue.ValueType   = VALUE_TYPE_UINT64;
-            equationStack.push( typedValue );
-            break;
-
-        case EQUATION_ELEM_RD_FLOAT:
-            typedValue.ValueFloat = *((const float *)(pReportData + element->ReadParams.ByteOffset));
-            typedValue.ValueType  = VALUE_TYPE_FLOAT;
-            equationStack.push( typedValue );
-            break;
-
-        case EQUATION_ELEM_RD_40BIT_CNTR:
-            {
-                typedValue.ValueUInt64Fields.Low = *((const uint32_t *)(pReportData + element->ReadParams.ByteOffset));
-                typedValue.ValueUInt64Fields.High = (uint32_t)*((const unsigned char *)(pReportData + element->ReadParams.ByteOffsetExt));
-                typedValue.ValueType = VALUE_TYPE_UINT64;
-                equationStack.push( typedValue );
-            }
-            break;
-
-        case EQUATION_ELEM_IMM_UINT64:
-            typedValue.ValueUInt64 = element->ImmediateUInt64;
-            typedValue.ValueType   = VALUE_TYPE_UINT64;
-            equationStack.push( typedValue );
-            break;
-
-        case EQUATION_ELEM_IMM_FLOAT:
-            typedValue.ValueFloat = element->ImmediateFloat;
-            typedValue.ValueType   = VALUE_TYPE_FLOAT;
-            equationStack.push( typedValue );
-            break;
-
-        case EQUATION_ELEM_GLOBAL_SYMBOL:
-            {
-                TTypedValue_1_0* pValue = GetGlobalSymbolValue( element->SymbolName );
-                if( pValue )
-                {
-                    typedValue = *pValue;
-                }
-                else
-                {
-                    typedValue.ValueUInt64 = 0;
-                    typedValue.ValueType   = VALUE_TYPE_UINT64;
-                }
-                equationStack.push( typedValue );
-            }
-            break;
-
-        case EQUATION_ELEM_OPERATION:
-            {
-                //pop two values from stack
-                TTypedValue_1_0 valueLast = equationStack.top();
-                equationStack.pop();
-                TTypedValue_1_0 valuePrev = equationStack.top();
-                equationStack.pop();
-
-                typedValue = CalculateEquationElemOperation( element->Operation, valuePrev, valueLast );
-                equationStack.push( typedValue );
-            }
-            break;
-
-        default:
-            CLI_ASSERT( false );
-            break;
-        }
-    }
-
-    typedValue = equationStack.top();
-    equationStack.pop();
-
-    CLI_ASSERT( equationStack.empty() );
-
-    return typedValue;
-}
-
-/************************************************************************/
-/* CalculateLocalNormalizationEquation                                  */
-/************************************************************************/
-TTypedValue_1_0 MDHelper::CalculateLocalNormalizationEquation(
-    IEquation_1_0* equation,        // can't be const but should
-    TTypedValue_1_0* deltaValues,   // could be const
-    TTypedValue_1_0* results,
-    uint32_t metricIndex )
-{
-    TTypedValue_1_0 typedValue;
-
-    std::stack<TTypedValue_1_0> equationStack;
-
-    for( uint32_t i = 0; i < equation->GetEquationElementsCount(); i++ )
-    {
-        const TEquationElement_1_0* element = equation->GetEquationElement( i );
-        switch( element->Type )
-        {
-        case EQUATION_ELEM_RD_BITFIELD:
-        case EQUATION_ELEM_RD_UINT8:
-        case EQUATION_ELEM_RD_UINT16:
-        case EQUATION_ELEM_RD_UINT32:
-        case EQUATION_ELEM_RD_UINT64:
-        case EQUATION_ELEM_RD_FLOAT:
-        case EQUATION_ELEM_RD_40BIT_CNTR:
-            //not allowed in norm equation
-            CLI_ASSERT( false );
-            break;
-
-        case EQUATION_ELEM_IMM_FLOAT:
-            typedValue.ValueFloat = element->ImmediateFloat;
-            typedValue.ValueType = VALUE_TYPE_FLOAT;
-            equationStack.push( typedValue );
-
-            break;
-
-        case EQUATION_ELEM_IMM_UINT64:
-            typedValue.ValueUInt64 = element->ImmediateUInt64;
-            typedValue.ValueType = VALUE_TYPE_UINT64;
-            equationStack.push( typedValue );
-            break;
-
-        case EQUATION_ELEM_SELF_COUNTER_VALUE:
-            //get result of delta equation
-            typedValue = deltaValues[ metricIndex ];
-            equationStack.push( typedValue );
-            break;
-
-        case EQUATION_ELEM_LOCAL_COUNTER_SYMBOL:
-            {
-                bool found = false;
-                for( uint32_t j = 0; j < m_MetricSet->GetParams()->MetricsCount; j++ )
-                {
-                    //find symbol by name in the set
-                    IMetric_1_0* metric = m_MetricSet->GetMetric( j );
-                    if( strcmp( element->SymbolName, metric->GetParams()->SymbolName ) == 0 )
-                    {
-                        found = true;
-                        typedValue = deltaValues[ metric->GetParams()->IdInSet ];
-                    }
-                }
-                if( !found )
-                {
-                    typedValue.ValueUInt64 = 0;
-                    typedValue.ValueType   = VALUE_TYPE_UINT64;
-                }
-                equationStack.push( typedValue );
-            }
-            break;
-
-        case EQUATION_ELEM_LOCAL_METRIC_SYMBOL:
-            {
-                bool found = false;
-                for( uint32_t j = 0; j < metricIndex; j++ )
-                {
-                    //find symbol by name in the set
-                    IMetric_1_0* metric = m_MetricSet->GetMetric( j );
-                    if( strcmp( element->SymbolName, metric->GetParams()->SymbolName ) == 0 )
-                    {
-                        found = true;
-                        typedValue = results[ metric->GetParams()->IdInSet ];
-                    }
-                }
-                if( !found )
-                {
-                    typedValue.ValueUInt64 = 0;
-                    typedValue.ValueType   = VALUE_TYPE_UINT64;
-                }
-                equationStack.push( typedValue );
-            }
-            break;
-
-        case EQUATION_ELEM_GLOBAL_SYMBOL:
-            {
-                TTypedValue_1_0* pValue = GetGlobalSymbolValue( element->SymbolName );
-                if( pValue )
-                {
-                    typedValue = *pValue;
-                }
-                else
-                {
-                    typedValue.ValueUInt64 = 0;
-                    typedValue.ValueType   = VALUE_TYPE_UINT64;
-                }
-                equationStack.push( typedValue );
-            }
-            break;
-
-        case EQUATION_ELEM_OPERATION:
-            {
-                TTypedValue_1_0 valueLast = equationStack.top();
-                equationStack.pop();
-                TTypedValue_1_0 valuePrev = equationStack.top();
-                equationStack.pop();
-
-                typedValue = CalculateEquationElemOperation( element->Operation, valuePrev, valueLast );
-                equationStack.push( typedValue );
-            }
-            break;
-
-        case EQUATION_ELEM_STD_NORM_GPU_DURATION:
-            CLI_ASSERT( equationStack.empty() );
-
-            if( m_GPUCoreClocks != 0 )
-            {
-                float self = CastToFloat( deltaValues[ metricIndex ] );
-                float gpuCoreClocks = (float) m_GPUCoreClocks;
-
-                typedValue.ValueFloat = 100.0f * self / gpuCoreClocks;
-                typedValue.ValueType = VALUE_TYPE_FLOAT;
-                return typedValue;
-            }
-            else
-            {
-                DebugPrint( "Waring: GpuCoreClocks is 0" );
-                typedValue.ValueFloat = 0.0f;
-                typedValue.ValueType = VALUE_TYPE_FLOAT;
-                return typedValue;
-            }
-
-        case EQUATION_ELEM_STD_NORM_EU_AGGR_DURATION:
-            CLI_ASSERT( equationStack.empty() );
-
-            if( m_GPUCoreClocks != 0 )
-            {
-                float self = CastToFloat( deltaValues[ metricIndex ] );
-                float gpuCoreClocks = (float) (m_GPUCoreClocks * m_EUCoresCount);
-
-                typedValue.ValueFloat = 100.0f * self / gpuCoreClocks;
-                typedValue.ValueType = VALUE_TYPE_FLOAT;
-                return typedValue;
-            }
-            else
-            {
-                DebugPrint( "Warning: GpuCoreClocks is 0" );
-                typedValue.ValueFloat = 0.0f;
-                typedValue.ValueType = VALUE_TYPE_FLOAT;
-                return typedValue;
-            }
-
-        default:
-            CLI_ASSERT( false );
-            break;
-        }
-    }
-
-    typedValue = equationStack.top();
-    equationStack.pop();
-
-    CLI_ASSERT( equationStack.empty() );
-
-    return typedValue;
-}
-
-/************************************************************************/
-/* CalculateEquationElemOperation                                       */
-/************************************************************************/
-TTypedValue_1_0 MDHelper::CalculateEquationElemOperation(
-    TEquationOperation operation,
-    TTypedValue_1_0 valuePrev,
-    TTypedValue_1_0 valueLast )
-{
-    TTypedValue_1_0 value;
-    value.ValueUInt64 = 0;
-    value.ValueType   = VALUE_TYPE_UINT64;
-
-    switch( operation )
-    {
-    case EQUATION_OPER_AND:
-        value.ValueUInt64 = CastToUInt64(valuePrev) & CastToUInt64(valueLast);
-        value.ValueType = VALUE_TYPE_UINT64;
-        break;
-
-    case EQUATION_OPER_OR:
-        value.ValueUInt64 = CastToUInt64(valuePrev) | CastToUInt64(valueLast);
-        value.ValueType = VALUE_TYPE_UINT64;
-        break;
-
-    case EQUATION_OPER_RSHIFT:
-        value.ValueUInt64 = CastToUInt64(valuePrev) >> CastToUInt64(valueLast);
-        value.ValueType = VALUE_TYPE_UINT64;
-        break;
-
-    case EQUATION_OPER_LSHIFT:
-        value.ValueUInt64 = CastToUInt64(valuePrev) << CastToUInt64(valueLast);
-        value.ValueType = VALUE_TYPE_UINT64;
-        break;
-
-    case EQUATION_OPER_XOR:
-        value.ValueUInt64 = CastToUInt64( valuePrev ) ^ CastToUInt64( valueLast );
-        value.ValueType = VALUE_TYPE_UINT64;
-        break;
-
-    case EQUATION_OPER_XNOR:
-        value.ValueUInt64 = ~(CastToUInt64( valuePrev ) ^ CastToUInt64( valueLast ));
-        value.ValueType = VALUE_TYPE_UINT64;
-        break;
-
-    case EQUATION_OPER_AND_L:
-        value.ValueBool = CastToUInt64( valuePrev ) && CastToUInt64( valueLast );
-        value.ValueType = VALUE_TYPE_BOOL;
-        break;
-
-    case EQUATION_OPER_EQUALS:
-        value.ValueBool = CastToUInt64( valuePrev ) == CastToUInt64( valueLast );
-        value.ValueType = VALUE_TYPE_BOOL;
-        break;
-
-    case EQUATION_OPER_UADD:
-        value.ValueUInt64 = CastToUInt64(valuePrev) + CastToUInt64(valueLast);
-        value.ValueType = VALUE_TYPE_UINT64;
-        break;
-
-    case EQUATION_OPER_USUB:
-        value.ValueUInt64 = CastToUInt64(valuePrev) - CastToUInt64(valueLast);
-        value.ValueType = VALUE_TYPE_UINT64;
-        break;
-
-    case EQUATION_OPER_UDIV:
-        if(CastToUInt64(valueLast) != 0LL)
-        {
-            value.ValueUInt64 = CastToUInt64(valuePrev) / CastToUInt64(valueLast);
-            value.ValueType = VALUE_TYPE_UINT64;
-        }
-        else
-        {
-            value.ValueUInt64 = 0ULL;
-            value.ValueType = VALUE_TYPE_UINT64;
-        }
-        break;
-
-    case EQUATION_OPER_UMUL:
-        value.ValueUInt64 = CastToUInt64(valuePrev) * CastToUInt64(valueLast);
-        value.ValueType = VALUE_TYPE_UINT64;
-        break;
-
-    case EQUATION_OPER_FADD:
-        value.ValueFloat = CastToFloat(valuePrev) + CastToFloat(valueLast);
-        value.ValueType = VALUE_TYPE_FLOAT;
-        break;
-
-    case EQUATION_OPER_FSUB:
-        value.ValueFloat = CastToFloat(valuePrev) - CastToFloat(valueLast);
-        value.ValueType = VALUE_TYPE_FLOAT;
-        break;
-
-    case EQUATION_OPER_FMUL:
-        value.ValueFloat = CastToFloat(valuePrev) * CastToFloat(valueLast);
-        value.ValueType = VALUE_TYPE_FLOAT;
-        break;
-
-    case EQUATION_OPER_FDIV:
-        if( CastToFloat(valueLast) != 0LL )
-        {
-            value.ValueFloat = CastToFloat( valuePrev ) / CastToFloat( valueLast );
-            value.ValueType = VALUE_TYPE_FLOAT;
-        }
-        else
-        {
-            value.ValueFloat = 0.0f;
-            value.ValueType = VALUE_TYPE_FLOAT;
-        }
-        break;
-
-    case EQUATION_OPER_UGT:
-        value.ValueBool = CastToUInt64( valuePrev ) > CastToUInt64( valueLast );
-        value.ValueType = VALUE_TYPE_BOOL;
-        break;
-
-    case EQUATION_OPER_ULT:
-        value.ValueBool = CastToUInt64( valuePrev ) < CastToUInt64( valueLast );
-        value.ValueType = VALUE_TYPE_BOOL;
-        break;
-
-    case EQUATION_OPER_UGTE:
-        value.ValueBool = CastToUInt64( valuePrev ) >= CastToUInt64( valueLast );
-        value.ValueType = VALUE_TYPE_BOOL;
-        break;
-
-    case EQUATION_OPER_ULTE:
-        value.ValueBool = CastToUInt64( valuePrev ) <= CastToUInt64( valueLast );
-        value.ValueType = VALUE_TYPE_BOOL;
-        break;
-
-    case EQUATION_OPER_FGT:
-        value.ValueBool = CastToFloat( valuePrev ) > CastToFloat( valueLast );
-        value.ValueType = VALUE_TYPE_BOOL;
-        break;
-
-    case EQUATION_OPER_FLT:
-        value.ValueBool = CastToFloat( valuePrev ) < CastToFloat( valueLast );
-        value.ValueType = VALUE_TYPE_BOOL;
-        break;
-
-    case EQUATION_OPER_FGTE:
-        value.ValueBool = CastToFloat( valuePrev ) >= CastToFloat( valueLast );
-        value.ValueType = VALUE_TYPE_BOOL;
-        break;
-
-    case EQUATION_OPER_FLTE:
-        value.ValueBool = CastToFloat( valuePrev ) <= CastToFloat( valueLast );
-        value.ValueType = VALUE_TYPE_BOOL;
-        break;
-
-    case EQUATION_OPER_UMIN:
-        value.ValueUInt64 = std::min<uint64_t>(CastToUInt64( valuePrev ), CastToUInt64( valueLast ));
-        value.ValueType = VALUE_TYPE_UINT64;
-        break;
-
-    case EQUATION_OPER_UMAX:
-        value.ValueUInt64 = std::max<uint64_t>(CastToUInt64( valuePrev ), CastToUInt64( valueLast ));
-        value.ValueType = VALUE_TYPE_UINT64;
-        break;
-
-    case EQUATION_OPER_FMIN:
-        value.ValueFloat = std::min<float>(CastToFloat( valuePrev ), CastToFloat( valueLast ));
-        value.ValueType = VALUE_TYPE_FLOAT;
-        break;
-
-    case EQUATION_OPER_FMAX:
-        value.ValueFloat = std::max<float>(CastToFloat( valuePrev ), CastToFloat( valueLast ));
-        value.ValueType = VALUE_TYPE_FLOAT;
-        break;
-
-    default:
-        CLI_ASSERT( false );
-        value.ValueUInt64 = 0;
-        value.ValueType   = VALUE_TYPE_UINT64;
-        break;
-    }
-
-    return value;
-}
-
-/************************************************************************/
-/* ReadBitfield                                                         */
-/************************************************************************/
-uint64_t MDHelper::ReadBitfield(
-    const char *pUnalignedData,
-    uint32_t bitOffset,
-    uint32_t bitsCount )
-{
-    if( (bitsCount > 32) || (bitsCount == 0) || (bitsCount + bitOffset > 32) ) return 0;
-
-    uint32_t mask = 0;
-    for( uint32_t i = 0; i < bitsCount; i++) mask |= 1 << i;
-    for( uint32_t i = 0; i < bitOffset; i++) mask = mask << 1;
-
-    uint32_t data =
-        (*pUnalignedData) |
-        ((*(pUnalignedData + 1)) << 8) |
-        ((*(pUnalignedData + 2)) << 16) |
-        ((*(pUnalignedData + 3)) << 24);
-
-    return (uint64_t)((data & mask) >> bitOffset);
 }
 
 /************************************************************************/
@@ -1110,33 +464,6 @@ uint64_t MDHelper::CastToUInt64(TTypedValue_1_0 value)
     }
 
     return 0;
-}
-
-/************************************************************************/
-/* CastToFloat                                                          */
-/************************************************************************/
-float MDHelper::CastToFloat(TTypedValue_1_0 value)
-{
-    switch( value.ValueType )
-    {
-    case VALUE_TYPE_BOOL:
-        return ( value.ValueBool ) ? 1.0f : 0.0f;
-
-    case VALUE_TYPE_UINT32:
-        return (float)value.ValueUInt32;
-
-    case VALUE_TYPE_UINT64:
-        return (float)value.ValueUInt64;
-
-    case VALUE_TYPE_FLOAT:
-        return value.ValueFloat;
-
-    default:
-        CLI_ASSERT( false );
-        break;
-    }
-
-    return 0.0f;
 }
 
 }

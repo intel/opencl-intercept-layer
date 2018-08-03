@@ -92,9 +92,8 @@ cl_uint CLIntercept::initCustomPerfCounters()
     if( m_pMDHelper )
     {
         configuration = m_pMDHelper->GetMetricsConfiguration();
-        // TODO: This doesn't appear to be necessary?
-        //m_pMDHelper->SetMetricSetFiltering( API_TYPE_OCL );
-        m_pMDHelper->ActivateMetricSet( );
+
+        m_pMDHelper->ActivateMetricSet();
 
         // Get the dump directory name and register dump file name
         {
@@ -216,16 +215,13 @@ void CLIntercept::saveMDAPICounters(
             if( errorCode == CL_SUCCESS )
             {
                 std::vector<MetricsDiscovery::TTypedValue_1_0> results;
-                std::vector<MetricsDiscovery::TTypedValue_1_0> information;
                 m_pMDHelper->GetMetricsFromReport(
                     pReport,
-                    results,
-                    information );
+                    results );
                 m_pMDHelper->PrintMetricValues(
                     m_MetricDump,
                     name,
-                    results,
-                    information );
+                    results );
                 m_pMDHelper->AggregateMetrics(
                     m_MetricAggregations,
                     name,

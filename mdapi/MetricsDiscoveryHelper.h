@@ -75,16 +75,14 @@ public:
 
     void    GetMetricsFromReport(
                 const char* pData,
-                std::vector<TTypedValue_1_0>& results,
-                std::vector<TTypedValue_1_0>& information );
+                std::vector<TTypedValue_1_0>& results );
 
     void    PrintMetricNames(
                 std::ostream& os );
     void    PrintMetricValues(
                 std::ostream& os,
                 const std::string& name,
-                const std::vector<TTypedValue_1_0>& results,
-                const std::vector<TTypedValue_1_0>& information );
+                const std::vector<TTypedValue_1_0>& results );
 
     void    AggregateMetrics(
                 CMetricAggregations& aggregations,
@@ -92,43 +90,14 @@ public:
                 const std::vector<TTypedValue_1_0>& results );
 
 private:
-    void    ReadMetrics(
-                const char* pData,
-                std::vector<TTypedValue_1_0>& deltaValues );
-    void    NormalizeMetrics(
-                std::vector<TTypedValue_1_0>& deltaValues,
-                std::vector<TTypedValue_1_0>& results );
-
-    void    ReadInformation(
-                const char* pData,
-                std::vector<TTypedValue_1_0>& results );
-    void    ReadSingleInformation(
-                const char* pData,
-                IInformation_1_0* information,
-                TTypedValue_1_0* result );
-
     void    PrintValue(
                 std::ostream& os,
                 const TTypedValue_1_0& value );
 
     TTypedValue_1_0* GetGlobalSymbolValue(
         const char*         symbolName );
-    TTypedValue_1_0 CalculateReadEquation(
-        IEquation_1_0*      equation,
-        const char*         pRawReport );
-    TTypedValue_1_0 CalculateLocalNormalizationEquation(
-        IEquation_1_0*      equation,
-        TTypedValue_1_0*    deltaValues,
-        TTypedValue_1_0*    results,
-        uint32_t            metricIndex );
-    TTypedValue_1_0 CalculateEquationElemOperation(
-        TEquationOperation  operation,
-        TTypedValue_1_0     valuePrev,
-        TTypedValue_1_0     valueLast );
 
-    static uint64_t ReadBitfield( const char *pUnalignedData, uint32_t bitOffset, uint32_t bitsCount );
     static uint64_t CastToUInt64(TTypedValue_1_0 value );
-    static float    CastToFloat(TTypedValue_1_0 value );
 
     OpenMetricsDevice_fn            OpenMetricsDevice;
     CloseMetricsDevice_fn           CloseMetricsDevice;
@@ -140,9 +109,6 @@ private:
 
     IMetricsDevice_1_5*     m_MetricsDevice;
     IMetricSet_1_1*         m_MetricSet;
-
-    uint32_t                m_EUCoresCount;
-    uint64_t                m_GPUCoreClocks;
 
 private:
     MDHelper(MDHelper const&);
