@@ -67,7 +67,7 @@ public:
     uint32_t GetMetricsConfiguration();
     uint32_t GetQueryReportSize();
 
-    void    ActivateMetricSet();
+    bool    ActivateMetricSet();
     void    DeactivateMetricSet();
 
     void    SetMetricSetFiltering(

@@ -194,6 +194,12 @@ bool MDHelper::InitMetricsDiscovery(
         deviceParams->Version.MajorNumber,
         deviceParams->Version.MinorNumber,
         deviceParams->Version.BuildNumber);
+    if( deviceParams->Version.MajorNumber < 1 ||
+        ( deviceParams->Version.MajorNumber == 1 && deviceParams->Version.MinorNumber < 1 ) )
+    {
+        DebugPrint("MDAPI Lib version must be at least v1.1!\n");
+        return false;
+    }
 
     bool found = false;
     for( uint32_t cg = 0; !found && cg < deviceParams->ConcurrentGroupsCount; cg++ )
@@ -252,12 +258,14 @@ bool MDHelper::InitMetricsDiscovery(
 /************************************************************************/
 /* ActivateMetricSet                                                    */
 /************************************************************************/
-void MDHelper::ActivateMetricSet()
+bool MDHelper::ActivateMetricSet()
 {
-    if( !m_Initialized || !m_MetricSet ) return;
+    if( !m_Initialized || !m_MetricSet ) return false;
 
     TCompletionCode res = m_MetricSet->Activate();
     if( res != CC_OK ) DebugPrint("ActivateMetricSet failed!\n");
+
+    return res == CC_OK;
 }
 
 /************************************************************************/

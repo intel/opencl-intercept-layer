@@ -89,11 +89,9 @@ cl_uint CLIntercept::initCustomPerfCounters()
         }
     }
 
-    if( m_pMDHelper )
+    if( m_pMDHelper && m_pMDHelper->ActivateMetricSet() )
     {
         configuration = m_pMDHelper->GetMetricsConfiguration();
-
-        m_pMDHelper->ActivateMetricSet();
 
         // Get the dump directory name and register dump file name
         {
