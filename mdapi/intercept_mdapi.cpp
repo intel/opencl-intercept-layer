@@ -72,20 +72,16 @@ cl_uint CLIntercept::initCustomPerfCounters()
 
     if( m_pMDHelper == NULL )
     {
-        m_pMDHelper = new MetricsDiscovery::MDHelper();
+        m_pMDHelper = MetricsDiscovery::MDHelper::Create(
+            metricSetSymbolName,
+            metricsFileName );
         if( m_pMDHelper )
         {
-            bool initialized = m_pMDHelper->InitMetricsDiscovery(
-                metricSetSymbolName,
-                metricsFileName );
-            if( initialized  )
-            {
-                log( "Metric Discovery initialized.\n" );
-            }
-            else
-            {
-                log( "Metric Discovery failed to initialize.\n" );
-            }
+            log( "Metric Discovery initialized.\n" );
+        }
+        else
+        {
+            log( "Metric Discovery failed to initialize.\n" );
         }
     }
 
@@ -109,6 +105,10 @@ cl_uint CLIntercept::initCustomPerfCounters()
 
             m_pMDHelper->PrintMetricNames( m_MetricDump );
         }
+    }
+    else
+    {
+        log( "Metric Discovery: Couldn't activate metric set!\n" );
     }
 
     return configuration;

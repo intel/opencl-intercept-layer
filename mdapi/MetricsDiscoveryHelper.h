@@ -57,12 +57,10 @@ typedef std::map<const std::string, CMetricAggregationsForKernel> CMetricAggrega
 class MDHelper
 {
 public:
-    MDHelper();
-    ~MDHelper();
-
-    bool InitMetricsDiscovery(
+    static MDHelper* Create(
         const std::string& metricSetSymbolName,
         const std::string& metricsFileName );
+    static void Delete( MDHelper*& pMDHelper );
 
     uint32_t GetMetricsConfiguration();
     uint32_t GetQueryReportSize();
@@ -90,6 +88,13 @@ public:
                 const std::vector<TTypedValue_1_0>& results );
 
 private:
+    MDHelper();
+    ~MDHelper();
+
+    bool InitMetricsDiscovery(
+        const std::string& metricSetSymbolName,
+        const std::string& metricsFileName );
+
     void    PrintValue(
                 std::ostream& os,
                 const TTypedValue_1_0& value );

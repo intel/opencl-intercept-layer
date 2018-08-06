@@ -88,7 +88,7 @@ static void DebugPrint(const char* formatString, ...)
 /* MDHelper constructor                                                 */
 /************************************************************************/
 MDHelper::MDHelper() :
-    m_Initialized(false),
+    m_Initialized (false ),
     m_APIMask( API_TYPE_OCL ),
     m_CategoryMask( GPU_RENDER | GPU_COMPUTE | GPU_MEDIA | GPU_GENERIC ),
     m_MetricsDevice( NULL ),
@@ -101,8 +101,6 @@ MDHelper::MDHelper() :
 /************************************************************************/
 MDHelper::~MDHelper()
 {
-    DebugPrint("MDHelper Destructor");
-
     if(CloseMetricsDevice != NULL && m_MetricsDevice)
     {
         CloseMetricsDevice( m_MetricsDevice );
@@ -110,6 +108,35 @@ MDHelper::~MDHelper()
     }
 
     m_Initialized = false;
+}
+
+/************************************************************************/
+/* Create                                                               */
+/************************************************************************/
+MDHelper* MDHelper::Create(
+    const std::string& metricSetSymbolName,
+    const std::string& metricsFileName )
+{
+    MDHelper*   pMDHelper = new MDHelper();
+    if( pMDHelper )
+    {
+        if( pMDHelper->InitMetricsDiscovery(
+                metricSetSymbolName,
+                metricsFileName ) == false )
+        {
+            Delete( pMDHelper );
+        }
+    }
+    return pMDHelper;
+}
+
+/************************************************************************/
+/* Delete                                                               */
+/************************************************************************/
+void MDHelper::Delete( MDHelper*& pMDHelper )
+{
+    delete pMDHelper;
+    pMDHelper = NULL;
 }
 
 /************************************************************************/
@@ -311,7 +338,7 @@ void MDHelper::GetMetricsFromReport(
         (const unsigned char*)pReportData,
         reportSize,
         results.data(),
-        results.size() * sizeof(TTypedValue_1_0),
+        (uint32_t)(results.size() * sizeof(TTypedValue_1_0)),
         &outReportCount,
         false );
     if( res != CC_OK ) DebugPrint("CalculateMetrics failed!\n");
@@ -357,7 +384,6 @@ void MDHelper::PrintMetricValues(
     for( uint32_t i = 0; i < metricsCount; i++ )
     {
         PrintValue( os, results[ i ] );
-
     }
 
     os << ",";
