@@ -366,6 +366,8 @@ bool CLIntercept::init()
     OS::Services_Common::CONFIG_FILE = "clintercept.conf";
 #endif
 
+    m_kernelId = 0;
+    m_maxKernelLength = 32;
     bool    breakOnLoad = false;
     ReadRegistry( m_OS, "BreakOnLoad", breakOnLoad );
 
@@ -565,7 +567,7 @@ bool CLIntercept::init()
 #error Unknown OS!
 #endif
 
-#define CLI_CONTROL( _type, _name, _init, _desc ) if ( m_Config . _name != _init ) { log( #_name " is set to a non-default value!\n" ); }
+#define CLI_CONTROL( _type, _name, _init, _desc ) if( m_Config . _name != _init ) { log( #_name " is set to a non-default value!\n" ); }
 #include "controls.h"
 #undef CLI_CONTROL
 
@@ -828,6 +830,29 @@ void CLIntercept::writeReport(
 
         os << std::endl << "Total Time (ns): " << totalTotalNS << std::endl;
 
+        i = m_DeviceTimingStatsMap.begin();
+        if( m_Config.IndexLongKernelNames )
+        {
+            bool isHeaderEmpty = true;
+            while( i != m_DeviceTimingStatsMap.end() )
+            {
+                const std::string& name = (*i).first;
+                SDeviceTimingStats* pDeviceTimingStats = (*i).second;
+                if( name.length() > m_maxKernelLength ) {
+                  if( isHeaderEmpty )
+                  {
+                    os << "Function Name Mapping:" << std::endl
+                        << std::right << std::setw( 11) << "Function Id" << ", "
+                        << std::right << std::setw( 1) << "Function Long Name" << std::endl;
+                    isHeaderEmpty = false;
+                  }
+                  os << std::right << std::setw( 11) << pDeviceTimingStats->KernelId <<  ", "
+                     << std::right << std::setw( 1) << name << std::endl;
+                }
+                ++i;
+            }
+            longestName = m_maxKernelLength;
+        }
         os << std::endl
             << std::right << std::setw(longestName) << "Function Name" << ", "
             << std::right << std::setw( 6) << "Calls" << ", "
@@ -845,13 +870,13 @@ void CLIntercept::writeReport(
 
             if( !name.empty() && pDeviceTimingStats )
             {
-                os << std::right << std::setw(longestName) << name << ", "
-                    << std::right << std::setw( 6) << pDeviceTimingStats->NumberOfCalls << ", "
-                    << std::right << std::setw(13) << pDeviceTimingStats->TotalNS << ", "
-                    << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << pDeviceTimingStats->TotalNS * 100.0f / totalTotalNS << "%, "
-                    << std::right << std::setw(13) << pDeviceTimingStats->TotalNS / pDeviceTimingStats->NumberOfCalls << ", "
-                    << std::right << std::setw(13) << pDeviceTimingStats->MinNS << ", "
-                    << std::right << std::setw(13) << pDeviceTimingStats->MaxNS << std::endl;
+                os << std::right << std::setw(longestName) << ( ( m_Config.IndexLongKernelNames && name.length() > m_maxKernelLength ) ? pDeviceTimingStats->KernelId : name ) << ", "
+                   << std::right << std::setw( 6) << pDeviceTimingStats->NumberOfCalls << ", "
+                   << std::right << std::setw(13) << pDeviceTimingStats->TotalNS << ", "
+                   << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << pDeviceTimingStats->TotalNS * 100.0f / totalTotalNS << "%, "
+                   << std::right << std::setw(13) << pDeviceTimingStats->TotalNS / pDeviceTimingStats->NumberOfCalls << ", "
+                   << std::right << std::setw(13) << pDeviceTimingStats->MinNS << ", "
+                   << std::right << std::setw(13) << pDeviceTimingStats->MaxNS << std::endl;
             }
 
             ++i;
@@ -864,6 +889,35 @@ void CLIntercept::writeReport(
         reportMDAPICounters( os );
     }
 #endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+std::string CLIntercept::getKernelName(
+    const cl_kernel kernel )
+{
+    m_OS.EnterCriticalSection();
+
+    std::string kernelName = "";
+    if( m_Config.IndexLongKernelNames )
+    {
+        if( kernelName.length() > m_maxKernelLength )
+        {
+            kernelName += m_KernelNameMap[ kernel ].kernelId;
+        }
+        else
+        {
+            kernelName += m_KernelNameMap[ kernel ].kernelName;
+        }
+    }
+    else
+    {
+        kernelName += m_KernelNameMap[ kernel ].kernelName;
+    }
+
+    m_OS.LeaveCriticalSection();
+
+    return kernelName;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -935,7 +989,7 @@ void CLIntercept::callLoggingEnter(
 
     if( kernel )
     {
-        const std::string& kernelName = m_KernelNameMap[ kernel ];
+        const std::string& kernelName = getKernelName(kernel);
         str += "( ";
         str += kernelName;
         str += " )";
@@ -966,14 +1020,10 @@ void CLIntercept::callLoggingEnter(
 
     if( kernel )
     {
-        m_OS.EnterCriticalSection();
-
-        const std::string& kernelName = m_KernelNameMap[ kernel ];
+        const std::string& kernelName = getKernelName(kernel);
         str += "( ";
         str += kernelName;
         str += " )";
-
-        m_OS.LeaveCriticalSection();
     }
 
     char temp[ CLI_MAX_STRING_SIZE ] = "";
@@ -1041,7 +1091,7 @@ void CLIntercept::callLoggingExit(
 
     if( kernel )
     {
-        const std::string& kernelName = m_KernelNameMap[ kernel ];
+        const std::string& kernelName = getKernelName(kernel);
         str += "( ";
         str += kernelName;
         str += " )";
@@ -1072,14 +1122,10 @@ void CLIntercept::callLoggingExit(
 
     if( kernel )
     {
-        m_OS.EnterCriticalSection();
-
-        const std::string& kernelName = m_KernelNameMap[ kernel ];
+        const std::string& kernelName = getKernelName(kernel);
         str += "( ";
         str += kernelName;
         str += " )";
-
-        m_OS.LeaveCriticalSection();
     }
 
     char temp[ CLI_MAX_STRING_SIZE ] = "";
@@ -2306,8 +2352,7 @@ void CLIntercept::logPreferredWorkGroupSizeMultiple(
 
             if( errorCode == CL_SUCCESS )
             {
-                const std::string& kernelName = m_KernelNameMap[ kernel ];
-                log( "Preferred Work Group Size Multiple for: '" + kernelName + "':\n" );
+                log( "Preferred Work Group Size Multiple for: '" + getKernelName(kernel) + "':\n" );
             }
             if( errorCode == CL_SUCCESS )
             {
@@ -4026,7 +4071,7 @@ void CLIntercept::updateHostTimingStats(
     std::string key( functionName );
     if( kernel )
     {
-        const std::string& kernelName = m_KernelNameMap[ kernel ];
+        const std::string& kernelName = getKernelName(kernel);
         key += "( ";
         key += kernelName;
         key += " )";
@@ -4207,7 +4252,11 @@ void CLIntercept::addTimingEvent(
         pNode->FunctionName = functionName;
         if( kernel )
         {
-            pNode->KernelName = m_KernelNameMap[ kernel ];
+            pNode->KernelName = m_KernelNameMap[ kernel ].kernelName;
+            if( m_Config.IndexLongKernelNames)
+            {
+                pNode->KernelId = m_KernelNameMap[ kernel ].kernelId;
+            }
 
             if( config().DevicePerformanceTimeHashTracking )
             {
@@ -4239,6 +4288,10 @@ void CLIntercept::addTimingEvent(
                             compileCount );
                     }
                     pNode->KernelName += hashString;
+                    if( m_Config.IndexLongKernelNames )
+                    {
+                        pNode->KernelId += hashString;
+                    }
                 }
             }
 
@@ -4494,6 +4547,7 @@ void CLIntercept::checkTimingEvents()
                             }
                             else
                             {
+                                pDeviceTimingStats->KernelId= "";
                                 pDeviceTimingStats->NumberOfCalls = 0;
                                 pDeviceTimingStats->TotalNS = 0;
                                 pDeviceTimingStats->MinNS = CL_ULONG_MAX;
@@ -4505,6 +4559,10 @@ void CLIntercept::checkTimingEvents()
 
                         if( pDeviceTimingStats != NULL )
                         {
+                            if( m_Config.IndexLongKernelNames )
+                            {
+                                pDeviceTimingStats->KernelId = pNode->KernelId;
+                            }
                             pDeviceTimingStats->NumberOfCalls++;
                             pDeviceTimingStats->TotalNS += delta;
                             pDeviceTimingStats->MinNS = std::min< cl_ulong >( pDeviceTimingStats->MinNS, delta );
@@ -4610,6 +4668,8 @@ void CLIntercept::checkTimingEvents()
                     const std::string& name =
                         pNode->KernelName.empty() ?
                         pNode->FunctionName :
+                        (m_Config.IndexLongKernelNames) ?
+                        pNode->KernelId :
                         pNode->KernelName;
 
                     chromeTraceEvent(
@@ -4670,8 +4730,11 @@ void CLIntercept::addKernelName(
 {
     m_OS.EnterCriticalSection();
 
-    m_KernelNameMap[ kernel ] = kernelName;
-
+    m_KernelNameMap[ kernel ].kernelName = kernelName;
+    if( m_Config.IndexLongKernelNames)
+    {
+      m_KernelNameMap[ kernel ].kernelId   = "k_" + std::to_string(m_kernelId++);
+    }
     m_OS.LeaveCriticalSection();
 }
 
@@ -4710,7 +4773,11 @@ void CLIntercept::addKernelNames(
                 if( errorCode == CL_SUCCESS )
                 {
                     kernelName[ kernelNameSize ] = 0;
-                    m_KernelNameMap[ kernel ] = kernelName;
+                    m_KernelNameMap[ kernel ].kernelName = kernelName;
+                    if( m_Config.IndexLongKernelNames)
+                    {
+                      m_KernelNameMap[ kernel ].kernelId   = "k_" + std::to_string(m_kernelId++);
+                    }
                 }
 
                 delete [] kernelName;
@@ -4868,7 +4935,7 @@ void CLIntercept::dumpArgument(
     size_t size,
     const void *pBuffer )
 {
-    if ( kernel )
+    if( kernel )
     {
         m_OS.EnterCriticalSection();
 
@@ -4898,7 +4965,7 @@ void CLIntercept::dumpArgument(
         // Add the kernel name to the filename
         {
             fileName += "_Kernel_";
-            fileName += m_KernelNameMap[ kernel ];
+            fileName += getKernelName(kernel);
         }
 
         // Add the arg number to the file name
@@ -5210,7 +5277,7 @@ void CLIntercept::dumpBuffersForKernel(
             // Add the kernel name to the filename
             {
                 fileName += "_Kernel_";
-                fileName += m_KernelNameMap[ kernel ];
+                fileName += getKernelName(kernel);
             }
 
             // Add the arg number to the file name
@@ -5369,7 +5436,7 @@ void CLIntercept::dumpImagesForKernel(
             // Add the kernel name to the filename
             {
                 fileName += "_Kernel_";
-                fileName += m_KernelNameMap[ kernel ];
+                fileName += getKernelName(kernel);
             }
 
             // Add the arg number to the file name
@@ -5711,9 +5778,8 @@ void CLIntercept::startAubCapture(
 
                     if( kernel )
                     {
-                        const std::string& kernelName = m_KernelNameMap[ kernel ];
                         fileName += "kernel_";
-                        fileName += kernelName;
+                        fileName += getKernelName(kernel);
 
                         std::ostringstream  ss;
                         ss << "_G_";
@@ -9130,9 +9196,9 @@ void CLIntercept::SIMDSurveyCreateKernel(
             // print the right kernel names in e.g. device timing reports.  The
             // other maps, such as the kernel arg map, don't need to know about
             // child kernels, so we don't add anything for them here.
-            m_KernelNameMap[ pSIMDSurveyKernel->SIMD8Kernel ] = kernelName;
-            m_KernelNameMap[ pSIMDSurveyKernel->SIMD16Kernel ] = kernelName;
-            m_KernelNameMap[ pSIMDSurveyKernel->SIMD32Kernel ] = kernelName;
+            m_KernelNameMap[ pSIMDSurveyKernel->SIMD8Kernel ].kernelName = kernelName;
+            m_KernelNameMap[ pSIMDSurveyKernel->SIMD16Kernel ].kernelName = kernelName;
+            m_KernelNameMap[ pSIMDSurveyKernel->SIMD32Kernel ].kernelName = kernelName;
         }
     }
     else
@@ -9194,7 +9260,7 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
         m_SIMDSurveyKernelMap[ kernel ];
     if( pSIMDSurveyKernel )
     {
-        const std::string& kernelName = m_KernelNameMap[ kernel ];
+        const std::string& kernelName = m_KernelNameMap[ kernel ].kernelName;
 
         const uint32_t  cWarmupIterations = config().SIMDSurveyWarmupIterations;
         if( pSIMDSurveyKernel->ExecutionNumber >= cWarmupIterations )
@@ -9612,7 +9678,7 @@ void CLIntercept::logDeviceInfo( cl_device_id device )
 #define INIT_EXPORTED_FUNC(funcname)                                        \
 {                                                                           \
     void* func = OS().GetFunctionPointer(m_OpenCLLibraryHandle, #funcname); \
-    if (func == NULL)                                                       \
+    if( func == NULL )                                                      \
     {                                                                       \
         log( std::string("Couldn't get exported function pointer to: ") + #funcname + "\n" );\
         success = false;                                                    \
@@ -9967,14 +10033,10 @@ void CLIntercept::ittCallLoggingEnter(
     std::string str( functionName );
     if( kernel )
     {
-        m_OS.EnterCriticalSection();
-
-        const std::string& kernelName = m_KernelNameMap[ kernel ];
+        const std::string& kernelName = getKernelName(kernel);
         str += "( ";
         str += kernelName;
         str += " )";
-
-        m_OS.LeaveCriticalSection();
     }
 
     __itt_string_handle* itt_string_handle = __itt_string_handle_create( str.c_str() );
@@ -10321,7 +10383,7 @@ void CLIntercept::chromeCallLoggingExit(
 
     if( kernel )
     {
-        const std::string& kernelName = m_KernelNameMap[ kernel ];
+        const std::string& kernelName = getKernelName(kernel);
         str += "( ";
         str += kernelName;
         str += " )";
@@ -10510,7 +10572,6 @@ void CLIntercept::chromeTraceEvent(
             << "\", \"ts\":" << usStart
             << ", \"dur\":" << usDelta
             << "},\n";
-
     }
     else
     {
@@ -10535,10 +10596,10 @@ bool CLIntercept::checkAubCaptureKernelSignature(
 
     if( match &&
         m_Config.AubCaptureKernelName != "" &&
-        m_KernelNameMap[ kernel ] != m_Config.AubCaptureKernelName )
+        m_KernelNameMap[ kernel ].kernelName != m_Config.AubCaptureKernelName )
     {
         //logf( "Skipping aub capture: kernel name '%s' doesn't match the requested kernel name '%s'.\n",
-        //    m_KernelNameMap[ kernel ].c_str(),
+        //    m_KernelNameMap[ kernel ].kernelName.c_str(),
         //    m_Config.AubCaptureKernelName.c_str() );
         match = false;
     }
@@ -10618,8 +10679,7 @@ bool CLIntercept::checkAubCaptureKernelSignature(
     if( match &&
         m_Config.AubCaptureUniqueKernels )
     {
-        std::string key = m_KernelNameMap[ kernel ];
-
+        std::string& key = m_KernelNameMap[ kernel ].kernelName;
         {
             cl_program program = NULL;
             dispatch().clGetKernelInfo(

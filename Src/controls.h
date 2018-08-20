@@ -50,8 +50,10 @@ CLI_CONTROL( cl_uint,       ContextHintLevel,                       0,     "If s
 CLI_CONTROL( bool,          EventCallbackLogging,                   false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will install its own callback for every event callback and log the call to the event callback.  The application's event callback will be invoked after the Intercept Layer for OpenCL Applications' event callback." )
 CLI_CONTROL( bool,          EventChecking,                          false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will check and log any events in an event wait list that are invalid or in an error state.  This can help to debug complex event dependency issues." )
 CLI_CONTROL( bool,          LeakChecking,                           false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will check for leaks of various OpenCL objects, such as memory objects and events." )
+CLI_CONTROL( bool,          IndexLongKernelNames,                   false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will create a mapping to each kernel name longer than 32 characters to a shortName that will replace the kernel name in the logging. In addition, the mapping will be displayed on the clintercept_report.txt for easy reference." )
 CLI_CONTROL( bool,          CLInfoLogging,                          false, "If set to a nonzero value, logs information about the platforms and devices in the system on the first call to clGetPlatformIDs()." )
 CLI_CONTROL( std::string,   LogDir,                                 "",    "If set, the Intercept Layer for OpenCL Applications will emit logs to this directory instead of the default log directory." )
+
 
 CLI_CONTROL_SEPARATOR( Reporting Controls: )
 CLI_CONTROL( bool,          ReportToStderr,                         false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emit reports to stderr." )
