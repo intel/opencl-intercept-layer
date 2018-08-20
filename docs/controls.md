@@ -174,6 +174,10 @@ If set to a nonzero value, logs information about the platforms and devices in t
 
 If set, the Intercept Layer for OpenCL Applications will emit logs to this directory instead of the default log directory.
 
+##### `LongKernelNameCutoff` (cl_uint)
+
+If an OpenCL application uses kernels with very long names, the Intercept Layer for OpenCL Applications can substitute a "short" kernel identifier for a "long" kernel name in logs and reports.  This control defines how long a kernel name must be (in characters) before it is replaced by a "short" kernel identifier.
+
 ### Reporting Controls
 
 ##### `ReportToStderr` (bool)

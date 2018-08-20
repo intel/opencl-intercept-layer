@@ -52,6 +52,7 @@ CLI_CONTROL( bool,          EventChecking,                          false, "If s
 CLI_CONTROL( bool,          LeakChecking,                           false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will check for leaks of various OpenCL objects, such as memory objects and events." )
 CLI_CONTROL( bool,          CLInfoLogging,                          false, "If set to a nonzero value, logs information about the platforms and devices in the system on the first call to clGetPlatformIDs()." )
 CLI_CONTROL( std::string,   LogDir,                                 "",    "If set, the Intercept Layer for OpenCL Applications will emit logs to this directory instead of the default log directory." )
+CLI_CONTROL( cl_uint,       LongKernelNameCutoff,                   UINT_MAX, "If an OpenCL application uses kernels with very long names, the Intercept Layer for OpenCL Applications can substitute a \"short\" kernel identifier for a \"long\" kernel name in logs and reports.  This control defines how long a kernel name must be (in characters) before it is replaced by a \"short\" kernel identifier." )
 
 CLI_CONTROL_SEPARATOR( Reporting Controls: )
 CLI_CONTROL( bool,          ReportToStderr,                         false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emit reports to stderr." )
