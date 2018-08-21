@@ -689,6 +689,11 @@ private:
 #error Unknown OS!
 #endif
 
+    void    addShortKernelName(
+                const std::string& kernelName );
+    const std::string&  getShortKernelName(
+                            const cl_kernel kernel );
+
     void    getCallLoggingPrefix(
                 std::string& str );
 
@@ -735,6 +740,13 @@ private:
     typedef std::map< std::string, SCpuTimingStats* > CCpuTimingStatsMap;
     CCpuTimingStatsMap  m_CpuTimingStatsMap;
 
+    // These structures define a mapping between a string identifier, which
+    // usually consists of the kernel name and possibly some extra
+    // information such as the local and global work size, and a device
+    // timing record.  The kernel name could be the "real" kernel name,
+    // or a kernel name ID, or is the OpenCL API name for non-kernel
+    // device timing stats.
+
     struct SDeviceTimingStats
     {
         uint64_t    NumberOfCalls;
@@ -746,8 +758,23 @@ private:
     typedef std::map< std::string, SDeviceTimingStats* >   CDeviceTimingStatsMap;
     CDeviceTimingStatsMap   m_DeviceTimingStatsMap;
 
+    // This defines a mapping between the kernel handle and the "real"
+    // kernel name.
+
     typedef std::map< const cl_kernel, std::string >    CKernelNameMap;
     CKernelNameMap  m_KernelNameMap;
+
+    // This defines a mapping between the "real" kernel name and a kernel
+    // name ID.  Only kernels with names larger than a control variable
+    // will be added to this map.
+
+    unsigned int    m_KernelID;
+
+    typedef std::map< const std::string, std::string >  CLongKernelNameMap;
+    CLongKernelNameMap  m_LongKernelNameMap;
+
+    // This is a list of pending events that haven't been added to the
+    // device timing stats map yet.
 
     struct SEventListNode
     {
@@ -1166,12 +1193,16 @@ inline bool CLIntercept::nullEnqueue() const
 //
 inline bool CLIntercept::dumpBufferForKernel( const cl_kernel kernel )
 {
+    // Note: This currently checks the long kernel name.
+    // Should it be the short kernel name instead?
     return m_Config.DumpBuffersForKernel.empty() ||
         m_KernelNameMap[ kernel ] == m_Config.DumpBuffersForKernel;
 }
 
 inline bool CLIntercept::dumpImagesForKernel( const cl_kernel kernel )
 {
+    // Note: This currently checks the long kernel name.
+    // Should it be the short kernel name instead?
     return m_Config.DumpImagesForKernel.empty() ||
         m_KernelNameMap[ kernel ] == m_Config.DumpImagesForKernel;
 }
@@ -1222,14 +1253,14 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits() const
 
 #define ADD_SAMPLER( sampler, str )                                         \
     if( sampler &&                                                          \
-        pIntercept->config().CallLogging )                                         \
+        pIntercept->config().CallLogging )                                  \
     {                                                                       \
         pIntercept->addSampler( sampler, str );                             \
     }
 
 #define REMOVE_SAMPLER( sampler )                                           \
     if( sampler &&                                                          \
-        pIntercept->config().CallLogging )                                         \
+        pIntercept->config().CallLogging )                                  \
     {                                                                       \
         pIntercept->removeSampler( sampler );                               \
     }
