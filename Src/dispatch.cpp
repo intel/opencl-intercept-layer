@@ -737,7 +737,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
                 &device,
                 deviceInfo );
         }
-        CALL_LOGGING_ENTER( "device = [ %s ], properties = %s (%llX)",
+        CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = %s (%llX)",
+            context,
             deviceInfo.c_str(),
             pIntercept->enumName().name_command_queue_properties( properties ).c_str(),
             properties );
@@ -983,7 +984,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
 
     if( pIntercept )
     {
-        CALL_LOGGING_ENTER( "flags = %s (%llX), size = %d, host_ptr = %p",
+        CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), size = %d, host_ptr = %p",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags,
             size,
@@ -1094,6 +1096,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
         if( image_desc && image_format )
         {
             CALL_LOGGING_ENTER(
+                "context = %p, "
                 "flags = %s (%llX), "
                 "format->channel_order = %s, "
                 "format->channel_data_type = %s, "
@@ -1108,6 +1111,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
                 "desc->num_samples = %d, "
                 "desc->mem_object = %p, "
                 "host_ptr = %p ",
+                context,
                 pIntercept->enumName().name_mem_flags( flags ).c_str(),
                 flags,
                 pIntercept->enumName().name( image_format->image_channel_order ).c_str(),
@@ -1179,6 +1183,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage2D)(
         if( image_format )
         {
             CALL_LOGGING_ENTER(
+                "context = %p, "
                 "flags = %s (%llX), "
                 "format->channel_order = %s, "
                 "format->channel_data_type = %s, "
@@ -1186,6 +1191,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage2D)(
                 "image_height = %d, "
                 "image_row_pitch = %d, "
                 "host_ptr = %p ",
+                context,
                 pIntercept->enumName().name_mem_flags( flags ).c_str(),
                 flags,
                 pIntercept->enumName().name( image_format->image_channel_order ).c_str(),
@@ -1256,6 +1262,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage3D)(
         if( image_format )
         {
             CALL_LOGGING_ENTER(
+                "context = %p, "
                 "flags = %s (%llX), "
                 "format->channel_order = %s, "
                 "format->channel_data_type = %s, "
@@ -1264,6 +1271,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage3D)(
                 "image_row_pitch = %d, "
                 "image_slice_pitch = %d, "
                 "host_ptr = %p ",
+                context,
                 pIntercept->enumName().name_mem_flags( flags ).c_str(),
                 flags,
                 pIntercept->enumName().name( image_format->image_channel_order ).c_str(),
@@ -1618,7 +1626,8 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
                 samplerProperties );
         }
 
-        CALL_LOGGING_ENTER( "properties = [ %s ]",
+        CALL_LOGGING_ENTER( "context = %p, properties = [ %s ]",
+            context,
             samplerProperties.c_str() );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
@@ -3071,7 +3080,8 @@ CL_API_ENTRY cl_event CL_API_CALL CLIRN(clCreateUserEvent)(
 
         if( pIntercept->nullEnqueue() == false )
         {
-            CALL_LOGGING_ENTER();
+            CALL_LOGGING_ENTER( "context = %p",
+                context );
             CHECK_ERROR_INIT( errcode_ret );
             CPU_PERFORMANCE_TIMING_START();
 
@@ -5606,7 +5616,9 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
         pIntercept->dispatch().clCreateFromGLBuffer )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags );
         CHECK_ERROR_INIT( errcode_ret );
@@ -5654,10 +5666,12 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
         pIntercept->dispatch().clCreateFromGLTexture )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX), "
             "texture_target = %s (%d), "
             "miplevel = %d, "
             "texture = %d",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags,
             pIntercept->enumName().name_gl( target ).c_str(),
@@ -5715,10 +5729,12 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture2D)(
         pIntercept->dispatch().clCreateFromGLTexture2D )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX), "
             "texture_target = %s (%d), "
             "miplevel = %d, "
             "texture = %d",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags,
             pIntercept->enumName().name_gl( target ).c_str(),
@@ -5776,10 +5792,12 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture3D)(
         pIntercept->dispatch().clCreateFromGLTexture3D )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX), "
             "texture_target = %s (%d), "
             "miplevel = %d, "
             "texture = %d",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags,
             pIntercept->enumName().name_gl( target ).c_str(),
@@ -5835,7 +5853,9 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLRenderbuffer)(
         pIntercept->dispatch().clCreateFromGLRenderbuffer )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags );
         CHECK_ERROR_INIT( errcode_ret );
@@ -6547,7 +6567,12 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreatePipe) (
 
     if( pIntercept )
     {
-        CALL_LOGGING_ENTER();
+        CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), pipe_packet_size = %u, pipe_max_packets = %u",
+            context,
+            pIntercept->enumName().name_mem_flags( flags ).c_str(),
+            flags,
+            pipe_packet_size,
+            pipe_max_packets );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -6650,7 +6675,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
                 properties,
                 commandQueueProperties );
         }
-        CALL_LOGGING_ENTER( "device = [ %s ], properties = [ %s ]",
+        CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = [ %s ]",
+            context,
             deviceInfo.c_str(),
             commandQueueProperties.c_str() );
         CREATE_COMMAND_QUEUE_OVERRIDE_INIT( properties, newProperties );
@@ -6733,7 +6759,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
                 properties,
                 commandQueueProperties );
         }
-        CALL_LOGGING_ENTER( "device = [ %s ], properties = [ %s ]",
+        CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = [ %s ]",
+            context,
             deviceInfo.c_str(),
             commandQueueProperties.c_str() );
         CREATE_COMMAND_QUEUE_OVERRIDE_INIT( properties, newProperties );
@@ -6805,7 +6832,8 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
                 sampler_properties,
                 samplerProperties );
         }
-        CALL_LOGGING_ENTER( "properties = [ %s ]",
+        CALL_LOGGING_ENTER( "context = %p, properties = [ %s ]",
+            context,
             samplerProperties.c_str() );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
@@ -7284,7 +7312,8 @@ CL_API_ENTRY cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
     if( pIntercept &&
         pIntercept->dispatch().clCreateEventFromGLsyncKHR )
     {
-        CALL_LOGGING_ENTER();
+        CALL_LOGGING_ENTER( "context = %p",
+            context );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -7368,7 +7397,9 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
         pIntercept->dispatch().clCreateFromD3D10BufferKHR )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags );
         CHECK_ERROR_INIT( errcode_ret );
@@ -7414,7 +7445,9 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
         pIntercept->dispatch().clCreateFromD3D10Texture2DKHR )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags );
         CHECK_ERROR_INIT( errcode_ret );
@@ -7461,7 +7494,9 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
         pIntercept->dispatch().clCreateFromD3D10Texture3DKHR )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags );
         CHECK_ERROR_INIT( errcode_ret );
@@ -7656,7 +7691,9 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
         pIntercept->dispatch().clCreateFromD3D11BufferKHR )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags );
         CHECK_ERROR_INIT( errcode_ret );
@@ -7702,7 +7739,9 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
         pIntercept->dispatch().clCreateFromD3D11Texture2DKHR )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags );
         CHECK_ERROR_INIT( errcode_ret );
@@ -7749,7 +7788,9 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
         pIntercept->dispatch().clCreateFromD3D11Texture3DKHR )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags );
         CHECK_ERROR_INIT( errcode_ret );
@@ -7948,7 +7989,9 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
         pIntercept->dispatch().clCreateFromDX9MediaSurfaceKHR )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags );
         CHECK_ERROR_INIT( errcode_ret );
@@ -8148,7 +8191,9 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
         pIntercept->dispatch().clCreateFromDX9MediaSurfaceINTEL )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags );
         CHECK_ERROR_INIT( errcode_ret );
@@ -8316,7 +8361,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
             properties |= (cl_command_queue_properties)CL_QUEUE_PROFILING_ENABLE;
         }
 
-        CALL_LOGGING_ENTER();
+        CALL_LOGGING_ENTER( "context = %p",
+            context );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -8405,7 +8451,8 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
         {
             cl_motion_estimation_desc_intel* desc =
                 (cl_motion_estimation_desc_intel*)descriptor;
-            CALL_LOGGING_ENTER( "cl_motion_estimation_desc: mb_block_type = %d, subpixel_mode = %d, sad_adjust_mode = %d, search_path_type = %d",
+            CALL_LOGGING_ENTER( "context = %p, motion_estimation_desc[ mb_block_type = %d, subpixel_mode = %d, sad_adjust_mode = %d, search_path_type = %d ]",
+                context,
                 desc->mb_block_type,
                 desc->subpixel_mode,
                 desc->sad_adjust_mode,
@@ -8413,7 +8460,9 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
         }
         else
         {
-            CALL_LOGGING_ENTER( "accelerator_type = %u", accelerator_type );
+            CALL_LOGGING_ENTER( "context = %p, accelerator_type = %u",
+                context,
+                accelerator_type );
         }
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
@@ -8637,7 +8686,9 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromVA_APIMediaSurfaceINTEL(
         pIntercept->dispatch().clCreateFromVA_APIMediaSurfaceINTEL )
     {
         CALL_LOGGING_ENTER(
+            "context = %p, "
             "flags = %s (%llX)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags );
         CHECK_ERROR_INIT( errcode_ret );
