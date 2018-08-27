@@ -47,7 +47,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformIDs)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -105,7 +105,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -159,7 +159,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceIDs)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -220,7 +220,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -270,7 +270,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateSubDevices)(
                 ADD_OBJECT_ALLOCATION( out_devices[d] );
             }
         }
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -327,8 +327,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainDevice)(
                 &ref_count,
                 NULL );
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -377,8 +376,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
             // avoids crashes in some cases for bad implementations.
             --ref_count;
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -462,7 +460,7 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContext)(
         CREATE_CONTEXT_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
 #ifdef __ANDROID__
         mContextCount.lock();
@@ -544,7 +542,7 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContextFromType)(
         CREATE_CONTEXT_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -600,8 +598,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainContext)(
                 &ref_count,
                 NULL );
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -649,8 +646,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
             // avoids crashes in some cases for bad implementations.
             --ref_count;
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
 #if 0
         pIntercept->report();
@@ -702,7 +698,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetContextInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -775,7 +771,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
         ITT_REGISTER_COMMAND_QUEUE( retVal, false );
         CHROME_REGISTER_COMMAND_QUEUE( retVal );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -830,8 +826,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainCommandQueue)(
                 &ref_count,
                 NULL );
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -880,8 +875,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseCommandQueue)(
             // avoids crashes in some cases for bad implementations.
             --ref_count;
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -919,7 +913,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetCommandQueueInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -957,7 +951,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetCommandQueueProperty)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -1007,7 +1001,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
         DUMP_BUFFER_AFTER_CREATE( retVal, flags, host_ptr, size );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -1063,7 +1057,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateSubBuffer)(
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -1148,7 +1142,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -1223,7 +1217,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage2D)(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -1307,7 +1301,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage3D)(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -1368,8 +1362,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainMemObject)(
                 &ref_count,
                 NULL );
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -1419,8 +1412,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseMemObject)(
             // avoids crashes in some cases for bad implementations.
             --ref_count;
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -1462,7 +1454,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetSupportedImageFormats)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -1506,7 +1498,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetMemObjectInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -1549,7 +1541,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetImageInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -1586,7 +1578,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetMemObjectDestructorCallback)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -1642,7 +1634,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
         ADD_SAMPLER(retVal, samplerProperties);
 
         return retVal;
@@ -1699,8 +1691,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainSampler)(
                 &ref_count,
                 NULL );
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -1752,8 +1743,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseSampler)(
             // avoids crashes in some cases for bad implementations.
             --ref_count;
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -1791,7 +1781,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetSamplerInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -1871,7 +1861,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithSource)(
             count,
             strings,
             lengths );
-        CALL_LOGGING_EXIT( "returned %p, program number = %04d",
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p, program number = %04d",
             retVal,
             pIntercept->getProgramNumber() );
 
@@ -1941,7 +1931,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBinary)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         DUMP_INPUT_PROGRAM_BINARIES(
             retVal,
@@ -2010,7 +2000,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBuiltInKernels)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -2066,8 +2056,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainProgram)(
                 &ref_count,
                 NULL );
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -2115,8 +2104,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseProgram)(
             // avoids crashes in some cases for bad implementations.
             --ref_count;
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -2166,7 +2154,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
             num_devices,
             device_list,
             options );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         DUMP_OUTPUT_PROGRAM_BINARIES( program );
         DUMP_KERNEL_ISA_BINARIES( program );
@@ -2228,7 +2216,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         BUILD_LOGGING( program, num_devices, device_list );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         INCREMENT_PROGRAM_COMPILE_COUNT( program );
 
@@ -2288,7 +2276,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         BUILD_LOGGING( retVal, num_devices, device_list );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( errcode_ret[0] );
 
         // TODO: Is the resulting program ("retVal") the one that should be
         // used here, to determine the hash for dumped options?
@@ -2334,7 +2322,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramReleaseCallback)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -2371,7 +2359,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramSpecializationConstant)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -2403,7 +2391,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clUnloadPlatformCompiler)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -2429,7 +2417,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clUnloadCompiler)( void )
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -2466,7 +2454,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -2510,7 +2498,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramBuildInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -2567,7 +2555,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
         SIMD_SURVEY_CREATE_KERNEL( program, retVal, kernel_name );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         if( retVal != NULL )
         {
@@ -2642,7 +2630,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateKernelsInProgram)(
                 num_kernels_ret,
                 retString );
         }
-        CALL_LOGGING_EXIT( "%s", retString.c_str() );
+        CALL_LOGGING_EXIT( retVal, "%s", retString.c_str() );
 
         if( ( retVal == CL_SUCCESS ) &&
             ( kernels != NULL ) )
@@ -2711,8 +2699,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainKernel)(
                 &ref_count,
                 NULL );
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -2762,8 +2749,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseKernel)(
             // avoids crashes in some cases for bad implementations.
             --ref_count;
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -2822,7 +2808,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
             arg_index,
             arg_size,
             arg_value );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -2863,7 +2849,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -2908,7 +2894,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelArgInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -2953,7 +2939,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelWorkGroupInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -3002,7 +2988,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
 
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT();
+            CALL_LOGGING_EXIT( retVal );
 
             DEVICE_PERFORMANCE_TIMING_CHECK();
         }
@@ -3049,7 +3035,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventInfo)(
 
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT();
+            CALL_LOGGING_EXIT( retVal );
         }
 
         return retVal;
@@ -3092,7 +3078,7 @@ CL_API_ENTRY cl_event CL_API_CALL CLIRN(clCreateUserEvent)(
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( retVal );
-            CALL_LOGGING_EXIT( "returned %p", retVal );
+            CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
         }
 
         return retVal;
@@ -3146,8 +3132,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainEvent)(
                 &ref_count,
                 NULL );
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -3195,8 +3180,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseEvent)(
             // avoids crashes in some cases for bad implementations.
             --ref_count;
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -3227,7 +3211,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetUserEventStatus)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -3268,7 +3252,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetEventCallback)(
         CPU_PERFORMANCE_TIMING_END();
         EVENT_CALLBACK_OVERRIDE_CLEANUP( retVal );
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -3313,7 +3297,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventProfilingInfo)(
 
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT();
+            CALL_LOGGING_EXIT( retVal );
         }
 
         return retVal;
@@ -3346,7 +3330,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFlush)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         DEVICE_PERFORMANCE_TIMING_CHECK();
 
@@ -3376,7 +3360,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFinish)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         DEVICE_PERFORMANCE_TIMING_CHECK();
 
@@ -3457,7 +3441,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
 
             if( blocking_read )
             {
@@ -3563,7 +3547,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
 
             if( blocking_read )
             {
@@ -3664,7 +3648,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
 
             if( blocking_write )
             {
@@ -3770,7 +3754,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
 
             if( blocking_write )
             {
@@ -3847,7 +3831,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillBuffer)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3935,7 +3919,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBuffer)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4030,7 +4014,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferRect)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4144,7 +4128,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
 
             if( blocking_read )
             {
@@ -4244,7 +4228,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
 
             if( blocking_write )
             {
@@ -4316,7 +4300,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillImage)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4397,7 +4381,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImage)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4463,7 +4447,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImageToBuffer)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4529,7 +4513,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferToImage)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4643,7 +4627,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                     &map_count,
                     NULL );
             }
-            CALL_LOGGING_EXIT_EVENT(event, "[ map count = %d ] returned %p",
+            CALL_LOGGING_EXIT_EVENT( errcode_ret[0], event, "[ map count = %d ] mapped %p",
                 map_count,
                 retVal );
 
@@ -4771,7 +4755,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                     &map_count,
                     NULL );
             }
-            CALL_LOGGING_EXIT_EVENT(event, "[ map count = %d ] returned %p",
+            CALL_LOGGING_EXIT_EVENT( errcode_ret[0], event, "[ map count = %d ] mapped %p",
                 map_count,
                 retVal );
 
@@ -4880,8 +4864,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueUnmapMemObject)(
                     &map_count,
                     NULL );
             }
-            CALL_LOGGING_EXIT_EVENT(event, "[ map count = %d ]",
-                map_count );
+            CALL_LOGGING_EXIT_EVENT( retVal, event, "[ map count = %d ]", map_count );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4941,7 +4924,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMigrateMemObjects)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5082,7 +5065,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
                 local_work_size );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         DUMP_BUFFERS_AFTER_ENQUEUE( kernel, command_queue );
@@ -5148,7 +5131,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
                 NULL );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5212,7 +5195,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNativeKernel)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5265,7 +5248,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarker)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5323,7 +5306,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWaitForEvents)(
 
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT();
+            CALL_LOGGING_EXIT( retVal );
 
             DEVICE_PERFORMANCE_TIMING_CHECK();
         }
@@ -5366,7 +5349,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrier)(
 
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT();
+            CALL_LOGGING_EXIT( retVal );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5428,7 +5411,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarkerWithWaitList)(
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5492,7 +5475,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrierWithWaitList)(
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5538,7 +5521,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddress)(
         }
 
         CPU_PERFORMANCE_TIMING_END();
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( CL_SUCCESS, "returned %p", retVal );
 
         return retVal;
     }
@@ -5588,7 +5571,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
         }
 
         CPU_PERFORMANCE_TIMING_END();
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( CL_SUCCESS, "returned %p", retVal );
 
         return retVal;
     }
@@ -5634,7 +5617,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -5697,7 +5680,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
 
         pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -5760,7 +5743,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture2D)(
 
         pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -5823,7 +5806,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture3D)(
 
         pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -5871,7 +5854,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLRenderbuffer)(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -5907,7 +5890,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLObjectInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -5946,7 +5929,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLTextureInfo)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -5999,7 +5982,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueAcquireGLObjects)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6057,7 +6040,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6113,7 +6096,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clSVMAlloc) (
         // if ErrorLogging is enabled.
         cl_int  errorCode = ( retVal != NULL ) ? CL_SUCCESS : CL_INVALID_OPERATION;
         CHECK_ERROR( errorCode );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errorCode, "allocated %p", retVal );
 
         return retVal;
     }
@@ -6148,7 +6131,7 @@ CL_API_ENTRY void CL_API_CALL CLIRN(clSVMFree) (
 
         CPU_PERFORMANCE_TIMING_END();
         REMOVE_SVM_ALLOCATION( svm_pointer );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( CL_SUCCESS );
     }
     else
     {
@@ -6204,7 +6187,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMFree) (
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6268,7 +6251,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6332,7 +6315,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemFill) (
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6396,7 +6379,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6454,7 +6437,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMUnmap) (
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6501,7 +6484,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArgSVMPointer) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -6538,7 +6521,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelExecInfo) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -6587,7 +6570,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreatePipe) (
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( errcode_ret[0] );
 
         return retVal;
     }
@@ -6632,7 +6615,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPipeInfo) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -6715,7 +6698,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
         CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -6799,7 +6782,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
         CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -6846,7 +6829,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
         ADD_SAMPLER( retVal, samplerProperties );
 
         return retVal;
@@ -6882,7 +6865,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetDefaultDeviceCommandQueue) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -6917,7 +6900,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceAndHostTimer) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -6950,7 +6933,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetHostTimer) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -6996,7 +6979,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithIL) (
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         DUMP_PROGRAM_SPIRV( retVal, length, il, hash );
         SAVE_PROGRAM_HASH( retVal, hash );
@@ -7050,7 +7033,7 @@ CL_API_ENTRY cl_program CL_API_CALL clCreateProgramWithILKHR(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         DUMP_PROGRAM_SPIRV( retVal, length, il, hash );
         SAVE_PROGRAM_HASH( retVal, hash );
@@ -7089,7 +7072,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCloneKernel) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -7135,7 +7118,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelSubGroupInfo) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -7189,7 +7172,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -7241,7 +7224,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -7289,7 +7272,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetGLContextInfoKHR(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -7325,7 +7308,7 @@ CL_API_ENTRY cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -7372,7 +7355,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D10KHR(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -7415,7 +7398,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -7464,7 +7447,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -7513,7 +7496,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -7566,7 +7549,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -7619,7 +7602,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -7666,7 +7649,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D11KHR(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -7709,7 +7692,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -7758,7 +7741,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -7807,7 +7790,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -7860,7 +7843,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -7913,7 +7896,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -7962,7 +7945,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -8009,7 +7992,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -8062,7 +8045,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8115,7 +8098,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8164,7 +8147,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9INTEL(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -8211,7 +8194,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -8264,7 +8247,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8317,7 +8300,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8378,7 +8361,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
         ADD_OBJECT_ALLOCATION( retVal );
         ITT_REGISTER_COMMAND_QUEUE( retVal, true );
         CHROME_REGISTER_COMMAND_QUEUE( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -8417,7 +8400,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -8477,7 +8460,7 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         //ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -8519,7 +8502,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetAcceleratorInfoINTEL(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -8570,8 +8553,7 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainAcceleratorINTEL(
                 &ref_count,
                 NULL );
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -8618,8 +8600,7 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseAcceleratorINTEL(
             // avoids crashes in some cases for bad implementations.
             --ref_count;
         }
-        CALL_LOGGING_EXIT( "[ ref count = %d ]",
-            ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
@@ -8660,7 +8641,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromVA_APIMediaAdapterINTEL(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        CALL_LOGGING_EXIT();
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -8705,7 +8686,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromVA_APIMediaSurfaceINTEL(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
 
         return retVal;
     }
@@ -8758,7 +8739,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireVA_APIMediaSurfacesINTEL(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8811,7 +8792,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
             DEVICE_PERFORMANCE_TIMING_END( event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( event );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
