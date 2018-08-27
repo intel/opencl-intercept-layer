@@ -82,11 +82,11 @@ public:
 
     void    callLoggingExit(
                 const std::string& functionName,
-                const cl_kernel kernel,
+                const cl_int errorCode,
                 const cl_event* event );
     void    callLoggingExit(
                 const std::string& functionName,
-                const cl_kernel kernel,
+                const cl_int errorCode,
                 const cl_event* event,
                 const char* formatStr,
                 ... );
@@ -1040,25 +1040,34 @@ inline bool CLIntercept::callLogging() const
         pIntercept->callLoggingInfo( __VA_ARGS__ );                         \
     }                                                                       \
 
-#define CALL_LOGGING_EXIT(...)                                                  \
-    if( pIntercept->config().CallLogging )                                      \
-    {                                                                           \
-        pIntercept->callLoggingExit( __FUNCTION__, NULL, NULL, ##__VA_ARGS__ ); \
-    }                                                                           \
+#define CALL_LOGGING_EXIT(errorCode, ...)                                   \
+    if( pIntercept->config().CallLogging )                                  \
+    {                                                                       \
+        pIntercept->callLoggingExit(                                        \
+            __FUNCTION__,                                                   \
+            errorCode,                                                      \
+            NULL,                                                           \
+            ##__VA_ARGS__ );                                                \
+    }                                                                       \
     ITT_CALL_LOGGING_EXIT();
 
-#define CALL_LOGGING_EXIT_EVENT(event, ...)                                     \
-    if( pIntercept->config().CallLogging )                                      \
-    {                                                                           \
-        pIntercept->callLoggingExit( __FUNCTION__, NULL, event, ##__VA_ARGS__ );\
-    }                                                                           \
+#define CALL_LOGGING_EXIT_EVENT(errorCode, event, ...)                      \
+    if( pIntercept->config().CallLogging )                                  \
+    {                                                                       \
+        pIntercept->callLoggingExit(                                        \
+            __FUNCTION__,                                                   \
+            errorCode,                                                      \
+            event,                                                          \
+            ##__VA_ARGS__ );                                                \
+    }                                                                       \
     ITT_CALL_LOGGING_EXIT();
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 #define CHECK_ERROR_INIT( pErrorCode )                                      \
     cl_int  localErrorCode = CL_SUCCESS;                                    \
-    if( ( pIntercept->config().ErrorLogging ||                              \
+    if( ( pIntercept->config().CallLogging ||                               \
+          pIntercept->config().ErrorLogging ||                              \
           pIntercept->config().ErrorAssert ||                               \
           pIntercept->config().NoErrors ) &&                                \
         ( pErrorCode == NULL ) )                                            \

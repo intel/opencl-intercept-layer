@@ -997,7 +997,7 @@ void CLIntercept::callLoggingEnter(
     if( m_Config.CallLoggingEnqueueCounter )
     {
         std::ostringstream  ss;
-        ss << ", EnqueueCounter: ";
+        ss << "; EnqueueCounter: ";
         ss << m_EnqueueCounter;
         str += ss.str();
     }
@@ -1082,7 +1082,7 @@ void CLIntercept::callLoggingInfo(
 //
 void CLIntercept::callLoggingExit(
     const std::string& functionName,
-    const cl_kernel kernel,
+    const cl_int errorCode,
     const cl_event* event )
 {
     m_OS.EnterCriticalSection();
@@ -1092,14 +1092,6 @@ void CLIntercept::callLoggingExit(
 
     str += functionName;
 
-    if( kernel )
-    {
-        const std::string& kernelName = getShortKernelName(kernel);
-        str += "( ";
-        str += kernelName;
-        str += " )";
-    }
-
     if( event )
     {
         char temp[ CLI_MAX_STRING_SIZE ] = "";
@@ -1107,13 +1099,16 @@ void CLIntercept::callLoggingExit(
         str += temp;
     }
 
+    str += " -> ";
+    str += m_EnumNameMap.name( errorCode );
+
     log( "<<<< " + str + "\n" );
 
     m_OS.LeaveCriticalSection();
 }
 void CLIntercept::callLoggingExit(
     const std::string& functionName,
-    const cl_kernel kernel,
+    const cl_int errorCode,
     const cl_event* event,
     const char* formatStr,
     ... )
@@ -1122,18 +1117,6 @@ void CLIntercept::callLoggingExit(
     va_start( args, formatStr );
 
     std::string str = functionName;
-
-    if( kernel )
-    {
-        m_OS.EnterCriticalSection();
-
-        const std::string& kernelName = getShortKernelName(kernel);
-        str += "( ";
-        str += kernelName;
-        str += " )";
-
-        m_OS.LeaveCriticalSection();
-    }
 
     char temp[ CLI_MAX_STRING_SIZE ] = "";
 
@@ -1154,7 +1137,7 @@ void CLIntercept::callLoggingExit(
         str += ": too long";
     }
 
-    callLoggingExit( str, NULL, NULL );
+    callLoggingExit( str, errorCode, NULL );
 
     va_end( args );
 }
@@ -2602,7 +2585,7 @@ void CLIntercept::eventCallbackCaller(
             pEventCallbackInfo->pUserData );
     }
 
-    CALL_LOGGING_EXIT();
+    CALL_LOGGING_EXIT( CL_SUCCESS );
 
     delete pEventCallbackInfo;
 }
