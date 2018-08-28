@@ -942,6 +942,9 @@ Description:
         // Optional param 'outMaxValues' should have a memory for at least 'MetricCount * RawReportCount' values, can be NULL.
         virtual TCompletionCode       CalculateMetrics( const unsigned char* rawData, uint32_t rawDataSize, TTypedValue_1_0* out,
             uint32_t outSize, uint32_t* outReportCount, TTypedValue_1_0* outMaxValues, uint32_t outMaxValuesSize );
+
+    private:
+        using IMetricSet_1_1::CalculateMetrics;
     };
 
 /*****************************************************************************\
