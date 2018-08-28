@@ -212,7 +212,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     target_link_libraries( OpenCL ${CMAKE_THREAD_LIBS_INIT} )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     find_package(OpenCL REQUIRED)
-    set_target_properties(OpenCL PROPERTIES COMPILE_FLAGS "-g -Wall -std=c++11 -stdlib=libc++ -Weverything -arch i386 -arch x86_64")
+    set_target_properties(OpenCL PROPERTIES COMPILE_FLAGS "-g -Wall -std=c++11 -stdlib=libc++ -arch i386 -arch x86_64")
     target_link_libraries( OpenCL OpenCL::OpenCL )
 endif()
 
