@@ -460,7 +460,7 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContext)(
         CREATE_CONTEXT_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
 #ifdef __ANDROID__
         mContextCount.lock();
@@ -542,7 +542,7 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContextFromType)(
         CREATE_CONTEXT_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -770,7 +770,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
         ITT_REGISTER_COMMAND_QUEUE( retVal, false );
         CHROME_REGISTER_COMMAND_QUEUE( retVal );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -999,7 +999,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
         DUMP_BUFFER_AFTER_CREATE( retVal, flags, host_ptr, size );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -1055,7 +1055,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateSubBuffer)(
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -1138,7 +1138,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -1211,7 +1211,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage2D)(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -1293,7 +1293,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage3D)(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -1625,7 +1625,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
         ADD_SAMPLER(retVal, samplerProperties);
 
         return retVal;
@@ -1852,7 +1852,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithSource)(
             count,
             strings,
             lengths );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p, program number = %04d",
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p, program number = %04d",
             retVal,
             pIntercept->getProgramNumber() );
 
@@ -1922,7 +1922,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBinary)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         DUMP_INPUT_PROGRAM_BINARIES(
             retVal,
@@ -1991,7 +1991,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBuiltInKernels)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -2546,7 +2546,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
         SIMD_SURVEY_CREATE_KERNEL( program, retVal, kernel_name );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         if( retVal != NULL )
         {
@@ -3068,7 +3068,7 @@ CL_API_ENTRY cl_event CL_API_CALL CLIRN(clCreateUserEvent)(
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( retVal );
-            CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
         }
 
         return retVal;
@@ -4617,7 +4617,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                     &map_count,
                     NULL );
             }
-            CALL_LOGGING_EXIT_EVENT( errcode_ret[0], event, "[ map count = %d ] mapped %p",
+            CALL_LOGGING_EXIT_EVENT( errcode_ret[0], event, "[ map count = %d ] returned %p",
                 map_count,
                 retVal );
 
@@ -4745,7 +4745,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                     &map_count,
                     NULL );
             }
-            CALL_LOGGING_EXIT_EVENT( errcode_ret[0], event, "[ map count = %d ] mapped %p",
+            CALL_LOGGING_EXIT_EVENT( errcode_ret[0], event, "[ map count = %d ] returned %p",
                 map_count,
                 retVal );
 
@@ -5605,7 +5605,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -5666,7 +5666,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
 
         pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -5727,7 +5727,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture2D)(
 
         pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -5788,7 +5788,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture3D)(
 
         pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -5834,7 +5834,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLRenderbuffer)(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -6076,7 +6076,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clSVMAlloc) (
         // if ErrorLogging is enabled.
         cl_int  errorCode = ( retVal != NULL ) ? CL_SUCCESS : CL_INVALID_OPERATION;
         CHECK_ERROR( errorCode );
-        CALL_LOGGING_EXIT( errorCode, "allocated %p", retVal );
+        CALL_LOGGING_EXIT( errorCode, "returned %p", retVal );
 
         return retVal;
     }
@@ -6672,7 +6672,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
         CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -6755,7 +6755,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
         CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( retVal, newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -6801,7 +6801,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
         ADD_SAMPLER( retVal, samplerProperties );
 
         return retVal;
@@ -6951,7 +6951,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithIL) (
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         DUMP_PROGRAM_SPIRV( retVal, length, il, hash );
         SAVE_PROGRAM_HASH( retVal, hash );
@@ -7005,7 +7005,7 @@ CL_API_ENTRY cl_program CL_API_CALL clCreateProgramWithILKHR(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         DUMP_PROGRAM_SPIRV( retVal, length, il, hash );
         SAVE_PROGRAM_HASH( retVal, hash );
@@ -7044,7 +7044,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCloneKernel) (
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -7279,7 +7279,7 @@ CL_API_ENTRY cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -7367,7 +7367,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -7414,7 +7414,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -7461,7 +7461,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -7655,7 +7655,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
         ADD_BUFFER( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -7702,7 +7702,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -7749,7 +7749,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -7949,7 +7949,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -8149,7 +8149,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -8315,7 +8315,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
         ADD_OBJECT_ALLOCATION( retVal );
         ITT_REGISTER_COMMAND_QUEUE( retVal, true );
         CHROME_REGISTER_COMMAND_QUEUE( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -8411,7 +8411,7 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         //ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -8635,7 +8635,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromVA_APIMediaSurfaceINTEL(
         ADD_IMAGE( retVal );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        CALL_LOGGING_EXIT( errcode_ret[0], "created %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
