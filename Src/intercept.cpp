@@ -764,58 +764,55 @@ void CLIntercept::writeReport(
     {
         os << std::endl << "Host Performance Timing Results:" << std::endl;
 
-        os << std::endl
-            << std::right << std::setw(44) << "Function Name" << ", "
-            << std::right << std::setw( 6) << "Calls" << ", "
-            << std::right << std::setw(13) << "Average (ns)" << ", "
-            << std::right << std::setw(13) << "Min (ns)" << ", "
-            << std::right << std::setw(13) << "Max (ns)" << std::endl;
+        uint64_t    totalTotalTicks = 0;
+        size_t      longestName = 32;
 
-        uint64_t overallTotalTicks = 0;
         CCpuTimingStatsMap::const_iterator i = m_CpuTimingStatsMap.begin();
         while( i != m_CpuTimingStatsMap.end() )
         {
-            SCpuTimingStats* pCpuTimingStats = (*i).second;
             const std::string& name = (*i).first;
+            const SCpuTimingStats*  pCpuTimingStats = (*i).second;
 
             if( !name.empty() && pCpuTimingStats )
             {
-                os << std::right << std::setw(44) << name << ", "
-                    << std::right << std::setw( 6) << pCpuTimingStats->NumberOfCalls << ", "
-                    << std::right << std::setw(13) << OS().TickToNS( pCpuTimingStats->TotalTicks ) / pCpuTimingStats->NumberOfCalls << ", "
-                    << std::right << std::setw(13) << OS().TickToNS( pCpuTimingStats->MinTicks ) << ", "
-                    << std::right << std::setw(13) << OS().TickToNS( pCpuTimingStats->MaxTicks ) << std::endl;
-
-                overallTotalTicks += pCpuTimingStats->TotalTicks;
+                totalTotalTicks += pCpuTimingStats->TotalTicks;
+                longestName = std::max< size_t >( name.length(), longestName );
             }
 
             ++i;
         }
 
+        const uint64_t totalTotalNS = OS().TickToNS( totalTotalTicks );
+        os << std::endl << "Total Time (ns): " << totalTotalNS << std::endl;
+
         os << std::endl
-            << std::right << std::setw(44) << "Function Name" << ", "
+            << std::right << std::setw(longestName) << "Function Name" << ", "
             << std::right << std::setw( 6) << "Calls" << ", "
-            << std::right << std::setw(13) << "Ticks" << ", "
-            << std::right << std::setw(13) << "Min Ticks" << ", "
-            << std::right << std::setw(13) << "Max Ticks" << ", "
-            << std::right << std::setw(13) << "% Ticks" << std::endl;
+            << std::right << std::setw(13) << "Time (ns)" << ", "
+            << std::right << std::setw( 8) << "Time (%)" << ", "
+            << std::right << std::setw(13) << "Average (ns)" << ", "
+            << std::right << std::setw(13) << "Min (ns)" << ", "
+            << std::right << std::setw(13) << "Max (ns)" << std::endl;
 
         i = m_CpuTimingStatsMap.begin();
         while( i != m_CpuTimingStatsMap.end() )
         {
-            SCpuTimingStats* pCpuTimingStats = (*i).second;
             const std::string& name = (*i).first;
+            const SCpuTimingStats*  pCpuTimingStats = (*i).second;
 
             if( !name.empty() && pCpuTimingStats )
             {
-                os << std::right << std::setw(44) << name << ", "
+                const uint64_t totalNS = OS().TickToNS( pCpuTimingStats->TotalTicks );
+                const uint64_t minNS = OS().TickToNS( pCpuTimingStats->MinTicks );
+                const uint64_t maxNS = OS().TickToNS( pCpuTimingStats->MaxTicks );
+
+                os << std::right << std::setw(longestName) << name << ", "
                     << std::right << std::setw( 6) << pCpuTimingStats->NumberOfCalls << ", "
-                    << std::right << std::setw(13) << pCpuTimingStats->TotalTicks << ", "
-                    << std::right << std::setw(13) << pCpuTimingStats->MinTicks << ", "
-                    << std::right << std::setw(13) << pCpuTimingStats->MaxTicks << ", "
-                    << std::right << std::setw(13)
-                        << std::fixed << std::setprecision(2)
-                        << ( pCpuTimingStats->TotalTicks * 100.0 ) / ( overallTotalTicks ) << std::endl;
+                    << std::right << std::setw(13) << totalNS << ", "
+                    << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << totalNS * 100.0f / totalTotalNS << "%, "
+                    << std::right << std::setw(13) << totalNS / pCpuTimingStats->NumberOfCalls << ", "
+                    << std::right << std::setw(13) << minNS << ", "
+                    << std::right << std::setw(13) << maxNS << std::endl;
             }
 
             ++i;
@@ -834,7 +831,7 @@ void CLIntercept::writeReport(
         while( i != m_DeviceTimingStatsMap.end() )
         {
             const std::string& name = (*i).first;
-            SDeviceTimingStats* pDeviceTimingStats = (*i).second;
+            const SDeviceTimingStats*   pDeviceTimingStats = (*i).second;
 
             if( !name.empty() && pDeviceTimingStats )
             {
@@ -860,7 +857,7 @@ void CLIntercept::writeReport(
         while( i != m_DeviceTimingStatsMap.end() )
         {
             const std::string& name = (*i).first;
-            SDeviceTimingStats* pDeviceTimingStats = (*i).second;
+            const SDeviceTimingStats* pDeviceTimingStats = (*i).second;
 
             if( !name.empty() && pDeviceTimingStats )
             {
