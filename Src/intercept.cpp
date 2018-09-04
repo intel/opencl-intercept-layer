@@ -885,25 +885,6 @@ void CLIntercept::addShortKernelName(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-const std::string& CLIntercept::getShortKernelName(
-    const cl_kernel kernel )
-{
-    const std::string& realKernelName = m_KernelInfoMap[ kernel ].KernelName;
-
-    CLongKernelNameMap::const_iterator i = m_LongKernelNameMap.find( realKernelName );
-
-    const std::string& shortKernelName =
-        ( i != m_LongKernelNameMap.end() ) ?
-        i->second :
-        realKernelName;
-
-    CLI_ASSERT( shortKernelName.length() <= m_Config.LongKernelNameCutoff );
-
-    return shortKernelName;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
 void CLIntercept::getCallLoggingPrefix(
     std::string& str )
 {
@@ -971,7 +952,7 @@ void CLIntercept::callLoggingEnter(
 
     if( kernel )
     {
-        const std::string& kernelName = getShortKernelName(kernel);
+        const std::string& kernelName = getShortKernelNameWithHash(kernel);
         str += "( ";
         str += kernelName;
         str += " )";
@@ -1004,7 +985,7 @@ void CLIntercept::callLoggingEnter(
     {
         m_OS.EnterCriticalSection();
 
-        const std::string& kernelName = getShortKernelName(kernel);
+        const std::string& kernelName = getShortKernelNameWithHash(kernel);
         str += "( ";
         str += kernelName;
         str += " )";
@@ -2340,7 +2321,7 @@ void CLIntercept::logPreferredWorkGroupSizeMultiple(
 
             if( errorCode == CL_SUCCESS )
             {
-                const std::string& kernelName = getShortKernelName(kernel);
+                const std::string& kernelName = getShortKernelNameWithHash(kernel);
                 log( "Preferred Work Group Size Multiple for: '" + kernelName + "':\n" );
             }
             if( errorCode == CL_SUCCESS )
@@ -4095,7 +4076,7 @@ void CLIntercept::updateHostTimingStats(
     std::string key( functionName );
     if( kernel )
     {
-        const std::string& kernelName = getShortKernelName(kernel);
+        const std::string& kernelName = getShortKernelNameWithHash(kernel);
         key += "( ";
         key += kernelName;
         key += " )";
@@ -4254,30 +4235,7 @@ void CLIntercept::addTimingEvent(
         pNode->FunctionName = functionName;
         if( kernel )
         {
-            pNode->KernelName = getShortKernelName(kernel);
-
-            if( config().DevicePerformanceTimeHashTracking )
-            {
-                const SKernelInfo&  kernelInfo = m_KernelInfoMap[ kernel ];
-
-                char    hashString[256] = "";
-                if( config().OmitProgramNumber )
-                {
-                    CLI_SPRINTF( hashString, 256, "(%08X_%04u_%08X)",
-                        (unsigned int)kernelInfo.ProgramHash,
-                        kernelInfo.CompileCount,
-                        (unsigned int)kernelInfo.OptionsHash );
-                }
-                else
-                {
-                    CLI_SPRINTF( hashString, 256, "(%04u_%08X_%04u_%08X)",
-                        kernelInfo.ProgramNumber,
-                        (unsigned int)kernelInfo.ProgramHash,
-                        kernelInfo.CompileCount,
-                        (unsigned int)kernelInfo.OptionsHash );
-                }
-                pNode->KernelName += hashString;
-            }
+            pNode->KernelName = getShortKernelNameWithHash(kernel);
 
             if( config().DevicePerformanceTimeKernelInfoTracking )
             {
@@ -10013,7 +9971,7 @@ void CLIntercept::ittCallLoggingEnter(
     {
         m_OS.EnterCriticalSection();
 
-        const std::string& kernelName = getShortKernelName(kernel);
+        const std::string& kernelName = getShortKernelNameWithHash(kernel);
         str += "( ";
         str += kernelName;
         str += " )";
@@ -10341,7 +10299,7 @@ void CLIntercept::chromeCallLoggingExit(
 
     if( kernel )
     {
-        const std::string& kernelName = getShortKernelName(kernel);
+        const std::string& kernelName = getShortKernelNameWithHash(kernel);
         str += "( ";
         str += kernelName;
         str += " )";

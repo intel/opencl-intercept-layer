@@ -696,8 +696,10 @@ private:
 
     void    addShortKernelName(
                 const std::string& kernelName );
-    const std::string&  getShortKernelName(
-                            const cl_kernel kernel );
+    std::string getShortKernelName(
+                    const cl_kernel kernel );
+    std::string getShortKernelNameWithHash(
+                    const cl_kernel kernel );
 
     void    getCallLoggingPrefix(
                 std::string& str );
@@ -1962,6 +1964,59 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
     {                                                                       \
         pIntercept->checkEventList( __FUNCTION__, _numEvents, _eventList ); \
     }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+inline std::string CLIntercept::getShortKernelName(
+    const cl_kernel kernel )
+{
+    const std::string& realKernelName = m_KernelInfoMap[ kernel ].KernelName;
+
+    CLongKernelNameMap::const_iterator i = m_LongKernelNameMap.find( realKernelName );
+
+    const std::string& shortKernelName =
+        ( i != m_LongKernelNameMap.end() ) ?
+        i->second :
+        realKernelName;
+
+    CLI_ASSERT( shortKernelName.length() <= m_Config.LongKernelNameCutoff );
+
+    return shortKernelName;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+inline std::string CLIntercept::getShortKernelNameWithHash(
+    const cl_kernel kernel )
+{
+    std::string name = getShortKernelName( kernel );
+
+    if( config().DevicePerformanceTimeHashTracking )
+    {
+        const SKernelInfo& kernelInfo = m_KernelInfoMap[ kernel ];
+
+        char    hashString[256] = "";
+        if( config().OmitProgramNumber )
+        {
+            CLI_SPRINTF( hashString, 256, "(%08X_%04u_%08X)",
+                (unsigned int)kernelInfo.ProgramHash,
+                kernelInfo.CompileCount,
+                (unsigned int)kernelInfo.OptionsHash );
+        }
+        else
+        {
+            CLI_SPRINTF( hashString, 256, "(%04u_%08X_%04u_%08X)",
+                kernelInfo.ProgramNumber,
+                (unsigned int)kernelInfo.ProgramHash,
+                kernelInfo.CompileCount,
+                (unsigned int)kernelInfo.OptionsHash );
+        }
+
+        name += hashString;
+    }
+
+    return name;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
