@@ -1476,7 +1476,8 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 // Shared:
 
 #define SAVE_PROGRAM_HASH( program, hash )                                  \
-    if( pIntercept->config().DevicePerformanceTimeHashTracking ||           \
+    if( pIntercept->config().BuildLogging ||                                \
+        pIntercept->config().DevicePerformanceTimeHashTracking ||           \
         pIntercept->config().DumpProgramSource ||                           \
         pIntercept->config().DumpInputProgramBinaries ||                    \
         pIntercept->config().DumpProgramBinaries ||                         \
@@ -1491,7 +1492,8 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
     }
 
 #define SAVE_PROGRAM_OPTIONS_HASH( program, options )                       \
-    if( pIntercept->config().DevicePerformanceTimeHashTracking ||           \
+    if( pIntercept->config().BuildLogging ||                                \
+        pIntercept->config().DevicePerformanceTimeHashTracking ||           \
         pIntercept->config().DumpProgramSource ||                           \
         pIntercept->config().DumpInputProgramBinaries ||                    \
         pIntercept->config().DumpProgramBinaries ||                         \

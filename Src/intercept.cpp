@@ -3210,20 +3210,22 @@ bool CLIntercept::injectProgramOptions(
         fileName += "/Inject";
     }
     // Make four candidate filenames.  They will have the form:
-    //   CLI_<program number>_<program hash>_<options hash>_options.txt, or
-    //   CLI_<program hash>_<options hash>_options.txt, or
+    //   CLI_<program number>_<program hash>_<compile count>_<options hash>_options.txt, or
+    //   CLI_<program hash>_<compile count>_<options hash>_options.txt, or
     //   CLI_<program hash>_options.txt, or
     //   CLI_options.txt
     {
         char    numberString1[256] = "";
-        CLI_SPRINTF( numberString1, 256, "%04u_%08X_%04u",
+        CLI_SPRINTF( numberString1, 256, "%04u_%08X_%04u_%08X",
             programInfo.ProgramNumber,
             (unsigned int)programInfo.ProgramHash,
+            programInfo.CompileCount,
             (unsigned int)programInfo.OptionsHash );
 
         char    numberString2[256] = "";
-        CLI_SPRINTF( numberString2, 256, "%08X_%04u",
+        CLI_SPRINTF( numberString2, 256, "%08X_%04u_%08X",
             (unsigned int)programInfo.ProgramHash,
+            programInfo.CompileCount,
             (unsigned int)programInfo.OptionsHash );
 
         char    numberString3[256] = "";
@@ -3922,22 +3924,24 @@ void CLIntercept::dumpProgramOptions(
             OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
         }
         // Make the filename.  It will have the form:
-        //   CLI_<program number>_<program hash>_<options hash>
+        //   CLI_<program number>_<program hash>_<compile count>_<options hash>
         // Leave off the extension for now.
         {
             char    numberString[256] = "";
 
             if( config().OmitProgramNumber )
             {
-                CLI_SPRINTF( numberString, 256, "%08X_%08X",
+                CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X",
                     (unsigned int)programInfo.ProgramHash,
+                    programInfo.CompileCount,
                     (unsigned int)programInfo.OptionsHash );
             }
             else
             {
-                CLI_SPRINTF( numberString, 256, "%04u_%08X_%08X",
+                CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X",
                     programInfo.ProgramNumber,
                     (unsigned int)programInfo.ProgramHash,
+                    programInfo.CompileCount,
                     (unsigned int)programInfo.OptionsHash );
             }
 
@@ -3988,7 +3992,7 @@ void CLIntercept::dumpProgramBuildLog(
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
     }
     // Make the filename.  It will have the form:
-    //   CLI_<program number>_<program hash>_<options hash>_<compile count>
+    //   CLI_<program number>_<program hash>_<compile count>_<options hash>
     // Leave off the extension for now.
     {
         char    numberString[256] = "";
@@ -6474,7 +6478,7 @@ void CLIntercept::dumpProgramBinary(
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
     }
     // Make the filename.  It will have the form:
-    //   CLI_<program number>_<program hash>_<options hash>_<compile count>
+    //   CLI_<program number>_<program hash>_<compile count>_<options hash>
     // Leave off the extension for now.
     {
         char    numberString[256] = "";
@@ -6723,7 +6727,7 @@ void CLIntercept::dumpKernelISABinaries(
             OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
         }
         // Make the filename prefix.  It will have the form:
-        //   CLI_<program number>_<program hash>_<options hash>_<compile count>_<device type>_<kernel name>.isabin
+        //   CLI_<program number>_<program hash>_<compile count>_<options hash>_<device type>_<kernel name>.isabin
         // We'll fill in the device type and kernel name later.
         {
             char    numberString[256] = "";
@@ -7008,7 +7012,7 @@ void CLIntercept::autoCreateSPIRV(
 
     // Re-create the input file name.  This will be a program source file we dumped
     // earlier.  It will have the form:
-    //   CLI_<program number>_<hash>_source.cl
+    //   CLI_<program number>_<program hash>_source.cl
     {
         char    numberString[256] = "";
 
@@ -7031,7 +7035,7 @@ void CLIntercept::autoCreateSPIRV(
     }
 
     // Make the output file name.  It will have the form:
-    //   CLI_<program number>_<program hash>_<options hash>_<compile count>.spv
+    //   CLI_<program number>_<program hash>_<compile count>_<options hash>.spv
     {
         char    numberString[256] = "";
 
