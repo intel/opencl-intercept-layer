@@ -956,7 +956,7 @@ private:
         cl_ulong            CLReferenceTime;
     };
 
-    typedef std::map< cl_command_queue, SITTQueueInfo* > CITTQueueInfoMap;
+    typedef std::map< cl_command_queue, SITTQueueInfo > CITTQueueInfoMap;
     CITTQueueInfoMap    m_ITTQueueInfoMap;
 #endif
 

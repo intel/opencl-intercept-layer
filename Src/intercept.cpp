@@ -10008,28 +10008,19 @@ void CLIntercept::ittRegisterCommandQueue(
             NULL );
     }
 
-    SITTQueueInfo*  pITTQueueInfo = NULL;
     if( errorCode == CL_SUCCESS )
     {
-        pITTQueueInfo = new SITTQueueInfo;
-        if( pITTQueueInfo == NULL )
-        {
-            errorCode = CL_OUT_OF_HOST_MEMORY;
-        }
-        else
-        {
-            pITTQueueInfo->pIntercept = this;
-            pITTQueueInfo->SupportsPerfCounters = supportsPerfCounters;
+        SITTQueueInfo& queueInfo = m_ITTQueueInfoMap[ queue ];
 
-            pITTQueueInfo->itt_track = NULL;
-            pITTQueueInfo->itt_clock_domain = NULL;
-            pITTQueueInfo->CPUReferenceTime = 0;
-            pITTQueueInfo->CLReferenceTime = 0;
-        }
-    }
+        queueInfo.pIntercept = this;
+        queueInfo.SupportsPerfCounters = supportsPerfCounters;
 
-    if( errorCode == CL_SUCCESS )
-    {
+        queueInfo.itt_track = NULL;
+        queueInfo.itt_clock_domain = NULL;
+        queueInfo.CPUReferenceTime = 0;
+        queueInfo.CLReferenceTime = 0;
+
+#if 0
         std::string trackName = "OpenCL";
 
         if( properties & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE )
@@ -10068,32 +10059,25 @@ void CLIntercept::ittRegisterCommandQueue(
 
         // Don't fail if the track cannot be created, it just means we
         // won't be as detailed in our tracking.
-        //__itt_track* track = __itt_track_create(
-        //    m_ITTQueueTrackGroup,
-        //    __itt_string_handle_create(trackName.c_str()),
-        //    __itt_track_type_queue );
-        //if( track != NULL )
-        //{
-        //    pITTQueueInfo->itt_track = track;
-        //
-        //    __itt_set_track(track);
-        //
-        //    __ittx_set_default_state(
-        //        m_ITTDomain,
-        //        m_ITTQueuedState );
-        //
-        //    __itt_set_track(NULL);
-        //}
+        __itt_track* track = __itt_track_create(
+            m_ITTQueueTrackGroup,
+            __itt_string_handle_create(trackName.c_str()),
+            __itt_track_type_queue );
+        if( track != NULL )
+        {
+            queueInfo.itt_track = track;
+
+            __itt_set_track(track);
+
+            __ittx_set_default_state(
+                m_ITTDomain,
+                m_ITTQueuedState );
+
+            __itt_set_track(NULL);
+        }
+#endif
 
         dispatch().clRetainCommandQueue( queue );
-
-        m_ITTQueueInfoMap[ queue ] = pITTQueueInfo;
-    }
-
-    if( errorCode != CL_SUCCESS )
-    {
-        delete pITTQueueInfo;
-        pITTQueueInfo = NULL;
     }
 
     m_OS.LeaveCriticalSection();
@@ -10107,30 +10091,19 @@ void CLIntercept::ittReleaseCommandQueue(
     cl_int  errorCode = CL_SUCCESS;
     cl_uint refCount = 0;
 
-    SITTQueueInfo*  pITTQueueInfo = m_ITTQueueInfoMap[ queue ];
-    if( pITTQueueInfo )
+    if( m_ITTQueueInfoMap.find(queue) != m_ITTQueueInfoMap.end() )
     {
-        if( errorCode == CL_SUCCESS )
-        {
-            errorCode = dispatch().clGetCommandQueueInfo(
-                queue,
-                CL_QUEUE_REFERENCE_COUNT,
-                sizeof( refCount ),
-                &refCount,
-                NULL );
-        }
+        errorCode = dispatch().clGetCommandQueueInfo(
+            queue,
+            CL_QUEUE_REFERENCE_COUNT,
+            sizeof( refCount ),
+            &refCount,
+            NULL );
 
         if( ( errorCode == CL_SUCCESS ) &&
             ( refCount == 1 ) )
         {
             dispatch().clReleaseCommandQueue( queue );
-
-            // I guess we don't delete a track after we've created it?
-            // Or a clock domain?
-
-            delete pITTQueueInfo;
-            pITTQueueInfo = NULL;
-
             m_ITTQueueInfoMap.erase( queue );
         }
     }
@@ -10142,7 +10115,7 @@ void ITTAPI CLIntercept::ittClockInfoCallback(
     __itt_clock_info* pClockInfo,
     void* pData )
 {
-    const SITTQueueInfo*    pQueueInfo = (const SITTQueueInfo*)pData;
+    const SITTQueueInfo* pQueueInfo = (const SITTQueueInfo*)pData;
 
     uint64_t    cpuTickDelta =
         pQueueInfo->pIntercept->OS().GetTimer() -
@@ -10211,33 +10184,34 @@ void CLIntercept::ittTraceEvent(
     if( errorCode == CL_SUCCESS )
     {
         // It's possible we don't have any ITT info for this queue.
-        SITTQueueInfo*  pITTQueueInfo = m_ITTQueueInfoMap[ queue ];
-        if( pITTQueueInfo != NULL )
+        if( m_ITTQueueInfoMap.find(queue) != m_ITTQueueInfoMap.end() )
         {
-            __itt_clock_domain* clockDomain = pITTQueueInfo->itt_clock_domain;
+            SITTQueueInfo&  queueInfo = m_ITTQueueInfoMap[ queue ];
+
+            __itt_clock_domain* clockDomain = queueInfo.itt_clock_domain;
             if( clockDomain == NULL )
             {
-                pITTQueueInfo->CPUReferenceTime = queuedTime;
-                pITTQueueInfo->CLReferenceTime = commandQueued;
+                queueInfo.CPUReferenceTime = queuedTime;
+                queueInfo.CLReferenceTime = commandQueued;
 
                 clockDomain = __itt_clock_domain_create(
                     ittClockInfoCallback,
-                    pITTQueueInfo );
+                    &queueInfo );
                 if( clockDomain == NULL )
                 {
                     log( "__itt_clock_domain_create() returned NULL!\n");
                 }
 
-                pITTQueueInfo->itt_clock_domain = clockDomain;
+                queueInfo.itt_clock_domain = clockDomain;
             }
 
-            __itt_track*    track = pITTQueueInfo->itt_track;
+            __itt_track*    track = queueInfo.itt_track;
             uint64_t        clockOffset = 0;
 
             if( commandQueued == 0 )
             {
                 clockOffset = queuedTime;
-                clockOffset -= pITTQueueInfo->CPUReferenceTime;
+                clockOffset -= queueInfo.CPUReferenceTime;
                 clockOffset = OS().TickToNS( clockOffset );
             }
 
@@ -10267,7 +10241,7 @@ void CLIntercept::ittTraceEvent(
                 __itt_task_end_overlapped_ex( m_ITTDomain, clockDomain, commandEnd, eventId );
             }
 
-            if( pITTQueueInfo->SupportsPerfCounters )
+            if( queueInfo.SupportsPerfCounters )
             {
                 // TODO: This needs to be updated to use MDAPI.
                 CLI_ASSERT( 0 );
