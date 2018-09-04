@@ -2559,8 +2559,9 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
 
         if( retVal != NULL )
         {
-            pIntercept->addKernelName(
+            pIntercept->addKernelInfo(
                 retVal,
+                program,
                 kernel_name );
             if( pIntercept->config().PreferredWorkGroupSizeMultipleLogging )
             {
@@ -2635,8 +2636,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateKernelsInProgram)(
         if( ( retVal == CL_SUCCESS ) &&
             ( kernels != NULL ) )
         {
-            pIntercept->addKernelNames(
+            pIntercept->addKernelInfo(
                 kernels,
+                program,
                 num_kernels_ret[0] );
             if( pIntercept->config().PreferredWorkGroupSizeMultipleLogging )
             {

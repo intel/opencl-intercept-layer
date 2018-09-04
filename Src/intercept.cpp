@@ -192,38 +192,6 @@ CLIntercept::~CLIntercept()
     }
 
     {
-        CCpuTimingStatsMap::iterator i = m_CpuTimingStatsMap.begin();
-        while( i != m_CpuTimingStatsMap.end() )
-        {
-            SCpuTimingStats* pCpuTimingStats = (*i).second;
-
-            if( pCpuTimingStats )
-            {
-                delete pCpuTimingStats;
-            }
-
-            (*i).second = NULL;
-            ++i;
-        }
-    }
-
-    {
-        CDeviceTimingStatsMap::iterator i = m_DeviceTimingStatsMap.begin();
-        while( i != m_DeviceTimingStatsMap.end() )
-        {
-            SDeviceTimingStats* pDeviceTimingStats = (*i).second;
-
-            if( pDeviceTimingStats )
-            {
-                delete pDeviceTimingStats;
-            }
-
-            (*i).second = NULL;
-            ++i;
-        }
-    }
-
-    {
         CEventList::iterator i = m_EventList.begin();
         while( i != m_EventList.end() )
         {
@@ -774,22 +742,22 @@ void CLIntercept::writeReport(
     }
 
     if( config().HostPerformanceTiming &&
-        !m_CpuTimingStatsMap.empty() )
+        !m_HostTimingStatsMap.empty() )
     {
         os << std::endl << "Host Performance Timing Results:" << std::endl;
 
         uint64_t    totalTotalTicks = 0;
         size_t      longestName = 32;
 
-        CCpuTimingStatsMap::const_iterator i = m_CpuTimingStatsMap.begin();
-        while( i != m_CpuTimingStatsMap.end() )
+        CHostTimingStatsMap::const_iterator i = m_HostTimingStatsMap.begin();
+        while( i != m_HostTimingStatsMap.end() )
         {
             const std::string& name = (*i).first;
-            const SCpuTimingStats*  pCpuTimingStats = (*i).second;
+            const SHostTimingStats& hostTimingStats = (*i).second;
 
-            if( !name.empty() && pCpuTimingStats )
+            if( !name.empty() )
             {
-                totalTotalTicks += pCpuTimingStats->TotalTicks;
+                totalTotalTicks += hostTimingStats.TotalTicks;
                 longestName = std::max< size_t >( name.length(), longestName );
             }
 
@@ -808,23 +776,23 @@ void CLIntercept::writeReport(
             << std::right << std::setw(13) << "Min (ns)" << ", "
             << std::right << std::setw(13) << "Max (ns)" << std::endl;
 
-        i = m_CpuTimingStatsMap.begin();
-        while( i != m_CpuTimingStatsMap.end() )
+        i = m_HostTimingStatsMap.begin();
+        while( i != m_HostTimingStatsMap.end() )
         {
             const std::string& name = (*i).first;
-            const SCpuTimingStats*  pCpuTimingStats = (*i).second;
+            const SHostTimingStats& hostTimingStats = (*i).second;
 
-            if( !name.empty() && pCpuTimingStats )
+            if( !name.empty() )
             {
-                const uint64_t totalNS = OS().TickToNS( pCpuTimingStats->TotalTicks );
-                const uint64_t minNS = OS().TickToNS( pCpuTimingStats->MinTicks );
-                const uint64_t maxNS = OS().TickToNS( pCpuTimingStats->MaxTicks );
+                const uint64_t totalNS = OS().TickToNS( hostTimingStats.TotalTicks );
+                const uint64_t minNS = OS().TickToNS( hostTimingStats.MinTicks );
+                const uint64_t maxNS = OS().TickToNS( hostTimingStats.MaxTicks );
 
                 os << std::right << std::setw(longestName) << name << ", "
-                    << std::right << std::setw( 6) << pCpuTimingStats->NumberOfCalls << ", "
+                    << std::right << std::setw( 6) << hostTimingStats.NumberOfCalls << ", "
                     << std::right << std::setw(13) << totalNS << ", "
                     << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << totalNS * 100.0f / totalTotalNS << "%, "
-                    << std::right << std::setw(13) << totalNS / pCpuTimingStats->NumberOfCalls << ", "
+                    << std::right << std::setw(13) << totalNS / hostTimingStats.NumberOfCalls << ", "
                     << std::right << std::setw(13) << minNS << ", "
                     << std::right << std::setw(13) << maxNS << std::endl;
             }
@@ -845,11 +813,11 @@ void CLIntercept::writeReport(
         while( i != m_DeviceTimingStatsMap.end() )
         {
             const std::string& name = (*i).first;
-            const SDeviceTimingStats*   pDeviceTimingStats = (*i).second;
+            const SDeviceTimingStats& deviceTimingStats = (*i).second;
 
-            if( !name.empty() && pDeviceTimingStats )
+            if( !name.empty() )
             {
-                totalTotalNS += pDeviceTimingStats->TotalNS;
+                totalTotalNS += deviceTimingStats.TotalNS;
                 longestName = std::max< size_t >( name.length(), longestName );
             }
 
@@ -871,17 +839,17 @@ void CLIntercept::writeReport(
         while( i != m_DeviceTimingStatsMap.end() )
         {
             const std::string& name = (*i).first;
-            const SDeviceTimingStats* pDeviceTimingStats = (*i).second;
+            const SDeviceTimingStats& deviceTimingStats = (*i).second;
 
-            if( !name.empty() && pDeviceTimingStats )
+            if( !name.empty() )
             {
                 os << std::right << std::setw(longestName) << name << ", "
-                    << std::right << std::setw( 6) << pDeviceTimingStats->NumberOfCalls << ", "
-                    << std::right << std::setw(13) << pDeviceTimingStats->TotalNS << ", "
-                    << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << pDeviceTimingStats->TotalNS * 100.0f / totalTotalNS << "%, "
-                    << std::right << std::setw(13) << pDeviceTimingStats->TotalNS / pDeviceTimingStats->NumberOfCalls << ", "
-                    << std::right << std::setw(13) << pDeviceTimingStats->MinNS << ", "
-                    << std::right << std::setw(13) << pDeviceTimingStats->MaxNS << std::endl;
+                    << std::right << std::setw( 6) << deviceTimingStats.NumberOfCalls << ", "
+                    << std::right << std::setw(13) << deviceTimingStats.TotalNS << ", "
+                    << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << deviceTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
+                    << std::right << std::setw(13) << deviceTimingStats.TotalNS / deviceTimingStats.NumberOfCalls << ", "
+                    << std::right << std::setw(13) << deviceTimingStats.MinNS << ", "
+                    << std::right << std::setw(13) << deviceTimingStats.MaxNS << std::endl;
             }
 
             ++i;
@@ -920,7 +888,7 @@ void CLIntercept::addShortKernelName(
 const std::string& CLIntercept::getShortKernelName(
     const cl_kernel kernel )
 {
-    const std::string& realKernelName = m_KernelNameMap[ kernel ];
+    const std::string& realKernelName = m_KernelInfoMap[ kernel ].KernelName;
 
     CLongKernelNameMap::const_iterator i = m_LongKernelNameMap.find( realKernelName );
 
@@ -2135,13 +2103,12 @@ void CLIntercept::logBuild(
     if( m_Config.BuildLogging &&
         errorCode == CL_SUCCESS )
     {
-        unsigned int    programNumber = m_ProgramNumberMap[ program ];
-        unsigned int    compileCount = m_ProgramNumberCompileCountMap[ programNumber ];
+        const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
         logf( "Build Info for program %p, number %u, compile %u, for %u device(s):\n",
             program,
-            programNumber,
-            compileCount,
+            programInfo.ProgramNumber,
+            programInfo.CompileCount,
             numDevices );
 
         float   buildTimeMS = m_OS.TickToNS( buildTimeEnd - buildTimeStart ) / 1e6f;
@@ -2795,12 +2762,7 @@ void CLIntercept::incrementProgramCompileCount(
 {
     m_OS.EnterCriticalSection();
 
-    unsigned int    programNumber = m_ProgramNumberMap[ program ];
-    unsigned int    compileCount = m_ProgramNumberCompileCountMap[ programNumber ];
-
-    ++compileCount;
-
-    m_ProgramNumberCompileCountMap[ programNumber ] = compileCount;
+    m_ProgramInfoMap[ program ].CompileCount++;
 
     m_OS.LeaveCriticalSection();
 }
@@ -2839,7 +2801,7 @@ void CLIntercept::saveProgramHash(
 
     if( program != NULL )
     {
-        m_ProgramHashMap[ program ] = hash;
+        m_ProgramInfoMap[ program ].ProgramHash = hash;
     }
 
     m_OS.LeaveCriticalSection();
@@ -3205,9 +3167,7 @@ bool CLIntercept::injectProgramOptions(
 
     bool    injected = false;
 
-    unsigned int    programNumber = m_ProgramNumberMap[ program ];
-    uint64_t        programHash = m_ProgramHashMap[ program ];
-    unsigned int    compileCount = m_ProgramNumberCompileCountMap[ programNumber ];
+    const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
     std::string fileName;
 
@@ -3224,18 +3184,18 @@ bool CLIntercept::injectProgramOptions(
     {
         char    numberString1[256] = "";
         CLI_SPRINTF( numberString1, 256, "%04u_%08X_%04u",
-            programNumber,
-            (unsigned int)programHash,
-            compileCount );
+            programInfo.ProgramNumber,
+            (unsigned int)programInfo.ProgramHash,
+            programInfo.CompileCount );
 
         char    numberString2[256] = "";
         CLI_SPRINTF( numberString2, 256, "%08X_%04u",
-            (unsigned int)programHash,
-            compileCount );
+            (unsigned int)programInfo.ProgramHash,
+            programInfo.CompileCount );
 
         char    numberString3[256] = "";
         CLI_SPRINTF( numberString3, 256, "%08X",
-            (unsigned int)programHash );
+            (unsigned int)programInfo.ProgramHash );
 
         std::string fileName1;
         fileName1 = fileName;
@@ -3518,8 +3478,10 @@ void CLIntercept::dumpProgramSourceScript(
         }
     }
 
-    m_ProgramNumberMap[ program ] = m_ProgramNumber;
-    m_ProgramNumberCompileCountMap[ m_ProgramNumber ] = 0;
+    SProgramInfo&   programInfo = m_ProgramInfoMap[ program ];
+    programInfo.ProgramNumber = m_ProgramNumber;
+    programInfo.CompileCount = 0;
+
     m_ProgramNumber++;
 
     m_OS.LeaveCriticalSection();
@@ -3588,8 +3550,10 @@ void CLIntercept::dumpProgramSource(
         }
     }
 
-    m_ProgramNumberMap[ program ] = m_ProgramNumber;
-    m_ProgramNumberCompileCountMap[ m_ProgramNumber ] = 0;
+    SProgramInfo&   programInfo = m_ProgramInfoMap[ program ];
+    programInfo.ProgramNumber = m_ProgramNumber;
+    programInfo.CompileCount = 0;
+
     m_ProgramNumber++;
 
     m_OS.LeaveCriticalSection();
@@ -3692,8 +3656,10 @@ void CLIntercept::dumpInputProgramBinaries(
         }
     }
 
-    m_ProgramNumberMap[ program ] = m_ProgramNumber;
-    m_ProgramNumberCompileCountMap[ m_ProgramNumber ] = 0;
+    SProgramInfo&   programInfo = m_ProgramInfoMap[ program ];
+    programInfo.ProgramNumber = m_ProgramNumber;
+    programInfo.CompileCount = 0;
+
     m_ProgramNumber++;
 
     m_OS.LeaveCriticalSection();
@@ -3772,8 +3738,10 @@ void CLIntercept::dumpProgramSPIRV(
         }
     }
 
-    m_ProgramNumberMap[ program ] = m_ProgramNumber;
-    m_ProgramNumberCompileCountMap[ m_ProgramNumber ] = 0;
+    SProgramInfo&   programInfo = m_ProgramInfoMap[ program ];
+    programInfo.ProgramNumber = m_ProgramNumber;
+    programInfo.CompileCount = 0;
+
     m_ProgramNumber++;
 
     m_OS.LeaveCriticalSection();
@@ -3791,7 +3759,7 @@ void CLIntercept::dumpProgramOptionsScript(
 
     CLI_ASSERT( config().DumpProgramSource || config().SimpleDumpProgramSource );
 
-    unsigned int    programNumber = m_ProgramNumberMap[ program ];
+    const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
     if( options )
     {
@@ -3870,7 +3838,7 @@ void CLIntercept::dumpProgramOptionsScript(
             curPos += 2;
             remaining -= 2;
 
-            CLI_SPRINTF( curPos, remaining, "_%8.8x", programNumber );
+            CLI_SPRINTF( curPos, remaining, "_%8.8x", programInfo.ProgramNumber );
             curPos += 9;
             remaining -= 9;
         }
@@ -3910,9 +3878,7 @@ void CLIntercept::dumpProgramOptions(
 
     CLI_ASSERT( config().DumpProgramSource || config().DumpProgramBinaries || config().DumpProgramSPIRV );
 
-    unsigned int    programNumber = m_ProgramNumberMap[ program ];
-    uint64_t        programHash = m_ProgramHashMap[ program ];
-    unsigned int    compileCount = m_ProgramNumberCompileCountMap[ programNumber ];
+    const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
     if( options )
     {
@@ -3931,15 +3897,15 @@ void CLIntercept::dumpProgramOptions(
             if( config().OmitProgramNumber )
             {
                 CLI_SPRINTF( numberString, 256, "%08X_%04u",
-                    (unsigned int)programHash,
-                    compileCount );
+                    (unsigned int)programInfo.ProgramHash,
+                    programInfo.CompileCount );
             }
             else
             {
                 CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u",
-                    programNumber,
-                    (unsigned int)programHash,
-                    compileCount );
+                    programInfo.ProgramNumber,
+                    (unsigned int)programInfo.ProgramHash,
+                    programInfo.CompileCount );
             }
 
             fileName += "/CLI_";
@@ -3980,9 +3946,7 @@ void CLIntercept::dumpProgramBuildLog(
     CLI_ASSERT( config().DumpProgramBuildLogs );
     CLI_ASSERT( buildLog );
 
-    unsigned int    programNumber = m_ProgramNumberMap[ program ];
-    uint64_t        programHash = m_ProgramHashMap[ program ];
-    unsigned int    compileCount = m_ProgramNumberCompileCountMap[ programNumber ];
+    const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
     std::string fileName;
 
@@ -3999,15 +3963,15 @@ void CLIntercept::dumpProgramBuildLog(
         if( config().OmitProgramNumber )
         {
             CLI_SPRINTF( numberString, 256, "%08X_%04u",
-                (unsigned int)programHash,
-                compileCount );
+                (unsigned int)programInfo.ProgramHash,
+                programInfo.CompileCount );
         }
         else
         {
             CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u",
-                programNumber,
-                (unsigned int)programHash,
-                compileCount );
+                programInfo.ProgramNumber,
+                (unsigned int)programInfo.ProgramHash,
+                programInfo.CompileCount );
         }
 
         fileName += "/CLI_";
@@ -4083,40 +4047,18 @@ void CLIntercept::updateHostTimingStats(
         key += " )";
     }
 
-    SCpuTimingStats* pCpuTimingStats = m_CpuTimingStatsMap[ key ];
-    if( pCpuTimingStats == NULL )
-    {
-        pCpuTimingStats = new SCpuTimingStats;
-        if( pCpuTimingStats == NULL )
-        {
-            // Memory allocation failure.
-        }
-        else
-        {
-            pCpuTimingStats->NumberOfCalls = 0;
-            pCpuTimingStats->TotalTicks = 0;
-            pCpuTimingStats->MinTicks = UINT_MAX;
-            pCpuTimingStats->MaxTicks = 0;
+    SHostTimingStats& hostTimingStats = m_HostTimingStatsMap[ key ];
 
-            m_CpuTimingStatsMap[ key ] = pCpuTimingStats;
-        }
-    }
-
-    uint64_t    numberOfCalls = 0;
     uint64_t    tickDelta = end - start;
 
-    if( pCpuTimingStats != NULL )
-    {
-        pCpuTimingStats->NumberOfCalls++;
-        pCpuTimingStats->TotalTicks += tickDelta;
-        pCpuTimingStats->MinTicks = std::min< uint64_t >( pCpuTimingStats->MinTicks, tickDelta );
-        pCpuTimingStats->MaxTicks = std::max< uint64_t >( pCpuTimingStats->MaxTicks, tickDelta );
-
-        numberOfCalls = pCpuTimingStats->NumberOfCalls;
-    }
+    hostTimingStats.NumberOfCalls++;
+    hostTimingStats.TotalTicks += tickDelta;
+    hostTimingStats.MinTicks = std::min< uint64_t >( hostTimingStats.MinTicks, tickDelta );
+    hostTimingStats.MaxTicks = std::max< uint64_t >( hostTimingStats.MaxTicks, tickDelta );
 
     if( config().HostPerformanceTimeLogging )
     {
+        uint64_t    numberOfCalls = hostTimingStats.NumberOfCalls;
         uint64_t    nsDelta = OS().TickToNS( tickDelta );
         logf( "Host Time for call %u: %s = %u\n",
             (unsigned int)numberOfCalls,
@@ -4262,35 +4204,23 @@ void CLIntercept::addTimingEvent(
 
             if( config().DevicePerformanceTimeHashTracking )
             {
-                cl_program program = NULL;
-                dispatch().clGetKernelInfo(
-                    kernel,
-                    CL_KERNEL_PROGRAM,
-                    sizeof(program),
-                    &program,
-                    NULL );
-                if( program )
-                {
-                    unsigned int    programNumber = m_ProgramNumberMap[ program ];
-                    uint64_t        programHash = m_ProgramHashMap[ program ];
-                    unsigned int    compileCount = m_ProgramNumberCompileCountMap[ programNumber ];
+                const SKernelInfo&  kernelInfo = m_KernelInfoMap[ kernel ];
 
-                    char    hashString[256] = "";
-                    if( config().OmitProgramNumber )
-                    {
-                        CLI_SPRINTF( hashString, 256, "(%08X_%04u)",
-                            (unsigned int)programHash,
-                            compileCount );
-                    }
-                    else
-                    {
-                        CLI_SPRINTF( hashString, 256, "(%04u_%08X_%04u)",
-                            programNumber,
-                            (unsigned int)programHash,
-                            compileCount );
-                    }
-                    pNode->KernelName += hashString;
+                char    hashString[256] = "";
+                if( config().OmitProgramNumber )
+                {
+                    CLI_SPRINTF( hashString, 256, "(%08X_%04u)",
+                        (unsigned int)kernelInfo.ProgramHash,
+                        kernelInfo.CompileCount );
                 }
+                else
+                {
+                    CLI_SPRINTF( hashString, 256, "(%04u_%08X_%04u)",
+                        kernelInfo.ProgramNumber,
+                        (unsigned int)kernelInfo.ProgramHash,
+                        kernelInfo.CompileCount );
+                }
+                pNode->KernelName += hashString;
             }
 
             if( config().DevicePerformanceTimeKernelInfoTracking )
@@ -4500,8 +4430,6 @@ void CLIntercept::checkTimingEvents()
                     cl_ulong    commandStart = 0;
                     cl_ulong    commandEnd = 0;
 
-                    uint64_t    numberOfCalls = 0;
-
                     errorCode |= dispatch().clGetEventProfilingInfo(
                         pNode->Event,
                         CL_PROFILING_COMMAND_QUEUED,
@@ -4535,34 +4463,14 @@ void CLIntercept::checkTimingEvents()
                             pNode->FunctionName :
                             pNode->KernelName;
 
-                        SDeviceTimingStats* pDeviceTimingStats = m_DeviceTimingStatsMap[ key ];
-                        if( pDeviceTimingStats == NULL )
-                        {
-                            pDeviceTimingStats = new SDeviceTimingStats;
-                            if( pDeviceTimingStats == NULL )
-                            {
-                                // Memory allocation failure.
-                            }
-                            else
-                            {
-                                pDeviceTimingStats->NumberOfCalls = 0;
-                                pDeviceTimingStats->TotalNS = 0;
-                                pDeviceTimingStats->MinNS = CL_ULONG_MAX;
-                                pDeviceTimingStats->MaxNS = 0;
+                        SDeviceTimingStats& deviceTimingStats = m_DeviceTimingStatsMap[ key ];
 
-                                m_DeviceTimingStatsMap[ key ] = pDeviceTimingStats;
-                            }
-                        }
+                        deviceTimingStats.NumberOfCalls++;
+                        deviceTimingStats.TotalNS += delta;
+                        deviceTimingStats.MinNS = std::min< cl_ulong >( deviceTimingStats.MinNS, delta );
+                        deviceTimingStats.MaxNS = std::max< cl_ulong >( deviceTimingStats.MaxNS, delta );
 
-                        if( pDeviceTimingStats != NULL )
-                        {
-                            pDeviceTimingStats->NumberOfCalls++;
-                            pDeviceTimingStats->TotalNS += delta;
-                            pDeviceTimingStats->MinNS = std::min< cl_ulong >( pDeviceTimingStats->MinNS, delta );
-                            pDeviceTimingStats->MaxNS = std::max< cl_ulong >( pDeviceTimingStats->MaxNS, delta );
-
-                            numberOfCalls = pDeviceTimingStats->NumberOfCalls;
-                        }
+                        uint64_t    numberOfCalls = deviceTimingStats.NumberOfCalls;
 
                         if( config().DevicePerformanceTimeLogging )
                         {
@@ -4715,13 +4623,25 @@ void CLIntercept::checkTimingEvents()
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::addKernelName(
-    cl_kernel kernel,
+void CLIntercept::addKernelInfo(
+    const cl_kernel kernel,
+    const cl_program program,
     const std::string& kernelName )
 {
     m_OS.EnterCriticalSection();
 
-    m_KernelNameMap[ kernel ] = kernelName;
+    const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
+
+    SKernelInfo& kernelInfo = m_KernelInfoMap[ kernel ];
+
+    kernelInfo.KernelName = kernelName;
+
+    kernelInfo.ProgramHash = programInfo.ProgramHash;
+    kernelInfo.OptionsHash = 0; // TODO
+
+    kernelInfo.ProgramNumber = programInfo.ProgramNumber;
+    kernelInfo.CompileCount = programInfo.CompileCount - 1;
+
     addShortKernelName( kernelName );
 
     m_OS.LeaveCriticalSection();
@@ -4729,11 +4649,14 @@ void CLIntercept::addKernelName(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::addKernelNames(
-    cl_kernel* kernels,
+void CLIntercept::addKernelInfo(
+    const cl_kernel* kernels,
+    const cl_program program,
     cl_uint numKernels )
 {
     m_OS.EnterCriticalSection();
+
+    const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
     while( numKernels-- )
     {
@@ -4763,7 +4686,16 @@ void CLIntercept::addKernelNames(
                 {
                     kernelName[ kernelNameSize ] = 0;
 
-                    m_KernelNameMap[ kernel ] = kernelName;
+                    SKernelInfo& kernelInfo = m_KernelInfoMap[ kernel ];
+
+                    kernelInfo.KernelName = kernelName;
+
+                    kernelInfo.ProgramHash = programInfo.ProgramHash;
+                    kernelInfo.OptionsHash = 0; // TODO
+
+                    kernelInfo.ProgramNumber = programInfo.ProgramNumber;
+                    kernelInfo.CompileCount = programInfo.CompileCount - 1;
+
                     addShortKernelName( kernelName );
                 }
 
@@ -4795,9 +4727,9 @@ void CLIntercept::removeKernel(
     {
         if( refCount == 1 )
         {
-            m_LongKernelNameMap.erase( m_KernelNameMap[ kernel ] );
+            m_LongKernelNameMap.erase( m_KernelInfoMap[ kernel ].KernelName );
 
-            m_KernelNameMap.erase( kernel );
+            m_KernelInfoMap.erase( kernel );
 
             SSIMDSurveyKernel*  pSIMDSurveyKernel =
                 m_SIMDSurveyKernelMap[ kernel ];
@@ -4815,9 +4747,9 @@ void CLIntercept::removeKernel(
                 m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD32Kernel );
 
                 // Also clean up the kernel name map.
-                m_KernelNameMap.erase( pSIMDSurveyKernel->SIMD8Kernel );
-                m_KernelNameMap.erase( pSIMDSurveyKernel->SIMD16Kernel );
-                m_KernelNameMap.erase( pSIMDSurveyKernel->SIMD32Kernel );
+                m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD8Kernel );
+                m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD16Kernel );
+                m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD32Kernel );
 
                 // Done!
                 delete pSIMDSurveyKernel;
@@ -6519,9 +6451,7 @@ void CLIntercept::dumpProgramBinary(
 {
     m_OS.EnterCriticalSection();
 
-    unsigned int    programNumber = m_ProgramNumberMap[ program ];
-    uint64_t        programHash = m_ProgramHashMap[ program ];
-    unsigned int    compileCount = m_ProgramNumberCompileCountMap[ programNumber ];
+    const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
     std::string     fileName;
 
@@ -6538,15 +6468,15 @@ void CLIntercept::dumpProgramBinary(
         if( config().OmitProgramNumber )
         {
             CLI_SPRINTF( numberString, 256, "%08X_%04u",
-                (unsigned int)programHash,
-                compileCount );
+                (unsigned int)programInfo.ProgramHash,
+                programInfo.CompileCount );
         }
         else
         {
             CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u",
-                programNumber,
-                (unsigned int)programHash,
-                compileCount );
+                programInfo.ProgramNumber,
+                (unsigned int)programInfo.ProgramHash,
+                programInfo.CompileCount );
         }
 
         fileName += "/CLI_";
@@ -6768,9 +6698,7 @@ void CLIntercept::dumpKernelISABinaries(
 
     if( errorCode == CL_SUCCESS && program != NULL && kernels != NULL )
     {
-        unsigned int    programNumber = m_ProgramNumberMap[ program ];
-        uint64_t        programHash = m_ProgramHashMap[ program ];
-        unsigned int    compileCount = m_ProgramNumberCompileCountMap[ programNumber ];
+        const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
         std::string fileNamePrefix;
 
@@ -6787,15 +6715,15 @@ void CLIntercept::dumpKernelISABinaries(
             if( config().OmitProgramNumber )
             {
                 CLI_SPRINTF( numberString, 256, "%08X_%04u_",
-                    (unsigned int)programHash,
-                    compileCount );
+                    (unsigned int)programInfo.ProgramHash,
+                    programInfo.CompileCount );
             }
             else
             {
                 CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_",
-                    programNumber,
-                    (unsigned int)programHash,
-                    compileCount );
+                    programInfo.ProgramNumber,
+                    (unsigned int)programInfo.ProgramHash,
+                    programInfo.CompileCount );
             }
 
             fileNamePrefix += "/CLI_";
@@ -7049,9 +6977,7 @@ void CLIntercept::autoCreateSPIRV(
 {
     m_OS.EnterCriticalSection();
 
-    unsigned int    programNumber = m_ProgramNumberMap[ program ];
-    uint64_t        programHash = m_ProgramHashMap[ program ];
-    unsigned int    compileCount = m_ProgramNumberCompileCountMap[ programNumber ];
+    const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
     std::string     dumpDirectoryName;
     std::string     inputFileName;
@@ -7071,13 +6997,13 @@ void CLIntercept::autoCreateSPIRV(
         if( config().OmitProgramNumber )
         {
             CLI_SPRINTF( numberString, 256, "%08X",
-                (unsigned int)programHash );
+                (unsigned int)programInfo.ProgramHash );
         }
         else
         {
             CLI_SPRINTF( numberString, 256, "%04u_%08X",
-                programNumber,
-                (unsigned int)programHash );
+                programInfo.ProgramNumber,
+                (unsigned int)programInfo.ProgramHash );
         }
 
         inputFileName = dumpDirectoryName;
@@ -7094,15 +7020,15 @@ void CLIntercept::autoCreateSPIRV(
         if( config().OmitProgramNumber )
         {
             CLI_SPRINTF( numberString, 256, "%08X_%04u",
-                (unsigned int)programHash,
-                compileCount );
+                (unsigned int)programInfo.ProgramHash,
+                programInfo.CompileCount );
         }
         else
         {
             CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u",
-                programNumber,
-                (unsigned int)programHash,
-                compileCount );
+                programInfo.ProgramNumber,
+                (unsigned int)programInfo.ProgramHash,
+                programInfo.CompileCount );
         }
 
         outputFileName = dumpDirectoryName;
@@ -9186,9 +9112,9 @@ void CLIntercept::SIMDSurveyCreateKernel(
             // print the right kernel names in e.g. device timing reports.  The
             // other maps, such as the kernel arg map, don't need to know about
             // child kernels, so we don't add anything for them here.
-            m_KernelNameMap[ pSIMDSurveyKernel->SIMD8Kernel ] = kernelName;
-            m_KernelNameMap[ pSIMDSurveyKernel->SIMD16Kernel ] = kernelName;
-            m_KernelNameMap[ pSIMDSurveyKernel->SIMD32Kernel ] = kernelName;
+            m_KernelInfoMap[ pSIMDSurveyKernel->SIMD8Kernel ].KernelName = kernelName;
+            m_KernelInfoMap[ pSIMDSurveyKernel->SIMD16Kernel ].KernelName = kernelName;
+            m_KernelInfoMap[ pSIMDSurveyKernel->SIMD32Kernel ].KernelName = kernelName;
         }
     }
     else
@@ -10594,10 +10520,10 @@ bool CLIntercept::checkAubCaptureKernelSignature(
         m_Config.AubCaptureKernelName != "" &&
         // Note: This currently checks the long kernel name.
         // Should it be the short kernel name instead?
-        m_KernelNameMap[ kernel ] != m_Config.AubCaptureKernelName )
+        m_KernelInfoMap[ kernel ].KernelName != m_Config.AubCaptureKernelName )
     {
         //logf( "Skipping aub capture: kernel name '%s' doesn't match the requested kernel name '%s'.\n",
-        //    m_KernelNameMap[ kernel ].c_str(),
+        //    m_KernelInfoMap[ kernel ].KernelName.c_str(),
         //    m_Config.AubCaptureKernelName.c_str() );
         match = false;
     }
@@ -10679,7 +10605,7 @@ bool CLIntercept::checkAubCaptureKernelSignature(
     {
         // Note: This currently uses the long kernel name.
         // Should it be the short kernel name instead?
-        std::string key = m_KernelNameMap[ kernel ];
+        std::string key = m_KernelInfoMap[ kernel ].KernelName;
 
         {
             cl_program program = NULL;
@@ -10691,23 +10617,21 @@ bool CLIntercept::checkAubCaptureKernelSignature(
                 NULL );
             if( program )
             {
-                unsigned int    programNumber = m_ProgramNumberMap[ program ];
-                uint64_t        programHash = m_ProgramHashMap[ program ];
-                unsigned int    compileCount = m_ProgramNumberCompileCountMap[ programNumber ];
+                const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
                 char    hashString[256] = "";
                 if( config().OmitProgramNumber )
                 {
                     CLI_SPRINTF( hashString, 256, "(%08X_%04u)",
-                        (unsigned int)programHash,
-                        compileCount );
+                        (unsigned int)programInfo.ProgramHash,
+                        programInfo.CompileCount );
                 }
                 else
                 {
                     CLI_SPRINTF( hashString, 256, "(%04u_%08X_%04u)",
-                        programNumber,
-                        (unsigned int)programHash,
-                        compileCount );
+                        programInfo.ProgramNumber,
+                        (unsigned int)programInfo.ProgramHash,
+                        programInfo.CompileCount );
                 }
                 key += hashString;
             }

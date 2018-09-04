@@ -336,12 +336,14 @@ public:
                 cl_event event );
     void    checkTimingEvents();
 
-    void    addKernelName(
+    void    addKernelInfo(
                 const cl_kernel kernel,
+                const cl_program program,
                 const std::string& kernelName );
 
-    void    addKernelNames(
-                cl_kernel* kernels,
+    void    addKernelInfo(
+                const cl_kernel* kernels,
+                const cl_program program,
                 cl_uint numKernels );
 
     void    removeKernel(
@@ -720,25 +722,36 @@ private:
 
     unsigned int    m_ProgramNumber;
 
-    typedef std::map< const cl_program, unsigned int >  CProgramNumberMap;
-    CProgramNumberMap   m_ProgramNumberMap;
+    // This defines a mapping between the program handle and information
+    // about the program.
 
-    typedef std::map< const cl_program, uint64_t >  CProgramHashMap;
-    CProgramHashMap m_ProgramHashMap;
-
-    typedef std::map< unsigned int, unsigned int > CProgramNumberCompileCountMap;
-    CProgramNumberCompileCountMap   m_ProgramNumberCompileCountMap;
-
-    struct SCpuTimingStats
+    struct SProgramInfo
     {
+        unsigned int    ProgramNumber;
+        unsigned int    CompileCount;
+
+        uint64_t        ProgramHash;
+    };
+
+    typedef std::map< const cl_program, SProgramInfo>   CProgramInfoMap;
+    CProgramInfoMap m_ProgramInfoMap;
+
+    struct SHostTimingStats
+    {
+        SHostTimingStats() :
+            NumberOfCalls(0),
+            MinTicks(ULLONG_MAX),
+            MaxTicks(0),
+            TotalTicks(0) {}
+
         uint64_t    NumberOfCalls;
         uint64_t    MinTicks;
         uint64_t    MaxTicks;
         uint64_t    TotalTicks;
     };
 
-    typedef std::map< std::string, SCpuTimingStats* > CCpuTimingStatsMap;
-    CCpuTimingStatsMap  m_CpuTimingStatsMap;
+    typedef std::map< std::string, SHostTimingStats >   CHostTimingStatsMap;
+    CHostTimingStatsMap  m_HostTimingStatsMap;
 
     // These structures define a mapping between a string identifier, which
     // usually consists of the kernel name and possibly some extra
@@ -749,20 +762,37 @@ private:
 
     struct SDeviceTimingStats
     {
+        SDeviceTimingStats() :
+            NumberOfCalls(0),
+            MinNS(CL_ULONG_MAX),
+            MaxNS(0),
+            TotalNS(0) {}
+
         uint64_t    NumberOfCalls;
         cl_ulong    MinNS;
         cl_ulong    MaxNS;
         cl_ulong    TotalNS;
     };
 
-    typedef std::map< std::string, SDeviceTimingStats* >   CDeviceTimingStatsMap;
+    typedef std::map< std::string, SDeviceTimingStats > CDeviceTimingStatsMap;
     CDeviceTimingStatsMap   m_DeviceTimingStatsMap;
 
-    // This defines a mapping between the kernel handle and the "real"
-    // kernel name.
+    // This defines a mapping between the kernel handle and information
+    // about the kernel.
 
-    typedef std::map< const cl_kernel, std::string >    CKernelNameMap;
-    CKernelNameMap  m_KernelNameMap;
+    struct SKernelInfo
+    {
+        std::string     KernelName;
+
+        uint64_t        ProgramHash;
+        uint64_t        OptionsHash;
+
+        unsigned int    ProgramNumber;
+        unsigned int    CompileCount;
+    };
+
+    typedef std::map< const cl_kernel, SKernelInfo >    CKernelInfoMap;
+    CKernelInfoMap  m_KernelInfoMap;
 
     // This defines a mapping between the "real" kernel name and a kernel
     // name ID.  Only kernels with names larger than a control variable
@@ -1205,7 +1235,7 @@ inline bool CLIntercept::dumpBufferForKernel( const cl_kernel kernel )
     // Note: This currently checks the long kernel name.
     // Should it be the short kernel name instead?
     return m_Config.DumpBuffersForKernel.empty() ||
-        m_KernelNameMap[ kernel ] == m_Config.DumpBuffersForKernel;
+        m_KernelInfoMap[ kernel ].KernelName == m_Config.DumpBuffersForKernel;
 }
 
 inline bool CLIntercept::dumpImagesForKernel( const cl_kernel kernel )
@@ -1213,7 +1243,7 @@ inline bool CLIntercept::dumpImagesForKernel( const cl_kernel kernel )
     // Note: This currently checks the long kernel name.
     // Should it be the short kernel name instead?
     return m_Config.DumpImagesForKernel.empty() ||
-        m_KernelNameMap[ kernel ] == m_Config.DumpImagesForKernel;
+        m_KernelInfoMap[ kernel ].KernelName == m_Config.DumpImagesForKernel;
 }
 
 inline bool CLIntercept::checkDumpBufferEnqueueLimits() const
@@ -1920,7 +1950,10 @@ inline void CLIntercept::saveProgramNumber( const cl_program program )
 {
     m_OS.EnterCriticalSection();
 
-    m_ProgramNumberMap[ program ] = m_ProgramNumber;
+    SProgramInfo&   programInfo = m_ProgramInfoMap[ program ];
+    programInfo.ProgramNumber = m_ProgramNumber;
+    programInfo.CompileCount = 0;
+
     m_ProgramNumber++;
 
     m_OS.LeaveCriticalSection();
