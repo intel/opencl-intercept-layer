@@ -2105,12 +2105,26 @@ void CLIntercept::logBuild(
     {
         const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
-        logf( "Build Info for program %p (program hash = %08X, options hash = %08X), number %u, compile %u, for %u device(s):\n",
+        char    numberString[256] = "";
+        if( config().OmitProgramNumber )
+        {
+            CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X",
+                (unsigned int)programInfo.ProgramHash,
+                programInfo.CompileCount,
+                (unsigned int)programInfo.OptionsHash );
+        }
+        else
+        {
+            CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X",
+                programInfo.ProgramNumber,
+                (unsigned int)programInfo.ProgramHash,
+                programInfo.CompileCount,
+                (unsigned int)programInfo.OptionsHash );
+        }
+
+        logf( "Build Info for program %p (%s) for %u device(s):\n",
             program,
-            (unsigned int)programInfo.ProgramHash,
-            (unsigned int)programInfo.OptionsHash,
-            programInfo.ProgramNumber,
-            programInfo.CompileCount,
+            numberString,
             numDevices );
 
         float   buildTimeMS = m_OS.TickToNS( buildTimeEnd - buildTimeStart ) / 1e6f;
@@ -4000,18 +4014,18 @@ void CLIntercept::dumpProgramBuildLog(
 
         if( config().OmitProgramNumber )
         {
-            CLI_SPRINTF( numberString, 256, "%08X_%08X_%04u",
+            CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X",
                 (unsigned int)programInfo.ProgramHash,
-                (unsigned int)programInfo.OptionsHash,
-                programInfo.CompileCount );
+                programInfo.CompileCount,
+                (unsigned int)programInfo.OptionsHash );
         }
         else
         {
-            CLI_SPRINTF( numberString, 256, "%04u_%08X_%08X_%04u",
+            CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X",
                 programInfo.ProgramNumber,
                 (unsigned int)programInfo.ProgramHash,
-                (unsigned int)programInfo.OptionsHash,
-                programInfo.CompileCount );
+                programInfo.CompileCount,
+                (unsigned int)programInfo.OptionsHash );
         }
 
         fileName += "/CLI_";
@@ -4249,18 +4263,18 @@ void CLIntercept::addTimingEvent(
                 char    hashString[256] = "";
                 if( config().OmitProgramNumber )
                 {
-                    CLI_SPRINTF( hashString, 256, "(%08X_%08X_%04u)",
+                    CLI_SPRINTF( hashString, 256, "(%08X_%04u_%08X)",
                         (unsigned int)kernelInfo.ProgramHash,
-                        (unsigned int)kernelInfo.OptionsHash,
-                        kernelInfo.CompileCount );
+                        kernelInfo.CompileCount,
+                        (unsigned int)kernelInfo.OptionsHash );
                 }
                 else
                 {
-                    CLI_SPRINTF( hashString, 256, "(%04u_%08X_%08X_%04u)",
+                    CLI_SPRINTF( hashString, 256, "(%04u_%08X_%04u_%08X)",
                         kernelInfo.ProgramNumber,
                         (unsigned int)kernelInfo.ProgramHash,
-                        (unsigned int)kernelInfo.OptionsHash,
-                        kernelInfo.CompileCount );
+                        kernelInfo.CompileCount,
+                        (unsigned int)kernelInfo.OptionsHash );
                 }
                 pNode->KernelName += hashString;
             }
@@ -6509,18 +6523,18 @@ void CLIntercept::dumpProgramBinary(
 
         if( config().OmitProgramNumber )
         {
-            CLI_SPRINTF( numberString, 256, "%08X_%08X_%04u",
+            CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X",
                 (unsigned int)programInfo.ProgramHash,
-                (unsigned int)programInfo.OptionsHash,
-                programInfo.CompileCount );
+                programInfo.CompileCount,
+                (unsigned int)programInfo.OptionsHash );
         }
         else
         {
-            CLI_SPRINTF( numberString, 256, "%04u_%08X_%08X_%04u",
+            CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X",
                 programInfo.ProgramNumber,
                 (unsigned int)programInfo.ProgramHash,
-                (unsigned int)programInfo.OptionsHash,
-                programInfo.CompileCount );
+                programInfo.CompileCount,
+                (unsigned int)programInfo.OptionsHash );
         }
 
         fileName += "/CLI_";
@@ -6758,18 +6772,18 @@ void CLIntercept::dumpKernelISABinaries(
 
             if( config().OmitProgramNumber )
             {
-                CLI_SPRINTF( numberString, 256, "%08X_%08X_%04u_",
+                CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X_",
                     (unsigned int)programInfo.ProgramHash,
-                    (unsigned int)programInfo.OptionsHash,
-                    programInfo.CompileCount );
+                    programInfo.CompileCount,
+                    (unsigned int)programInfo.OptionsHash );
             }
             else
             {
-                CLI_SPRINTF( numberString, 256, "%04u_%08X_%08X_%04u_",
+                CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X_",
                     programInfo.ProgramNumber,
                     (unsigned int)programInfo.ProgramHash,
-                    (unsigned int)programInfo.OptionsHash,
-                    programInfo.CompileCount );
+                    programInfo.CompileCount,
+                    (unsigned int)programInfo.OptionsHash );
             }
 
             fileNamePrefix += "/CLI_";
@@ -7065,18 +7079,18 @@ void CLIntercept::autoCreateSPIRV(
 
         if( config().OmitProgramNumber )
         {
-            CLI_SPRINTF( numberString, 256, "%08X_%08X_%04u",
+            CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X",
                 (unsigned int)programInfo.ProgramHash,
-                (unsigned int)programInfo.OptionsHash,
-                programInfo.CompileCount );
+                programInfo.CompileCount,
+                (unsigned int)programInfo.OptionsHash );
         }
         else
         {
-            CLI_SPRINTF( numberString, 256, "%04u_%08X_%08X_%04u",
+            CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X",
                 programInfo.ProgramNumber,
                 (unsigned int)programInfo.ProgramHash,
-                (unsigned int)programInfo.OptionsHash,
-                programInfo.CompileCount );
+                programInfo.CompileCount,
+                (unsigned int)programInfo.OptionsHash );
         }
 
         outputFileName = dumpDirectoryName;
@@ -10635,18 +10649,18 @@ bool CLIntercept::checkAubCaptureKernelSignature(
             char    hashString[256] = "";
             if( config().OmitProgramNumber )
             {
-                CLI_SPRINTF( hashString, 256, "(%08X_%08X_%04u)",
+                CLI_SPRINTF( hashString, 256, "(%08X_%04u_%08X)",
                     (unsigned int)kernelInfo.ProgramHash,
-                    (unsigned int)kernelInfo.OptionsHash,
-                    kernelInfo.CompileCount );
+                    kernelInfo.CompileCount,
+                    (unsigned int)kernelInfo.OptionsHash );
             }
             else
             {
-                CLI_SPRINTF( hashString, 256, "(%04u_%08X_%08X_%04u)",
+                CLI_SPRINTF( hashString, 256, "(%04u_%08X_%04u_%08X)",
                     kernelInfo.ProgramNumber,
                     (unsigned int)kernelInfo.ProgramHash,
-                    (unsigned int)kernelInfo.OptionsHash,
-                    kernelInfo.CompileCount );
+                    kernelInfo.CompileCount,
+                    (unsigned int)kernelInfo.OptionsHash );
             }
             key += hashString;
         }
