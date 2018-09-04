@@ -238,6 +238,9 @@ public:
     void    saveProgramHash(
                 const cl_program program,
                 uint64_t hash );
+    void    saveProgramOptionsHash(
+                const cl_program program,
+                const char* options );
 
     bool    injectProgramSource(
                 const uint64_t hash,
@@ -731,6 +734,7 @@ private:
         unsigned int    CompileCount;
 
         uint64_t        ProgramHash;
+        uint64_t        OptionsHash;
     };
 
     typedef std::map< const cl_program, SProgramInfo>   CProgramInfoMap;
@@ -1482,6 +1486,21 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().AubCaptureUniqueKernels )                      \
     {                                                                       \
         pIntercept->saveProgramHash( program, hash );                       \
+    }
+
+#define SAVE_PROGRAM_OPTIONS_HASH( program, options )                       \
+    if( pIntercept->config().DevicePerformanceTimeHashTracking ||           \
+        pIntercept->config().DumpProgramSource ||                           \
+        pIntercept->config().DumpInputProgramBinaries ||                    \
+        pIntercept->config().DumpProgramBinaries ||                         \
+        pIntercept->config().DumpProgramSPIRV ||                            \
+        pIntercept->config().DumpProgramBuildLogs ||                        \
+        pIntercept->config().DumpKernelISABinaries ||                       \
+        pIntercept->config().InjectProgramSource ||                         \
+        pIntercept->config().AutoCreateSPIRV ||                             \
+        pIntercept->config().AubCaptureUniqueKernels )                      \
+    {                                                                       \
+        pIntercept->saveProgramOptionsHash( program, options );             \
     }
 
 // Called from clCreateProgramWithSource:

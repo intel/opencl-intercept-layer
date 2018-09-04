@@ -2131,6 +2131,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
     {
         char*   newOptions = NULL;
 
+        SAVE_PROGRAM_OPTIONS_HASH( program, options );
         MODIFY_PROGRAM_OPTIONS( program, options, newOptions );
         DUMP_PROGRAM_OPTIONS( program, options );
 
