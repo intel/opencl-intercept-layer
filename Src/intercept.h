@@ -1510,7 +1510,8 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 // Called from clCreateProgramWithSource:
 
 #define CREATE_COMBINED_PROGRAM_STRING( count, strings, lengths, singleString, hash ) \
-    if( pIntercept->config().DevicePerformanceTimeHashTracking ||           \
+    if( pIntercept->config().BuildLogging ||                                \
+        pIntercept->config().DevicePerformanceTimeHashTracking ||           \
         pIntercept->config().SimpleDumpProgramSource ||                     \
         pIntercept->config().DumpProgramSourceScript ||                     \
         pIntercept->config().DumpProgramSource ||                           \
