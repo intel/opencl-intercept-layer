@@ -893,6 +893,10 @@ void CLIntercept::addShortKernelName(
         shortKernelName += std::to_string(m_KernelID);
         m_LongKernelNameMap[ kernelName ] = shortKernelName;
 
+        logf( "Added kernel name mapping: %s to %s\n",
+            kernelName.c_str(),
+            shortKernelName.c_str() );
+
         m_KernelID++;
     }
 }
