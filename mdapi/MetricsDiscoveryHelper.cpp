@@ -31,7 +31,7 @@
 #include <stdio.h>
 
 // Enables logs:
-#define MD_DEBUG 0
+//#define MD_DEBUG
 
 #if defined(_WIN32)
 static const wchar_t* cMDLibFileName =
@@ -287,10 +287,14 @@ bool MDHelper::InitMetricsDiscovery(
 /************************************************************************/
 bool MDHelper::ActivateMetricSet()
 {
-    if( !m_Initialized || !m_MetricSet ) return false;
+    if( !m_Initialized || !m_MetricSet )
+    {
+        DebugPrint("Can't ActivateMetricSet!\n");
+        return false;
+    }
 
     TCompletionCode res = m_MetricSet->Activate();
-    if( res != CC_OK ) DebugPrint("ActivateMetricSet failed!\n");
+    if( res != CC_OK ) { DebugPrint("ActivateMetricSet failed!\n"); }
 
     return res == CC_OK;
 }
@@ -300,10 +304,14 @@ bool MDHelper::ActivateMetricSet()
 /************************************************************************/
 void MDHelper::DeactivateMetricSet()
 {
-    if( !m_Initialized || !m_MetricSet ) return;
+    if( !m_Initialized || !m_MetricSet )
+    {
+        DebugPrint("Can't DeactivateMetricSet!\n");
+        return;
+    }
 
     TCompletionCode res = m_MetricSet->Deactivate();
-    if( res != CC_OK ) DebugPrint("DeactivateMetricSet failed!\n");
+    if( res != CC_OK ) { DebugPrint("DeactivateMetricSet failed!\n"); }
 }
 
 /************************************************************************/
@@ -311,10 +319,14 @@ void MDHelper::DeactivateMetricSet()
 /************************************************************************/
 void MDHelper::SetMetricSetFiltering( TMetricApiType apiMask )
 {
-    if( !m_Initialized || !m_MetricSet ) return;
+    if( !m_Initialized || !m_MetricSet )
+    {
+        DebugPrint("Can't SetMetricSetFiltering!\n");
+        return;
+    }
 
     TCompletionCode res = m_MetricSet->SetApiFiltering( apiMask );
-    if( res != CC_OK ) DebugPrint("SetMetricSetFiltering failed!\n");
+    if( res != CC_OK ) { DebugPrint("SetMetricSetFiltering failed!\n"); }
 }
 
 /************************************************************************/
@@ -324,7 +336,11 @@ void MDHelper::GetMetricsFromReport(
     const char* pReportData,
     std::vector<TTypedValue_1_0>& results )
 {
-    if( !m_Initialized || !m_MetricSet ) return;
+    if( !m_Initialized || !m_MetricSet )
+    {
+        DebugPrint("Can't GetMetricsFromReport!\n");
+        return;
+    }
 
     const uint32_t reportSize       = m_MetricSet->GetParams()->QueryReportSize;
 
@@ -341,7 +357,7 @@ void MDHelper::GetMetricsFromReport(
         (uint32_t)(results.size() * sizeof(TTypedValue_1_0)),
         &outReportCount,
         false );
-    if( res != CC_OK ) DebugPrint("CalculateMetrics failed!\n");
+    if( res != CC_OK ) { DebugPrint("CalculateMetrics failed!\n"); }
 }
 
 /************************************************************************/
@@ -349,7 +365,11 @@ void MDHelper::GetMetricsFromReport(
 /************************************************************************/
 void MDHelper::PrintMetricNames( std::ostream& os )
 {
-    if( !m_Initialized || !m_MetricSet || !os.good() ) return;
+    if( !m_Initialized || !m_MetricSet || !os.good() )
+    {
+        DebugPrint("Can't PrintMetricNames!\n");
+        return;
+    }
 
     os << "kernel,";
 
@@ -376,7 +396,11 @@ void MDHelper::PrintMetricValues(
     const std::string& name,
     const std::vector<TTypedValue_1_0>& results )
 {
-    if( !m_Initialized || !m_MetricSet || !os.good() ) return;
+    if( !m_Initialized || !m_MetricSet || !os.good() )
+    {
+        DebugPrint("Can't PrintMetricValues!\n");
+        return;
+    }
 
     os << name << ",";
 
@@ -404,7 +428,11 @@ void MDHelper::AggregateMetrics(
     const std::string& name,
     const std::vector<TTypedValue_1_0>& results )
 {
-    if( !m_Initialized || !m_MetricSet ) return;
+    if( !m_Initialized || !m_MetricSet )
+    {
+        DebugPrint("Can't AggregateMetrics!\n");
+        return;
+    }
 
     CMetricAggregationsForKernel& kernelMetrics = aggregations[ name ];
 

@@ -89,7 +89,9 @@ cl_uint CLIntercept::initCustomPerfCounters()
     {
         configuration = m_pMDHelper->GetMetricsConfiguration();
 
-        // Get the dump directory name and register dump file name
+        // Get the dump directory name and create the dump file for
+        // metrics, if we haven't created it already.
+        if( !m_MetricDump.is_open() )
         {
             std::string fileName = "";
             OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
