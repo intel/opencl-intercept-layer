@@ -581,7 +581,7 @@ public:
                 const std::string& func_name ) const;
 
 #if defined(USE_MDAPI)
-    cl_uint initCustomPerfCounters();
+    void    initCustomPerfCounters();
 
     cl_command_queue    createMDAPICommandQueue(
                 cl_context context,

@@ -570,6 +570,11 @@ bool CLIntercept::init()
 #include "controls.h"
 #undef CLI_CONTROL
 
+    if( !m_Config.DevicePerfCounterCustom.empty() )
+    {
+        initCustomPerfCounters();
+    }
+
     m_StartTime = m_OS.GetTimer();
     log( "Timer Started!\n" );
 
