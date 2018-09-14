@@ -61,12 +61,10 @@ static bool convertPropertiesToOCL1_2(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-cl_uint CLIntercept::initCustomPerfCounters()
+void CLIntercept::initCustomPerfCounters()
 {
     const std::string& metricSetSymbolName = config().DevicePerfCounterCustom;
     const std::string& metricsFileName = config().DevicePerfCounterFile;
-
-    cl_uint configuration = 0;
 
     CLI_ASSERT( !metricSetSymbolName.empty() );
 
@@ -85,35 +83,24 @@ cl_uint CLIntercept::initCustomPerfCounters()
         }
     }
 
-    if( m_pMDHelper && m_pMDHelper->ActivateMetricSet() )
+    // Get the dump directory name and create the dump file for
+    // metrics, if we haven't created it already.
+    if( m_pMDHelper && !m_MetricDump.is_open() )
     {
-        configuration = m_pMDHelper->GetMetricsConfiguration();
+        std::string fileName = "";
+        OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+        fileName += '/';
+        fileName += sc_DumpPerfCountersFileNamePrefix;
+        fileName += "_";
+        fileName += metricSetSymbolName;
+        fileName += ".csv";
 
-        // Get the dump directory name and create the dump file for
-        // metrics, if we haven't created it already.
-        if( !m_MetricDump.is_open() )
-        {
-            std::string fileName = "";
-            OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
-            fileName += '/';
-            fileName += sc_DumpPerfCountersFileNamePrefix;
-            fileName += "_";
-            fileName += metricSetSymbolName;
-            fileName += ".csv";
+        OS().MakeDumpDirectories( fileName );
 
-            OS().MakeDumpDirectories( fileName );
+        m_MetricDump.open( fileName.c_str(), std::ios::out );
 
-            m_MetricDump.open( fileName.c_str(), std::ios::out );
-
-            m_pMDHelper->PrintMetricNames( m_MetricDump );
-        }
+        m_pMDHelper->PrintMetricNames( m_MetricDump );
     }
-    else
-    {
-        log( "Metric Discovery: Couldn't activate metric set!\n" );
-    }
-
-    return configuration;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -130,26 +117,30 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
         NULL,
         "clCreatePerfCountersCommandQueueINTEL" );
 
-    if( dispatch().clCreatePerfCountersCommandQueueINTEL )
+    if( dispatch().clCreatePerfCountersCommandQueueINTEL && m_pMDHelper )
     {
         m_OS.EnterCriticalSection();
 
-        cl_uint configuration = initCustomPerfCounters();
-
-        retVal = dispatch().clCreatePerfCountersCommandQueueINTEL(
-            context,
-            device,
-            properties,
-            configuration,
-            errcode_ret );
-        if( retVal == NULL )
+        if( m_pMDHelper->ActivateMetricSet() )
         {
-            log( "clCreatePerfCountersCommandQueueINTEL() returned NULL!\n" );
-        }
+            cl_uint configuration = m_pMDHelper->GetMetricsConfiguration();
 
-        if( m_pMDHelper )
-        {
+            retVal = dispatch().clCreatePerfCountersCommandQueueINTEL(
+                context,
+                device,
+                properties,
+                configuration,
+                errcode_ret );
+            if( retVal == NULL )
+            {
+                log( "clCreatePerfCountersCommandQueueINTEL() returned NULL!\n" );
+            }
+
             m_pMDHelper->DeactivateMetricSet();
+        }
+        else
+        {
+            log( "Metric Discovery: Couldn't activate metric set!\n" );
         }
 
         m_OS.LeaveCriticalSection();
