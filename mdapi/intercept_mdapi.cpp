@@ -210,10 +210,11 @@ void CLIntercept::saveMDAPICounters(
                 pReport,
                 &outputSize );
 
-            CLI_ASSERT( outputSize == reportSize );
-
             if( errorCode == CL_SUCCESS )
             {
+                // Check: The size of the queried report should be the expected size.
+                CLI_ASSERT( outputSize == reportSize );
+
                 std::vector<MetricsDiscovery::TTypedValue_1_0> results;
                 m_pMDHelper->GetMetricsFromReport(
                     pReport,
