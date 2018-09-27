@@ -178,6 +178,13 @@ CLIntercept::~CLIntercept()
     // the process is terminating, that's probably OK.
     m_Dispatch = dummyDispatch;
 
+#if defined(USE_MDAPI)
+    if( m_pMDHelper )
+    {
+        MetricsDiscovery::MDHelper::Delete( m_pMDHelper );
+    }
+#endif
+
     if( m_OpenCLLibraryHandle != NULL )
     {
         OS().UnloadLibrary( m_OpenCLLibraryHandle );
