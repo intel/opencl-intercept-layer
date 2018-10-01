@@ -274,7 +274,7 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump
 
 ##### `DumpProgramSource` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every string passed to clCreateProgramWithSource() to its own file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_source.cl".  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_options.txt".  This setting can be used for information purposes to see all kernels that are used by an application or to dump programs for program injection.  This setting overrides DumpProgramSourceScript and SimpleDumpProgramSource, and if it is set to a nozero value then the values of DumpProgramSourceScript and SimpleDumpProgramSource will be ignored.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every string passed to clCreateProgramWithSource() to its own file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_source.cl".  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_options.txt".  This setting can be used for information purposes to see all kernels that are used by an application or to dump programs for program injection.  This setting overrides DumpProgramSourceScript and SimpleDumpProgramSource, and if it is set to a nozero value then the values of DumpProgramSourceScript and SimpleDumpProgramSource will be ignored.
 
 ##### `DumpInputProgramBinaries` (bool)
 
@@ -282,11 +282,11 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump
 
 ##### `DumpProgramBinaries` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program binary that was successfully built with clBuildProgram() to its own file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Device Type\>.bin".  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_options.txt".  This setting can be used to examine compiled program binaries or to dump program binaries for program binary injection.  Note that this option dumps the output binary, which is a device binary, after calling clBuildProgram().
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program binary that was successfully built with clBuildProgram() to its own file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>.bin".  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_options.txt".  This setting can be used to examine compiled program binaries or to dump program binaries for program binary injection.  Note that this option dumps the output binary, which is a device binary, after calling clBuildProgram().
 
 ##### `DumpProgramSPIRV` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program IL binary passed to clCreateProgramWithIL() to its own file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_0000.spv" - for now at least!.  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_options.txt".  This setting can be used for information purposes to see all kernels that are used by an application or to dump SPIRV programs for SPIRV injection.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program IL binary passed to clCreateProgramWithIL() to its own file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_0000.spv" - for now at least!.  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_options.txt".  This setting can be used for information purposes to see all kernels that are used by an application or to dump SPIRV programs for SPIRV injection.
 
 ##### `InjectProgramSource` (bool)
 
@@ -314,17 +314,17 @@ If set, the Intercept Layer for OpenCL Applications will add these build options
 
 ##### `DumpProgramBuildLogs` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump build logs for every device a program is built for to a separate file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Device Type\>\_build\_log.txt".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump build logs for every device a program is built for to a separate file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>\_build\_log.txt".
 
 ##### `DumpKernelISABinaries` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump kernel ISA binaries for every kernel, if supported.  An ISA binaries can decoded into ISA text with a disassembler.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Device Type\>\_\<Kernel Name\>.isabin".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump kernel ISA binaries for every kernel, if supported.  An ISA binaries can decoded into ISA text with a disassembler.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>\_\<Kernel Name\>.isabin".
 
 ### Controls for Automatically Creating SPIR-V Modules
 
 ##### `AutoCreateSPIRV` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically create SPIR-V modules by invoking CLANG each time a program is built.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>.spv".  Because invoking CLANG requires a file containing the OpenCL C source, setting this option implicitly sets DumpProgramSource as well.  Additionally, this feature is not available for injected program source.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically create SPIR-V modules by invoking CLANG each time a program is built.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>.spv".  Because invoking CLANG requires a file containing the OpenCL C source, setting this option implicitly sets DumpProgramSource as well.  Additionally, this feature is not available for injected program source.
 
 ##### `SPIRVClang` (string)
 
