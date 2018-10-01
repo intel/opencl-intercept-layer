@@ -2001,14 +2001,14 @@ inline std::string CLIntercept::getShortKernelNameWithHash(
         char    hashString[256] = "";
         if( config().OmitProgramNumber )
         {
-            CLI_SPRINTF( hashString, 256, "(%08X_%04u_%08X)",
+            CLI_SPRINTF( hashString, 256, "$%08X_%04u_%08X",
                 (unsigned int)kernelInfo.ProgramHash,
                 kernelInfo.CompileCount,
                 (unsigned int)kernelInfo.OptionsHash );
         }
         else
         {
-            CLI_SPRINTF( hashString, 256, "(%04u_%08X_%04u_%08X)",
+            CLI_SPRINTF( hashString, 256, "$%04u_%08X_%04u_%08X",
                 kernelInfo.ProgramNumber,
                 (unsigned int)kernelInfo.ProgramHash,
                 kernelInfo.CompileCount,
