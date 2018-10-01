@@ -353,10 +353,12 @@ bool CLIntercept::init()
     std::string dllName = "";
     ReadRegistry( m_OS, "DllName", dllName );
 
-    ReadRegistry( m_OS, "SimpleDumpProgram",         m_Config.SimpleDumpProgramSource );     // backwards compatible, replaced by SimpleDumpProgramSource
-    ReadRegistry( m_OS, "DumpProgramsScript",        m_Config.DumpProgramSourceScript );     // backwards compatible, replaced by DumpProgramSourceScript
-    ReadRegistry( m_OS, "DumpProgramsInject",        m_Config.DumpProgramSource );           // backwards compatible, replaced by DumpProgramSource
-    ReadRegistry( m_OS, "InjectPrograms",            m_Config.InjectProgramSource );         // backwards compatible, replaced by InjectProgramSource
+    // A few control aliases, for backwards compatibility:
+    ReadRegistry( m_OS, "DevicePerformanceTimeHashTracking",m_Config.KernelNameHashTracking );
+    ReadRegistry( m_OS, "SimpleDumpProgram",                m_Config.SimpleDumpProgramSource );
+    ReadRegistry( m_OS, "DumpProgramsScript",               m_Config.DumpProgramSourceScript );
+    ReadRegistry( m_OS, "DumpProgramsInject",               m_Config.DumpProgramSource );
+    ReadRegistry( m_OS, "InjectPrograms",                   m_Config.InjectProgramSource );
 
 #define CLI_CONTROL( _type, _name, _init, _desc ) ReadRegistry( m_OS, #_name, m_Config . _name );
 #include "controls.h"

@@ -1477,7 +1477,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 
 #define SAVE_PROGRAM_HASH( program, hash )                                  \
     if( pIntercept->config().BuildLogging ||                                \
-        pIntercept->config().DevicePerformanceTimeHashTracking ||           \
+        pIntercept->config().KernelNameHashTracking ||                      \
         pIntercept->config().DumpProgramSource ||                           \
         pIntercept->config().DumpInputProgramBinaries ||                    \
         pIntercept->config().DumpProgramBinaries ||                         \
@@ -1493,7 +1493,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 
 #define SAVE_PROGRAM_OPTIONS_HASH( program, options )                       \
     if( pIntercept->config().BuildLogging ||                                \
-        pIntercept->config().DevicePerformanceTimeHashTracking ||           \
+        pIntercept->config().KernelNameHashTracking ||                      \
         pIntercept->config().DumpProgramSource ||                           \
         pIntercept->config().DumpInputProgramBinaries ||                    \
         pIntercept->config().DumpProgramBinaries ||                         \
@@ -1511,7 +1511,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 
 #define CREATE_COMBINED_PROGRAM_STRING( count, strings, lengths, singleString, hash ) \
     if( pIntercept->config().BuildLogging ||                                \
-        pIntercept->config().DevicePerformanceTimeHashTracking ||           \
+        pIntercept->config().KernelNameHashTracking ||                      \
         pIntercept->config().SimpleDumpProgramSource ||                     \
         pIntercept->config().DumpProgramSourceScript ||                     \
         pIntercept->config().DumpProgramSource ||                           \
@@ -1697,7 +1697,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 #define INCREMENT_PROGRAM_COMPILE_COUNT( _program )                         \
     if( _program &&                                                         \
         ( pIntercept->config().BuildLogging ||                              \
-          pIntercept->config().DevicePerformanceTimeHashTracking ||         \
+          pIntercept->config().KernelNameHashTracking ||                    \
           pIntercept->config().InjectProgramSource ||                       \
           pIntercept->config().DumpProgramSourceScript ||                   \
           pIntercept->config().DumpProgramSource ||                         \
@@ -1994,7 +1994,7 @@ inline std::string CLIntercept::getShortKernelNameWithHash(
 {
     std::string name = getShortKernelName( kernel );
 
-    if( config().DevicePerformanceTimeHashTracking )
+    if( config().KernelNameHashTracking )
     {
         const SKernelInfo& kernelInfo = m_KernelInfoMap[ kernel ];
 

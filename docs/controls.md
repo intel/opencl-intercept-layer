@@ -174,6 +174,10 @@ If set to a nonzero value, logs information about the platforms and devices in t
 
 If set, the Intercept Layer for OpenCL Applications will emit logs to this directory instead of the default log directory.
 
+##### `KernelNameHashTracking` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will append the program and build option hashes to the kernel name in logs and reports.
+
 ##### `LongKernelNameCutoff` (cl_uint)
 
 If an OpenCL application uses kernels with very long names, the Intercept Layer for OpenCL Applications can substitute a "short" kernel identifier for a "long" kernel name in logs and reports.  This control defines how long a kernel name must be (in characters) before it is replaced by a "short" kernel identifier.
@@ -197,10 +201,6 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will trac
 ##### `DevicePerformanceTiming` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will add event profiling to track the minimum, maximum, and average device time for each OpenCL command. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. When the process exits, this information will be printed to the file "clIntercept\_report.txt" in the directory "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".
-
-##### `DevicePerformanceTimeHashTracking` (bool)
-
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between OpenCL NDRange kernels from programs with different hashes for the purpose of device performance timing.
 
 ##### `DevicePerformanceTimeKernelInfoTracking` (bool)
 
