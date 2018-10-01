@@ -1884,7 +1884,7 @@ void CLIntercept::getEnqueueNDRangeKernelArgsString(
             ss << global_work_size[i];
             if( i < work_dim - 1 )
             {
-                ss << ", ";
+                ss << " x ";
             }
         }
     }
@@ -1902,7 +1902,7 @@ void CLIntercept::getEnqueueNDRangeKernelArgsString(
             ss << local_work_size[i];
             if( i < work_dim - 1 )
             {
-                ss << ", ";
+                ss << " x ";
             }
         }
     }
@@ -2635,7 +2635,7 @@ void CLIntercept::overrideNullLocalWorkSize(
                 else
                 {
                     m_OS.EnterCriticalSection();
-                    logf( "Couldn't override NULL local work size: < %u, %u > %% < %u, %u > != 0!\n",
+                    logf( "Couldn't override NULL local work size: < %u x %u > %% < %u x %u > != 0!\n",
                         (unsigned int)global_work_size[0],
                         (unsigned int)global_work_size[1],
                         (unsigned int)m_Config.NullLocalWorkSizeX,
@@ -2658,7 +2658,7 @@ void CLIntercept::overrideNullLocalWorkSize(
                 else
                 {
                     m_OS.EnterCriticalSection();
-                    logf( "Couldn't override NULL local work size: < %u, %u, %u > %% < %u, %u, %u > != 0!\n",
+                    logf( "Couldn't override NULL local work size: < %u x %u x %u > %% < %u x %u x %u > != 0!\n",
                         (unsigned int)global_work_size[0],
                         (unsigned int)global_work_size[1],
                         (unsigned int)global_work_size[2],
@@ -4335,11 +4335,11 @@ void CLIntercept::addTimingEvent(
                     }
                     if( workDim >= 2 )
                     {
-                        ss << " x " << gwo[1];
+                        ss << ", " << gwo[1];
                     }
                     if( workDim >= 3 )
                     {
-                        ss << " x " << gwo[2];
+                        ss << ", " << gwo[2];
                     }
                 }
                 else
