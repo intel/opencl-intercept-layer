@@ -4486,7 +4486,7 @@ void CLIntercept::checkTimingEvents()
                         deviceTimingStats.MinNS = std::min< cl_ulong >( deviceTimingStats.MinNS, delta );
                         deviceTimingStats.MaxNS = std::max< cl_ulong >( deviceTimingStats.MaxNS, delta );
 
-                        uint64_t    numberOfCalls = deviceTimingStats.NumberOfCalls;
+                        //uint64_t    numberOfCalls = deviceTimingStats.NumberOfCalls;
 
                         if( config().DevicePerformanceTimeLogging )
                         {
@@ -4510,7 +4510,7 @@ void CLIntercept::checkTimingEvents()
                             std::ostringstream  ss;
 
                             ss << "Device Timeline for "
-                                //<< call " << numberOfCalls << " to "
+                                //<< "call " << numberOfCalls << " to "
                                 << key << " (enqueue " << pNode->EnqueueCounter << ") = "
                                 << commandQueued << " ns (queued), "
                                 << commandSubmit << " ns (submit), "
