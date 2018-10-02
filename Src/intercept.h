@@ -217,7 +217,6 @@ public:
                 cl_int status );
 
     void    incrementEnqueueCounter();
-    uint64_t getEnqueueCounter();
 
     void    overrideNullLocalWorkSize(
                 const cl_uint work_dim,
@@ -816,6 +815,7 @@ private:
     {
         std::string FunctionName;
         std::string KernelName;
+        uint64_t    EnqueueCounter;
         uint64_t    QueuedTime;
         cl_kernel   Kernel;
         cl_event    Event;
