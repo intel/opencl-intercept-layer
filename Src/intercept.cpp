@@ -2592,11 +2592,6 @@ void CLIntercept::incrementEnqueueCounter()
     m_OS.LeaveCriticalSection();
 }
 
-uint64_t CLIntercept::getEnqueueCounter()
-{
-    return m_EnqueueCounter;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::overrideNullLocalWorkSize(
@@ -4399,6 +4394,7 @@ void CLIntercept::addTimingEvent(
                 pNode->KernelName += ss.str();
             }
         }
+        pNode->EnqueueCounter = m_EnqueueCounter;
         pNode->QueuedTime = queuedTime;
         pNode->Kernel = kernel; // Note: no retain, so cannot count on this value...
         pNode->Event = event;
@@ -4499,7 +4495,9 @@ void CLIntercept::checkTimingEvents()
 
                             std::ostringstream  ss;
 
-                            ss << "Device Time for call " << numberOfCalls << " to " << key << " = "
+                            ss << "Device Time for "
+                                //<< "call " << numberOfCalls << " to "
+                                << key << " (enqueue " << pNode->EnqueueCounter << ") = "
                                 << queuedDelta << " ns (queued -> submit), "
                                 << submitDelta << " ns (submit -> start), "
                                 << delta << " ns (start -> end)\n";
@@ -4511,7 +4509,9 @@ void CLIntercept::checkTimingEvents()
                         {
                             std::ostringstream  ss;
 
-                            ss << "Device Timeline for call " << numberOfCalls << " to " << key << " = "
+                            ss << "Device Timeline for "
+                                //<< call " << numberOfCalls << " to "
+                                << key << " (enqueue " << pNode->EnqueueCounter << ") = "
                                 << commandQueued << " ns (queued), "
                                 << commandSubmit << " ns (submit), "
                                 << commandStart << " ns (start), "
