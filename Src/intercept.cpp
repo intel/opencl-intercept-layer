@@ -4747,7 +4747,12 @@ void CLIntercept::removeKernel(
     {
         if( refCount == 1 )
         {
+#if 0
+            // We shouldn't remove the kernel name from the local kernel name map
+            // here since the mapping may be included in the device performance
+            // time report.
             m_LongKernelNameMap.erase( m_KernelInfoMap[ kernel ].KernelName );
+#endif
 
             m_KernelInfoMap.erase( kernel );
 
