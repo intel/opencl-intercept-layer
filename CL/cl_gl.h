@@ -31,15 +31,7 @@
 
 // Unlike the Khronos header file, we want to unconditonally include the
 // CLIntercept cl.h, and not the system cl.h.
-#if 0
-#ifdef __APPLE__
-#include <OpenCL/cl.h>
-#else
-#include <CL/cl.h>
-#endif
-#else
 #include "CL/cl.h"
-#endif
 
 #ifdef __cplusplus
 extern "C" {

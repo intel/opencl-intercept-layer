@@ -22,6 +22,9 @@
 
 #pragma once
 
+// cl_khr_fp16
+#define CL_DEVICE_HALF_FP_CONFIG                         0x1033
+
 // cl_khr_gl_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clGetGLContextInfoKHR(
