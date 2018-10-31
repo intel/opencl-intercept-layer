@@ -99,7 +99,8 @@ void CLIntercept::initCustomPerfCounters()
 
         m_MetricDump.open( fileName.c_str(), std::ios::out );
 
-        m_pMDHelper->PrintMetricNames( m_MetricDump );
+            m_pMDHelper->PrintMetricNames( m_MetricDump, config().DevicePerfReportMax );
+            m_pMDHelper->PrintMetricUnits( m_MetricDump, config().DevicePerfReportMax );
     }
 }
 
@@ -207,13 +208,23 @@ void CLIntercept::saveMDAPICounters(
                 CLI_ASSERT( outputSize == reportSize );
 
                 std::vector<MetricsDiscovery::TTypedValue_1_0> results;
+                std::vector<MetricsDiscovery::TTypedValue_1_0> maxValues;
+                
                 m_pMDHelper->GetMetricsFromReport(
                     pReport,
-                    results );
+                    results,
+                    maxValues,
+                    config().DevicePerfReportMax
+                );
+
                 m_pMDHelper->PrintMetricValues(
                     m_MetricDump,
                     name,
-                    results );
+                    results,
+                    maxValues,
+                    config().DevicePerfReportMax
+                );
+
                 m_pMDHelper->AggregateMetrics(
                     m_MetricAggregations,
                     name,

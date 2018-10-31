@@ -73,14 +73,20 @@ public:
 
     void    GetMetricsFromReport(
                 const char* pData,
-                std::vector<TTypedValue_1_0>& results );
+                std::vector<TTypedValue_1_0>& results,
+				std::vector<TTypedValue_1_0>& maxValues,
+				bool printMax);
 
+	void	PrintMetricUnits(
+				std::ostream& os, bool printMax );
     void    PrintMetricNames(
-                std::ostream& os );
+                std::ostream& os, bool printMax );
     void    PrintMetricValues(
                 std::ostream& os,
                 const std::string& name,
-                const std::vector<TTypedValue_1_0>& results );
+                const std::vector<TTypedValue_1_0>& results,
+                const std::vector<TTypedValue_1_0>& maxValues,
+                bool printMax);
 
     void    AggregateMetrics(
                 CMetricAggregations& aggregations,
