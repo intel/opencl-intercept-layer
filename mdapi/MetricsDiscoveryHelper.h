@@ -74,11 +74,11 @@ public:
     void    GetMetricsFromReport(
                 const char* pData,
                 std::vector<TTypedValue_1_0>& results,
-				std::vector<TTypedValue_1_0>& maxValues,
-				bool printMax);
+                std::vector<TTypedValue_1_0>& maxValues,
+                bool printMax);
 
-	void	PrintMetricUnits(
-				std::ostream& os, bool printMax );
+    void    PrintMetricUnits(
+                std::ostream& os, bool printMax );
     void    PrintMetricNames(
                 std::ostream& os, bool printMax );
     void    PrintMetricValues(
