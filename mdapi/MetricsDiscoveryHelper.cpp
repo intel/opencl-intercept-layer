@@ -335,7 +335,8 @@ void MDHelper::SetMetricSetFiltering( TMetricApiType apiMask )
 void MDHelper::GetMetricsFromReport(
     const char* pReportData,
     std::vector<TTypedValue_1_0>& results,
-	std::vector<TTypedValue_1_0>* maxValues)
+	std::vector<TTypedValue_1_0>& maxValues,
+	bool reportMax)
 {
     if( !m_Initialized || !m_MetricSet )
     {
@@ -349,19 +350,19 @@ void MDHelper::GetMetricsFromReport(
     const uint32_t informationCount = m_MetricSet->GetParams()->InformationCount;
 
     results.resize( metricsCount + informationCount );
-	if ( maxValues != NULL ) (*maxValues).resize(metricsCount);
+	if (reportMax) maxValues.resize(metricsCount);
 
     uint32_t    outReportCount = 0;
 	TCompletionCode res = MetricsDiscovery::CC_ERROR_GENERAL;
-	if( maxValues != NULL )
+	if( reportMax )
     res = ((MetricsDiscovery::IMetricSet_1_5*)m_MetricSet)->CalculateMetrics(
         (const unsigned char*)pReportData,
         reportSize,
         results.data(),
         (uint32_t)(results.size() * sizeof(TTypedValue_1_0)),
         &outReportCount,
-        (*maxValues).data(),
-		(uint32_t)((*maxValues).size() * sizeof(TTypedValue_1_0))
+        maxValues.data(),
+		(uint32_t)(maxValues.size() * sizeof(TTypedValue_1_0))
 	);
 	else
 	res = ((MetricsDiscovery::IMetricSet_1_1*)m_MetricSet)->CalculateMetrics(
@@ -441,7 +442,8 @@ void MDHelper::PrintMetricValues(
     std::ostream& os,
     const std::string& name,
     const std::vector<TTypedValue_1_0>& results,
-	const std::vector<TTypedValue_1_0>* maxValues)
+	const std::vector<TTypedValue_1_0>& maxValues,
+	bool reportMax)
 {
     if( !m_Initialized || !m_MetricSet || !os.good() )
     {
@@ -455,7 +457,7 @@ void MDHelper::PrintMetricValues(
     for( uint32_t i = 0; i < metricsCount; i++ )
     {
         PrintValue( os, results[ i ] );
-		if( maxValues != NULL ) PrintValue( os, (*maxValues)[ i ] );
+		if( reportMax ) PrintValue( os, maxValues[ i ] );
     }
 
     os << ",";
