@@ -85,8 +85,8 @@ public:
                 std::ostream& os,
                 const std::string& name,
                 const std::vector<TTypedValue_1_0>& results,
-				const std::vector<TTypedValue_1_0>& maxValues,
-				bool printMax);
+                const std::vector<TTypedValue_1_0>& maxValues,
+                bool printMax);
 
     void    AggregateMetrics(
                 CMetricAggregations& aggregations,
