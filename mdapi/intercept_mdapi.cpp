@@ -65,6 +65,7 @@ void CLIntercept::initCustomPerfCounters()
 {
     const std::string& metricSetSymbolName = config().DevicePerfCounterCustom;
     const std::string& metricsFileName = config().DevicePerfCounterFile;
+    const bool includeMaxValues = config().DevicePerfCounterReportMax;
 
     CLI_ASSERT( !metricSetSymbolName.empty() );
 
@@ -72,7 +73,8 @@ void CLIntercept::initCustomPerfCounters()
     {
         m_pMDHelper = MetricsDiscovery::MDHelper::Create(
             metricSetSymbolName,
-            metricsFileName );
+            metricsFileName,
+            includeMaxValues );
         if( m_pMDHelper )
         {
             log( "Metric Discovery initialized.\n" );
@@ -99,8 +101,8 @@ void CLIntercept::initCustomPerfCounters()
 
         m_MetricDump.open( fileName.c_str(), std::ios::out );
 
-            m_pMDHelper->PrintMetricNames( m_MetricDump, config().DevicePerfReportMax );
-            m_pMDHelper->PrintMetricUnits( m_MetricDump, config().DevicePerfReportMax );
+        m_pMDHelper->PrintMetricNames( m_MetricDump );
+        m_pMDHelper->PrintMetricUnits( m_MetricDump );
     }
 }
 
@@ -213,18 +215,13 @@ void CLIntercept::saveMDAPICounters(
                 m_pMDHelper->GetMetricsFromReport(
                     pReport,
                     results,
-                    maxValues,
-                    config().DevicePerfReportMax
-                );
+                    maxValues );
 
                 m_pMDHelper->PrintMetricValues(
                     m_MetricDump,
                     name,
                     results,
-                    maxValues,
-                    config().DevicePerfReportMax
-                );
-
+                    maxValues );
                 m_pMDHelper->AggregateMetrics(
                     m_MetricAggregations,
                     name,

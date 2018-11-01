@@ -53,12 +53,12 @@ namespace OS
 class Timer
 {
 public:
-	Timer() {};
-	~Timer() {};
+    Timer() {};
+    ~Timer() {};
 
-    bool	Init( void );
+    bool    Init( void );
 
-    uint64_t	GetTimer( void ) const;
+    uint64_t    GetTimer( void ) const;
     uint64_t    TickToNS( uint64_t delta ) const;
 
 private:
@@ -72,20 +72,20 @@ private:
 inline bool Timer::Init( void )
 {
 #if defined(_WIN32)
-	if( ::QueryPerformanceFrequency( &m_Freq ) == FALSE )
-	{
-		return false;
-	}
+    if( ::QueryPerformanceFrequency( &m_Freq ) == FALSE )
+    {
+        return false;
+    }
 #endif
-	return true;
+    return true;
 }
 
 inline uint64_t Timer::GetTimer( void ) const
 {
 #if defined(_WIN32)
-	LARGE_INTEGER   i;
-	::QueryPerformanceCounter( &i );
-	return (uint64_t)i.QuadPart;
+    LARGE_INTEGER   i;
+    ::QueryPerformanceCounter( &i );
+    return (uint64_t)i.QuadPart;
 #elif defined(__linux__)
 #ifdef USE_OLD_TIMER
     timeval i;
@@ -104,8 +104,8 @@ inline uint64_t Timer::GetTimer( void ) const
 inline uint64_t Timer::TickToNS( uint64_t delta ) const
 {
 #if defined(_WIN32)
-	double  ns = delta * ( 1000000000.0 / m_Freq.QuadPart );
-	return (uint64_t)ns;
+    double  ns = delta * ( 1000000000.0 / m_Freq.QuadPart );
+    return (uint64_t)ns;
 #elif defined(__linux__)
 #ifdef USE_OLD_TIMER
     double  ns = delta * 1000.0;
