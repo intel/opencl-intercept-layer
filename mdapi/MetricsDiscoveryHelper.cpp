@@ -31,7 +31,9 @@
 #include <stdio.h>
 
 // Enables logs:
+//#ifdef _DEBUG
 //#define MD_DEBUG
+//#endif
 
 #if defined(_WIN32)
 static const wchar_t* cMDLibFileName =
@@ -115,14 +117,16 @@ MDHelper::~MDHelper()
 /************************************************************************/
 MDHelper* MDHelper::Create(
     const std::string& metricSetSymbolName,
-    const std::string& metricsFileName )
+    const std::string& metricsFileName,
+    const bool includeMaxValues )
 {
     MDHelper*   pMDHelper = new MDHelper();
     if( pMDHelper )
     {
         if( pMDHelper->InitMetricsDiscovery(
                 metricSetSymbolName,
-                metricsFileName ) == false )
+                metricsFileName,
+                includeMaxValues ) == false )
         {
             Delete( pMDHelper );
         }
@@ -144,9 +148,11 @@ void MDHelper::Delete( MDHelper*& pMDHelper )
 /************************************************************************/
 bool MDHelper::InitMetricsDiscovery(
     const std::string& metricSetSymbolName,
-    const std::string& metricsFileName )
+    const std::string& metricsFileName,
+    const bool includeMaxValues )
 {
     m_Initialized = false;
+    m_IncludeMaxValues = includeMaxValues;
 
     CloseMetricsDevice = NULL;
     OpenMetricsDevice = NULL;
@@ -226,6 +232,15 @@ bool MDHelper::InitMetricsDiscovery(
     {
         DebugPrint("MDAPI Lib version must be at least v1.1!\n");
         return false;
+    }
+    if( deviceParams->Version.MajorNumber < 1 ||
+        ( deviceParams->Version.MajorNumber == 1 && deviceParams->Version.MinorNumber < 5 ) )
+    {
+        if( m_IncludeMaxValues )
+        {
+            DebugPrint("MDAPI Lib version must be at least v1.5 for maximum value tracking - disabling.\n");
+            m_IncludeMaxValues = false;
+        }
     }
 
     bool found = false;
@@ -335,8 +350,7 @@ void MDHelper::SetMetricSetFiltering( TMetricApiType apiMask )
 void MDHelper::GetMetricsFromReport(
     const char* pReportData,
     std::vector<TTypedValue_1_0>& results,
-    std::vector<TTypedValue_1_0>& maxValues,
-    bool reportMax)
+    std::vector<TTypedValue_1_0>& maxValues )
 {
     if( !m_Initialized || !m_MetricSet )
     {
@@ -350,36 +364,44 @@ void MDHelper::GetMetricsFromReport(
     const uint32_t informationCount = m_MetricSet->GetParams()->InformationCount;
 
     results.resize( metricsCount + informationCount );
-    if (reportMax) maxValues.resize(metricsCount);
 
-    uint32_t    outReportCount = 0;
     TCompletionCode res = MetricsDiscovery::CC_ERROR_GENERAL;
-    if( reportMax )
-    res = ((MetricsDiscovery::IMetricSet_1_5*)m_MetricSet)->CalculateMetrics(
-        (const unsigned char*)pReportData,
-        reportSize,
-        results.data(),
-        (uint32_t)(results.size() * sizeof(TTypedValue_1_0)),
-        &outReportCount,
-        maxValues.data(),
-        (uint32_t)(maxValues.size() * sizeof(TTypedValue_1_0))
-    );
+    if( m_IncludeMaxValues )
+    {
+        uint32_t    outReportCount = 0;
+        maxValues.resize( metricsCount );
+        res = ((MetricsDiscovery::IMetricSet_1_5*)m_MetricSet)->CalculateMetrics(
+            (const unsigned char*)pReportData,
+            reportSize,
+            results.data(),
+            (uint32_t)(results.size() * sizeof(TTypedValue_1_0)),
+            &outReportCount,
+            maxValues.data(),
+            (uint32_t)(maxValues.size() * sizeof(TTypedValue_1_0)) );
+    }
     else
-    res = ((MetricsDiscovery::IMetricSet_1_1*)m_MetricSet)->CalculateMetrics(
-        (const unsigned char*)pReportData,
-        reportSize,
-        results.data(),
-        (uint32_t)(results.size() * sizeof(TTypedValue_1_0)),
-        &outReportCount,
-        false
-    );
-    if( res != CC_OK ) DebugPrint("CalculateMetrics failed!\n");
+    {
+        uint32_t    outReportCount = 0;
+        res = m_MetricSet->CalculateMetrics(
+            (const unsigned char*)pReportData,
+            reportSize,
+            results.data(),
+            (uint32_t)(results.size() * sizeof(TTypedValue_1_0)),
+            &outReportCount,
+            false );
+    }
+
+    if( res != CC_OK )
+    {
+        DebugPrint("CalculateMetrics failed!\n");
+        return;
+    }
 }
 
 /************************************************************************/
 /* PrintMetricNames                                                     */
 /************************************************************************/
-void MDHelper::PrintMetricNames( std::ostream& os , bool printMax )
+void MDHelper::PrintMetricNames( std::ostream& os )
 {
     if( !m_Initialized || !m_MetricSet || !os.good() )
     {
@@ -392,7 +414,10 @@ void MDHelper::PrintMetricNames( std::ostream& os , bool printMax )
     for( uint32_t i = 0; i < m_MetricSet->GetParams( )->MetricsCount; i++ )
     {
         os << m_MetricSet->GetMetric( i )->GetParams()->SymbolName << ",";
-        if(printMax) os << "max_" << m_MetricSet->GetMetric( i )->GetParams()->SymbolName << ",";
+        if( m_IncludeMaxValues )
+        {
+            os << "max_" << m_MetricSet->GetMetric( i )->GetParams()->SymbolName << ",";
+        }
     }
 
     os << ",";
@@ -408,7 +433,7 @@ void MDHelper::PrintMetricNames( std::ostream& os , bool printMax )
 /************************************************************************/
 /* PrintMetricUnits                                                 */
 /************************************************************************/
-void MDHelper::PrintMetricUnits(std::ostream& os, bool printMax )
+void MDHelper::PrintMetricUnits(std::ostream& os )
 {
     if (!m_Initialized || !m_MetricSet || !os.good()) return;
 
@@ -417,9 +442,7 @@ void MDHelper::PrintMetricUnits(std::ostream& os, bool printMax )
     for (uint32_t i = 0; i < m_MetricSet->GetParams()->MetricsCount; i++)
     {
         const char* unit = m_MetricSet->GetMetric(i)->GetParams()->MetricResultUnits;
-        if (unit == NULL)
-            os << (printMax ? " , ," : " ,");
-        else os << unit << (printMax ? ", ," : ",");
+        os << ( unit ? unit : " " ) << ( m_IncludeMaxValues ? ", ," : "," );
     }
 
     os << ",";
@@ -427,9 +450,7 @@ void MDHelper::PrintMetricUnits(std::ostream& os, bool printMax )
     for (uint32_t i = 0; i < m_MetricSet->GetParams()->InformationCount; i++)
     {
         const char* unit = m_MetricSet->GetInformation(i)->GetParams()->InfoUnits;
-        if (unit == NULL)
-            os << " ,";
-        else os << unit << ",";
+        os << ( unit ? unit : " " ) << ",";
     }
 
     os << std::endl;
@@ -442,8 +463,7 @@ void MDHelper::PrintMetricValues(
     std::ostream& os,
     const std::string& name,
     const std::vector<TTypedValue_1_0>& results,
-    const std::vector<TTypedValue_1_0>& maxValues,
-    bool reportMax)
+    const std::vector<TTypedValue_1_0>& maxValues )
 {
     if( !m_Initialized || !m_MetricSet || !os.good() )
     {
@@ -457,7 +477,10 @@ void MDHelper::PrintMetricValues(
     for( uint32_t i = 0; i < metricsCount; i++ )
     {
         PrintValue( os, results[ i ] );
-        if( reportMax ) PrintValue( os, maxValues[ i ] );
+        if( m_IncludeMaxValues )
+        {
+            PrintValue( os, maxValues[ i ] );
+        }
     }
 
     os << ",";

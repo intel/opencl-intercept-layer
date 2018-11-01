@@ -59,7 +59,8 @@ class MDHelper
 public:
     static MDHelper* Create(
         const std::string& metricSetSymbolName,
-        const std::string& metricsFileName );
+        const std::string& metricsFileName,
+        const bool includeMaxValues );
     static void Delete( MDHelper*& pMDHelper );
 
     uint32_t GetMetricsConfiguration();
@@ -74,19 +75,17 @@ public:
     void    GetMetricsFromReport(
                 const char* pData,
                 std::vector<TTypedValue_1_0>& results,
-                std::vector<TTypedValue_1_0>& maxValues,
-                bool printMax);
+                std::vector<TTypedValue_1_0>& maxValues );
 
     void    PrintMetricUnits(
-                std::ostream& os, bool printMax );
+                std::ostream& os );
     void    PrintMetricNames(
-                std::ostream& os, bool printMax );
+                std::ostream& os );
     void    PrintMetricValues(
                 std::ostream& os,
                 const std::string& name,
                 const std::vector<TTypedValue_1_0>& results,
-                const std::vector<TTypedValue_1_0>& maxValues,
-                bool printMax);
+                const std::vector<TTypedValue_1_0>& maxValues );
 
     void    AggregateMetrics(
                 CMetricAggregations& aggregations,
@@ -99,14 +98,15 @@ private:
 
     bool InitMetricsDiscovery(
         const std::string& metricSetSymbolName,
-        const std::string& metricsFileName );
+        const std::string& metricsFileName,
+        const bool includeMaxValues );
 
     void    PrintValue(
                 std::ostream& os,
                 const TTypedValue_1_0& value );
 
     TTypedValue_1_0* GetGlobalSymbolValue(
-        const char*         symbolName );
+                const char* symbolName );
 
     static uint64_t CastToUInt64(TTypedValue_1_0 value );
 
@@ -115,6 +115,7 @@ private:
     OpenMetricsDeviceFromFile_fn    OpenMetricsDeviceFromFile;
 
     bool                    m_Initialized;
+    bool                    m_IncludeMaxValues;
     uint32_t                m_APIMask;
     uint32_t                m_CategoryMask;
 
