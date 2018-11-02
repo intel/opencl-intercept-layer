@@ -211,7 +211,7 @@ void CLIntercept::saveMDAPICounters(
 
                 std::vector<MetricsDiscovery::TTypedValue_1_0> results;
                 std::vector<MetricsDiscovery::TTypedValue_1_0> maxValues;
-                
+
                 m_pMDHelper->GetMetricsFromReport(
                     pReport,
                     results,
