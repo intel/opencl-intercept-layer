@@ -43,6 +43,7 @@ static bool convertPropertiesToOCL1_2(
             {
                 switch( properties[ i + 1 ] )
                 {
+                case 0: // no special queue properties
                 case CL_QUEUE_PROFILING_ENABLE:
                 case CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE:
                 case CL_QUEUE_PROFILING_ENABLE | CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE:
