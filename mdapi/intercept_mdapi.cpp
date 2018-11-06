@@ -44,10 +44,9 @@ static bool convertPropertiesToOCL1_2(
                 switch( properties[ i + 1 ] )
                 {
                 case CL_QUEUE_PROFILING_ENABLE:
-                    ocl1_2_properties |= CL_QUEUE_PROFILING_ENABLE;
-                    break;
                 case CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE:
-                    ocl1_2_properties |= CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE;
+                case CL_QUEUE_PROFILING_ENABLE | CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE:
+                    ocl1_2_properties |= properties[ i + 1 ];
                     break;
                 default:
                     return false;
