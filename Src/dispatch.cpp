@@ -6703,11 +6703,22 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
 #if defined(USE_MDAPI)
         if( !pIntercept->config().DevicePerfCounterCustom.empty() )
         {
-            retVal = pIntercept->createMDAPICommandQueue(
-                context,
-                device,
-                properties,
-                errcode_ret );
+            if( ( retVal == NULL ) && newProperties )
+            {
+                retVal = pIntercept->createMDAPICommandQueue(
+                    context,
+                    device,
+                    newProperties,
+                    errcode_ret );
+            }
+            if( retVal == NULL )
+            {
+                retVal = pIntercept->createMDAPICommandQueue(
+                    context,
+                    device,
+                    properties,
+                    errcode_ret );
+            }
         }
 #endif
 
@@ -6787,11 +6798,22 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
 #if defined(USE_MDAPI)
         if( !pIntercept->config().DevicePerfCounterCustom.empty() )
         {
-            retVal = pIntercept->createMDAPICommandQueue(
-                context,
-                device,
-                properties,
-                errcode_ret );
+            if( ( retVal == NULL ) && newProperties )
+            {
+                retVal = pIntercept->createMDAPICommandQueue(
+                    context,
+                    device,
+                    newProperties,
+                    errcode_ret );
+            }
+            if( retVal == NULL )
+            {
+                retVal = pIntercept->createMDAPICommandQueue(
+                    context,
+                    device,
+                    properties,
+                    errcode_ret );
+            }
         }
 #endif
 
