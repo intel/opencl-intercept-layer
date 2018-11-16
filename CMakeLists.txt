@@ -120,14 +120,14 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
             set(CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Kernels)
             add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
                 COMMAND mkdir -p ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-                COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ld -r -b binary
+                COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ${CMAKE_LINKER} -r -b binary
                     Kernels/precompiled_kernels.cl
                     -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
                 DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/precompiled_kernels.cl
             )
             add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
                 COMMAND mkdir -p ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-                COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ld -r -b binary
+                COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ${CMAKE_LINKER} -r -b binary
                     Kernels/builtin_kernels.cl
                     -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
                 DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/builtin_kernels.cl
