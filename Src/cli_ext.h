@@ -306,6 +306,18 @@ cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
     const cl_queue_properties_khr* properties,
     cl_int* errcode_ret);
 
+// cl_khr_priority_hints extension
+#define CL_QUEUE_PRIORITY_KHR 0x1096
+#define CL_QUEUE_PRIORITY_HIGH_KHR (1<<0)
+#define CL_QUEUE_PRIORITY_MED_KHR (1<<1)
+#define CL_QUEUE_PRIORITY_LOW_KHR (1<<2)
+
+// cl_khr_throttle_hints extension
+#define CL_QUEUE_THROTTLE_KHR 0x1097
+#define CL_QUEUE_THROTTLE_HIGH_KHR (1<<0)
+#define CL_QUEUE_THROTTLE_MED_KHR (1<<1)
+#define CL_QUEUE_THROTTLE_LOW_KHR (1<<2)
+
 // Unofficial MDAPI extension:
 extern CL_API_ENTRY
 cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(

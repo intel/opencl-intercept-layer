@@ -845,6 +845,12 @@ CEnumNameMap::CEnumNameMap()
     //CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR    0x2033
     //CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE_KHR       0x2034
 
+    // cl_khr_priority_hints extension
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_PRIORITY_KHR );
+
+    // cl_khr_throttle_hints extension
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_THROTTLE_KHR );
+
     // cl_nv_device_attribute_query
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV );

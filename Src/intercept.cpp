@@ -1730,14 +1730,36 @@ void CLIntercept::getCommandQueuePropertiesString(
             {
             case CL_QUEUE_PROPERTIES:
                 {
-                    str += "<TODO>";
+                    const cl_command_queue_properties*  pp =
+                        (const cl_command_queue_properties*)( properties + 1);
+                    str += enumName().name_command_queue_properties( pp[0] ).c_str();
                 }
                 break;
             case CL_QUEUE_SIZE:
                 {
                     const cl_uint*  pu = (const cl_uint*)( properties + 1);
-                    cl_uint value = pu[0];
-                    str += value;
+                    str += pu[0];
+                }
+                break;
+            case CL_QUEUE_PRIORITY_KHR:
+            case CL_QUEUE_THROTTLE_KHR:
+                {
+                    const cl_uint*  pu = (const cl_uint*)( properties + 1);
+                    switch( pu[0] )
+                    {
+                    case CL_QUEUE_PRIORITY_HIGH_KHR: // and CL_QUEUE_THROTTLE_HIGH_KHR:
+                        str += "HIGH";
+                        break;
+                    case CL_QUEUE_PRIORITY_MED_KHR: // and CL_QUEUE_THROTTLE_MED_KHR:
+                        str += "MED";
+                        break;
+                    case CL_QUEUE_PRIORITY_LOW_KHR: // and CL_QUEUE_THROTTLE_LOW_KHR:
+                        str += "LOW";
+                        break;
+                    default:
+                        str += "<Unexpected!>";
+                        break;
+                    }
                 }
                 break;
             default:
