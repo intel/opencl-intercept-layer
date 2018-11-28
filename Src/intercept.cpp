@@ -4152,20 +4152,32 @@ void CLIntercept::createCommandQueueOverrideInit(
     const cl_queue_properties* properties,
     cl_queue_properties*& pLocalQueueProperties ) const
 {
-    // We want to add command queue properties, unless command queue
+    // We're always going to add command queue properties, unless command queue
     // properties already exist (requesting the same property twice is an
-    // error).  So, look through the queue properties for the command queue
-    // properties enum.  We need to do this anyways to count the number of
-    // property pairs.
+    // error).  We also may add priority hints or throttle hints, in some cases.
+    // So, look through the queue properties for these enums.  We need to do
+    // this anyways to count the number of property pairs.
     bool    foundCommandQueuePropertiesEnum = false;
+    bool    foundPriorityHintEnum = false;
+    bool    foundThrottleHintEnum = false;
     int     numProperties = 0;
     if( properties )
     {
         while( properties[ numProperties ] != 0 )
         {
-            if( properties[ numProperties ] == CL_QUEUE_PROPERTIES )
+            switch( properties[ numProperties ] )
             {
+            case CL_QUEUE_PROPERTIES:
                 foundCommandQueuePropertiesEnum = true;
+                break;
+            case CL_QUEUE_PRIORITY_KHR:
+                foundPriorityHintEnum = true;
+                break;
+            case CL_QUEUE_THROTTLE_KHR:
+                foundThrottleHintEnum = true;
+                break;
+            default:
+                break;
             }
             numProperties += 2;
         }
@@ -4175,6 +4187,20 @@ void CLIntercept::createCommandQueueOverrideInit(
     {
         // The performance hint property isn't already set, so we'll
         // need to allocate an extra pair of properties for it.
+        numProperties += 2;
+    }
+    // TODO: Consider only adding the priority hint enum if the device
+    // supports cl_khr_priority_hints?
+    if( foundPriorityHintEnum == false &&
+        config().DefaultQueuePriorityHint != 0 )
+    {
+        numProperties += 2;
+    }
+    // TODO: Consider only adding the throttle hint enum if the device
+    // supports cl_khr_throttle_hints?
+    if( foundThrottleHintEnum == false &&
+        config().DefaultQueueThrottleHint != 0 )
+    {
         numProperties += 2;
     }
 
@@ -4219,6 +4245,22 @@ void CLIntercept::createCommandQueueOverrideInit(
 
             pLocalQueueProperties[ numProperties ] = CL_QUEUE_PROPERTIES;
             pLocalQueueProperties[ numProperties + 1 ] = props;
+            numProperties += 2;
+        }
+        // Add priority hints and throttle hints if requested and they
+        // aren't set already.
+        if( foundPriorityHintEnum == false &&
+            config().DefaultQueuePriorityHint != 0 )
+        {
+            pLocalQueueProperties[ numProperties] = CL_QUEUE_PRIORITY_KHR;
+            pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueuePriorityHint;
+            numProperties += 2;
+        }
+        if( foundThrottleHintEnum == false &&
+            config().DefaultQueueThrottleHint != 0 )
+        {
+            pLocalQueueProperties[ numProperties] = CL_QUEUE_THROTTLE_KHR;
+            pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueueThrottleHint;
             numProperties += 2;
         }
         // Add the terminating zero.

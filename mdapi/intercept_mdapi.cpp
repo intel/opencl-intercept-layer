@@ -53,6 +53,10 @@ static bool convertPropertiesToOCL1_2(
                     return false;
                 }
             }
+            else
+            {
+                return false;
+            }
         }
     }
 

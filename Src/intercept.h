@@ -1802,7 +1802,9 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().ChromePerformanceTiming ||                     \
         pIntercept->config().SIMDSurvey ||                                  \
         !pIntercept->config().DevicePerfCounterCustom.empty() ||            \
-        pIntercept->config().InOrderQueue )                                 \
+        pIntercept->config().InOrderQueue ||                                \
+        pIntercept->config().DefaultQueuePriorityHint ||                    \
+        pIntercept->config().DefaultQueueThrottleHint )                     \
     {                                                                       \
         pIntercept->createCommandQueueOverrideInit(                         \
             _props,                                                         \
@@ -1815,7 +1817,9 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().ChromePerformanceTiming ||                     \
         pIntercept->config().SIMDSurvey ||                                  \
         !pIntercept->config().DevicePerfCounterCustom.empty() ||            \
-        pIntercept->config().InOrderQueue )                                 \
+        pIntercept->config().InOrderQueue ||                                \
+        pIntercept->config().DefaultQueuePriorityHint ||                    \
+        pIntercept->config().DefaultQueueThrottleHint )                     \
     {                                                                       \
         pIntercept->createCommandQueueOverrideCleanup(                      \
             _newprops );                                                    \
