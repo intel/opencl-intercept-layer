@@ -1110,6 +1110,101 @@ void CLIntercept::callLoggingExit(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+cl_int CLIntercept::getDeviceMajorMinorVersion(
+    cl_device_id device,
+    size_t& majorVersion,
+    size_t& minorVersion ) const
+{
+    char*   deviceVersion = NULL;
+
+    cl_int  errorCode = allocateAndGetDeviceInfoString(
+        device,
+        CL_DEVICE_VERSION,
+        deviceVersion );
+    if( errorCode == CL_SUCCESS && deviceVersion )
+    {
+        // According to the spec, the device version string should have the form:
+        //   OpenCL <Major>.<Minor> <Vendor Specific Info>
+        // So, skip the prefix, then extract the major and minor version number.
+        const char* prefix = "OpenCL ";
+        if( strlen(deviceVersion) > strlen(prefix) )
+        {
+            char*   sMajor = deviceVersion + strlen(prefix);
+            char*   sMinor = NULL;
+            majorVersion = strtol( sMajor, &sMinor, 10 );
+            if( sMinor != NULL && *sMinor == '.' )
+            {
+                sMinor++;
+                minorVersion = strtol( sMinor, NULL, 10 );
+            }
+            else
+            {
+                CLI_ASSERT( 0 );
+                minorVersion = 0;
+            }
+        }
+    }
+
+    delete [] deviceVersion;
+    deviceVersion = NULL;
+
+    return errorCode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+bool CLIntercept::checkDeviceForExtension(
+    cl_device_id device,
+    const char* extensionName ) const
+{
+    bool    supported = false;
+
+    // Sanity check: Be sure the extension name is not NULL and doesn't
+    // contain a space.
+    if( !extensionName || strchr( extensionName, ' ' ) )
+    {
+        CLI_ASSERT( 0 );
+    }
+    else
+    {
+        char*   deviceExtensions = NULL;
+
+        cl_int  errorCode = allocateAndGetDeviceInfoString(
+            device,
+            CL_DEVICE_EXTENSIONS,
+            deviceExtensions );
+        if( errorCode == CL_SUCCESS && deviceExtensions )
+        {
+            const char* start = deviceExtensions;
+            while( true )
+            {
+                const char* where = strstr( start, extensionName );
+                if( !where )
+                {
+                    break;
+                }
+                const char* terminator = where + strlen( extensionName );
+                if( where == start || *(where - 1) == ' ' )
+                {
+                    if( *terminator == ' ' || *terminator == '\0' )
+                    {
+                        supported = true;
+                        break;
+                    }
+                }
+                start = terminator;
+            }
+        }
+
+        delete [] deviceExtensions;
+    }
+
+    return supported;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 cl_int CLIntercept::allocateAndGetPlatformInfoString(
     cl_platform_id platform,
     cl_platform_info param_name,
@@ -4149,6 +4244,7 @@ void CLIntercept::modifyCommandQueueProperties(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::createCommandQueueOverrideInit(
+    cl_device_id device,
     const cl_queue_properties* properties,
     cl_queue_properties*& pLocalQueueProperties ) const
 {
@@ -4157,9 +4253,14 @@ void CLIntercept::createCommandQueueOverrideInit(
     // error).  We also may add priority hints or throttle hints, in some cases.
     // So, look through the queue properties for these enums.  We need to do
     // this anyways to count the number of property pairs.
-    bool    foundCommandQueuePropertiesEnum = false;
-    bool    foundPriorityHintEnum = false;
-    bool    foundThrottleHintEnum = false;
+    bool    addCommandQueuePropertiesEnum = true;
+    bool    addPriorityHintEnum =
+                config().DefaultQueuePriorityHint != 0 &&
+                checkDeviceForExtension( device, "cl_khr_priority_hints" );
+    bool    addThrottleHintEnum =
+                config().DefaultQueueThrottleHint != 0 &&
+                checkDeviceForExtension( device, "cl_khr_throttle_hints" );
+
     int     numProperties = 0;
     if( properties )
     {
@@ -4168,13 +4269,13 @@ void CLIntercept::createCommandQueueOverrideInit(
             switch( properties[ numProperties ] )
             {
             case CL_QUEUE_PROPERTIES:
-                foundCommandQueuePropertiesEnum = true;
+                addCommandQueuePropertiesEnum = false;
                 break;
             case CL_QUEUE_PRIORITY_KHR:
-                foundPriorityHintEnum = true;
+                addPriorityHintEnum = false;
                 break;
             case CL_QUEUE_THROTTLE_KHR:
-                foundThrottleHintEnum = true;
+                addThrottleHintEnum = false;
                 break;
             default:
                 break;
@@ -4183,23 +4284,15 @@ void CLIntercept::createCommandQueueOverrideInit(
         }
     }
 
-    if( foundCommandQueuePropertiesEnum == false )
-    {
-        // The performance hint property isn't already set, so we'll
-        // need to allocate an extra pair of properties for it.
-        numProperties += 2;
-    }
-    // TODO: Consider only adding the priority hint enum if the device
-    // supports cl_khr_priority_hints?
-    if( foundPriorityHintEnum == false &&
-        config().DefaultQueuePriorityHint != 0 )
+    if( addCommandQueuePropertiesEnum )
     {
         numProperties += 2;
     }
-    // TODO: Consider only adding the throttle hint enum if the device
-    // supports cl_khr_throttle_hints?
-    if( foundThrottleHintEnum == false &&
-        config().DefaultQueueThrottleHint != 0 )
+    if( addThrottleHintEnum )
+    {
+        numProperties += 2;
+    }
+    if( addThrottleHintEnum )
     {
         numProperties += 2;
     }
@@ -4220,7 +4313,7 @@ void CLIntercept::createCommandQueueOverrideInit(
                 pLocalQueueProperties[ numProperties ] = properties[ numProperties ];
                 if( properties[ numProperties ] == CL_QUEUE_PROPERTIES )
                 {
-                    CLI_ASSERT( foundCommandQueuePropertiesEnum );
+                    CLI_ASSERT( addCommandQueuePropertiesEnum == false );
 
                     cl_command_queue_properties props = properties[ numProperties + 1 ];
 
@@ -4236,8 +4329,7 @@ void CLIntercept::createCommandQueueOverrideInit(
                 numProperties += 2;
             }
         }
-        // Add command queue properties if they aren't already set.
-        if( foundCommandQueuePropertiesEnum == false )
+        if( addCommandQueuePropertiesEnum )
         {
             cl_command_queue_properties props = 0;
 
@@ -4247,22 +4339,21 @@ void CLIntercept::createCommandQueueOverrideInit(
             pLocalQueueProperties[ numProperties + 1 ] = props;
             numProperties += 2;
         }
-        // Add priority hints and throttle hints if requested and they
-        // aren't set already.
-        if( foundPriorityHintEnum == false &&
-            config().DefaultQueuePriorityHint != 0 )
+        if( addPriorityHintEnum )
         {
+            CLI_ASSERT( config().DefaultQueuePriorityHint != 0 );
             pLocalQueueProperties[ numProperties] = CL_QUEUE_PRIORITY_KHR;
             pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueuePriorityHint;
             numProperties += 2;
         }
-        if( foundThrottleHintEnum == false &&
-            config().DefaultQueueThrottleHint != 0 )
+        if( addThrottleHintEnum )
         {
+            CLI_ASSERT( config().DefaultQueueThrottleHint != 0 );
             pLocalQueueProperties[ numProperties] = CL_QUEUE_THROTTLE_KHR;
             pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueueThrottleHint;
             numProperties += 2;
         }
+
         // Add the terminating zero.
         pLocalQueueProperties[ numProperties ] = 0;
     }
@@ -4271,6 +4362,82 @@ void CLIntercept::createCommandQueueOverrideInit(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::createCommandQueueOverrideCleanup(
+    cl_queue_properties*& pLocalQueueProperties ) const
+{
+    if( pLocalQueueProperties )
+    {
+        delete pLocalQueueProperties;
+        pLocalQueueProperties = NULL;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::createCommandQueuePropertiesInit(
+    cl_device_id device,
+    cl_command_queue_properties props,
+    cl_queue_properties*& pLocalQueueProperties ) const
+{
+    bool    addCommandQueuePropertiesEnum = true;
+    bool    addPriorityHintEnum =
+                config().DefaultQueuePriorityHint != 0 &&
+                checkDeviceForExtension( device, "cl_khr_priority_hints" );
+    bool    addThrottleHintEnum =
+                config().DefaultQueueThrottleHint != 0 &&
+                checkDeviceForExtension( device, "cl_khr_throttle_hints" );
+
+    int numProperties = 0;
+    if( addCommandQueuePropertiesEnum )
+    {
+        numProperties += 2;
+    }
+    if( addThrottleHintEnum )
+    {
+        numProperties += 2;
+    }
+    if( addThrottleHintEnum )
+    {
+        numProperties += 2;
+    }
+
+    // Allocate a new array of properties.  We need to allocate two
+    // properties for each pair, plus one property for the terminating
+    // zero.
+    pLocalQueueProperties = new cl_queue_properties[ numProperties + 1 ];
+    if( pLocalQueueProperties )
+    {
+        numProperties = 0;
+        if( addCommandQueuePropertiesEnum )
+        {
+            modifyCommandQueueProperties( props );
+
+            pLocalQueueProperties[ numProperties ] = CL_QUEUE_PROPERTIES;
+            pLocalQueueProperties[ numProperties + 1 ] = props;
+            numProperties += 2;
+        }
+        if( addPriorityHintEnum )
+        {
+            CLI_ASSERT( config().DefaultQueuePriorityHint != 0 );
+            pLocalQueueProperties[ numProperties] = CL_QUEUE_PRIORITY_KHR;
+            pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueuePriorityHint;
+            numProperties += 2;
+        }
+        if( config().DefaultQueueThrottleHint != 0 )
+        {
+            CLI_ASSERT( config().DefaultQueueThrottleHint != 0 );
+            pLocalQueueProperties[ numProperties] = CL_QUEUE_THROTTLE_KHR;
+            pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueueThrottleHint;
+            numProperties += 2;
+        }
+
+        // Add the terminating zero.
+        pLocalQueueProperties[ numProperties ] = 0;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::createCommandQueuePropertiesCleanup(
     cl_queue_properties*& pLocalQueueProperties ) const
 {
     if( pLocalQueueProperties )
@@ -4703,6 +4870,75 @@ void CLIntercept::checkTimingEvents()
     }
 
     m_OS.LeaveCriticalSection();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+cl_command_queue CLIntercept::createCommandQueueWithProperties(
+    cl_context context,
+    cl_device_id device,
+    const cl_queue_properties* properties,
+    cl_int* errcode_ret )
+{
+    cl_command_queue    retVal = NULL;
+
+    // First, check if this is an OpenCL 2.0 or newer device.  If it is, we can
+    // simply call the clCreateCommandQueueWithProperties function.
+    if( retVal == NULL )
+    {
+        size_t  deviceMajorVersion = 0;
+        size_t  deviceMinorVersion = 0;
+
+        cl_int  errorCode = getDeviceMajorMinorVersion(
+            device,
+            deviceMajorVersion,
+            deviceMinorVersion );
+
+        if( errorCode == CL_SUCCESS && deviceMajorVersion >= 2 )
+        {
+            retVal = dispatch().clCreateCommandQueueWithProperties(
+                context,
+                device,
+                properties,
+                errcode_ret );
+        }
+    }
+
+    // If this didn't work, try to use the create command queue with properties
+    // extension.
+    if( retVal == NULL &&
+        checkDeviceForExtension(
+            device,
+            "cl_khr_create_command_queue" ) )
+    {
+        cl_platform_id  platform = NULL;
+        cl_int  errorCode = dispatch().clGetDeviceInfo(
+            device,
+            CL_DEVICE_PLATFORM,
+            sizeof(platform),
+            &platform,
+            NULL );
+        if( errorCode == CL_SUCCESS && platform != NULL )
+        {
+            // Note: This works fine for one device, but if there are two
+            // devices then we will need a different mechanism to get a
+            // device-specific function pointer.
+            getExtensionFunctionAddress(
+                platform,
+                "clCreateCommandQueueWithPropertiesKHR" );
+            if( dispatch().clCreateCommandQueueWithPropertiesKHR )
+            {
+                retVal = dispatch().clCreateCommandQueueWithPropertiesKHR(
+                    context,
+                    device,
+                    properties,
+                    errcode_ret );
+            }
+        }
+
+    }
+
+    return retVal;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

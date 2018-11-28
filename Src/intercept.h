@@ -91,6 +91,14 @@ public:
                 const char* formatStr,
                 ... );
 
+    cl_int  getDeviceMajorMinorVersion(
+                cl_device_id device,
+                size_t& majorVersion,
+                size_t& minorVersion ) const;
+    bool    checkDeviceForExtension(
+                cl_device_id device,
+                const char* extensionName ) const;
+
     cl_int  allocateAndGetPlatformInfoString(
                 cl_platform_id platform,
                 cl_platform_info param_name,
@@ -323,9 +331,16 @@ public:
     void    modifyCommandQueueProperties(
                 cl_command_queue_properties& props ) const;
     void    createCommandQueueOverrideInit(
+                cl_device_id device,
                 const cl_queue_properties* properties,
                 cl_queue_properties*& pLocalQueueProperties ) const;
     void    createCommandQueueOverrideCleanup(
+                cl_queue_properties*& pLocalQueueProperties ) const;
+    void    createCommandQueuePropertiesInit(
+                cl_device_id device,
+                cl_command_queue_properties props,
+                cl_queue_properties*& pLocalQueueProperties ) const;
+    void    createCommandQueuePropertiesCleanup(
                 cl_queue_properties*& pLocalQueueProperties ) const;
     void    addTimingEvent(
                 const std::string& functionName,
@@ -337,6 +352,12 @@ public:
                 const size_t* lws,
                 cl_event event );
     void    checkTimingEvents();
+
+    cl_command_queue    createCommandQueueWithProperties(
+                cl_context context,
+                cl_device_id device,
+                const cl_queue_properties* properties,
+                cl_int* errcode_ret );
 
     void    addKernelInfo(
                 const cl_kernel kernel,
@@ -1796,7 +1817,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-#define CREATE_COMMAND_QUEUE_OVERRIDE_INIT( _props, _newprops )             \
+#define CREATE_COMMAND_QUEUE_OVERRIDE_INIT( _device, _props, _newprops )    \
     if( pIntercept->config().DevicePerformanceTiming ||                     \
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
@@ -1807,11 +1828,12 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().DefaultQueueThrottleHint )                     \
     {                                                                       \
         pIntercept->createCommandQueueOverrideInit(                         \
+            _device,                                                        \
             _props,                                                         \
             _newprops );                                                    \
     }
 
-#define CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( _queue, _newprops )          \
+#define CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( _newprops )                  \
     if( pIntercept->config().DevicePerformanceTiming ||                     \
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
@@ -1822,6 +1844,24 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().DefaultQueueThrottleHint )                     \
     {                                                                       \
         pIntercept->createCommandQueueOverrideCleanup(                      \
+            _newprops );                                                    \
+    }
+
+#define CREATE_COMMAND_QUEUE_PROPERTIES_INIT( _device, _props, _newprops )  \
+    if( pIntercept->config().DefaultQueuePriorityHint ||                    \
+        pIntercept->config().DefaultQueueThrottleHint )                     \
+    {                                                                       \
+        pIntercept->createCommandQueuePropertiesInit(                       \
+            _device,                                                        \
+            _props,                                                         \
+            _newprops );                                                    \
+    }
+
+#define CREATE_COMMAND_QUEUE_PROPERTIES_CLEANUP( _newprops )                \
+    if( pIntercept->config().DefaultQueuePriorityHint ||                    \
+        pIntercept->config().DefaultQueueThrottleHint )                     \
+    {                                                                       \
+        pIntercept->createCommandQueuePropertiesCleanup(                    \
             _newprops );                                                    \
     }
 
