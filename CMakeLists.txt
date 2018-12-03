@@ -24,6 +24,7 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+#set(CMAKE_VERBOSE_MAKEFILE ON)
 
 if (NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type selected, default to Release")
@@ -78,7 +79,8 @@ if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
         OS/OS_windows_common.cpp
         OS/OS_windows_common.h
     )
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
+       ${CMAKE_SYSTEM_NAME} STREQUAL "Android" )
     list( APPEND CLINTERCEPT_OS_FILES
         OS/OS_linux.cpp
         OS/OS_linux.h
@@ -111,32 +113,32 @@ source_group( Resources FILES
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     # always enabled on Windows
     add_definitions("-DUSE_KERNEL_OVERRIDES")
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    # conditionally enabled on Linux
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
+       ${CMAKE_SYSTEM_NAME} STREQUAL "Android" )
+    # conditionally enabled on Linux and Android
     set( ENABLE_KERNEL_OVERRIDES TRUE CACHE BOOL "Enable Embedding Kernel Override Strings" )
     if( ENABLE_KERNEL_OVERRIDES )
         add_definitions("-DUSE_KERNEL_OVERRIDES")
-        if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-            set(CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Kernels)
-            add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
-                COMMAND mkdir -p ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-                COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ${CMAKE_LINKER} -r -b binary
-                    Kernels/precompiled_kernels.cl
-                    -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
-                DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/precompiled_kernels.cl
-            )
-            add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
-                COMMAND mkdir -p ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-                COMMAND cd ${CMAKE_CURRENT_SOURCE_DIR} && ${CMAKE_LINKER} -r -b binary
-                    Kernels/builtin_kernels.cl
-                    -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
-                DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/builtin_kernels.cl
-            )
-            list( APPEND CLINTERCEPT_RESOURCE_FILES
-                ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
-                ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
-            )
-        endif()
+
+        set(CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Kernels)
+        add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
+            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary
+                Kernels/precompiled_kernels.cl
+                -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/precompiled_kernels.cl
+        )
+        add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
+            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary
+                Kernels/builtin_kernels.cl
+                -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/builtin_kernels.cl
+        )
+        list( APPEND CLINTERCEPT_RESOURCE_FILES
+            ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
+            ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
+        )
     endif()
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     # never enabled on OSX (for now)
@@ -210,6 +212,10 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set_target_properties(OpenCL PROPERTIES COMPILE_FLAGS "-g -Wall -std=gnu++11")
     set_target_properties(OpenCL PROPERTIES LINK_FLAGS "-Wl,--version-script -Wl,${CMAKE_SOURCE_DIR}/Src/clIntercept.map")
     target_link_libraries( OpenCL ${CMAKE_THREAD_LIBS_INIT} )
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+    set_target_properties(OpenCL PROPERTIES COMPILE_FLAGS "-g -Wall -std=gnu++11")
+    set_target_properties(OpenCL PROPERTIES LINK_FLAGS "-Wl,--version-script -Wl,${CMAKE_SOURCE_DIR}/Src/clIntercept.map")
+    target_link_libraries( OpenCL ${CMAKE_THREAD_LIBS_INIT} log)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
     find_package(OpenCL REQUIRED)
     set_target_properties(OpenCL PROPERTIES COMPILE_FLAGS "-g -Wall -std=c++11 -stdlib=libc++ -arch i386 -arch x86_64")

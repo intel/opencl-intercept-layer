@@ -4,6 +4,8 @@ CMake is now the primary mechanism to build the Intercept Layer for OpenCL
 Applications.  The CMakefile has been tested on Windows (VS2013 and newer),
 Linux, and OSX.
 
+Android builds with the CMakefile, but is not regularly tested.
+
 ## Tools
 
 You will need:
@@ -24,7 +26,7 @@ For Windows, recommended folders for "where to build the binaries" are `_bin32`
 directories are only used for project files and intermediate files, and final
 output files are built in the `builds` directory.
 
-For Linux, recommended folders are `_bin32`, `_bin64`, or just plain `_bin`.
+For Linux and OSX, recommended folders are `_bin32`, `_bin64`, or just plain `_bin`.
 
 For most 32-bit Windows and Linux usages, you can simply run:
 
@@ -53,28 +55,10 @@ See your CMake documentation for more details.
 | CMAKE\_INSTALL\_PREFIX | PATH | Install directory prefix.
 | ENABLE_CLIPROF | BOOL | Enables building the cliprof loader utility.  Additionally, when required, enables code in the Intercept Layer for OpenCL Applications itself to enable cliprof functionality.  Default: `FALSE`
 | ENABLE_ITT | BOOL | Enables support for Instrumentation and Tracing Techology APIs, which can be used to display OpenCL events on Intel(R) VTune(tm) timegraphs.  Default: `FALSE`
-| ENABLE_KERNEL_OVERRIDES | BOOL | Enables embedding kernel strings to override precompiled kernels and built-in kernels.  Supported for Linux builds only, since Windows builds always embeds kernel strings, and embedding kernel strings is not support for OSX (yet!).  Default: `TRUE`
+| ENABLE_KERNEL_OVERRIDES | BOOL | Enables embedding kernel strings to override precompiled kernels and built-in kernels.  Supported for Linux and Android builds only, since Windows builds always embeds kernel strings, and embedding kernel strings is not support for OSX (yet!).  Default: `TRUE`
 | ENABLE_MDAPI | BOOL | For internal use only.  Default: `FALSE`
 | VTUNE_INCLUDE_DIR | PATH | Path to the directory containing `ittnotify.h`.  Only used when ENABLE_ITT is set.
 | VTUNE_ITTNOTIFY_LIB | FILEPATH | Path to the `ittnotify` lib.  Only used when ENABLE_ITT is set.
-
-
-## Android
-
-Android support is experimental, has not been ported to CMake, and is not regularly
-tested.  Building instruction for Android are:
-
-    cd <android repo>
-    source build/envsetup.sh
-    lunch <your build target>
-    export TOP=`pwd`
-    export ANDROID_SRC=`pwd`
-    cd <source folder>
-    mm
-
-The shared library will be named: clIntercept.so and placed in
-`<android repo>/out/target/product/<your build target>/system/lib`. Copy it to target
-manually.
 
 ---
 
