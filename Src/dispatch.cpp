@@ -725,6 +725,9 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
 
     if( pIntercept )
     {
+        cl_queue_properties*    newProperties = NULL;
+        cl_command_queue    retVal = NULL;
+
         std::string deviceInfo;
         if( pIntercept->callLogging() )
         {
@@ -738,25 +741,43 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
             deviceInfo.c_str(),
             pIntercept->enumName().name_command_queue_properties( properties ).c_str(),
             properties );
+        CREATE_COMMAND_QUEUE_PROPERTIES_INIT( device, properties, newProperties );
 
         pIntercept->modifyCommandQueueProperties( properties );
 
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_command_queue    retVal = NULL;
-
 #if defined(USE_MDAPI)
         if( !pIntercept->config().DevicePerfCounterCustom.empty() )
         {
-            retVal = pIntercept->createMDAPICommandQueue(
-                context,
-                device,
-                properties,
-                errcode_ret );
+            if( ( retVal == NULL ) && newProperties )
+            {
+                retVal = pIntercept->createMDAPICommandQueue(
+                    context,
+                    device,
+                    newProperties,
+                    errcode_ret );
+            }
+            if( retVal == NULL )
+            {
+                retVal = pIntercept->createMDAPICommandQueue(
+                    context,
+                    device,
+                    properties,
+                    errcode_ret );
+            }
         }
 #endif
 
+        if( ( retVal == NULL ) && newProperties )
+        {
+            retVal = pIntercept->createCommandQueueWithProperties(
+                context,
+                device,
+                newProperties,
+                errcode_ret );
+        }
         if( retVal == NULL )
         {
             retVal = pIntercept->dispatch().clCreateCommandQueue(
@@ -767,6 +788,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
         }
 
         CPU_PERFORMANCE_TIMING_END();
+        CREATE_COMMAND_QUEUE_PROPERTIES_CLEANUP( newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ITT_REGISTER_COMMAND_QUEUE( retVal, false );
         CHROME_REGISTER_COMMAND_QUEUE( retVal );
@@ -6696,7 +6718,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
             context,
             deviceInfo.c_str(),
             commandQueueProperties.c_str() );
-        CREATE_COMMAND_QUEUE_OVERRIDE_INIT( properties, newProperties );
+        CREATE_COMMAND_QUEUE_OVERRIDE_INIT( device, properties, newProperties );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -6740,7 +6762,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
         }
 
         CPU_PERFORMANCE_TIMING_END();
-        CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( retVal, newProperties );
+        CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
@@ -6791,7 +6813,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
             context,
             deviceInfo.c_str(),
             commandQueueProperties.c_str() );
-        CREATE_COMMAND_QUEUE_OVERRIDE_INIT( properties, newProperties );
+        CREATE_COMMAND_QUEUE_OVERRIDE_INIT( device, properties, newProperties );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -6835,7 +6857,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
         }
 
         CPU_PERFORMANCE_TIMING_END();
-        CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( retVal, newProperties );
+        CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );

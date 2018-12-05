@@ -508,6 +508,14 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will set 
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will initialize the contents of allocated buffers with zero.  Only valid for non-COPY\_HOST\_PTR and non-USE\_HOST\_PTR allocations.
 
+##### `DefaultQueuePriorityHint` (cl_uint)
+
+If set to a nonzero value, and if no other priority hint is specified by the application, the Intercept Layer for OpencL Applications will attempt to create a command queue with this priority hint value.  Note: HIGH priority is 1, MED priority is 2, and LOW priority is 4.
+
+##### `DefaultQueueThrottleHint` (cl_uint)
+
+If set to a nonzero value, and if no other throttle hint is specified by the application, the Intercept Layer for OpencL Applications will attempt to create a command queue with this throttle hint value.  Note: HIGH throttle is 1, MED throttle is 2, and LOW throttle is 4.
+
 ### Platform and Device Query Overrides
 
 ##### `PlatformName` (string)
