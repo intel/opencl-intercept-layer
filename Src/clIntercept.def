@@ -132,6 +132,8 @@ EXPORTS
     clSetKernelArgSVMPointer
     clSetKernelExecInfo
     clSetMemObjectDestructorCallback
+    clSetProgramReleaseCallback
+    clSetProgramSpecializationConstant
     clSetUserEventStatus
     clSVMAlloc
     clSVMFree
