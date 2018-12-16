@@ -33,6 +33,7 @@ namespace OS
 const char* Services_Common::ENV_PREFIX = "";
 const char* Services_Common::CONFIG_FILE = "config.conf";
 const char* Services_Common::LOG_DIR = NULL;
+bool Services_Common::APPEND_PID = false;
 
 Services_Common::Services_Common()
 {

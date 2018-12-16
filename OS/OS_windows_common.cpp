@@ -28,6 +28,7 @@ namespace OS
 const char* Services_Common::ENV_PREFIX = "";
 const char* Services_Common::REGISTRY_KEY = "SOFTWARE\\INTEL\\IGFX";
 const char* Services_Common::LOG_DIR = NULL;
+bool Services_Common::APPEND_PID = false;
 
 Services_Common::Services_Common()
 {

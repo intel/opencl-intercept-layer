@@ -66,6 +66,7 @@ public:
     static const char* ENV_PREFIX;
     static const char* CONFIG_FILE;
     static const char* LOG_DIR;
+    static bool        APPEND_PID;
 
     Services_Common();
     ~Services_Common();
@@ -102,6 +103,9 @@ public:
                 const std::string& functionName ) const;
 
     void    GetDumpDirectoryName(
+                const std::string& subDir,
+                std::string& directoryName ) const;
+    void    GetDumpDirectoryNameWithoutPid(
                 const std::string& subDir,
                 std::string& directoryName ) const;
     void    GetDumpDirectoryNameWithoutProcessName(
@@ -224,7 +228,7 @@ inline void* Services_Common::GetFunctionPointer(
     }
 }
 
-inline void Services_Common::GetDumpDirectoryName(
+inline void Services_Common::GetDumpDirectoryNameWithoutPid(
     const std::string& subDir,
     std::string& directoryName ) const
 {
@@ -261,6 +265,18 @@ inline void Services_Common::GetDumpDirectoryName(
 #ifdef __ANDROID__
     __android_log_print(ANDROID_LOG_INFO, "clIntercept", "dumpDir=%s\n", directoryName.c_str());
 #endif
+}
+
+inline void Services_Common::GetDumpDirectoryName(
+    const std::string& subDir,
+    std::string& directoryName ) const
+{
+    GetDumpDirectoryNameWithoutPid(subDir, directoryName);
+    if( APPEND_PID )
+    {
+        directoryName += ".";
+        directoryName += std::to_string(GetProcessID());
+    }
 }
 
 inline void Services_Common::GetDumpDirectoryNameWithoutProcessName(

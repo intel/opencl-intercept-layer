@@ -374,6 +374,8 @@ bool CLIntercept::init()
             std::replace( m_Config.LogDir.begin(), m_Config.LogDir.end(), '\\', '/' );
             OS::Services_Common::LOG_DIR = m_Config.LogDir.c_str();
         }
+
+        OS::Services_Common::APPEND_PID = m_Config.AppendPid;
 #endif
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
         fileName += "/";
@@ -2975,7 +2977,7 @@ bool CLIntercept::injectProgramSource(
 
     // Get the dump directory name.
     {
-        OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, fileName );
         fileName += "/Inject";
     }
 
@@ -3086,7 +3088,7 @@ bool CLIntercept::prependProgramSource(
 
     // Get the dump directory name.
     {
-        OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, fileName );
         fileName += "/Inject";
     }
 
@@ -3217,7 +3219,7 @@ bool CLIntercept::injectProgramSPIRV(
 
     // Get the dump directory name.
     {
-        OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, fileName );
         fileName += "/Inject";
     }
 
@@ -3320,7 +3322,7 @@ bool CLIntercept::injectProgramOptions(
 
     // Get the dump directory name.
     {
-        OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, fileName );
         fileName += "/Inject";
     }
     // Make four candidate filenames.  They will have the form:
@@ -6553,7 +6555,7 @@ cl_program CLIntercept::createProgramWithInjectionBinaries(
 
         // Get the dump directory name.
         {
-            OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+            OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, fileName );
             fileName += "/Inject";
         }
         // Make two candidate filenames.  They will have the form:
@@ -7197,7 +7199,7 @@ cl_program CLIntercept::createProgramWithInjectionSPIRV(
 
         // Get the dump directory name.
         {
-            OS().GetDumpDirectoryName(sc_DumpDirectoryName, fileName);
+            OS().GetDumpDirectoryNameWithoutPid(sc_DumpDirectoryName, fileName);
             fileName += "/Inject";
         }
 
