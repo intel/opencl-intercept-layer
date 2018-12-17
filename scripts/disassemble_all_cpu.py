@@ -32,13 +32,13 @@ else:
 if len(sys.argv) > 2:
     commandToRun = sys.argv[2]
 else:
-    commandToRun = 'iga32 -d -p 9'
+    commandToRun = './disassemble_cpu.sh'
 
 if ( len(sys.argv) == 2 ) and ( sys.argv[1] == '-h' or sys.argv[1] == '-?' ):
     printHelp = True
 
 if printHelp:
-    print('usage: disassemble_all.py {required: directory with isabin files} {optional: command to run, default: "iga32 -d -p 9"}')
+    print('usage: disassemble_all_cpu.py {required: directory with .bin files} {optional: command to run, default: "disassemble_cpu.sh"}')
 elif not os.path.exists(isabinDir):
     print('error: directory ' + isabinDir + ' does not exist!')
 else:
@@ -47,11 +47,12 @@ else:
     numberOfFiles = 0
 
     for file in os.listdir(isabinDir):
-        if file.endswith(".isabin"):
-            numberOfFiles = numberOfFiles = 1
+        if file.endswith("_CPU.bin"):
+            numberOfFiles = numberOfFiles + 1
             binFileName = isabinDir + '/' + file;
-            isaFileName = isabinDir + '/' + file[:-7] + '.isa';	# strip .isabin, add .isa
+            objFileName = isabinDir + '/' + file[:-8] + '.obj';	# strip _CPU.bin, add .obj
+            isaFileName = isabinDir + '/' + file[:-8] + '.isa';	# strip _CPU.bin, add .isa
             print('Disassembling ' + binFileName)
-            subprocess.call(commandToRun.split() + [binFileName, '-o', isaFileName])
+            subprocess.call(commandToRun.split() + [binFileName, objFileName, isaFileName])
 
     print('Found ' + str(numberOfFiles) + ' file(s) to disassemble.')
