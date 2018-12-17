@@ -5,8 +5,8 @@ retrieve kernel ISA.  This feature currently works with most Intel CPU OpenCL
 devices and most Intel GPU OpenCL devices, with most driver versions.  Support
 for other devices may be added at a later date.
 
-* [Retrieving Intel CPU ISA](docs/kernel_isa_cpu.md)
-* [Retrieving Intel GPU ISA](docs/kernel_isa_gpu.md)
+* [Retrieving Intel CPU ISA](kernel_isa_cpu.md)
+* [Retrieving Intel GPU ISA](kernel_isa_gpu.md)
 
 ---
 
