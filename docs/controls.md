@@ -174,6 +174,10 @@ If set to a nonzero value, logs information about the platforms and devices in t
 
 If set, the Intercept Layer for OpenCL Applications will emit logs to this directory instead of the default log directory.
 
+##### `AppendPid` (bool)
+
+If set, the Intercept Layer for OpenCL Applications will append process ID to log directory name.
+
 ##### `KernelNameHashTracking` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will append the program and build option hashes to the kernel name in logs and reports.
