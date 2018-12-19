@@ -18,6 +18,8 @@ or:
 
 This directory will also be used for program injection.
 
+**Note.** If `AppendPid` option is enabled, dumps will be saved to the `<Process Name>.PID` directory, but `<Process Name>` directory will be used for program injection.
+
 ## Step 2: Find the Program or Program Options to Modify
 
 Look through the dump directory to find the program(s) or program options you'd
