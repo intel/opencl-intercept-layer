@@ -92,7 +92,7 @@ By default, the Intercept Layer for OpenCL Applications log files will be create
 
 ##### `LogToFile` (bool)
 
-If set to a nonzero value, sends log information to the file "clintercept\_log.txt" instead of to stderr.  The log file will be placed in the directory "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".
+If set to a nonzero value, sends log information to the file "clintercept\_log.txt" instead of to stderr.
 
 ##### `LogToDebugger` (bool)
 
@@ -170,13 +170,13 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will chec
 
 If set to a nonzero value, logs information about the platforms and devices in the system on the first call to clGetPlatformIDs().
 
-##### `LogDir` (string)
+##### `DumpDir` (string)
 
-If set, the Intercept Layer for OpenCL Applications will emit logs to this directory instead of the default log directory.
+If set, the Intercept Layer for OpenCL Applications will emit logs and dumps to this directory instead of the default directory.  The default log and dump directory is "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>" on Windows and "~/CLIntercept\_Dump/\<Process Name\>" on other operating systems.
 
 ##### `AppendPid` (bool)
 
-If set, the Intercept Layer for OpenCL Applications will append process ID to log directory name.
+If set, the Intercept Layer for OpenCL Applications will append process ID to the log directory name.
 
 ##### `KernelNameHashTracking` (bool)
 
@@ -200,11 +200,11 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will writ
 
 ##### `HostPerformanceTiming` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will track the minimum, maximum, and average host CPU time for each OpenCL entry point.  When the process exits, this information will be printed to the file "clIntercept\_report.txt" in the directory "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will track the minimum, maximum, and average host CPU time for each OpenCL entry point.  When the process exits, this information will be included in the file "clIntercept\_report.txt".
 
 ##### `DevicePerformanceTiming` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will add event profiling to track the minimum, maximum, and average device time for each OpenCL command. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. When the process exits, this information will be printed to the file "clIntercept\_report.txt" in the directory "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will add event profiling to track the minimum, maximum, and average device time for each OpenCL command. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. When the process exits, this information will be included in the file "clIntercept\_report.txt".
 
 ##### `DevicePerformanceTimeKernelInfoTracking` (bool)
 
@@ -240,7 +240,7 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will log 
 
 ##### `DevicePerfCounterCustom` (string)
 
-If set, the Intercept Layer for OpenCL Applications will collect MDAPI metrics for the Metric Set corresponding to this value for each OpenCL command.  Frequently used Metric Sets include: ComputeBasic, ComputeExtended, L3\_1, Sampler. The output file has the potential to be very big depending on the work load. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. When the process exits, this information will be printed to the file "clintercept\_perfcounter\_dump\_\<Set Name\>.txt" in the directory "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  This feature will only function if the Intercept Layer for OpenCL Applications is built with MDAPI support.
+If set, the Intercept Layer for OpenCL Applications will collect MDAPI metrics for the Metric Set corresponding to this value for each OpenCL command.  Frequently used Metric Sets include: ComputeBasic, ComputeExtended, L3\_1, Sampler. The output file has the potential to be very big depending on the work load. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. When the process exits, this information will be included in the file "clintercept\_perfcounter\_dump\_\<Set Name\>.txt".  This feature will only function if the Intercept Layer for OpenCL Applications is built with MDAPI support.
 
 ##### `DevicePerfCounterFile` (string)
 
@@ -248,7 +248,7 @@ Full path to a custom MDAPI file.  This can be used to add custom Metric Sets.
 
 ##### `DevicePerfCounterTiming` (bool)
 
-If set to a nonzero value and DevicePerfCounterCustom is set, the Intercept Layer for OpenCL Applications will enable Intel GPU Performance Counters to track the minimum, maximum, and average performance counter deltas for each OpenCL command. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. When the process exits, this information will be printed to the file "clIntercept\_report.txt" in the directory "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  This feature will only function if the Intercept Layer for OpenCL Applications is built with MDAPI support.
+If set to a nonzero value and DevicePerfCounterCustom is set, the Intercept Layer for OpenCL Applications will enable Intel GPU Performance Counters to track the minimum, maximum, and average performance counter deltas for each OpenCL command. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. When the process exits, this information will be included in the file "clIntercept\_report.txt".  This feature will only function if the Intercept Layer for OpenCL Applications is built with MDAPI support.
 
 ##### `DevicePerfCounterReportMax` (bool)
 
@@ -282,19 +282,19 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump
 
 ##### `DumpProgramSource` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every string passed to clCreateProgramWithSource() to its own file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_source.cl".  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_options.txt".  This setting can be used for information purposes to see all kernels that are used by an application or to dump programs for program injection.  This setting overrides DumpProgramSourceScript and SimpleDumpProgramSource, and if it is set to a nozero value then the values of DumpProgramSourceScript and SimpleDumpProgramSource will be ignored.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every string passed to clCreateProgramWithSource() to its own file.  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_source.cl".  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_options.txt".  This setting can be used for information purposes to see all kernels that are used by an application or to dump programs for program injection.  This setting overrides DumpProgramSourceScript and SimpleDumpProgramSource, and if it is set to a nozero value then the values of DumpProgramSourceScript and SimpleDumpProgramSource will be ignored.
 
 ##### `DumpInputProgramBinaries` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program binary that is passed to clCreateProgramWithBinary() to its own file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Device Type\>.bin".  This is the input program binary provided by the application, and not a device binary queried from the OpenCL implementation.  In particular, note that it may be a SPIR 1.2 binary.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program binary that is passed to clCreateProgramWithBinary() to its own file.  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Device Type\>.bin".  This is the input program binary provided by the application, and not a device binary queried from the OpenCL implementation.  In particular, note that it may be a SPIR 1.2 binary.
 
 ##### `DumpProgramBinaries` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program binary that was successfully built with clBuildProgram() to its own file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>.bin".  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_options.txt".  This setting can be used to examine compiled program binaries or to dump program binaries for program binary injection.  Note that this option dumps the output binary, which is a device binary, after calling clBuildProgram().
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program binary that was successfully built with clBuildProgram() to its own file.  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>.bin".  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_options.txt".  This setting can be used to examine compiled program binaries or to dump program binaries for program binary injection.  Note that this option dumps the output binary, which is a device binary, after calling clBuildProgram().
 
 ##### `DumpProgramSPIRV` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program IL binary passed to clCreateProgramWithIL() to its own file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_0000.spv" - for now at least!.  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_options.txt".  This setting can be used for information purposes to see all kernels that are used by an application or to dump SPIRV programs for SPIRV injection.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program IL binary passed to clCreateProgramWithIL() to its own file.  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_0000.spv" - for now at least!.  Program options that are passed to clBuildProgram() or clCompileProgram() will be dumped to the same directory with the filename "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_options.txt".  This setting can be used for information purposes to see all kernels that are used by an application or to dump SPIRV programs for SPIRV injection.
 
 ##### `InjectProgramSource` (bool)
 
@@ -314,7 +314,7 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will look
 
 ##### `PrependProgramSource` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to prepend kernel code from a file to the application provided kernel source passed to clCreateProgramWithSource().  The Intercept Layer for OpenCL Applications will look for kernel source to prepend in the directory "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The files that are searched for are (in order) "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_prepend.cl", "CLI\_\<Unique Program Hash Code\>\_prepend.cl", and "CLI\_prepend.cl".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to prepend kernel code from a file to the application provided kernel source passed to clCreateProgramWithSource().  The Intercept Layer for OpenCL Applications will look for kernel source to prepend in the dump and log directory.  The files that are searched for are (in order) "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_prepend.cl", "CLI\_\<Unique Program Hash Code\>\_prepend.cl", and "CLI\_prepend.cl".
 
 ##### `AppendBuildOptions` (string)
 
@@ -322,17 +322,17 @@ If set, the Intercept Layer for OpenCL Applications will add these build options
 
 ##### `DumpProgramBuildLogs` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump build logs for every device a program is built for to a separate file.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>\_build\_log.txt".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump build logs for every device a program is built for to a separate file.  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>\_build\_log.txt".
 
 ##### `DumpKernelISABinaries` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump kernel ISA binaries for every kernel, if supported.  An ISA binaries can decoded into ISA text with a disassembler.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>\_\<Kernel Name\>.isabin".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump kernel ISA binaries for every kernel, if supported.  An ISA binaries can decoded into ISA text with a disassembler.  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>\_\<Kernel Name\>.isabin".
 
 ### Controls for Automatically Creating SPIR-V Modules
 
 ##### `AutoCreateSPIRV` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically create SPIR-V modules by invoking CLANG each time a program is built.  The files will be dumped to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>".  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>.spv".  Because invoking CLANG requires a file containing the OpenCL C source, setting this option implicitly sets DumpProgramSource as well.  Additionally, this feature is not available for injected program source.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically create SPIR-V modules by invoking CLANG each time a program is built.  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>.spv".  Because invoking CLANG requires a file containing the OpenCL C source, setting this option implicitly sets DumpProgramSource as well.  Additionally, this feature is not available for injected program source.
 
 ##### `SPIRVClang` (string)
 
@@ -358,7 +358,7 @@ This is the list of options that is implicitly passed to CLANG to build an OpenC
 
 ##### `DumpArgumentsOnSet` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump the argument value on calls to clSetKernelArg(). Arguments are dumped as raw binary data to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>\\SetKernelArg".  The filenames will have the form "SetKernelArg\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>.bin".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump the argument value on calls to clSetKernelArg(). Arguments are dumped as raw binary data.  The filenames will have the form "SetKernelArg\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>.bin".
 
 ##### `DumpBuffersAfterCreate` (bool)
 
@@ -374,11 +374,11 @@ If set, the Intercept Layer for OpenCL Applications will dump the contents of a 
 
 ##### `DumpBuffersBeforeEnqueue` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump buffers before calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued are dumped.  Buffers are dumped as raw binary data to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>\\memDumpPreEnqueue".  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Buffer\_\<Unique Memory Object Number\>.bin".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump buffers before calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued are dumped.  Buffers are dumped as raw binary data to a "memDumpPreEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Buffer\_\<Unique Memory Object Number\>.bin".
 
 ##### `DumpBuffersAfterEnqueue` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump buffers after calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued are dumped.  Buffers are dumped as raw binary data to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>\\memDumpPostEnqueue".  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Buffer\_\<Unique Memory Object Number\>.bin".  Note that this is the same naming convention as with DumpBuffersBeforeEnqueue, so the changes resulting from an enqueue can be determined by diff'ing the preEnqueue folder with the postEnqueue folder.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump buffers after calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued are dumped.  Buffers are dumped as raw binary data to a "memDumpPostEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Buffer\_\<Unique Memory Object Number\>.bin".  Note that this is the same naming convention as with DumpBuffersBeforeEnqueue, so the changes resulting from an enqueue can be determined by diff'ing the preEnqueue folder with the postEnqueue folder.
 
 ##### `DumpBuffersForKernel` (string)
 
@@ -386,11 +386,11 @@ If set, the Intercept Layer for OpenCL Applications will only dump buffers when 
 
 ##### `DumpImagesBeforeEnqueue` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump images before calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued are dumped.  Images are dumped as raw binary data to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>\\memDumpPreEnqueue".  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Image\_\<Unique Memory Object Number\>\_\<Width\>x\<Height\>x\<Depth\>\_\<Element Size\>bpp.raw".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump images before calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued are dumped.  Images are dumped as raw binary data to a "memDumpPreEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Image\_\<Unique Memory Object Number\>\_\<Width\>x\<Height\>x\<Depth\>\_\<Element Size\>bpp.raw".
 
 ##### `DumpImagesAfterEnqueue` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump images after calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued are dumped.  Images are dumped as raw binary data to "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>\\memDumpPostEnqueue".  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Image\_\<Unique Memory Object Number\>\_\<Width\>x\<Height\>x\<Depth\>\_\<Element Size\>bpp.raw".  Note that this is the same naming convention as with DumpImagesBeforeEnqueue, so the changes resulting from an enqueue can be determined by diff'ing the preEnqueue folder with the postEnqueue folder.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump images after calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued are dumped.  Images are dumped as raw binary data to a "memDumpPostEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Image\_\<Unique Memory Object Number\>\_\<Width\>x\<Height\>x\<Depth\>\_\<Element Size\>bpp.raw".  Note that this is the same naming convention as with DumpImagesBeforeEnqueue, so the changes resulting from an enqueue can be determined by diff'ing the preEnqueue folder with the postEnqueue folder.
 
 ##### `DumpImagesForKernel` (string)
 

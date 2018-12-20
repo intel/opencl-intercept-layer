@@ -359,24 +359,26 @@ bool CLIntercept::init()
     ReadRegistry( m_OS, "DumpProgramsScript",               m_Config.DumpProgramSourceScript );
     ReadRegistry( m_OS, "DumpProgramsInject",               m_Config.DumpProgramSource );
     ReadRegistry( m_OS, "InjectPrograms",                   m_Config.InjectProgramSource );
+    ReadRegistry( m_OS, "LogDir",                           m_Config.DumpDir );
 
 #define CLI_CONTROL( _type, _name, _init, _desc ) ReadRegistry( m_OS, #_name, m_Config . _name );
 #include "controls.h"
 #undef CLI_CONTROL
 
+#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+    if( !m_Config.DumpDir.empty() )
+    {
+        std::replace( m_Config.DumpDir.begin(), m_Config.DumpDir.end(), '\\', '/' );
+        OS::Services_Common::LOG_DIR = m_Config.DumpDir.c_str();
+    }
+
+    OS::Services_Common::APPEND_PID = m_Config.AppendPid;
+#endif
+
     if( m_Config.LogToFile )
     {
         std::string fileName = "";
 
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
-        if( !m_Config.LogDir.empty() )
-        {
-            std::replace( m_Config.LogDir.begin(), m_Config.LogDir.end(), '\\', '/' );
-            OS::Services_Common::LOG_DIR = m_Config.LogDir.c_str();
-        }
-
-        OS::Services_Common::APPEND_PID = m_Config.AppendPid;
-#endif
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
         fileName += "/";
         fileName += sc_LogFileName;
