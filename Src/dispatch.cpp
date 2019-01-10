@@ -544,6 +544,11 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContextFromType)(
         ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
+#ifdef __ANDROID__
+        mContextCount.lock();
+        contextCount ++;
+        mContextCount.unlock();
+#endif
         return retVal;
     }
     else
