@@ -108,6 +108,7 @@ CLI_CONTROL( bool,          DumpKernelISABinaries,                  false, "If s
 
 CLI_CONTROL_SEPARATOR( Controls for Emulating Features: )
 CLI_CONTROL( bool,          Emulate_cl_khr_extended_versioning,     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl_khr_extended_versioning extension." )
+CLI_CONTROL( bool,          Emulate_cl_intel_unified_shared_memory, false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl_intel_unified_shared_memory extension USM APIs using SVM APIs.  This can be useful to test USM applications on an implementation that supports SVM, but not USM." )
 
 CLI_CONTROL_SEPARATOR( Controls for Automatically Creating SPIR-V Modules: )
 CLI_CONTROL( bool,          AutoCreateSPIRV,                        false,       "If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically create SPIR-V modules by invoking CLANG each time a program is built.  The filename will have the form \"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options Hash Code>.spv\".  Because invoking CLANG requires a file containing the OpenCL C source, setting this option implicitly sets DumpProgramSource as well.  Additionally, this feature is not available for injected program source." )
