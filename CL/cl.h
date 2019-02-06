@@ -142,10 +142,17 @@ typedef struct _cl_image_desc {
 #ifdef __GNUC__
     __extension__   /* Prevents warnings about anonymous union in -pedantic builds */
 #endif
+#ifdef _MSC_VER
+#pragma warning( push )  
+#pragma warning( disable : 4201 ) /* Prevents warning about nameless struct/union in /W4 /Za builds */
+#endif
     union {
       cl_mem                  buffer;
       cl_mem                  mem_object;
     };
+#ifdef _MSC_VER
+#pragma warning( pop )  
+#endif
 } cl_image_desc;
 
 #endif
@@ -904,14 +911,20 @@ extern CL_API_ENTRY cl_context CL_API_CALL
 clCreateContext(const cl_context_properties * properties,
                 cl_uint                 num_devices,
                 const cl_device_id *    devices,
-                void (CL_CALLBACK *     pfn_notify)(const char *, const void *, size_t, void *),
+                void (CL_CALLBACK * pfn_notify)(const char * errinfo,
+                                                const void * private_info,
+                                                size_t       cb,
+                                                void *       user_data),
                 void *                  user_data,
                 cl_int *                errcode_ret) CL_API_SUFFIX__VERSION_1_0;
 
 extern CL_API_ENTRY cl_context CL_API_CALL
 clCreateContextFromType(const cl_context_properties * properties,
                         cl_device_type          device_type,
-                        void (CL_CALLBACK *     pfn_notify)(const char *, const void *, size_t, void *),
+                        void (CL_CALLBACK * pfn_notify)(const char * errinfo,
+                                                        const void * private_info,
+                                                        size_t       cb,
+                                                        void *       user_data),
                         void *                  user_data,
                         cl_int *                errcode_ret) CL_API_SUFFIX__VERSION_1_0;
 
@@ -1039,7 +1052,8 @@ clGetPipeInfo(cl_mem           pipe,
 
 extern CL_API_ENTRY cl_int CL_API_CALL
 clSetMemObjectDestructorCallback(cl_mem memobj,
-                                 void (CL_CALLBACK * pfn_notify)(cl_mem memobj, void * user_data),
+                                 void (CL_CALLBACK * pfn_notify)(cl_mem memobj,
+                                                                 void * user_data),
                                  void * user_data) CL_API_SUFFIX__VERSION_1_1;
 
 #endif
@@ -1066,7 +1080,7 @@ clSVMFree(cl_context        context,
 
 extern CL_API_ENTRY cl_sampler CL_API_CALL
 clCreateSamplerWithProperties(cl_context                     context,
-                              const cl_sampler_properties *  normalized_coords,
+                              const cl_sampler_properties *  sampler_properties,
                               cl_int *                       errcode_ret) CL_API_SUFFIX__VERSION_2_0;
 
 #endif
@@ -1133,7 +1147,8 @@ clBuildProgram(cl_program           program,
                cl_uint              num_devices,
                const cl_device_id * device_list,
                const char *         options,
-               void (CL_CALLBACK *  pfn_notify)(cl_program program, void * user_data),
+               void (CL_CALLBACK *  pfn_notify)(cl_program program,
+                                                void * user_data),
                void *               user_data) CL_API_SUFFIX__VERSION_1_0;
 
 #ifdef CL_VERSION_1_2
@@ -1146,7 +1161,8 @@ clCompileProgram(cl_program           program,
                  cl_uint              num_input_headers,
                  const cl_program *   input_headers,
                  const char **        header_include_names,
-                 void (CL_CALLBACK *  pfn_notify)(cl_program program, void * user_data),
+                 void (CL_CALLBACK *  pfn_notify)(cl_program program,
+                                                  void * user_data),
                  void *               user_data) CL_API_SUFFIX__VERSION_1_2;
 
 extern CL_API_ENTRY cl_program CL_API_CALL
@@ -1156,7 +1172,8 @@ clLinkProgram(cl_context           context,
               const char *         options,
               cl_uint              num_input_programs,
               const cl_program *   input_programs,
-              void (CL_CALLBACK *  pfn_notify)(cl_program program, void * user_data),
+              void (CL_CALLBACK *  pfn_notify)(cl_program program,
+                                               void * user_data),
               void *               user_data,
               cl_int *             errcode_ret) CL_API_SUFFIX__VERSION_1_2;
 
@@ -1166,7 +1183,8 @@ clLinkProgram(cl_context           context,
 
 extern CL_API_ENTRY cl_int CL_API_CALL
 clSetProgramReleaseCallback(cl_program          program,
-                            void (CL_CALLBACK * pfn_notify)(cl_program program, void * user_data),
+                            void (CL_CALLBACK * pfn_notify)(cl_program program,
+                                                            void * user_data),
                             void *              user_data) CL_API_SUFFIX__VERSION_2_2;
 
 extern CL_API_ENTRY cl_int CL_API_CALL
@@ -1322,7 +1340,9 @@ clSetUserEventStatus(cl_event   event,
 extern CL_API_ENTRY cl_int CL_API_CALL
 clSetEventCallback( cl_event    event,
                     cl_int      command_exec_callback_type,
-                    void (CL_CALLBACK * pfn_notify)(cl_event, cl_int, void *),
+                   void (CL_CALLBACK * pfn_notify)(cl_event event,
+                                                   cl_int   event_command_status,
+                                                   void *   user_data),
                     void *      user_data) CL_API_SUFFIX__VERSION_1_1;
 
 #endif
