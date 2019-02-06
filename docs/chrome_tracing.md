@@ -62,6 +62,6 @@ trace file size for the 2+ minutes of execution was 26MB.
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018, Intel(R) Corporation
+Copyright (c) 2018-2019, Intel(R) Corporation
 
 [chrome_tracing_format]: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
