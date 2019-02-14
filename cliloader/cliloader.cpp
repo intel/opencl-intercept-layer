@@ -81,15 +81,6 @@ static void die(const char *op)
 #include <mach-o/dyld.h>
 #endif
 
-static char **appArgs = NULL;
-
-static void die(const char *op)
-{
-    fprintf(stderr, "cliloader Error: %s\n",
-        op );
-    exit(1);
-}
-
 #ifdef __APPLE__
 // Note: OSX has not been tested and may not work!
 #define LIB_EXTENSION "dylib"
@@ -100,6 +91,62 @@ static void die(const char *op)
 #define LD_LIBRARY_PATH_ENV "LD_LIBRARY_PATH"
 #define LD_PRELOAD_ENV "LD_PRELOAD"
 #endif
+
+#ifndef CLILOADER_LIB_DIR
+#define CLILOADER_LIB_DIR "lib"
+#endif
+
+static char **appArgs = NULL;
+
+static void die(const char *op)
+{
+    fprintf(stderr, "cliloader Error: %s\n",
+        op );
+    exit(1);
+}
+
+static bool fileExists( const std::string& name )
+{
+    if( FILE* fp = fopen(name.c_str(), "r"))
+    {
+        fclose(fp);
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+static bool getEnvVars(
+    const std::string& path,
+    std::string& ld_preload,
+    std::string& ld_library_path )
+{
+    std::string name = path + "/libOpenCL." LIB_EXTENSION;
+    bool found = fileExists( name );
+    if( found )
+    {
+        // Construct new LD_LIBRARY_PATH:
+        ld_library_path = path;
+        const char *old_ld_library_path = getenv(LD_LIBRARY_PATH_ENV);
+        if( old_ld_library_path )
+        {
+            ld_library_path += ":";
+            ld_library_path += old_ld_library_path;
+        }
+
+        // Add intercept library to LD_PRELOAD:
+        ld_preload = path + "/libOpenCL." + LIB_EXTENSION;
+        const char *old_ld_preload = getenv(LD_PRELOAD_ENV);
+        if( old_ld_preload )
+        {
+            ld_preload += ":";
+            ld_preload += old_ld_preload;
+        }
+    }
+    return found;
+}
 
 #define SETENV( _name, _value ) setenv( _name, _value, 1 );
 
@@ -188,11 +235,17 @@ static bool parseArguments(int argc, char *argv[])
 {
     bool    unknownOption = false;
 
+    SETENV("CLI_ReportToStderr", "1");
+
     for (int i = 1; i < argc; i++)
     {
         if( !strcmp(argv[i], "--debug") )
         {
             debug = true;
+        }
+        else if( !strcmp(argv[i], "-q") || !strcmp(argv[i], "--quiet") )
+        {
+            SETENV("CLI_SuppressLogging", "1");
         }
         else if( !strcmp(argv[i], "-c") || !strcmp(argv[i], "--call-logging") )
         {
@@ -258,6 +311,7 @@ static bool parseArguments(int argc, char *argv[])
             "\n"
             "Options:\n"
             "  --debug                      Enable cliloader Debug Messages\n"
+            "  --quiet [-q]                 Disable Logging\n"
             "  --call-logging [-c]          Trace Host API Calls\n"
             "  --device-timing [-d]         Report Device Execution Time\n"
             "  --host-timing [-h]           Report Host API Execution Time\n"
@@ -461,29 +515,36 @@ int main(int argc, char *argv[])
 
 #else // not Windows
 
-    // Construct new LD_LIBRARY_PATH:
-    std::string ld_library_path = path;
-    const char *old_ld_library_path = getenv(LD_LIBRARY_PATH_ENV);
-    if( old_ld_library_path )
+    std::string ld_preload;
+    std::string ld_library_path;
+
+    // Look for the CLIntercept shared library.
+    // First, check the current directory.
+    bool found = getEnvVars( path, ld_preload, ld_library_path );
+    if( found == false )
     {
-        ld_library_path += ":";
-        ld_library_path += old_ld_library_path;
+        // Next, check the parent directory.
+        std::string libPath = path + "/..";
+        found = getEnvVars( libPath, ld_preload, ld_library_path );
     }
-
-    // Add intercept library to LD_PRELOAD:
-    std::string ld_preload = path + "/libOpenCL." + LIB_EXTENSION;
-    const char *old_ld_preload = getenv(LD_PRELOAD_ENV);
-    if( old_ld_preload )
+    if( found == false )
     {
-        ld_preload += ":";
-        ld_preload += old_ld_preload;
+        // Next, check a lib directory.
+        std::string libPath = path + "/../" + CLIPROF_LIB_DIR;
+        found = getEnvVars( libPath, ld_preload, ld_library_path );
     }
+    if( found )
+    {
+        DEBUG("New %s is %s\n", LD_PRELOAD_ENV, ld_preload.c_str());
+        DEBUG("New %s is %s\n", LD_LIBRARY_PATH_ENV, ld_library_path.c_str());
 
-    DEBUG("New %s is %s\n", LD_LIBRARY_PATH_ENV, ld_library_path.c_str());
-    DEBUG("New %s is %s\n", LD_PRELOAD_ENV, ld_preload.c_str());
-
-    SETENV(LD_LIBRARY_PATH_ENV, ld_library_path.c_str());
-    SETENV(LD_PRELOAD_ENV, ld_preload.c_str());
+        SETENV(LD_PRELOAD_ENV, ld_preload.c_str());
+        SETENV(LD_LIBRARY_PATH_ENV, ld_library_path.c_str());
+    }
+    else
+    {
+        DEBUG("Couldn't find CLIntercept shared library!\n");
+    }
 
 #ifdef __APPLE__
     SETENV("DYLD_FORCE_FLAT_NAMESPACE", "1");
