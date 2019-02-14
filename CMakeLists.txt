@@ -60,6 +60,13 @@ if( ENABLE_CLIPROF )
     add_subdirectory(cliprof)
 endif()
 
+# cliloader Executable (optional)
+set( ENABLE_CLILOADER CACHE BOOL "Enable cliloader Support and Build the Executable" )
+if( ENABLE_CLILOADER )
+    add_definitions("-DCLINTERCEPT_CLILOADER")
+    add_subdirectory(cliloader)
+endif()
+
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
