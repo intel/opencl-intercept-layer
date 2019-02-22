@@ -557,7 +557,7 @@ int main(int argc, char *argv[])
     if( found == false )
     {
         // Next, check a lib directory.
-        std::string libPath = path + "/../" + CLIPROF_LIB_DIR;
+        std::string libPath = path + "/../" + CLILOADER_LIB_DIR;
         found = getEnvVars( libPath, ld_preload, ld_library_path );
     }
     if( found )
