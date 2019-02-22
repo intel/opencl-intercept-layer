@@ -251,9 +251,32 @@ static bool parseArguments(int argc, char *argv[])
         {
             SETENV("CLI_CallLogging", "1");
         }
+        else if( !strcmp(argv[i], "-dsrc") || !strcmp(argv[i], "--dump-source") )
+        {
+            SETENV("CLI_DumpProgramSource", "1");
+        }
+        else if( !strcmp(argv[i], "-dspv") || !strcmp(argv[i], "--dump-spirv") )
+        {
+            SETENV("CLI_DumpProgramSPIRV", "1");
+        }
+        else if( !strcmp(argv[i], "--dump-output-binaries") )
+        {
+            SETENV("CLI_DumpProgramBinaries", "1");
+        }
+        else if( !strcmp(argv[i], "--dump-kernel-isa-binaries") )
+        {
+            SETENV("CLI_DumpKernelISABinaries", "1");
+        }
         else if( !strcmp(argv[i], "-d") || !strcmp(argv[i], "--device-timing") )
         {
             SETENV("CLI_DevicePerformanceTiming", "1");
+        }
+        else if( !strcmp(argv[i], "-dv") || !strcmp(argv[i], "--device-timing-verbose") )
+        {
+            SETENV("CLI_DevicePerformanceTiming", "1");
+            SETENV("CLI_DevicePerformanceTimeKernelInfoTracking", "1");
+            SETENV("CLI_DevicePerformanceTimeGWSTracking", "1");
+            SETENV("CLI_DevicePerformanceTimeLWSTracking", "1");
         }
         else if( !strcmp(argv[i], "-h") || !strcmp(argv[i], "--host-timing") )
         {
@@ -310,13 +333,17 @@ static bool parseArguments(int argc, char *argv[])
             "Usage: cliloader [OPTIONS] COMMAND\n"
             "\n"
             "Options:\n"
-            "  --debug                      Enable cliloader Debug Messages\n"
-            "  --quiet [-q]                 Disable Logging\n"
-            "  --call-logging [-c]          Trace Host API Calls\n"
-            "  --device-timing [-d]         Report Device Execution Time\n"
-            "  --host-timing [-h]           Report Host API Execution Time\n"
-            "  --leak-checking [-l]         Track and Report OpenCL Leaks\n"
-            "  --output-to-file [-f]        Log and Report to Files\n"
+            "  --debug                          Enable cliloader Debug Messages\n"
+            "  --quiet [-q]                     Disable Logging\n"
+            "  --call-logging [-c]              Trace Host API Calls\n"
+            "  --dump-source [-dsrc]            Dump Input Program Source\n"
+            "  --dump-spirv [-dspv]             Dump Input Program IL (SPIR-V)\n"
+            "  --dump-output-binaries           Dump Output Program Binaries\n"
+            "  --device-timing [-d]             Report Device Execution Time\n"
+            "  --device-timing-verbose [-dv]    Report More Detailed Device Execution Time\n"
+            "  --host-timing [-h]               Report Host API Execution Time\n"
+            "  --leak-checking [-l]             Track and Report OpenCL Leaks\n"
+            "  --output-to-file [-f]            Log and Report to Files vs. stderr\n"
             "\n"
             "For more information, please visit the Intercept Layer for OpenCL Applications github page:\n"
             "    %s\n"

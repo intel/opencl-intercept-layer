@@ -441,7 +441,7 @@ bool CLIntercept::init()
 #endif
     log( "CLIntercept optional features:\n"
 // extra code only needed for Windows
-#if defined(CLINTERCEPT_CLILOADER) || defined(CLINTERCEPT_CLIPROF) || !defined(_WIN32)
+#if defined(CLINTERCEPT_CLILOADER) || !defined(_WIN32)
         "    cliloader(supported)\n"
         "    cliprof(supported)\n"
 #else

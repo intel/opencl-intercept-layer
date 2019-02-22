@@ -20,7 +20,7 @@
 // SOFTWARE.
 */
 
-#if defined(_WIN32) && ( defined(CLINTERCEPT_CLILOADER) || defined(CLINTERCEPT_CLIPROF) )
+#if defined(_WIN32) && defined(CLINTERCEPT_CLILOADER)
 
 #include "common.h"
 #include <windows.h>

@@ -56,7 +56,7 @@ endif()
 # cliprof Executable (optional)
 set( ENABLE_CLIPROF CACHE BOOL "Enable cliprof Support and Build the Executable" )
 if( ENABLE_CLIPROF )
-    add_definitions("-DCLINTERCEPT_CLIPROF")
+    add_definitions("-DCLINTERCEPT_CLILOADER")
     add_subdirectory(cliprof)
 endif()
 
