@@ -39,7 +39,7 @@ static bool checkWow64(HANDLE parent, HANDLE child)
 
     if( parentWow64 != childWow64 )
     {
-        fprintf(stderr, "This is the %d-bit version of cliprof, but the target application is a %d-bit application.\n",
+        fprintf(stderr, "This is the %d-bit version of cliloader, but the target application is a %d-bit application.\n",
             parentWow64 ? 32 : 64,
             childWow64 ? 32 : 64 );
         fprintf(stderr, "Execution will continue, but intercepting and profiling will be disabled.\n");
@@ -61,7 +61,7 @@ static void die(const char *op)
         description,
         sizeof(description),
         NULL );
-    fprintf(stderr, "cliprof Error: %s: %s\n",
+    fprintf(stderr, "cliloader Error: %s: %s\n",
         op,
         description );
     exit(1);
@@ -82,6 +82,7 @@ static void die(const char *op)
 #endif
 
 #ifdef __APPLE__
+// Note: OSX has not been tested and may not work!
 #define LIB_EXTENSION "dylib"
 #define LD_LIBRARY_PATH_ENV "DYLD_LIBRARY_PATH"
 #define LD_PRELOAD_ENV "DYLD_INSERT_LIBRARIES"
@@ -91,15 +92,15 @@ static void die(const char *op)
 #define LD_PRELOAD_ENV "LD_PRELOAD"
 #endif
 
-#ifndef CLIPROF_LIB_DIR
-#define CLIPROF_LIB_DIR "lib"
+#ifndef CLILOADER_LIB_DIR
+#define CLILOADER_LIB_DIR "lib"
 #endif
 
 static char **appArgs = NULL;
 
 static void die(const char *op)
 {
-    fprintf(stderr, "cliprof Error: %s\n",
+    fprintf(stderr, "cliloader Error: %s\n",
         op );
     exit(1);
 }
@@ -153,7 +154,7 @@ static bool getEnvVars(
 
 bool debug = false;
 
-#define DEBUG(_s, ...) if(debug) fprintf(stderr, "[cliprof debug] " _s, ##__VA_ARGS__ );
+#define DEBUG(_s, ...) if(debug) fprintf(stderr, "[cliloader debug] " _s, ##__VA_ARGS__ );
 
 // Note: This assumes that the CLIntercept DLL/so is in the same directory
 // as the executable!
@@ -165,7 +166,7 @@ static std::string getProcessDirectory()
     char    processName[MAX_PATH];
     if( GetModuleFileNameA(GetModuleHandle(NULL), processName, MAX_PATH) == 0 )
     {
-        die("Couldn't get the path to the cliprof executable");
+        die("Couldn't get the path to the cliloader executable");
     }
 
     char*   pProcessName = processName;
@@ -186,7 +187,7 @@ static std::string getProcessDirectory()
     int     ret = proc_pidpath( pid, processName, sizeof(processName) );
     if( ret <= 0 )
     {
-        die("Couldn't get the path to the cliprof executable");
+        die("Couldn't get the path to the cliloader executable");
     }
 
     char*   pProcessName = processName;
@@ -210,7 +211,7 @@ static std::string getProcessDirectory()
         sizeof( processName ) - 1 );
     if( bytes == 0 )
     {
-        die("Couldn't get the path to the cliprof executable");
+        die("Couldn't get the path to the cliloader executable");
     }
 
     processName[ bytes] = '\0';
@@ -233,18 +234,49 @@ static std::string getProcessDirectory()
 static bool parseArguments(int argc, char *argv[])
 {
     bool    unknownOption = false;
-    bool    silent = true;
 
     SETENV("CLI_ReportToStderr", "1");
-
-    // Track device timing by default:
-    SETENV("CLI_DevicePerformanceTiming", "1");
 
     for (int i = 1; i < argc; i++)
     {
         if( !strcmp(argv[i], "--debug") )
         {
             debug = true;
+        }
+        else if( !strcmp(argv[i], "-q") || !strcmp(argv[i], "--quiet") )
+        {
+            SETENV("CLI_SuppressLogging", "1");
+        }
+        else if( !strcmp(argv[i], "-c") || !strcmp(argv[i], "--call-logging") )
+        {
+            SETENV("CLI_CallLogging", "1");
+        }
+        else if( !strcmp(argv[i], "-dsrc") || !strcmp(argv[i], "--dump-source") )
+        {
+            SETENV("CLI_DumpProgramSource", "1");
+        }
+        else if( !strcmp(argv[i], "-dspv") || !strcmp(argv[i], "--dump-spirv") )
+        {
+            SETENV("CLI_DumpProgramSPIRV", "1");
+        }
+        else if( !strcmp(argv[i], "--dump-output-binaries") )
+        {
+            SETENV("CLI_DumpProgramBinaries", "1");
+        }
+        else if( !strcmp(argv[i], "--dump-kernel-isa-binaries") )
+        {
+            SETENV("CLI_DumpKernelISABinaries", "1");
+        }
+        else if( !strcmp(argv[i], "-d") || !strcmp(argv[i], "--device-timing") )
+        {
+            SETENV("CLI_DevicePerformanceTiming", "1");
+        }
+        else if( !strcmp(argv[i], "-dv") || !strcmp(argv[i], "--device-timing-verbose") )
+        {
+            SETENV("CLI_DevicePerformanceTiming", "1");
+            SETENV("CLI_DevicePerformanceTimeKernelInfoTracking", "1");
+            SETENV("CLI_DevicePerformanceTimeGWSTracking", "1");
+            SETENV("CLI_DevicePerformanceTimeLWSTracking", "1");
         }
         else if( !strcmp(argv[i], "-h") || !strcmp(argv[i], "--host-timing") )
         {
@@ -254,9 +286,10 @@ static bool parseArguments(int argc, char *argv[])
         {
             SETENV("CLI_LeakChecking", "1");
         }
-        else if( !strcmp(argv[i], "-v") || !strcmp(argv[i], "--verbose") )
+        else if( !strcmp(argv[i], "-f") || !strcmp(argv[i], "--output-to-file") )
         {
-            silent = false;
+            SETENV("CLI_LogToFile", "1");
+            SETENV("CLI_ReportToStderr", "0");
         }
         else if (argv[i][0] == '-')
         {
@@ -285,11 +318,6 @@ static bool parseArguments(int argc, char *argv[])
         }
     }
 
-    if( silent )
-    {
-        SETENV("CLI_SuppressLogging", "1");
-    }
-
     if( unknownOption ||
 #if defined(_WIN32)
         commandLine.size() == 0
@@ -299,16 +327,23 @@ static bool parseArguments(int argc, char *argv[])
         )
     {
         fprintf(stdout,
-            "cliprof - A simple utility to enable profiling using the Intercept Layer for OpenCL Applications\n"
+            "cliloader - A utility to simplify using the Intercept Layer for OpenCL Applications\n"
             "  Version: %s, from %s\n"
             "\n"
-            "Usage: cliprof [OPTIONS] COMMAND\n"
+            "Usage: cliloader [OPTIONS] COMMAND\n"
             "\n"
             "Options:\n"
-            "  --debug                      Enable cliprof Debug Messages\n"
-            "  --host-timing [-h]           Report Host API Execution Time\n"
-            "  --leak-checking [-l]         Track and Report OpenCL Leaks\n"
-            "  --verbose [-v]               Verbose Output (No Log Suppression)\n"
+            "  --debug                          Enable cliloader Debug Messages\n"
+            "  --quiet [-q]                     Disable Logging\n"
+            "  --call-logging [-c]              Trace Host API Calls\n"
+            "  --dump-source [-dsrc]            Dump Input Program Source\n"
+            "  --dump-spirv [-dspv]             Dump Input Program IL (SPIR-V)\n"
+            "  --dump-output-binaries           Dump Output Program Binaries\n"
+            "  --device-timing [-d]             Report Device Execution Time\n"
+            "  --device-timing-verbose [-dv]    Report More Detailed Device Execution Time\n"
+            "  --host-timing [-h]               Report Host API Execution Time\n"
+            "  --leak-checking [-l]             Track and Report OpenCL Leaks\n"
+            "  --output-to-file [-f]            Log and Report to Files vs. stderr\n"
             "\n"
             "For more information, please visit the Intercept Layer for OpenCL Applications github page:\n"
             "    %s\n"
@@ -335,6 +370,16 @@ int main(int argc, char *argv[])
 
 #if defined(_WIN32)
 
+    // Get the existing value of the "SuppressLogging" control.
+    // We will suppress logging while loading the intercept DLL
+    // into this process, to avoid seeing loading twice.
+    char* envVal = NULL;
+    size_t  len = 0;
+    errno_t err = _dupenv_s( &envVal, &len, "CLI_SuppressLogging" );
+    DEBUG("CLI_SuppressLogging is currently: %s\n", envVal ? envVal : "");
+
+    SETENV("CLI_SuppressLogging", "1");
+
     std::string dllpath = path + "\\opencl.dll";
     DEBUG("path to OpenCL.dll is: %s\n", dllpath.c_str());
 
@@ -347,6 +392,12 @@ int main(int argc, char *argv[])
         die("loading DLL");
     }
     DEBUG("loaded DLL\n");
+
+    SETENV("CLI_SuppressLogging", envVal ? envVal : "");
+    if( envVal )
+    {
+        free( envVal );
+    }
 
     LPTHREAD_START_ROUTINE cliprof_init = (LPTHREAD_START_ROUTINE)GetProcAddress(
         dll,
@@ -370,8 +421,8 @@ int main(int argc, char *argv[])
             NULL,                   // lpThreadAttributes
             FALSE,                  // bInheritHandles
             CREATE_SUSPENDED,       // dwCreationFlags
-            NULL,                   // lpEnvironment - use the cliprof environment
-            NULL,                   // lpCurrentDirectory - use the cliprof drive and directory
+            NULL,                   // lpEnvironment - use the cliloader environment
+            NULL,                   // lpCurrentDirectory - use the cliloader drive and directory
             &sinfo,                 // lpStartupInfo
             &pinfo) == FALSE )      // lpProcessInformation (out)
     {

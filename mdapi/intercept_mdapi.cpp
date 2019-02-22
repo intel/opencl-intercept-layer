@@ -1,5 +1,5 @@
 /*
-// Copyright (c) 2018 Intel Corporation
+// Copyright (c) 2018-2019 Intel Corporation
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -169,7 +169,7 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
     // This is a temporary workaround until we have a
     // clCreatePerfCountersCommandQueueWithPropertiesINTEL API.
     // It converts the OpenCL 2.0 command queue properties to
-    // OpenLC 1.2 command queue properties, unless an unsupported
+    // OpenCL 1.2 command queue properties, unless an unsupported
     // command queue property is specified.  If an unsupported
     // property is specified then we cannot create an MDAPI command
     // queue.

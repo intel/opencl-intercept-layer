@@ -27,7 +27,9 @@ All controls are documented [here](docs/controls.md).
 
 Instructions to build the Intercept Layer for OpenCL Applications can be found [here](docs/build.md).
 
-Instructions to use the Intercept Layer for OpenCL Applications Loader (cliprof) can be found [here](docs/cliprof.md).
+Instructions to use the Intercept Layer for OpenCL Applications Loader (`cliloader`) can be found [here](docs/cliloader.md).
+
+Instructions for the old loader (`cliprof`) can still be found [here](docs/cliprof.md).
 
 Instructions to install the Intercept Layer for OpenCL Applications can be found [here](docs/install.md).
 
@@ -82,7 +84,7 @@ OpenCL and the OpenCL logo are trademarks of Apple Inc. used by permission by Kh
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018, Intel(R) Corporation
+Copyright (c) 2018-2019, Intel(R) Corporation
 
 [khronos_cl_license]: https://github.com/KhronosGroup/OpenCL-Headers/blob/master/LICENSE
 [boost_license]: http://www.boost.org/LICENSE_1_0.txt

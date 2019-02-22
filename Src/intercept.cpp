@@ -1,5 +1,5 @@
 /*
-// Copyright (c) 2018 Intel Corporation
+// Copyright (c) 2018-2019 Intel Corporation
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -440,9 +440,12 @@ bool CLIntercept::init()
     log( "CLInterecpt git hash: " + std::string(sc_GitHash) + "\n" );
 #endif
     log( "CLIntercept optional features:\n"
-#if defined(CLINTERCEPT_CLIPROF) || !defined(_WIN32)    // extra code only needed for Windows
+// extra code only needed for Windows
+#if defined(CLINTERCEPT_CLILOADER) || !defined(_WIN32)
+        "    cliloader(supported)\n"
         "    cliprof(supported)\n"
 #else
+        "    cliloader(NOT supported)\n"
         "    cliprof(NOT supported)\n"
 #endif
 #if defined(USE_KERNEL_OVERRIDES)

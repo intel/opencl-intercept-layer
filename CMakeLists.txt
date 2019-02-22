@@ -1,4 +1,4 @@
-# Copyright (c) 2018 Intel Corporation
+# Copyright (c) 2018-2019 Intel Corporation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -56,8 +56,15 @@ endif()
 # cliprof Executable (optional)
 set( ENABLE_CLIPROF CACHE BOOL "Enable cliprof Support and Build the Executable" )
 if( ENABLE_CLIPROF )
-    add_definitions("-DCLINTERCEPT_CLIPROF")
+    add_definitions("-DCLINTERCEPT_CLILOADER")
     add_subdirectory(cliprof)
+endif()
+
+# cliloader Executable (optional)
+set( ENABLE_CLILOADER CACHE BOOL "Enable cliloader Support and Build the Executable" )
+if( ENABLE_CLILOADER )
+    add_definitions("-DCLINTERCEPT_CLILOADER")
+    add_subdirectory(cliloader)
 endif()
 
 include_directories(

@@ -20,31 +20,31 @@
 
 # This uses modules from: https://github.com/rpavlik/cmake-modules
 # to get Git revision information and put it in the generated files:
-#   git_version.h - version information for cliprof
+#   git_version.h - version information for cliloader
 configure_file(git_version.h.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.h" @ONLY)
 
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-set( CLIPROF_SOURCE_FILES
-    cliprof.cpp
+set( CLILOADER_SOURCE_FILES
+    cliloader.cpp
     "${CMAKE_CURRENT_BINARY_DIR}/git_version.h"
 )
 source_group( Source FILES
-    ${CLIPROF_SOURCE_FILES}
+    ${CLILOADER_SOURCE_FILES}
 )
 
-add_executable(cliprof
-    ${CLIPROF_SOURCE_FILES}
+add_executable(cliloader
+    ${CLILOADER_SOURCE_FILES}
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
-        install(TARGETS cliprof DESTINATION ${OUTPUTCONFIG} CONFIGURATIONS ${OUTPUTCONFIG})
+        install(TARGETS cliloader DESTINATION ${OUTPUTCONFIG} CONFIGURATIONS ${OUTPUTCONFIG})
     endforeach( OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES )
 else()
     include(GNUInstallDirs)
-    target_compile_definitions(cliprof PRIVATE CLIPROF_LIB_DIR="${CMAKE_INSTALL_LIBDIR}")
-    install(TARGETS cliprof DESTINATION ${CMAKE_INSTALL_BINDIR})
+    target_compile_definitions(cliloader PRIVATE CLILOADER_LIB_DIR="${CMAKE_INSTALL_LIBDIR}")
+    install(TARGETS cliloader DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
