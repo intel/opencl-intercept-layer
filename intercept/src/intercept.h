@@ -373,6 +373,9 @@ public:
                 uint64_t enqueueCounter ) const;
     bool    checkDevicePerformanceTimingEnqueueLimits(
                 uint64_t enqueueCounter ) const;
+    void    dummyCommandQueue(
+                cl_context context,
+                cl_device_id device );
     void    addTimingEvent(
                 const std::string& functionName,
                 const uint64_t enqueueCounter,
@@ -2488,6 +2491,12 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         pIntercept->logQueueInfo(                                           \
             _device,                                                        \
             _queue );                                                       \
+    }
+
+#define DUMMY_COMMAND_QUEUE( _context, _device )                            \
+    if( pIntercept->config().DummyOutOfOrderQueue )                         \
+    {                                                                       \
+        pIntercept->dummyCommandQueue( _context, _device );                 \
     }
 
 #define DEVICE_PERFORMANCE_TIMING_START( pEvent )                           \

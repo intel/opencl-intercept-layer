@@ -727,6 +727,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
             deviceInfo.c_str(),
             pIntercept->enumName().name_command_queue_properties( properties ).c_str(),
             properties );
+        DUMMY_COMMAND_QUEUE( context, device );
         pIntercept->modifyCommandQueueProperties( properties );
         CREATE_COMMAND_QUEUE_PROPERTIES( device, properties, newProperties );
 
@@ -6302,6 +6303,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
             context,
             deviceInfo.c_str(),
             propsStr.c_str() );
+        DUMMY_COMMAND_QUEUE( context, device );
         CREATE_COMMAND_QUEUE_OVERRIDE_INIT( device, properties, newProperties );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
@@ -6397,6 +6399,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
                 context,
                 deviceInfo.c_str(),
                 propsStr.c_str() );
+            DUMMY_COMMAND_QUEUE( context, device );
             CREATE_COMMAND_QUEUE_OVERRIDE_INIT( device, properties, newProperties );
             CHECK_ERROR_INIT( errcode_ret );
             CPU_PERFORMANCE_TIMING_START();
