@@ -120,8 +120,19 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
 {
     cl_command_queue    retVal = NULL;
 
+    // Note: This works fine for one device, but if there are two
+    // devices then we will need a different mechanism to get a
+    // device-specific function pointer.
+
+    cl_platform_id  platform = NULL;
+    dispatch().clGetDeviceInfo(
+        device,
+        CL_DEVICE_PLATFORM,
+        sizeof(platform),
+        &platform,
+        NULL );
     getExtensionFunctionAddress(
-        NULL,
+        platform,
         "clCreatePerfCountersCommandQueueINTEL" );
 
     if( dispatch().clCreatePerfCountersCommandQueueINTEL && m_pMDHelper )
