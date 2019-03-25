@@ -278,6 +278,16 @@ static bool parseArguments(int argc, char *argv[])
             SETENV("CLI_DevicePerformanceTimeGWSTracking", "1");
             SETENV("CLI_DevicePerformanceTimeLWSTracking", "1");
         }
+        else if( !strcmp(argv[i], "--driver-diagnostics") || !strcmp(argv[i], "-ddiag") )
+        {
+            SETENV("CLI_ContextCallbackLogging", "1");
+            SETENV("CLI_ContextHintLevel", "7");    // GOOD, BAD, and NEUTRAL
+        }
+        else if( !strcmp(argv[i], "--mdapi-counters") || !strcmp(argv[i], "-mdapi") )
+        {
+            SETENV("CLI_DevicePerfCounterCustom", "ComputeBasic");
+            SETENV("CLI_DevicePerfCounterTiming", "1");
+        }
         else if( !strcmp(argv[i], "-h") || !strcmp(argv[i], "--host-timing") )
         {
             SETENV("CLI_HostPerformanceTiming", "1");
@@ -341,6 +351,8 @@ static bool parseArguments(int argc, char *argv[])
             "  --dump-output-binaries           Dump Output Program Binaries\n"
             "  --device-timing [-d]             Report Device Execution Time\n"
             "  --device-timing-verbose [-dv]    Report More Detailed Device Execution Time\n"
+            "  --driver-diagnostics [-ddiag]    Log Driver Diagnostics\n"
+            "  --mdapi-counters [-mdapi]        Report MDAPI Performance Counters\n"
             "  --host-timing [-h]               Report Host API Execution Time\n"
             "  --leak-checking [-l]             Track and Report OpenCL Leaks\n"
             "  --output-to-file [-f]            Log and Report to Files vs. stderr\n"
