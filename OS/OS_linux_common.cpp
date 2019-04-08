@@ -78,7 +78,8 @@ bool Services_Common::ReadRegistry(
 
     const char *envVal = getenv("HOME");
 #ifdef __ANDROID__
-    // if ho HOME on Android then use sdcard folder
+    // If there is no HOME environment variable on Android,
+    // default to the sdcard folder:
     if( envVal == NULL )
     {
         configFile = "/sdcard";
@@ -88,7 +89,12 @@ bool Services_Common::ReadRegistry(
         configFile = envVal;
     }
 #else
-    configFile = envVal;
+    // For non-Android, default to the root directory if there
+    // is no HOME environment variable.
+    if( envVal != NULL )
+    {
+        configFile = envVal;
+    }
 #endif
     configFile += "/";
     configFile += CONFIG_FILE;
