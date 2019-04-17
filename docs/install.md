@@ -49,7 +49,7 @@ This method also works for applications that load OpenCL.dll from an explicit pa
 
        sudo find . -name libOpenCL*
 
-   To find the libraries and follow symbolic links in one go use:
+   To find the libraries and follow symbolic links, use:
 
        sudo find . -name libOpenCL* | while read -r line; do ll "$line"; done
 
@@ -59,7 +59,7 @@ This method also works for applications that load OpenCL.dll from an explicit pa
 
 3. Create a symbolic link from real icd loader library to the Intercept Layer for OpenCL Applications library:
 
-       sudo ln -s /path/to/CLIBin/builds/x86_64/libOpenCL.so.1 /path/to/lib/libOpenCL.so.1.2
+       sudo ln -s /path/to/build/output/libOpenCL.so.1 /path/to/lib/libOpenCL.so.1.2
 
 4. Create a config file to control the Intercept Layer for OpenCL Applications.
    Behavior is controlled via a config file on the user's root folder (~). To
@@ -84,10 +84,10 @@ using only environment variables.  If the application specifies an rpath or
 otherwise circumvents the OS's method of identifying an appropriate
 libOpenCL.so, this method won't work.  Example:
 
-    LD_LIBRARY_PATH=/path/to/clintercept/build/output CLI_DLLName=/opt/intel/opencl/libOpenCL.so \
+    LD_LIBRARY_PATH=/path/to/build/output CLI_DllName=/path/to/real/libOpenCL.so \
     CLI_DumpProgramSource=1 ./oclapplication
 
-## Mac OSX - Experimental
+## Mac OSX
 
 The Intercept Layer for OpenCL Applications on OSX uses an OS capability called
 "interposition" to intercept OpenCL calls.  As such, there is no "global
