@@ -1,5 +1,5 @@
 # Intercept Layer for OpenCL<sup>TM</sup> Applications
-Linux and OSX: [![Linux OSX Build Status](https://travis-ci.com/intel/opencl-intercept-layer.svg?branch=master)](https://travis-ci.com/intel/opencl-intercept-layer) | Windows: [![Windows Build Status](https://ci.appveyor.com/api/projects/status/l4bb04457hid3nwy/branch/master?svg=true)](https://ci.appveyor.com/project/bashbaug/opencl-intercept-layer/branch/master)
+Linux and OSX: [![Linux OSX Build Status](https://travis-ci.com/intel/opencl-intercept-layer.svg?branch=master)](https://travis-ci.com/intel/opencl-intercept-layer) | Windows: [![Windows Build Status](https://ci.appveyor.com/api/projects/status/29j347xa9f8e4qc3/branch/master?svg=true)](https://ci.appveyor.com/project/webmasterintel/opencl-intercept-layer/branch/master)
 
 
 
