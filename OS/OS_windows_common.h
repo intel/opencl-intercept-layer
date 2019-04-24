@@ -73,7 +73,7 @@ public:
 
     std::string GetProcessName() const;
 
-    bool    ReadRegistry(
+    bool    GetControl(
                 const std::string& name,
                 void* pValue,
                 size_t size ) const;
@@ -168,7 +168,7 @@ inline std::string Services_Common::GetProcessName() const
     return std::string(pProcessName);
 }
 
-inline bool Services_Common::ReadRegistry(
+inline bool Services_Common::GetControl(
     const std::string& name,
     void* pValue,
     size_t size ) const

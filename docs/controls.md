@@ -36,17 +36,25 @@ will still read registry keys from:
 
 If a registry is set in both HKCU and HKLM, the setting in HKCU will "win".
 
-### Linux Configuration Files
+### Linux, Android, and OSX Configuration Files
 
 On Linux, the Intercept Layer for OpenCL Applications will read control values
-from ~/clintercept.conf.  Controls may be set by putting the control on its own
-line, followed by an equals sign, followed by the value you'd like to set the
-option to.  Lines that begin with a semi-colon(";"), a hash mark ("#"), or a
-C++-style comment ("//") are ignored.  For example, to enable CallLogging, put
-a line in your ~/clintercept.conf that looks like:
+from a config file named clintercept.conf.  Controls in a config file may be
+set by putting the control on its own line, followed by an equals sign,
+followed by the value to set the control to.  Lines that begin with a
+semi-colon (";"), a hash mark ("#"), or a C++-style comment ("//") are
+ignored.  For example, to enable CallLogging, put a line in your 
+clintercept.conf that looks like:
 
     // Enable CallLogging:
     CallLogging=1
+
+The Intercept Layer for OpenCL Applications will search for config files in
+the following directories, in order:
+
+* The current user's HOME directory (`~`).
+* The `sdcard` directory (for Android only).
+* The system directory `/etc/OpenCL`.
 
 ### Environment Variables
 

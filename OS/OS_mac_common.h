@@ -61,6 +61,7 @@ class Services_Common
 public:
     static const char* ENV_PREFIX;
     static const char* CONFIG_FILE;
+    static const char* SYSTEM_DIR;
     static const char* LOG_DIR;
     static bool        APPEND_PID;
 
@@ -77,7 +78,7 @@ public:
 
     std::string GetProcessName() const;
 
-    bool    ReadRegistry(
+    bool    GetControl(
                 const std::string& name,
                 void* pValue,
                 size_t size ) const;
@@ -112,6 +113,12 @@ public:
 
 private:
     pthread_mutex_t m_CriticalSection;
+
+    bool    GetControlFromFile(
+                const std::string& fileName,
+                const std::string& controlName,
+                void* pValue,
+                size_t size ) const;
 
     DISALLOW_COPY_AND_ASSIGN( Services_Common );
 };
