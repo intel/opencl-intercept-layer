@@ -92,6 +92,18 @@ To list all environment variable controls, you could type:
 
     env | grep CLI_
 
+### Case Sensitivity
+
+Controls should generally be considered case sensitive.  Some methods of
+setting controls on some operating systems may treat controls as case
+insensitive, but it is unsafe to rely on case insensitive behavior.
+
+### Control Verification
+
+To verify that a control has been set correctly and is taking effect,
+please check the Intercept Layer for OpenCL Applications log file, which
+will record any controls that are set to non-default values.
+
 ### Setup and Loading Controls
 
 ##### `DllName` (string)
