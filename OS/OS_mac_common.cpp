@@ -27,6 +27,7 @@ namespace OS
 
 const char* Services_Common::ENV_PREFIX = "";
 const char* Services_Common::CONFIG_FILE = "config.conf";
+const char* Services_Common::SYSTEM_DIR = "/etc";
 const char* Services_Common::LOG_DIR = NULL;
 bool Services_Common::APPEND_PID = false;
 
@@ -39,7 +40,7 @@ Services_Common::~Services_Common()
     pthread_mutex_destroy( &m_CriticalSection );
 }
 
-bool Services_Common::ReadRegistry(
+bool Services_Common::GetControl(
     const std::string& name,
     void* pValue,
     size_t size ) const
@@ -63,19 +64,52 @@ bool Services_Common::ReadRegistry(
         }
     }
 
-    // Look at the config file second:
+    // Look at config files second:
+    bool    found = false;
+    std::string fileName;
+
+    // First, check for a config file in the HOME directory.
+    const char *envVal = getenv("HOME");
+    if( !found && envVal != NULL )
+    {
+        fileName = envVal;
+        fileName += "/";
+        fileName += CONFIG_FILE;
+        found = GetControlFromFile(
+            fileName,
+            name,
+            pValue,
+            size );
+    }
+
+    // Finally, check the "system" directory.
+    if( !found )
+    {
+        fileName = SYSTEM_DIR;
+        fileName += "/";
+        fileName += CONFIG_FILE;
+        found = GetControlFromFile(
+            fileName,
+            name,
+            pValue,
+            size );
+    }
+
+    return found;
+}
+
+bool Services_Common::GetControlFromFile(
+    const std::string& fileName,
+    const std::string& controlName,
+    void* pValue,
+    size_t size ) const
+{
     bool    found = false;
 
     std::ifstream   is;
     std::string     s;
 
-    std::string     configFile;
-
-    configFile = getenv("HOME");
-    configFile += "/";
-    configFile += CONFIG_FILE;
-
-    is.open( configFile.c_str() );
+    is.open( fileName.c_str() );
     if( is.fail() )
     {
         return false;
@@ -100,12 +134,12 @@ bool Services_Common::ReadRegistry(
         if( pos != std::string::npos )
         {
             std::string var = s.substr( 0, pos );
-            var.erase(remove_if(var.begin(), var.end(), ::isspace), var.end());
+            var.erase(std::remove_if(var.begin(), var.end(), ::isspace), var.end());
 
             std::string value = s.substr( pos + 1 );
-            value.erase(remove_if(value.begin(), value.end(), ::isspace), value.end());
+            value.erase(std::remove_if(value.begin(), value.end(), ::isspace), value.end());
 
-            if( var == name )
+            if( var == controlName )
             {
                 if( size == sizeof(unsigned int) )
                 {

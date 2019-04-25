@@ -275,13 +275,13 @@ CLIntercept::~CLIntercept()
 ///////////////////////////////////////////////////////////////////////////////
 //
 template <class T>
-static bool ReadRegistry(
+static bool GetControl(
     const OS::Services& OS,
     const char* name,
     T& value )
 {
     unsigned int    readValue = 0;
-    bool success = OS.ReadRegistry( name, &readValue, sizeof(readValue) );
+    bool success = OS.GetControl( name, &readValue, sizeof(readValue) );
     if( success )
     {
         value = readValue;
@@ -290,13 +290,13 @@ static bool ReadRegistry(
     return success;
 }
 template <>
-bool ReadRegistry<bool>(
+bool GetControl<bool>(
     const OS::Services& OS,
     const char* name,
     bool& value )
 {
     unsigned int    readValue = 0;
-    bool success = OS.ReadRegistry( name, &readValue, sizeof(readValue) );
+    bool success = OS.GetControl( name, &readValue, sizeof(readValue) );
     if( success )
     {
         value = ( readValue != 0 );
@@ -305,13 +305,13 @@ bool ReadRegistry<bool>(
     return success;
 }
 template <>
-bool ReadRegistry<std::string>(
+bool GetControl<std::string>(
     const OS::Services& OS,
     const char* name,
     std::string& value )
 {
     char    readValue[256] = "";
-    bool success = OS.ReadRegistry( name, readValue, sizeof(readValue) );
+    bool success = OS.GetControl( name, readValue, sizeof(readValue) );
     if( success )
     {
         value = readValue;
@@ -340,10 +340,11 @@ bool CLIntercept::init()
 #elif defined(__linux__) || defined(__APPLE__)
     OS::Services_Common::ENV_PREFIX = "CLI_";
     OS::Services_Common::CONFIG_FILE = "clintercept.conf";
+    OS::Services_Common::SYSTEM_DIR = "/etc/OpenCL";
 #endif
 
     bool    breakOnLoad = false;
-    ReadRegistry( m_OS, "BreakOnLoad", breakOnLoad );
+    GetControl( m_OS, "BreakOnLoad", breakOnLoad );
 
     if( breakOnLoad )
     {
@@ -351,17 +352,17 @@ bool CLIntercept::init()
     }
 
     std::string dllName = "";
-    ReadRegistry( m_OS, "DllName", dllName );
+    GetControl( m_OS, "DllName", dllName );
 
     // A few control aliases, for backwards compatibility:
-    ReadRegistry( m_OS, "DevicePerformanceTimeHashTracking",m_Config.KernelNameHashTracking );
-    ReadRegistry( m_OS, "SimpleDumpProgram",                m_Config.SimpleDumpProgramSource );
-    ReadRegistry( m_OS, "DumpProgramsScript",               m_Config.DumpProgramSourceScript );
-    ReadRegistry( m_OS, "DumpProgramsInject",               m_Config.DumpProgramSource );
-    ReadRegistry( m_OS, "InjectPrograms",                   m_Config.InjectProgramSource );
-    ReadRegistry( m_OS, "LogDir",                           m_Config.DumpDir );
+    GetControl( m_OS, "DevicePerformanceTimeHashTracking",m_Config.KernelNameHashTracking );
+    GetControl( m_OS, "SimpleDumpProgram",                m_Config.SimpleDumpProgramSource );
+    GetControl( m_OS, "DumpProgramsScript",               m_Config.DumpProgramSourceScript );
+    GetControl( m_OS, "DumpProgramsInject",               m_Config.DumpProgramSource );
+    GetControl( m_OS, "InjectPrograms",                   m_Config.InjectProgramSource );
+    GetControl( m_OS, "LogDir",                           m_Config.DumpDir );
 
-#define CLI_CONTROL( _type, _name, _init, _desc ) ReadRegistry( m_OS, #_name, m_Config . _name );
+#define CLI_CONTROL( _type, _name, _init, _desc ) GetControl( m_OS, #_name, m_Config . _name );
 #include "controls.h"
 #undef CLI_CONTROL
 
