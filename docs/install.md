@@ -45,37 +45,48 @@ This method also works for applications that load OpenCL.dll from an explicit pa
 
 ### Global Install
 
-1. Find the location of the real icd loader library (libOpenCL.so):
+Note: If the real ICD loader library is in a system directory, you may need to perform some of these steps with elevated privledges - be careful!
 
-       sudo find . -name libOpenCL*
+1. Find the location of the ICD loader library or OpenCL implementation your application is using:
 
-   To find the libraries and follow symbolic links, use:
+       ldd /path/to/your/application | grep OpenCL
 
-       sudo find . -name libOpenCL* | while read -r line; do ll "$line"; done
+   This will list where your application is searching for the ICD loader, similar to:
 
-2. Rename the real icd loader library:
+	   libOpenCL.so.1 => /path/to/your/libOpenCL.so.1 (0x00007f9182d27000)
 
-       sudo mv /path/to/lib/libOpenCL.so.1.2 path/to/lib/real_libOpenCL.so.1.2
+   The rest of this document assumes that the real ICD loader library is `libOpenCL.so.1`, as shown above.
+   If your ICD loader is named something different, please use its name instead.
 
-3. Create a symbolic link from real icd loader library to the Intercept Layer for OpenCL Applications library:
+2. Rename (or copy) the real ICD loader library to a different name, such as real_libOpenCL.so:
 
-       sudo ln -s /path/to/build/output/libOpenCL.so.1 /path/to/lib/libOpenCL.so.1.2
+       mv /path/to/your/libOpenCL.so.1 path/to/your/real_libOpenCL.so
 
-4. Create a config file to control the Intercept Layer for OpenCL Applications.
-   Behavior is controlled via a config file on the user's root folder (~). To
-   change the behavior create/edit the configuration file and set the value
-   for the desired options. Refer to the list below for the available options.
-   To create the config file or open it for edit:
+3. Copy or symbolically link the Intercept Layer for OpenCL Applications library in place of the real ICD loader:
 
-       gedit ~/clintercept.conf
+       sudo cp /path/to/build/output/libOpenCL.so /path/to/your/libOpenCL.so.1
 
-   Sample content:
+4. Create a config file or setup environment variables to tell the Intercept Layer for OpenCL Applications where to find the real ICD loader.
+For example, you could create a `clintercept.conf` file with content:
 
-       DllName=path/to/lib/real_libOpenCL.so.1
-       LogToFile=1                                   // Enable LogToFile feature
-       CallLogging=1                                 // Enable CallLogging feature
+       DllName=path/to/your/real_libOpenCL.so
 
-5.  Run an OpenCL application, and output will be in ~/CLIntercept_Dump/AppName
+    Or, you could set an environment variable:
+
+       export CLI_DllName=path/to/your/real_libOpenCL.so
+
+    See the [controls documentation](controls.md) for more detail.
+
+5. Run your OpenCL application.
+You should observe that the Intercept Layer for OpenCL Applications is active.
+
+6. To uninstall, rename or copy the real ICD loader library back to its original location:
+
+        rm /path/to/your/libOpenCL.so.1
+        mv /path/to/your/real_libOpenCL.so /path/to/your/libOpenCL.so.1
+
+5. Run your OpenCL application.
+You should observe that the Intercept Layer for OpenCL Applications is no longer active.
 
 ### Targeted Usage
 
