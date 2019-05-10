@@ -6107,9 +6107,20 @@ void CLIntercept::startAubCapture(
                 OS().MakeDumpDirectories( fileName );
             }
 
-            OS().StartAubCapture(
-                fileName,
-                config().AubCaptureStartWait );
+#if defined(_WIN32)
+            if( m_Config.AubCaptureKDC )
+            {
+                OS().StartAubCaptureKDC(
+                    fileName,
+                    config().AubCaptureStartWait );
+            }
+            else
+#endif
+            {
+                OS().StartAubCapture(
+                    fileName,
+                    config().AubCaptureStartWait );
+            }
             log( "AubCapture started... maybe.  Filename is: " + fileName + "\n" );
 
             // No matter what, set the flag that aubcapture is started, so we
@@ -6137,8 +6148,18 @@ void CLIntercept::stopAubCapture(
                 dispatch().clFinish( command_queue );
             }
 
-            OS().StopAubCapture(
-                config().AubCaptureEndWait );
+#if defined(_WIN32)
+            if( m_Config.AubCaptureKDC )
+            {
+                OS().StopAubCaptureKDC(
+                    config().AubCaptureEndWait );
+            }
+            else
+#endif
+            {
+                OS().StopAubCapture(
+                    config().AubCaptureEndWait );
+            }
             log( "AubCapture stopped.\n" );
 
             // No matter what, clar the flag that aubcapture is started, so we
