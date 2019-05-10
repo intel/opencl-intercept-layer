@@ -436,39 +436,43 @@ The Intercept Layer for OpenCL Applications will only dump images when the enque
 
 ##### `AubCapture` (bool)
 
-This is the master control for aub capture.  The Intercept Layer for OpenCL Applications doesn't implement aub capture itself, but can be used to selectively enable and disable aub capture via kdc.exe.
+This is the master control for aub capture.  The Intercept Layer for OpenCL Applications doesn't implement aub capture itself, but can be used to selectively enable and disable aub capture via other methods.
+
+##### `AubCaptureKDC` (bool)
+
+If set, the Intercept Layer for OpenCL Applications will use the older kdc.exe method of aub capture.  By default, the newer NEO method of aub capture will be used.  This control is ignored for all non-Windows operating systems.
 
 ##### `AubCaptureIndividualEnqueues` (bool)
 
-If set, the Intercept Layer for OpenCL Applications will invoke kdc.exe to start aub capture before a kernel enqueue, and will also invoke kdc.exe to stop aub capture immediately after the kernel enqueue.  Each .daf file will have the form "AubCapture\_Enqueue\_\<Enqueue Number\>\_kernel\_\<Kernel Name\>.daf".  Note that non-kernel enqueues such as calls to clEnqueueReadBuffer() and clEnqueueWriteBuffer() will NOT be aub captured when this control is set.  The AubCaptureMinEnqueue and AubCaptureMaxEnqueue controls are still honored when AubCaptureIndividualEnqueues is set.
+If set, the Intercept Layer for OpenCL Applications will start aub capture before a kernel enqueue, and will also stop aub capture immediately after the kernel enqueue.  Each file will have the form "AubCapture\_Enqueue\_\<Enqueue Number\>\_kernel\_\<Kernel Name\>".  Note that non-kernel enqueues such as calls to clEnqueueReadBuffer() and clEnqueueWriteBuffer() will NOT be aub captured when this control is set.  The AubCaptureMinEnqueue and AubCaptureMaxEnqueue controls are still honored when AubCaptureIndividualEnqueues is set.
 
 ##### `AubCaptureMinEnqueue` (cl_uint)
 
-The Intercept Layer for OpenCL Applications will only invoke kdc.exe to enable aub capture when the enqueue counter is greater than this value, inclusive.
+The Intercept Layer for OpenCL Applications will only enable aub capture when the enqueue counter is greater than this value, inclusive.
 
 ##### `AubCaptureMaxEnqueue` (cl_uint)
 
-The Intercept Layer for OpenCL Applications will invoke kdc.exe to stop aub capture when the encounter is greater than this value, meaning that only enqueues less than this value, inclusive, will be captured.  If the enqueue counter never reaches this value, the Intercept Layer for OpenCL Applications will stop aub capture when the DLL is unloaded.
+The Intercept Layer for OpenCL Applications will stop aub capture when the encounter is greater than this value, meaning that only enqueues less than this value, inclusive, will be captured.  If the enqueue counter never reaches this value, the Intercept Layer for OpenCL Applications will stop aub capture when the it is unloaded.
 
 ##### `AubCaptureKernelName` (string)
 
-If set, the Intercept Layer for OpenCL Applications will only invoke kdc.exe to enable aub capture when the kernel name equals this name.
+If set, the Intercept Layer for OpenCL Applications will only enable aub capture when the kernel name equals this name.
 
 ##### `AubCaptureKernelGWS` (string)
 
-If set, the Intercept Layer for OpenCL Applications will only invoke kdc.exe to enable aub capture when the NDRange global work size matches this string.  The string should have the form "XxYxZ".  The wildcard "*" matches all global work sizes.
+If set, the Intercept Layer for OpenCL Applications will only enable aub capture when the NDRange global work size matches this string.  The string should have the form "XxYxZ".  The wildcard "*" matches all global work sizes.
 
 ##### `AubCaptureKernelLWS` (string)
 
-If set, the Intercept Layer for OpenCL Applications will only invoke kdc.exe to enable aub capture when the NDRange local work size matches this string.  The string should have the form "XxYxZ".  The wildcard "*" matches all local work sizes, and the string "NULL" matches a NULL local work size.
+If set, the Intercept Layer for OpenCL Applications will only enable aub capture when the NDRange local work size matches this string.  The string should have the form "XxYxZ".  The wildcard "*" matches all local work sizes, and the string "NULL" matches a NULL local work size.
 
 ##### `AubCaptureUniqueKernels` (bool)
 
-If set, the Intercept Layer for OpenCL Applications will only invoke kdc.exe to enable aub capture if the kernel signature (i.e. hash + kernelname + gws + lws) has not been seen already.  The behavior of this control is well-defined when AubCaptureIndividualEnqueues is not set, but it doesn't make much sense without AubCaptureIndividualEnqueues.
+If set, the Intercept Layer for OpenCL Applications will only enable aub capture if the kernel signature (i.e. hash + kernelname + gws + lws) has not been seen already.  The behavior of this control is well-defined when AubCaptureIndividualEnqueues is not set, but it doesn't make much sense without AubCaptureIndividualEnqueues.
 
 ##### `AubCaptureNumKernelEnqueuesSkip` (cl_uint)
 
-The Intercept Layer for OpenCL Applications will skip this many kernel enqueues before invoking kdc.exe to enable aub capture.  The behavior of this control is well-defined when AubCaptureIndividualEnqueues is not set, but it doesn't make much sense without AubCaptureIndividualEnqueues.
+The Intercept Layer for OpenCL Applications will skip this many kernel enqueues before enabling aub capture.  The behavior of this control is well-defined when AubCaptureIndividualEnqueues is not set, but it doesn't make much sense without AubCaptureIndividualEnqueues.
 
 ##### `AubCaptureNumKernelEnqueuesCapture` (cl_uint)
 
@@ -476,11 +480,11 @@ The Intercept Layer for OpenCL Applications will only capture this many kernel e
 
 ##### `AubCaptureStartWait` (cl_uint)
 
-The Intercept Layer for OpenCL Applications will wait for this many milliseconds before invoking kdc.exe to begin aub capture.
+The Intercept Layer for OpenCL Applications will wait for this many milliseconds before beginning aub capture.
 
 ##### `AubCaptureEndWait` (cl_uint)
 
-The Intercept Layer for OpenCL Applications will wait for this many milliseconds before invoking kdc.exe to end aub capture.
+The Intercept Layer for OpenCL Applications will wait for this many milliseconds before ending aub capture.
 
 ### Execution Controls
 
