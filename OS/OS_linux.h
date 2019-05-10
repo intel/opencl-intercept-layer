@@ -134,28 +134,28 @@ static inline bool SetAubCaptureEnvironmentVariables(
     //  set AUBDumpToggleFileName appropriately
     // This is CLIntercept's responsibility.
 
-    const char* const AUBCAPTURE_TOGGLE_ENV_VAR = "AUBDumpToggleCaptureOnOff";
-    const char* const AUBCAPTURE_FILE_NAME_ENV_VAR = "AUBDumpToggleFileName";
+    const char* const AUB_CAPTURE_TOGGLE_ENV_VAR = "AUBDumpToggleCaptureOnOff";
+    const char* const AUB_CAPTURE_FILE_NAME_ENV_VAR = "AUBDumpToggleFileName";
 
     int status = 0;
 
     if( start )
     {
-        status = setenv( AUBCAPTURE_TOGGLE_ENV_VAR, "1", 1 );
+        status = setenv( AUB_CAPTURE_TOGGLE_ENV_VAR, "1", 1 );
     }
     else
     {
-        status = setenv( AUBCAPTURE_TOGGLE_ENV_VAR, "0", 1 );
+        status = setenv( AUB_CAPTURE_TOGGLE_ENV_VAR, "0", 1 );
     }
     if( status == 0 )
     {
         if( fileName.empty() )
         {
-            status = unsetenv( AUBCAPTURE_FILE_NAME_ENV_VAR );
+            status = unsetenv( AUB_CAPTURE_FILE_NAME_ENV_VAR );
         }
         else
         {
-            status = setenv( AUBCAPTURE_FILE_NAME_ENV_VAR, fileName.c_str(), 1 );
+            status = setenv( AUB_CAPTURE_FILE_NAME_ENV_VAR, fileName.c_str(), 1 );
         }
     }
 

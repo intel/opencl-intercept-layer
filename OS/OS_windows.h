@@ -55,6 +55,11 @@ public:
                 uint64_t delay ) const;
     bool    StopAubCapture(
                 uint64_t delay ) const;
+    bool    StartAubCaptureKDC(
+                const std::string& fileName,
+                uint64_t delay ) const;
+    bool    StopAubCaptureKDC(
+                uint64_t delay ) const;
 
 private:
     HINSTANCE   m_hInstance;
@@ -160,7 +165,7 @@ inline bool Services::ExecuteCommand( const std::string& command ) const
     return res != -1;
 }
 
-static inline bool SetAubcaptureRegistryKeys(
+static inline bool SetAubCaptureRegistryKeys(
     const std::string& fileName,
     DWORD dwValue )
 {
@@ -174,9 +179,9 @@ static inline bool SetAubcaptureRegistryKeys(
     // This is CLIntercept's responsibility.
 
     // Registry keys are written to:
-    const char* const AUBCAPTURE_REGISTRY_KEY = "SOFTWARE\\INTEL\\IGFX\\OCL";
-    const char* const AUBCAPTURE_TOGGLE_SUBKEY = "AUBDumpToggleCaptureOnOff";
-    const char* const AUBCAPTURE_FILE_NAME_SUBKEY = "AUBDumpToggleFileName";
+    const char* const AUB_CAPTURE_REGISTRY_KEY = "SOFTWARE\\INTEL\\IGFX\\OCL";
+    const char* const AUB_CAPTURE_TOGGLE_SUBKEY = "AUBDumpToggleCaptureOnOff";
+    const char* const AUB_CAPTURE_FILE_NAME_SUBKEY = "AUBDumpToggleFileName";
 
     LSTATUS success = ERROR_SUCCESS;
     HKEY    key = NULL;
@@ -185,7 +190,7 @@ static inline bool SetAubcaptureRegistryKeys(
     {
         success = RegCreateKeyEx(
             HKEY_CURRENT_USER,
-            AUBCAPTURE_REGISTRY_KEY,
+            AUB_CAPTURE_REGISTRY_KEY,
             0,
             NULL,
             REG_OPTION_NON_VOLATILE,
@@ -197,7 +202,7 @@ static inline bool SetAubcaptureRegistryKeys(
         {
             success = RegSetValueEx(
                 key,
-                AUBCAPTURE_TOGGLE_SUBKEY,
+                AUB_CAPTURE_TOGGLE_SUBKEY,
                 0,
                 REG_DWORD,
                 (CONST BYTE *)&dwValue,
@@ -209,17 +214,17 @@ static inline bool SetAubcaptureRegistryKeys(
             {
                 success = RegDeleteValue(
                     key,
-                    AUBCAPTURE_FILE_NAME_SUBKEY );
+                    AUB_CAPTURE_FILE_NAME_SUBKEY );
             }
             else
             {
                 success = RegSetValueEx(
                     key,
-                    AUBCAPTURE_FILE_NAME_SUBKEY,
+                    AUB_CAPTURE_FILE_NAME_SUBKEY,
                     0,
                     REG_SZ,
                     (const BYTE*)fileName.c_str(),
-                    fileName.length() );
+                    (DWORD)fileName.length() );
             }
         }
         RegCloseKey(key);
@@ -247,7 +252,36 @@ static inline bool SetAubcaptureRegistryKeys(
     return success == ERROR_SUCCESS;
 }
 
-inline bool Services::StartAubCapture( 
+inline bool Services::StartAubCapture(
+    const std::string& fileName,
+    uint64_t delay ) const
+{
+    if( delay )
+    {
+        Sleep( (DWORD)delay );
+    }
+
+    // This is the newer NEO method of AubCapture:
+    bool success = SetAubCaptureRegistryKeys( fileName, 1 );
+
+    return success;
+}
+
+inline bool Services::StopAubCapture(
+    uint64_t delay ) const
+{
+    if( delay )
+    {
+        Sleep( (DWORD)delay );
+    }
+
+    // This is the newer NEO method of AubCapture:
+    bool success = SetAubCaptureRegistryKeys( "", 0 );
+
+    return success;
+}
+
+inline bool Services::StartAubCaptureKDC(
     const std::string& fileName,
     uint64_t delay ) const
 {
@@ -261,13 +295,10 @@ inline bool Services::StartAubCapture(
     int res = system(command.c_str());
     //fprintf(stderr, "Running the command: %s returned %d\n", command.c_str(), res );
 
-    // This is the newer NEO method of AubCapture:
-    bool success = SetAubcaptureRegistryKeys( fileName, 1 );
-
-    return res != -1 && success;
+    return res != -1;
 }
 
-inline bool Services::StopAubCapture(
+inline bool Services::StopAubCaptureKDC(
     uint64_t delay ) const
 {
     if( delay )
@@ -281,9 +312,9 @@ inline bool Services::StopAubCapture(
     //fprintf(stderr, "Running the command: %s returned %d\n", command.c_str(), res );
 
     // This is the newer NEO method of AubCapture:
-    bool success = SetAubcaptureRegistryKeys( "", 0 );
+    bool success = SetAubCaptureRegistryKeys( "", 0 );
 
-    return res != -1 && success;
+    return res != -1;
 }
 
 }
