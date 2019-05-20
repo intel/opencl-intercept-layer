@@ -6098,8 +6098,6 @@ void CLIntercept::startAubCapture(
 
                     fileName += charBuf;
                 }
-
-                fileName += ".daf";
             }
 
             // Now make directories as appropriate.
@@ -6110,6 +6108,7 @@ void CLIntercept::startAubCapture(
 #if defined(_WIN32)
             if( m_Config.AubCaptureKDC )
             {
+                fileName += ".daf";
                 OS().StartAubCaptureKDC(
                     fileName,
                     config().AubCaptureStartWait );
@@ -6117,6 +6116,7 @@ void CLIntercept::startAubCapture(
             else
 #endif
             {
+                fileName += ".aub";
                 OS().StartAubCapture(
                     fileName,
                     config().AubCaptureStartWait );
