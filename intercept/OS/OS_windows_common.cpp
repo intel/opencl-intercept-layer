@@ -36,7 +36,6 @@ Services_Common::Services_Common()
 
 Services_Common::~Services_Common()
 {
-    DeleteCriticalSection( &m_CriticalSection );
 }
 
 }

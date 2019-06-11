@@ -74,9 +74,6 @@ public:
 
     bool    Init();
 
-    void    EnterCriticalSection();
-    void    LeaveCriticalSection();
-
     uint64_t    GetProcessID() const;
     uint64_t    GetThreadID() const;
 
@@ -117,7 +114,6 @@ public:
 
 private:
     Timer           m_Timer;
-    pthread_mutex_t m_CriticalSection;
 
     bool    GetControlFromFile(
                 const std::string& fileName,
@@ -130,24 +126,7 @@ private:
 
 inline bool Services_Common::Init()
 {
-    if( pthread_mutex_init(
-            &m_CriticalSection,
-            NULL ) )
-    {
-        return false;
-    }
-
     return true;
-}
-
-inline void Services_Common::EnterCriticalSection()
-{
-    pthread_mutex_lock( &m_CriticalSection );
-}
-
-inline void Services_Common::LeaveCriticalSection()
-{
-    pthread_mutex_unlock( &m_CriticalSection );
 }
 
 inline uint64_t Services_Common::GetProcessID() const

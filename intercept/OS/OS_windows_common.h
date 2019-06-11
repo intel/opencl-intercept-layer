@@ -65,9 +65,6 @@ public:
 
     bool    Init();
 
-    void    EnterCriticalSection();
-    void    LeaveCriticalSection();
-
     uint64_t    GetProcessID() const;
     uint64_t    GetThreadID() const;
 
@@ -108,7 +105,6 @@ public:
 
 private:
     Timer               m_Timer;
-    CRITICAL_SECTION    m_CriticalSection;
 
     DISALLOW_COPY_AND_ASSIGN( Services_Common );
 };
@@ -120,24 +116,7 @@ inline bool Services_Common::Init()
         return false;
     }
 
-    if( ::InitializeCriticalSectionAndSpinCount(
-            &m_CriticalSection,
-            0x400 ) == FALSE )
-    {
-        return false;
-    }
-
     return true;
-}
-
-inline void Services_Common::EnterCriticalSection()
-{
-    ::EnterCriticalSection( &m_CriticalSection );
-}
-
-inline void Services_Common::LeaveCriticalSection()
-{
-    ::LeaveCriticalSection( &m_CriticalSection );
 }
 
 inline uint64_t Services_Common::GetProcessID() const
