@@ -42,7 +42,6 @@ Services_Common::Services_Common()
 
 Services_Common::~Services_Common()
 {
-    pthread_mutex_destroy( &m_CriticalSection );
 }
 
 bool Services_Common::GetControl(
