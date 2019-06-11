@@ -212,7 +212,7 @@ void CControlsPage::ReadSettingsFromRegistry()
         {
             std::vector<wchar_t>    regQuery(128);
 
-            unsigned long regQuerySize = regQuery.size() * sizeof(regQuery[0]);
+            DWORD regQuerySize = (DWORD)(regQuery.size() * sizeof(regQuery[0]));
 
             success = RegQueryValueEx(
                 key,
@@ -332,7 +332,7 @@ void CControlsPage::WriteSettingsToRegistryHelper( HKEY key ) const
                     0,
                     REG_SZ,
                     (const BYTE*)m_pVariableState->CurrentStringValue[i].data(),
-                    m_pVariableState->CurrentStringValue[i].length() * sizeof(wchar_t) );
+                    (DWORD)(m_pVariableState->CurrentStringValue[i].length() * sizeof(wchar_t)));
             }
             else
             {
@@ -452,7 +452,7 @@ void CControlsPage::UpdateVarState(int vIndex)
             GetDlgItemText(
                 IDC_CUR_EDIT,
                 &m_pVariableState->CurrentStringValue[vIndex][0],
-                m_pVariableState->CurrentStringValue[vIndex].size() * sizeof(wchar_t) );
+                (int)(m_pVariableState->CurrentStringValue[vIndex].size() * sizeof(wchar_t)));
         }
         break;
 
@@ -846,7 +846,7 @@ void CAboutPage::OnPlatformListChange()
             errorCode = dclGetDeviceIDs(
                 m_Platforms[platformIndex],
                 CL_DEVICE_TYPE_ALL,
-                m_Devices.size(),
+                (cl_uint)m_Devices.size(),
                 m_Devices.data(),
                 NULL );
             for( cl_uint d = 0; d < numDevices; d++ )
@@ -1032,7 +1032,7 @@ END_MESSAGE_MAP()
 
 LONG WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    return DefWindowProc(hWnd, msg, wParam, lParam);
+    return (LONG)DefWindowProc(hWnd, msg, wParam, lParam);
 }
 
 BOOL GetPlatformInfo()

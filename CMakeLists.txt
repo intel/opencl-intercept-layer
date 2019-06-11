@@ -19,18 +19,17 @@
 # SOFTWARE.
 
 cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-project(CLIntercept VERSION 1.2 LANGUAGES CXX)
-
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-set(CMAKE_CONFIGURATION_TYPES Debug Release)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_CXX_STANDARD 11)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
+project(CLIntercept VERSION 1.2 LANGUAGES CXX)
+
 if(NOT CMAKE_BUILD_TYPE)
-    message(STATUS "No build type selected, default to Release")
-    set(CMAKE_BUILD_TYPE "Release" CACHE PATH "Build Type" FORCE)
+    message(STATUS "No build type selected, default to RelWithDebInfo")
+    set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE PATH "Build Type" FORCE)
 endif()
 
 if(WIN32)
@@ -55,8 +54,10 @@ option(ENABLE_CLILOADER "Enable cliloader Support and Build the Executable")
 option(ENABLE_CLIPROF "Enable cliprof Support and Build the Executable")
 option(ENABLE_ITT "Enable ITT (Instrumentation Tracing Technology) API Support")
 option(ENABLE_MDAPI "Enable MDAPI Support" ON)
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
-   ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
+if(WIN32)
+    option(ENABLE_CLICONFIG "Build the cliconfig Configuration Utility" ON)
+endif()
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
     option(ENABLE_KERNEL_OVERRIDES "Enable Embedding Kernel Override Strings" ON)
 endif()
 
@@ -72,8 +73,8 @@ find_package(Threads)
 
 add_subdirectory(intercept)
 
-# Build the CLIntercept config app for 32-bit Windows builds, but not for 64-bit or other OSes.
-if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+# CLIntercept config app (optional - Windows only)
+if(WIN32 AND ENABLE_CLICONFIG)
     add_subdirectory(cliconfig)
 endif()
 
