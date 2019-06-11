@@ -19,13 +19,8 @@
 # SOFTWARE.
 
 set(CMAKE_MFC_FLAG 2)
-add_definitions(-DUNICODE -D_UNICODE)
 
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/..
-)
-
-set( CLICONFIG_ICON_FILES
+set(CLICONFIG_ICON_FILES
     clintercept_logo.ico
     default.ico
     disabled.ico
@@ -55,6 +50,8 @@ add_executable(CLIConfig
     ${CLICONFIG_ICON_FILES}
     ${CLICONFIG_SOURCE_FILES}
 )
+target_compile_definitions(CLIConfig PRIVATE UNICODE _UNICODE)
+target_include_directories(CLIConfig PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../intercept)
 set_target_properties(CLIConfig PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
 
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )

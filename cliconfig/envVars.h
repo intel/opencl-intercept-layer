@@ -100,7 +100,7 @@ struct VarDescription
 static const VarDescription cVars[] =
 {
     { CONTROL_TYPE_BOOL, "BreakOnLoad", "", 0, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will break into the debugger when the DLL is loaded." },
-#include "..\Src\controls.h"
+#include "Src\controls.h"
 };
 
 const int cNumVars = sizeof(cVars) / sizeof(cVars[0]);
