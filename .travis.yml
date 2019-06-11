@@ -18,5 +18,5 @@ before_install:
 script:
   - mkdir -p build
   - cd build
-  - cmake -DENABLE_CLIPROF=1 ..
+  - cmake -DENABLE_CLILOADER=1 ..
   - make -j 4
