@@ -60,8 +60,8 @@ source_group(OS FILES
 )
 
 set(CLINTERCEPT_RESOURCE_FILES
-    Kernels/builtin_kernels.cl
-    Kernels/precompiled_kernels.cl
+    kernels/builtin_kernels.cl
+    kernels/precompiled_kernels.cl
     resource/clIntercept.rc
     resource/clIntercept_resource.h
     "${CMAKE_CURRENT_BINARY_DIR}/git_version.rc2"
@@ -71,23 +71,23 @@ source_group(Resources FILES
 )
 
 set(CLINTERCEPT_SOURCE_FILES
-    Src/clIntercept.def
-    Src/clIntercept.map
-    Src/cli_ext.h
-    Src/cliprof_init.cpp
-    Src/common.h
-    Src/controls.h
-    Src/dispatch.cpp
-    Src/dispatch.h
-    Src/enummap.cpp
-    Src/enummap.h
-    Src/instrumentation.h
-    Src/intercept.cpp
-    Src/intercept.h
-    Src/main.cpp
-    Src/objtracker.cpp
-    Src/objtracker.h
-    Src/stubs.cpp
+    src/clIntercept.def
+    src/clIntercept.map
+    src/cli_ext.h
+    src/cliprof_init.cpp
+    src/common.h
+    src/controls.h
+    src/dispatch.cpp
+    src/dispatch.h
+    src/enummap.cpp
+    src/enummap.h
+    src/instrumentation.h
+    src/intercept.cpp
+    src/intercept.h
+    src/main.cpp
+    src/objtracker.cpp
+    src/objtracker.h
+    src/stubs.cpp
     "${CMAKE_CURRENT_BINARY_DIR}/git_version.cpp"
 )
 source_group(Source FILES
@@ -109,8 +109,8 @@ target_link_libraries(OpenCL ${CMAKE_DL_LIBS})
 #   git_version.cpp - version information for CLIntercept log
 #   git_version.rc2 - DLL version information (Windows only)
 target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_CMAKE)
-configure_file(Src/git_version.cpp.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.cpp" @ONLY)
-configure_file(Src/git_version.rc.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.rc2" @ONLY)
+configure_file(src/git_version.cpp.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.cpp" @ONLY)
+configure_file(src/git_version.rc.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.rc2" @ONLY)
 
 if(ENABLE_CLIPROF)
     target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_CLILOADER)
@@ -123,7 +123,7 @@ endif()
 target_include_directories(OpenCL PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/Src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 # Kernel Override Support (optional)
@@ -136,20 +136,20 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
     if(ENABLE_KERNEL_OVERRIDES)
         target_compile_definitions(OpenCL PRIVATE USE_KERNEL_OVERRIDES)
 
-        set(CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/Kernels)
+        set(CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/kernels)
         add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
             COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary
-                Kernels/precompiled_kernels.cl
+                kernels/precompiled_kernels.cl
                 -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
-            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/precompiled_kernels.cl
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kernels/precompiled_kernels.cl
         )
         add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
             COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary
-                Kernels/builtin_kernels.cl
+                kernels/builtin_kernels.cl
                 -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
-            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/Kernels/builtin_kernels.cl
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kernels/builtin_kernels.cl
         )
         target_sources(OpenCL PRIVATE
             ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
@@ -184,11 +184,11 @@ if(WIN32)
     target_link_libraries(OpenCL SetupAPI Shlwapi)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set_target_properties(OpenCL PROPERTIES COMPILE_FLAGS "-g -Wall")
-    set_target_properties(OpenCL PROPERTIES LINK_FLAGS "-Wl,--version-script -Wl,${CMAKE_SOURCE_DIR}/Src/clIntercept.map")
+    set_target_properties(OpenCL PROPERTIES LINK_FLAGS "-Wl,--version-script -Wl,${CMAKE_CURRENT_SOURCE_DIR}/src/clIntercept.map")
     target_link_libraries(OpenCL ${CMAKE_THREAD_LIBS_INIT})
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Android")
     set_target_properties(OpenCL PROPERTIES COMPILE_FLAGS "-g -Wall")
-    set_target_properties(OpenCL PROPERTIES LINK_FLAGS "-Wl,--version-script -Wl,${CMAKE_SOURCE_DIR}/Src/clIntercept.map")
+    set_target_properties(OpenCL PROPERTIES LINK_FLAGS "-Wl,--version-script -Wl,${CMAKE_CURRENT_SOURCE_DIR}/src/clIntercept.map")
     target_link_libraries(OpenCL ${CMAKE_THREAD_LIBS_INIT} log)
 elseif(APPLE)
     find_package(OpenCL REQUIRED)
