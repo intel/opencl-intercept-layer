@@ -1664,6 +1664,11 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
     delete [] _injectedSPIRV;                                               \
     _injectedSPIRV = NULL;
 
+// Called from clLinkProgram:
+
+#define SAVE_PROGRAM_NUMBER( program )                                      \
+    pIntercept->saveProgramNumber( program );
+
 // Called from clBuildProgram:
 
 #define MODIFY_PROGRAM_OPTIONS( program, options, newOptions )              \
