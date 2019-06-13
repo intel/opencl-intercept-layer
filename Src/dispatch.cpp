@@ -2309,8 +2309,9 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         BUILD_LOGGING( retVal, num_devices, device_list );
         CALL_LOGGING_EXIT( errcode_ret[0] );
 
-        // TODO: Is the resulting program ("retVal") the one that should be
-        // used here, to determine the hash for dumped options?
+        // TODO: How do we compute a hash for the linked program?
+        // This is a new program object, so we don't currently have a hash for it.
+        SAVE_PROGRAM_NUMBER( retVal );
         SAVE_PROGRAM_OPTIONS_HASH( retVal, options );
         DUMP_PROGRAM_OPTIONS( retVal, options );
         DUMP_OUTPUT_PROGRAM_BINARIES( retVal );
