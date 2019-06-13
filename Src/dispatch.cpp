@@ -2226,7 +2226,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
 
         DUMP_PROGRAM_OPTIONS( program, options );
 
-        CALL_LOGGING_ENTER();
+        CALL_LOGGING_ENTER( "program = %p, pfn_notify = %p", program, pfn_notify );
         BUILD_LOGGING_INIT();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -2285,7 +2285,10 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
     {
         const bool  modified = false;
 
-        CALL_LOGGING_ENTER();
+        CALL_LOGGING_ENTER( "context = %p, num_input_programs = %u, pfn_notify = %p",
+            context,
+            num_input_programs,
+            pfn_notify );
         CHECK_ERROR_INIT( errcode_ret );
         BUILD_LOGGING_INIT();
         CPU_PERFORMANCE_TIMING_START();
@@ -2308,7 +2311,10 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
 
         // TODO: Is the resulting program ("retVal") the one that should be
         // used here, to determine the hash for dumped options?
+        SAVE_PROGRAM_OPTIONS_HASH( retVal, options );
         DUMP_PROGRAM_OPTIONS( retVal, options );
+        DUMP_OUTPUT_PROGRAM_BINARIES( retVal );
+        DUMP_KERNEL_ISA_BINARIES( retVal );
         INCREMENT_PROGRAM_COMPILE_COUNT( retVal );
 
         return retVal;
@@ -2376,7 +2382,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramSpecializationConstant)(
 
     if( pIntercept )
     {
-        CALL_LOGGING_ENTER( "program = %p, spec_id = %u, spec_size = %u", program );
+        CALL_LOGGING_ENTER( "program = %p, spec_id = %u, spec_size = %u",
+            program,
+            spec_id,
+            (cl_uint)spec_size );
         CPU_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = pIntercept->dispatch().clSetProgramSpecializationConstant(
@@ -3912,13 +3921,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBuffer)(
 
         if( pIntercept->nullEnqueue() == false )
         {
-            CALL_LOGGING_ENTER("queue = %p, src_buffer = %p, dst_buffer = %p, src_offset = %u, dst_offset = %u, cb = %d",
+            CALL_LOGGING_ENTER("queue = %p, src_buffer = %p, dst_buffer = %p, src_offset = %u, dst_offset = %u, cb = %u",
                 command_queue,
                 src_buffer,
                 dst_buffer,
-                src_offset,
-                dst_offset,
-                cb );
+                (cl_uint)src_offset,
+                (cl_uint)dst_offset,
+                (cl_uint)cb );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -7049,7 +7058,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithIL) (
 
         CALL_LOGGING_ENTER( "context = %p, length = %u",
             context,
-            length );
+            (cl_uint)length );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -8529,7 +8538,7 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
         {
             CALL_LOGGING_ENTER( "context = %p, accelerator_type = %u",
                 context,
-                accelerator_type );
+                (cl_uint)accelerator_type );
         }
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
