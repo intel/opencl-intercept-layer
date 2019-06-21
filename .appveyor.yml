@@ -11,7 +11,7 @@ configuration:
   - Release
 
 before_build:
-  - cmake -H. -Bbuild -A%PLATFORM%
+  - cmake -H. -Bbuild -A%PLATFORM% -DENABLE_CLILOADER=1
 
 build:
   project: build\CLIntercept.sln

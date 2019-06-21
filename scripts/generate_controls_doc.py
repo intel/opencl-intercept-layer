@@ -146,7 +146,7 @@ else:
     nameControlsDoc = sys.argv[2]
 
 if len(sys.argv) < 2:
-    nameControlsSrc = '../Src/controls.h'
+    nameControlsSrc = '../src/controls.h'
 else:
     nameControlsSrc = sys.argv[1]
 
@@ -154,7 +154,7 @@ if ( len(sys.argv) == 2 ) and ( sys.argv[1] == '-h' or sys.argv[1] == '-?' ):
     printHelp = True
 
 if printHelp:
-    print('usage: generate_controls_doc.py {optional: nameControlsSrc, default: ../Src/controls.h} {optional: nameControlsDoc, default: ../docs/controls.md}')
+    print('usage: generate_controls_doc.py {optional: nameControlsSrc, default: ../src/controls.h} {optional: nameControlsDoc, default: ../docs/controls.md}')
 elif not os.path.exists(nameControlsSrc):
     print('error: controls source file ' + nameControlsSrc + ' does not exist!')
 else:
