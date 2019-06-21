@@ -165,7 +165,7 @@ CLIntercept::~CLIntercept()
     stopAubCapture( NULL );
     report();
 
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     log( "CLIntercept is shutting down...\n" );
 
@@ -268,8 +268,6 @@ CLIntercept::~CLIntercept()
 
     m_InterceptLog.close();
     m_InterceptTrace.close();
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -332,7 +330,7 @@ bool CLIntercept::init()
         return false;
     }
 
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
 #if defined(_WIN32)
     OS::Services_Common::ENV_PREFIX = "CLI_";
@@ -567,8 +565,6 @@ bool CLIntercept::init()
 
     log( "... loading complete.\n" );
 
-    m_OS.LeaveCriticalSection();
-
     return true;
 }
 
@@ -576,7 +572,7 @@ bool CLIntercept::init()
 //
 void CLIntercept::report()
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     char    filepath[MAX_PATH] = "";
 
@@ -699,8 +695,6 @@ void CLIntercept::report()
             os.close();
         }
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -953,7 +947,7 @@ void CLIntercept::callLoggingEnter(
     const std::string& functionName,
     const cl_kernel kernel )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     std::string str;
     getCallLoggingPrefix( str );
@@ -977,8 +971,6 @@ void CLIntercept::callLoggingEnter(
     }
 
     log( ">>>> " + str + "\n" );
-
-    m_OS.LeaveCriticalSection();
 }
 void CLIntercept::callLoggingEnter(
     const std::string& functionName,
@@ -993,14 +985,12 @@ void CLIntercept::callLoggingEnter(
 
     if( kernel )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         const std::string& kernelName = getShortKernelNameWithHash(kernel);
         str += "( ";
         str += kernelName;
         str += " )";
-
-        m_OS.LeaveCriticalSection();
     }
 
     char temp[ CLI_MAX_STRING_SIZE ] = "";
@@ -1024,11 +1014,9 @@ void CLIntercept::callLoggingEnter(
 void CLIntercept::callLoggingInfo(
     const std::string& str )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     log( "---- " + str + "\n" );
-
-    m_OS.LeaveCriticalSection();
 }
 
 void CLIntercept::callLoggingInfo(
@@ -1059,7 +1047,7 @@ void CLIntercept::callLoggingExit(
     const cl_int errorCode,
     const cl_event* event )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     std::string str;
     getCallLoggingPrefix( str );
@@ -1077,8 +1065,6 @@ void CLIntercept::callLoggingExit(
     str += m_EnumNameMap.name( errorCode );
 
     log( "<<<< " + str + "\n" );
-
-    m_OS.LeaveCriticalSection();
 }
 void CLIntercept::callLoggingExit(
     const std::string& functionName,
@@ -2076,7 +2062,7 @@ void CLIntercept::logCLInfo()
 {
     if( m_LoggedCLInfo == false )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         if( m_LoggedCLInfo == false )
         {
@@ -2169,8 +2155,6 @@ void CLIntercept::logCLInfo()
                 delete [] platforms;
             }
         }
-
-        m_OS.LeaveCriticalSection();
     }
 }
 
@@ -2184,7 +2168,7 @@ void CLIntercept::logBuild(
 {
     uint64_t    buildTimeEnd = m_OS.GetTimer();
 
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_device_id*   localDeviceList = NULL;
 
@@ -2351,8 +2335,6 @@ void CLIntercept::logBuild(
     }
 
     delete [] localDeviceList;
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2364,11 +2346,8 @@ void CLIntercept::logError(
     std::ostringstream  ss;
     ss << "ERROR! " << functionName << " returned " << enumName().name(errorCode) << " (" << errorCode << ")\n";
 
-    m_OS.EnterCriticalSection();
-
+    std::lock_guard<std::mutex> lock(m_Mutex);
     log( ss.str() );
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2377,11 +2356,8 @@ void CLIntercept::logFlushOrFinishAfterEnqueueStart(
     const std::string& flushOrFinish,
     const std::string& functionName )
 {
-    m_OS.EnterCriticalSection();
-
+    std::lock_guard<std::mutex> lock(m_Mutex);
     log( "Calling " + flushOrFinish + " after " + functionName + "...\n" );
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2394,11 +2370,8 @@ void CLIntercept::logFlushOrFinishAfterEnqueueEnd(
     std::ostringstream  ss;
     ss << "... " << flushOrFinish << " after " << functionName << " returned " << enumName().name( errorCode ) << " (" << errorCode << ")\n";
 
-    m_OS.EnterCriticalSection();
-
+    std::lock_guard<std::mutex> lock(m_Mutex);
     log( ss.str() );
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2409,7 +2382,7 @@ void CLIntercept::logPreferredWorkGroupSizeMultiple(
 {
     if( numKernels > 0 )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         cl_int  errorCode = CL_SUCCESS;
 
@@ -2486,8 +2459,6 @@ void CLIntercept::logPreferredWorkGroupSizeMultiple(
         }
 
         delete [] deviceList;
-
-        m_OS.LeaveCriticalSection();
     }
 }
 
@@ -2523,16 +2494,13 @@ void CLIntercept::contextCallback(
     const void* private_info,
     size_t cb )
 {
-    m_OS.EnterCriticalSection();
-
     char    str[256] = "";
     CLI_SPRINTF( str, 256, "=======> Context Callback (private_info = %p, cb = %u):\n",
         private_info,
         (unsigned int)cb );
 
+    std::lock_guard<std::mutex> lock(m_Mutex);
     log( str + errinfo + "\n" + "<======= End of Context Callback\n" );
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2634,7 +2602,7 @@ void CLIntercept::contextCallbackOverrideCleanup(
 {
     if( context && pContextCallbackInfo )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         // Check if we already have a context callback info for this context.  If
         // we do, free it.
@@ -2647,8 +2615,6 @@ void CLIntercept::contextCallbackOverrideCleanup(
         }
 
         m_ContextCallbackInfoMap[ context ]  = pContextCallbackInfo;
-
-        m_OS.LeaveCriticalSection();
     }
     else
     {
@@ -2710,11 +2676,8 @@ void CLIntercept::eventCallback(
 //
 void CLIntercept::incrementEnqueueCounter()
 {
-    m_OS.EnterCriticalSection();
-
+    std::lock_guard<std::mutex> lock(m_Mutex);
     m_EnqueueCounter++;
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2737,11 +2700,10 @@ void CLIntercept::overrideNullLocalWorkSize(
                 }
                 else
                 {
-                    m_OS.EnterCriticalSection();
+                    std::lock_guard<std::mutex> lock(m_Mutex);
                     logf( "Couldn't override NULL local work size: < %u > %% < %u > != 0!\n",
                         (unsigned int)global_work_size[0],
                         (unsigned int)m_Config.NullLocalWorkSizeX );
-                    m_OS.LeaveCriticalSection();
                 }
             }
             break;
@@ -2756,13 +2718,12 @@ void CLIntercept::overrideNullLocalWorkSize(
                 }
                 else
                 {
-                    m_OS.EnterCriticalSection();
+                    std::lock_guard<std::mutex> lock(m_Mutex);
                     logf( "Couldn't override NULL local work size: < %u x %u > %% < %u x %u > != 0!\n",
                         (unsigned int)global_work_size[0],
                         (unsigned int)global_work_size[1],
                         (unsigned int)m_Config.NullLocalWorkSizeX,
                         (unsigned int)m_Config.NullLocalWorkSizeY );
-                    m_OS.LeaveCriticalSection();
                 }
             }
             break;
@@ -2779,7 +2740,7 @@ void CLIntercept::overrideNullLocalWorkSize(
                 }
                 else
                 {
-                    m_OS.EnterCriticalSection();
+                    std::lock_guard<std::mutex> lock(m_Mutex);
                     logf( "Couldn't override NULL local work size: < %u x %u x %u > %% < %u x %u x %u > != 0!\n",
                         (unsigned int)global_work_size[0],
                         (unsigned int)global_work_size[1],
@@ -2787,7 +2748,6 @@ void CLIntercept::overrideNullLocalWorkSize(
                         (unsigned int)m_Config.NullLocalWorkSizeX,
                         (unsigned int)m_Config.NullLocalWorkSizeY,
                         (unsigned int)m_Config.NullLocalWorkSizeZ );
-                    m_OS.LeaveCriticalSection();
                 }
             }
             break;
@@ -2879,11 +2839,8 @@ void CLIntercept::combineProgramStrings(
 void CLIntercept::incrementProgramCompileCount(
     const cl_program program )
 {
-    m_OS.EnterCriticalSection();
-
+    std::lock_guard<std::mutex> lock(m_Mutex);
     m_ProgramInfoMap[ program ].CompileCount++;
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2916,14 +2873,11 @@ void CLIntercept::saveProgramHash(
     const cl_program program,
     uint64_t hash )
 {
-    m_OS.EnterCriticalSection();
-
+    std::lock_guard<std::mutex> lock(m_Mutex);
     if( program != NULL )
     {
         m_ProgramInfoMap[ program ].ProgramHash = hash;
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2932,7 +2886,7 @@ void CLIntercept::saveProgramOptionsHash(
     const cl_program program,
     const char* options )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     if( program != NULL && options != NULL )
     {
@@ -2958,8 +2912,6 @@ void CLIntercept::saveProgramOptionsHash(
         delete [] singleString;
         singleString = NULL;
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2975,7 +2927,7 @@ bool CLIntercept::injectProgramSource(
     // into a single string and computed a hash from it.
     CLI_ASSERT( singleString );
 
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     bool    injected = false;
 
@@ -3069,7 +3021,6 @@ bool CLIntercept::injectProgramSource(
         }
     }
 
-    m_OS.LeaveCriticalSection();
     return injected;
 }
 
@@ -3086,7 +3037,7 @@ bool CLIntercept::prependProgramSource(
     // into a single string and computed a hash from it.
     CLI_ASSERT( singleString );
 
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     bool    injected = false;
 
@@ -3205,7 +3156,6 @@ bool CLIntercept::prependProgramSource(
         }
     }
 
-    m_OS.LeaveCriticalSection();
     return injected;
 }
 
@@ -3217,7 +3167,7 @@ bool CLIntercept::injectProgramSPIRV(
     const void*& il,
     char*& injectedIL )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     bool    injected = false;
 
@@ -3305,7 +3255,6 @@ bool CLIntercept::injectProgramSPIRV(
         }
     }
 
-    m_OS.LeaveCriticalSection();
     return injected;
 }
 
@@ -3316,7 +3265,7 @@ bool CLIntercept::injectProgramOptions(
     const char*& options,
     char*& newOptions )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     CLI_ASSERT( newOptions == NULL );
 
@@ -3454,7 +3403,6 @@ bool CLIntercept::injectProgramOptions(
         }
     }
 
-    m_OS.LeaveCriticalSection();
     return injected;
 }
 
@@ -3464,7 +3412,7 @@ bool CLIntercept::appendBuildOptions(
     const char*& options,
     char*& newOptions )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     bool    modified = false;
 
@@ -3519,7 +3467,6 @@ bool CLIntercept::appendBuildOptions(
         }
     }
 
-    m_OS.LeaveCriticalSection();
     return modified;
 }
 
@@ -3531,7 +3478,7 @@ void CLIntercept::dumpProgramSourceScript(
 {
 #if defined(_WIN32)
 
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     CLI_ASSERT( config().DumpProgramSourceScript || config().SimpleDumpProgramSource );
 
@@ -3641,8 +3588,6 @@ void CLIntercept::dumpProgramSourceScript(
 
     m_ProgramNumber++;
 
-    m_OS.LeaveCriticalSection();
-
 #else
     CLI_ASSERT( 0 );
 #endif
@@ -3655,7 +3600,7 @@ void CLIntercept::dumpProgramSource(
     cl_program program,
     const char* singleString )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     CLI_ASSERT( config().DumpProgramSource || config().AutoCreateSPIRV );
 
@@ -3712,8 +3657,6 @@ void CLIntercept::dumpProgramSource(
     programInfo.CompileCount = 0;
 
     m_ProgramNumber++;
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3726,7 +3669,7 @@ void CLIntercept::dumpInputProgramBinaries(
     const size_t* lengths,
     const unsigned char** binaries )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     CLI_ASSERT( config().DumpInputProgramBinaries );
 
@@ -3818,8 +3761,6 @@ void CLIntercept::dumpInputProgramBinaries(
     programInfo.CompileCount = 0;
 
     m_ProgramNumber++;
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3830,7 +3771,7 @@ void CLIntercept::dumpProgramSPIRV(
     const size_t length,
     const void* il )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     CLI_ASSERT( config().DumpProgramSPIRV );
 
@@ -3900,8 +3841,6 @@ void CLIntercept::dumpProgramSPIRV(
     programInfo.CompileCount = 0;
 
     m_ProgramNumber++;
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3912,7 +3851,7 @@ void CLIntercept::dumpProgramOptionsScript(
 {
 #if defined(_WIN32)
 
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     CLI_ASSERT( config().DumpProgramSource || config().SimpleDumpProgramSource );
 
@@ -4018,8 +3957,6 @@ void CLIntercept::dumpProgramOptionsScript(
         }
     }
 
-    m_OS.LeaveCriticalSection();
-
 #else
     CLI_ASSERT( 0 );
 #endif
@@ -4031,7 +3968,7 @@ void CLIntercept::dumpProgramOptions(
     const cl_program program,
     const char* options )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     CLI_ASSERT( config().DumpProgramSource || config().DumpProgramBinaries || config().DumpProgramSPIRV );
 
@@ -4087,8 +4024,6 @@ void CLIntercept::dumpProgramOptions(
             }
         }
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4197,7 +4132,7 @@ void CLIntercept::updateHostTimingStats(
     uint64_t start,
     uint64_t end )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     std::string key( functionName );
     if( kernel )
@@ -4226,8 +4161,6 @@ void CLIntercept::updateHostTimingStats(
             key.c_str(),
             (unsigned int)nsDelta );
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4467,7 +4400,7 @@ void CLIntercept::addTimingEvent(
     const size_t* lws,
     cl_event event )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     SEventListNode* pNode = new SEventListNode;
     if( pNode )
@@ -4640,15 +4573,13 @@ void CLIntercept::addTimingEvent(
 
         m_EventList.push_back( pNode );
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::checkTimingEvents()
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     CEventList::iterator    current = m_EventList.begin();
     CEventList::iterator    next;
@@ -4876,8 +4807,6 @@ void CLIntercept::checkTimingEvents()
 
         current = next;
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4956,7 +4885,7 @@ void CLIntercept::addKernelInfo(
     const cl_program program,
     const std::string& kernelName )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
@@ -4971,8 +4900,6 @@ void CLIntercept::addKernelInfo(
     kernelInfo.CompileCount = programInfo.CompileCount - 1;
 
     addShortKernelName( kernelName );
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4982,7 +4909,7 @@ void CLIntercept::addKernelInfo(
     const cl_program program,
     cl_uint numKernels )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
@@ -5031,8 +4958,6 @@ void CLIntercept::addKernelInfo(
             }
         }
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5040,7 +4965,7 @@ void CLIntercept::addKernelInfo(
 void CLIntercept::removeKernel(
     cl_kernel kernel )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_uint     refCount = 0;
     cl_int      errorCode = CL_SUCCESS;
@@ -5090,8 +5015,6 @@ void CLIntercept::removeKernel(
             }
         }
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5101,7 +5024,7 @@ void CLIntercept::addBuffer(
 {
     if( buffer )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         cl_int  errorCode = CL_SUCCESS;
         size_t  size = 0;
@@ -5119,8 +5042,6 @@ void CLIntercept::addBuffer(
             m_BufferInfoMap[ buffer ] = size;
             m_MemAllocNumber++;
         }
-
-        m_OS.LeaveCriticalSection();
     }
 }
 
@@ -5132,9 +5053,8 @@ void CLIntercept::addSampler(
 {
     if( sampler )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
         m_SamplerDataMap[sampler] = str;
-        m_OS.LeaveCriticalSection();
     }
 }
 
@@ -5145,15 +5065,13 @@ void CLIntercept::removeSampler(
 {
     if( sampler )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         CSamplerDataMap::iterator iter = m_SamplerDataMap.find( sampler );
         if( iter != m_SamplerDataMap.end() )
         {
             m_SamplerDataMap.erase( iter );
         }
-
-        m_OS.LeaveCriticalSection();
     }
 }
 
@@ -5191,7 +5109,7 @@ void CLIntercept::dumpArgument(
 {
     if( kernel )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         std::string fileName = "";
 
@@ -5253,8 +5171,6 @@ void CLIntercept::dumpArgument(
                 }
             }
         }
-
-        m_OS.LeaveCriticalSection();
     }
 }
 ///////////////////////////////////////////////////////////////////////////////
@@ -5264,7 +5180,7 @@ void CLIntercept::addImage(
 {
     if( image )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         cl_int  errorCode = CL_SUCCESS;
 
@@ -5348,8 +5264,6 @@ void CLIntercept::addImage(
             m_ImageInfoMap[ image ] = imageInfo;
             m_MemAllocNumber++;
         }
-
-        m_OS.LeaveCriticalSection();
     }
 }
 
@@ -5358,7 +5272,7 @@ void CLIntercept::addImage(
 void CLIntercept::removeMemObj(
     cl_mem memobj )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_uint refCount = 0;
     cl_int  errorCode = CL_SUCCESS;
@@ -5378,8 +5292,6 @@ void CLIntercept::removeMemObj(
             m_ImageInfoMap.erase( memobj );
         }
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5390,13 +5302,11 @@ void CLIntercept::addSVMAllocation(
 {
     if( svmPtr )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         m_MemAllocNumberMap[ svmPtr ] = m_MemAllocNumber;
         m_SVMAllocInfoMap[ svmPtr ] = size;
         m_MemAllocNumber++;
-
-        m_OS.LeaveCriticalSection();
     }
 }
 
@@ -5405,12 +5315,10 @@ void CLIntercept::addSVMAllocation(
 void CLIntercept::removeSVMAllocation(
     void* svmPtr )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     m_MemAllocNumberMap.erase( svmPtr );
     m_SVMAllocInfoMap.erase( svmPtr );
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5420,15 +5328,13 @@ void CLIntercept::setKernelArg(
     cl_uint arg_index,
     cl_mem memobj )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     if( m_MemAllocNumberMap.find( memobj ) != m_MemAllocNumberMap.end() )
     {
         CKernelArgMemMap&   kernelArgMap = m_KernelArgMap[ kernel ];
         kernelArgMap[ arg_index ] = memobj;
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5438,7 +5344,7 @@ void CLIntercept::setKernelArgSVMPointer(
     cl_uint arg_index,
     const void* arg )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     // Unlike clSetKernelArg(), which must pass a cl_mem, clSetKernelArgSVMPointer
     // can pass a pointer to the base of a SVM allocation or anywhere inside of
@@ -5474,8 +5380,6 @@ void CLIntercept::setKernelArgSVMPointer(
             }
         }
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5485,7 +5389,7 @@ void CLIntercept::dumpBuffersForKernel(
     cl_kernel kernel,
     cl_command_queue command_queue )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     std::string fileNamePrefix = "";
 
@@ -5630,8 +5534,6 @@ void CLIntercept::dumpBuffersForKernel(
             }
         }
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5641,7 +5543,7 @@ void CLIntercept::dumpImagesForKernel(
     cl_kernel kernel,
     cl_command_queue command_queue )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     std::string fileNamePrefix = "";
 
@@ -5769,8 +5671,6 @@ void CLIntercept::dumpImagesForKernel(
             }
         }
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5783,7 +5683,7 @@ void CLIntercept::dumpBuffer(
     size_t offset,
     size_t size )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     if( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() )
     {
@@ -5904,8 +5804,6 @@ void CLIntercept::dumpBuffer(
             }
         }
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5917,11 +5815,10 @@ void CLIntercept::checkEventList(
 {
     if( numEvents != 0 && eventList == NULL )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
         logf( "Check Events for %s: Num Events is %d, but Event List is NULL!\n",
             functionName.c_str(),
             numEvents );
-        m_OS.LeaveCriticalSection();
     }
     else
     {
@@ -5936,22 +5833,20 @@ void CLIntercept::checkEventList(
                 NULL );
             if( errorCode != CL_SUCCESS )
             {
-                m_OS.EnterCriticalSection();
+                std::lock_guard<std::mutex> lock(m_Mutex);
                 logf( "Check Events for %s: clGetEventInfo for event %p returned %s (%d)!\n",
                     functionName.c_str(),
                     eventList[i],
                     enumName().name(errorCode).c_str(),
                     errorCode );
-                m_OS.LeaveCriticalSection();
             }
             else if( eventCommandExecutionStatus < 0 )
             {
-                m_OS.EnterCriticalSection();
+                std::lock_guard<std::mutex> lock(m_Mutex);
                 logf( "Check Events for %s: event %p is in an error state (%d)!\n",
                     functionName.c_str(),
                     eventList[i],
                     eventCommandExecutionStatus );
-                m_OS.LeaveCriticalSection();
             }
         }
     }
@@ -5969,7 +5864,7 @@ void CLIntercept::startAubCapture(
 {
     if( m_AubCaptureStarted == false )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         // For kernels, perform aub capture skip checks.  We'll skip aubcapture if:
         // - the current skip counter is less than the specified skip counter, or
@@ -6127,8 +6022,6 @@ void CLIntercept::startAubCapture(
             // don't try again.
             m_AubCaptureStarted = true;
         }
-
-        m_OS.LeaveCriticalSection();
     }
 }
 
@@ -6139,7 +6032,7 @@ void CLIntercept::stopAubCapture(
 {
     if( m_AubCaptureStarted == true )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         if( m_AubCaptureStarted == true )
         {
@@ -6166,8 +6059,6 @@ void CLIntercept::stopAubCapture(
             // don't try again.
             m_AubCaptureStarted = false;
         }
-
-        m_OS.LeaveCriticalSection();
     }
 }
 
@@ -6176,7 +6067,7 @@ void CLIntercept::stopAubCapture(
 void CLIntercept::initPrecompiledKernelOverrides(
     const cl_context context )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
     log( "Initializing precompiled kernel overrides...\n" );
 
     cl_int  errorCode = CL_SUCCESS;
@@ -6398,7 +6289,6 @@ void CLIntercept::initPrecompiledKernelOverrides(
     }
 
     log( "... precompiled kernel override initialization complete.\n" );
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6406,7 +6296,7 @@ void CLIntercept::initPrecompiledKernelOverrides(
 void CLIntercept::initBuiltinKernelOverrides(
     const cl_context context )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
     log( "Initializing builtin kernel overrides...\n" );
 
     cl_int  errorCode = CL_SUCCESS;
@@ -6557,7 +6447,6 @@ void CLIntercept::initBuiltinKernelOverrides(
     }
 
     log( "... builtin kernel override initialization complete.\n" );
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6567,7 +6456,7 @@ cl_program CLIntercept::createProgramWithInjectionBinaries(
     cl_context context,
     cl_int* errcode_ret )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int      errorCode = CL_SUCCESS;
     cl_program  program = NULL;
@@ -6794,7 +6683,6 @@ cl_program CLIntercept::createProgramWithInjectionBinaries(
         errcode_ret[0] = errorCode;
     }
 
-    m_OS.LeaveCriticalSection();
     return program;
 }
 
@@ -6803,7 +6691,7 @@ cl_program CLIntercept::createProgramWithInjectionBinaries(
 void CLIntercept::dumpProgramBinary(
     const cl_program program )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
@@ -6994,8 +6882,6 @@ void CLIntercept::dumpProgramBinary(
 
     delete [] programBinarySizes;
     programBinarySizes = NULL;
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7003,7 +6889,7 @@ void CLIntercept::dumpProgramBinary(
 void CLIntercept::dumpKernelISABinaries(
     const cl_program program )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -7199,8 +7085,6 @@ void CLIntercept::dumpKernelISABinaries(
 
     delete [] deviceList;
     deviceList = NULL;
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7210,7 +7094,7 @@ cl_program CLIntercept::createProgramWithInjectionSPIRV(
     cl_context context,
     cl_int* errcode_ret )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_program  program = NULL;
 
@@ -7323,7 +7207,6 @@ cl_program CLIntercept::createProgramWithInjectionSPIRV(
         }
     }
 
-    m_OS.LeaveCriticalSection();
     return program;
 }
 
@@ -7333,7 +7216,7 @@ void CLIntercept::autoCreateSPIRV(
     const cl_program program,
     const char* raw_options )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
@@ -7447,8 +7330,6 @@ void CLIntercept::autoCreateSPIRV(
         logf( "Running: %s\n", command.c_str() );
         OS().ExecuteCommand( command );
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7526,9 +7407,9 @@ bool CLIntercept::overrideGetPlatformInfo(
     size_t* param_value_size_ret,
     cl_int& errorCode )
 {
-    bool    override = false;
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
-    m_OS.EnterCriticalSection();
+    bool    override = false;
 
     switch( param_name )
     {
@@ -7584,8 +7465,6 @@ bool CLIntercept::overrideGetPlatformInfo(
         break;
     }
 
-    m_OS.LeaveCriticalSection();
-
     return override;
 }
 
@@ -7599,9 +7478,9 @@ bool CLIntercept::overrideGetDeviceInfo(
     size_t* param_value_size_ret,
     cl_int& errorCode )
 {
-    bool    override = false;
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
-    m_OS.EnterCriticalSection();
+    bool    override = false;
 
     switch( param_name )
     {
@@ -7876,8 +7755,6 @@ bool CLIntercept::overrideGetDeviceInfo(
         break;
     }
 
-    m_OS.LeaveCriticalSection();
-
     return override;
 }
 
@@ -7894,7 +7771,7 @@ cl_int CLIntercept::ReadBuffer(
     const cl_event* eventWaitList,
     cl_event* event )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -7989,8 +7866,6 @@ cl_int CLIntercept::ReadBuffer(
 
     dispatch().clReleaseMemObject( dstBuffer );
 
-    m_OS.LeaveCriticalSection();
-
     return errorCode;
 }
 
@@ -8007,7 +7882,7 @@ cl_int CLIntercept::WriteBuffer(
     const cl_event* eventWaitList,
     cl_event* event )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -8082,8 +7957,6 @@ cl_int CLIntercept::WriteBuffer(
 
     dispatch().clReleaseMemObject( srcBuffer );
 
-    m_OS.LeaveCriticalSection();
-
     return errorCode;
 }
 
@@ -8100,7 +7973,7 @@ cl_int CLIntercept::CopyBuffer(
     const cl_event* eventWaitList,
     cl_event* event )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -8131,8 +8004,6 @@ cl_int CLIntercept::CopyBuffer(
             eventWaitList,
             event );
     }
-
-    m_OS.LeaveCriticalSection();
 
     return errorCode;
 }
@@ -8464,7 +8335,7 @@ cl_int CLIntercept::ReadImage(
     const cl_event* eventWaitList,
     cl_event* event )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -8595,8 +8466,6 @@ cl_int CLIntercept::ReadImage(
 
     dispatch().clReleaseMemObject( dstImage );
 
-    m_OS.LeaveCriticalSection();
-
     return errorCode;
 }
 
@@ -8615,7 +8484,7 @@ cl_int CLIntercept::WriteImage(
     const cl_event* eventWaitList,
     cl_event* event )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -8724,8 +8593,6 @@ cl_int CLIntercept::WriteImage(
 
     dispatch().clReleaseMemObject( srcImage );
 
-    m_OS.LeaveCriticalSection();
-
     return errorCode;
 }
 
@@ -8742,7 +8609,7 @@ cl_int CLIntercept::CopyImage(
     const cl_event* eventWaitList,
     cl_event* event )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -8773,8 +8640,6 @@ cl_int CLIntercept::CopyImage(
             eventWaitList,
             event );
     }
-
-    m_OS.LeaveCriticalSection();
 
     return errorCode;
 }
@@ -9108,7 +8973,7 @@ cl_int CLIntercept::CopyImageHelper(
 cl_program CLIntercept::createProgramWithBuiltinKernels(
     cl_context context )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_program  program = NULL;
 
@@ -9119,7 +8984,6 @@ cl_program CLIntercept::createProgramWithBuiltinKernels(
         dispatch().clRetainProgram( program );
     }
 
-    m_OS.LeaveCriticalSection();
     return program;
 }
 
@@ -9130,7 +8994,7 @@ cl_kernel CLIntercept::createBuiltinKernel(
     const std::string& kernel_name,
     cl_int* errcode_ret )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -9168,8 +9032,6 @@ cl_kernel CLIntercept::createBuiltinKernel(
         }
     }
 
-    m_OS.LeaveCriticalSection();
-
     return kernel;
 }
 
@@ -9186,8 +9048,7 @@ cl_int CLIntercept::NDRangeBuiltinKernel(
     const cl_event* event_wait_list,
     cl_event* event )
 {
-    m_OS.EnterCriticalSection();
-
+    std::lock_guard<std::mutex> lock(m_Mutex);
     cl_int  errorCode = CL_SUCCESS;
 
     cl_context  context = NULL;
@@ -9265,8 +9126,6 @@ cl_int CLIntercept::NDRangeBuiltinKernel(
         }
     }
 
-    m_OS.LeaveCriticalSection();
-
     return errorCode;
 }
 
@@ -9279,7 +9138,7 @@ void CLIntercept::SIMDSurveyCreateProgramFromSource(
     const char** strings,
     const size_t* lengths )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -9323,8 +9182,6 @@ void CLIntercept::SIMDSurveyCreateProgramFromSource(
 
         m_SIMDSurveyProgramMap[ program ] = pSIMDSurveyProgram;
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9335,7 +9192,7 @@ void CLIntercept::SIMDSurveyBuildProgram(
     const cl_device_id* deviceList,
     const char* options )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -9389,8 +9246,6 @@ void CLIntercept::SIMDSurveyBuildProgram(
         logf( "SIMD Survey: BuildProgram: Couldn't find info for program %p!?!?\n",
             program );
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9400,7 +9255,7 @@ void CLIntercept::SIMDSurveyCreateKernel(
     const cl_kernel kernel,
     const std::string& kernelName )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -9482,8 +9337,6 @@ void CLIntercept::SIMDSurveyCreateKernel(
         logf( "SIMD Survey: CreateKernel: Couldn't find info for program %p!?!?\n",
             program );
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9494,7 +9347,7 @@ void CLIntercept::SIMDSurveySetKernelArg(
     size_t argSize,
     const void* argValue )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     SSIMDSurveyKernel*  pSIMDSurveyKernel =
         m_SIMDSurveyKernelMap[ kernel ];
@@ -9521,8 +9374,6 @@ void CLIntercept::SIMDSurveySetKernelArg(
         logf( "SIMD Survey: SerKernelArg: Couldn't find info for kernel %p!?!?\n",
             kernel );
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9530,7 +9381,7 @@ void CLIntercept::SIMDSurveySetKernelArg(
 void CLIntercept::SIMDSurveyNDRangeKernel(
     cl_kernel& kernel )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     SSIMDSurveyKernel*  pSIMDSurveyKernel =
         m_SIMDSurveyKernelMap[ kernel ];
@@ -9640,8 +9491,6 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
         logf( "SIMD Survey NDRange: Couldn't find info for kernel %p!?!?\n",
             kernel );
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10269,7 +10118,7 @@ void CLIntercept::ittInit()
 {
     if( m_ITTInitialized == false )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         if( m_ITTInitialized == false )
         {
@@ -10297,8 +10146,6 @@ void CLIntercept::ittInit()
 
             log( "... done!\n" );
         }
-
-        m_OS.LeaveCriticalSection();
     }
 }
 
@@ -10309,14 +10156,12 @@ void CLIntercept::ittCallLoggingEnter(
     std::string str( functionName );
     if( kernel )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         const std::string& kernelName = getShortKernelNameWithHash(kernel);
         str += "( ";
         str += kernelName;
         str += " )";
-
-        m_OS.LeaveCriticalSection();
     }
 
     __itt_string_handle* itt_string_handle = __itt_string_handle_create( str.c_str() );
@@ -10332,7 +10177,7 @@ void CLIntercept::ittRegisterCommandQueue(
     cl_command_queue queue,
     bool supportsPerfCounters )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -10439,14 +10284,12 @@ void CLIntercept::ittRegisterCommandQueue(
 
         dispatch().clRetainCommandQueue( queue );
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 void CLIntercept::ittReleaseCommandQueue(
     cl_command_queue queue )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
     cl_uint refCount = 0;
@@ -10467,8 +10310,6 @@ void CLIntercept::ittReleaseCommandQueue(
             m_ITTQueueInfoMap.erase( queue );
         }
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 void ITTAPI CLIntercept::ittClockInfoCallback(
@@ -10669,7 +10510,7 @@ void CLIntercept::chromeCallLoggingExit(
 void CLIntercept::chromeRegisterCommandQueue(
     cl_command_queue queue )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     cl_int  errorCode = CL_SUCCESS;
 
@@ -10750,8 +10591,6 @@ void CLIntercept::chromeRegisterCommandQueue(
             << ", \"args\":{\"name\":\"" << trackName
             << "\"}},\n";
     }
-
-    m_OS.LeaveCriticalSection();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10843,7 +10682,7 @@ bool CLIntercept::checkAubCaptureKernelSignature(
     const size_t* gws,
     const size_t* lws )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     bool    match = true;
 
@@ -11027,8 +10866,6 @@ bool CLIntercept::checkAubCaptureKernelSignature(
             match = false;
         }
     }
-
-    m_OS.LeaveCriticalSection();
 
     return match;
 }

@@ -25,6 +25,7 @@
 #include <list>
 #include <vector>
 #include <map>
+#include <mutex>
 #include <set>
 #include <sstream>
 #include <queue>
@@ -726,6 +727,8 @@ private:
 
     void    writeReport(
                 std::ostream& os );
+
+    std::mutex      m_Mutex;
 
     OS::Services    m_OS;
     CLdispatch      m_Dispatch;
@@ -2074,15 +2077,13 @@ inline std::string CLIntercept::getShortKernelNameWithHash(
 //
 inline void CLIntercept::saveProgramNumber( const cl_program program )
 {
-    m_OS.EnterCriticalSection();
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     SProgramInfo&   programInfo = m_ProgramInfoMap[ program ];
     programInfo.ProgramNumber = m_ProgramNumber;
     programInfo.CompileCount = 0;
 
     m_ProgramNumber++;
-
-    m_OS.LeaveCriticalSection();
 }
 
 inline unsigned int CLIntercept::getProgramNumber() const

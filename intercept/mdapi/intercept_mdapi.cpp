@@ -137,7 +137,7 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
 
     if( dispatch().clCreatePerfCountersCommandQueueINTEL && m_pMDHelper )
     {
-        m_OS.EnterCriticalSection();
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         if( m_pMDHelper->ActivateMetricSet() )
         {
@@ -160,8 +160,6 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
         {
             log( "Metric Discovery: Couldn't activate metric set!\n" );
         }
-
-        m_OS.LeaveCriticalSection();
     }
 
     return retVal;
