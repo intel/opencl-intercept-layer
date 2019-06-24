@@ -351,6 +351,7 @@ public:
                 const size_t* gwo,
                 const size_t* gws,
                 const size_t* lws,
+                cl_command_queue queue,
                 cl_event event );
     void    checkTimingEvents();
 
@@ -782,12 +783,19 @@ private:
     typedef std::map< std::string, SHostTimingStats >   CHostTimingStatsMap;
     CHostTimingStatsMap  m_HostTimingStatsMap;
 
-    // These structures define a mapping between a string identifier, which
-    // usually consists of the kernel name and possibly some extra
-    // information such as the local and global work size, and a device
-    // timing record.  The kernel name could be the "real" kernel name,
-    // or a kernel name ID, or is the OpenCL API name for non-kernel
-    // device timing stats.
+    // These structures define a mapping between a device ID handle and the
+    // device ID string, for reporting purposes.
+
+    typedef std::map< cl_device_id, std::string >   CDeviceNameMap;
+    CDeviceNameMap  m_DeviceNameMap;
+
+    // These structures define a mapping between a key and a device
+    // timing record.  The key consists of a device ID and a string
+    // identifier.  The string identifier usually consists of the
+    // kernel name and possibly some extra information such as the
+    // local and global work size, The kernel name could be the "real"
+    // kernel name, or a kernel name ID, or is the OpenCL API name for
+    // non-kernel device timing stats.
 
     struct SDeviceTimingStats
     {
@@ -804,7 +812,8 @@ private:
     };
 
     typedef std::map< std::string, SDeviceTimingStats > CDeviceTimingStatsMap;
-    CDeviceTimingStatsMap   m_DeviceTimingStatsMap;
+    typedef std::map< cl_device_id, CDeviceTimingStatsMap > CDeviceDeviceTimingStatsMap;
+    CDeviceDeviceTimingStatsMap m_DeviceTimingStatsMap;
 
     // This defines a mapping between the kernel handle and information
     // about the kernel.
@@ -837,15 +846,16 @@ private:
 
     struct SEventListNode
     {
-        std::string FunctionName;
-        std::string KernelName;
-        uint64_t    EnqueueCounter;
-        uint64_t    QueuedTime;
-        cl_kernel   Kernel;
-        cl_event    Event;
+        cl_device_id    Device;
+        std::string     FunctionName;
+        std::string     KernelName;
+        uint64_t        EnqueueCounter;
+        uint64_t        QueuedTime;
+        cl_kernel       Kernel;
+        cl_event        Event;
     };
 
-    typedef std::list< SEventListNode* > CEventList;
+    typedef std::list< SEventListNode > CEventList;
     CEventList  m_EventList;
 
 #if defined(USE_MDAPI)
@@ -1891,7 +1901,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         }                                                                   \
     }
 
-#define DEVICE_PERFORMANCE_TIMING_END( pEvent )                             \
+#define DEVICE_PERFORMANCE_TIMING_END( queue, pEvent )                      \
     if( ( pIntercept->config().DevicePerformanceTiming ||                   \
           pIntercept->config().ITTPerformanceTiming ||                      \
           pIntercept->config().ChromePerformanceTiming ||                   \
@@ -1915,6 +1925,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
                 queuedTime,                                                 \
                 NULL,                                                       \
                 0, NULL, NULL, NULL,                                        \
+                queue,                                                      \
                 pEvent[0] );                                                \
             if( retainAppEvent )                                            \
             {                                                               \
@@ -1927,7 +1938,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         }                                                                   \
     }
 
-#define DEVICE_PERFORMANCE_TIMING_END_KERNEL( pEvent, kernel, wd, gwo, gws, lws )\
+#define DEVICE_PERFORMANCE_TIMING_END_KERNEL( queue, pEvent, kernel, wd, gwo, gws, lws )\
     if( ( pIntercept->config().DevicePerformanceTiming ||                   \
           pIntercept->config().ITTPerformanceTiming ||                      \
           pIntercept->config().ChromePerformanceTiming ||                   \
@@ -1940,6 +1951,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
             queuedTime,                                                     \
             kernel,                                                         \
             wd, gwo, gws, lws,                                              \
+            queue,                                                          \
             pEvent[0] );                                                    \
         if( retainAppEvent )                                                \
         {                                                                   \

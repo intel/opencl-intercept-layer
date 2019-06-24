@@ -192,25 +192,6 @@ CLIntercept::~CLIntercept()
     }
 
     {
-        CEventList::iterator i = m_EventList.begin();
-        while( i != m_EventList.end() )
-        {
-            SEventListNode* pEventListNode = (*i);
-
-            if( pEventListNode )
-            {
-                // If we were able to release events, we'd release
-                // pEventListNode->Event here.
-
-                delete pEventListNode;
-            }
-
-            (*i) = NULL;
-            ++i;
-        }
-    }
-
-    {
         CContextCallbackInfoMap::iterator i = m_ContextCallbackInfoMap.begin();
         while( i != m_ContextCallbackInfoMap.end() )
         {
@@ -808,55 +789,66 @@ void CLIntercept::writeReport(
     if( config().DevicePerformanceTiming &&
         !m_DeviceTimingStatsMap.empty() )
     {
-        os << std::endl << "Device Performance Timing Results:" << std::endl;
-
-        cl_ulong    totalTotalNS = 0;
-        size_t      longestName = 32;
-
-        CDeviceTimingStatsMap::const_iterator i = m_DeviceTimingStatsMap.begin();
-        while( i != m_DeviceTimingStatsMap.end() )
+        CDeviceDeviceTimingStatsMap::const_iterator id = m_DeviceTimingStatsMap.begin();
+        while( id != m_DeviceTimingStatsMap.end() )
         {
-            const std::string& name = (*i).first;
-            const SDeviceTimingStats& deviceTimingStats = (*i).second;
+            const cl_device_id  device = (*id).first;
+            const CDeviceTimingStatsMap& dtsm = (*id).second;
 
-            if( !name.empty() )
+            const std::string&  deviceName = m_DeviceNameMap[device];
+
+            os << std::endl << "Device Performance Timing Results for " << deviceName<< ":" << std::endl;
+
+            cl_ulong    totalTotalNS = 0;
+            size_t      longestName = 32;
+
+            CDeviceTimingStatsMap::const_iterator i = dtsm.begin();
+            while( i != dtsm.end() )
             {
-                totalTotalNS += deviceTimingStats.TotalNS;
-                longestName = std::max< size_t >( name.length(), longestName );
+                const std::string& name = (*i).first;
+                const SDeviceTimingStats& deviceTimingStats = (*i).second;
+
+                if( !name.empty() )
+                {
+                    totalTotalNS += deviceTimingStats.TotalNS;
+                    longestName = std::max< size_t >( name.length(), longestName );
+                }
+
+                ++i;
             }
 
-            ++i;
-        }
+            os << std::endl << "Total Time (ns): " << totalTotalNS << std::endl;
 
-        os << std::endl << "Total Time (ns): " << totalTotalNS << std::endl;
+            os << std::endl
+                << std::right << std::setw(longestName) << "Function Name" << ", "
+                << std::right << std::setw( 6) << "Calls" << ", "
+                << std::right << std::setw(13) << "Time (ns)" << ", "
+                << std::right << std::setw( 8) << "Time (%)" << ", "
+                << std::right << std::setw(13) << "Average (ns)" << ", "
+                << std::right << std::setw(13) << "Min (ns)" << ", "
+                << std::right << std::setw(13) << "Max (ns)" << std::endl;
 
-        os << std::endl
-            << std::right << std::setw(longestName) << "Function Name" << ", "
-            << std::right << std::setw( 6) << "Calls" << ", "
-            << std::right << std::setw(13) << "Time (ns)" << ", "
-            << std::right << std::setw( 8) << "Time (%)" << ", "
-            << std::right << std::setw(13) << "Average (ns)" << ", "
-            << std::right << std::setw(13) << "Min (ns)" << ", "
-            << std::right << std::setw(13) << "Max (ns)" << std::endl;
-
-        i = m_DeviceTimingStatsMap.begin();
-        while( i != m_DeviceTimingStatsMap.end() )
-        {
-            const std::string& name = (*i).first;
-            const SDeviceTimingStats& deviceTimingStats = (*i).second;
-
-            if( !name.empty() )
+            i = dtsm.begin();
+            while( i != dtsm.end() )
             {
-                os << std::right << std::setw(longestName) << name << ", "
-                    << std::right << std::setw( 6) << deviceTimingStats.NumberOfCalls << ", "
-                    << std::right << std::setw(13) << deviceTimingStats.TotalNS << ", "
-                    << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << deviceTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
-                    << std::right << std::setw(13) << deviceTimingStats.TotalNS / deviceTimingStats.NumberOfCalls << ", "
-                    << std::right << std::setw(13) << deviceTimingStats.MinNS << ", "
-                    << std::right << std::setw(13) << deviceTimingStats.MaxNS << std::endl;
+                const std::string& name = (*i).first;
+                const SDeviceTimingStats& deviceTimingStats = (*i).second;
+
+                if( !name.empty() )
+                {
+                    os << std::right << std::setw(longestName) << name << ", "
+                        << std::right << std::setw( 6) << deviceTimingStats.NumberOfCalls << ", "
+                        << std::right << std::setw(13) << deviceTimingStats.TotalNS << ", "
+                        << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << deviceTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
+                        << std::right << std::setw(13) << deviceTimingStats.TotalNS / deviceTimingStats.NumberOfCalls << ", "
+                        << std::right << std::setw(13) << deviceTimingStats.MinNS << ", "
+                        << std::right << std::setw(13) << deviceTimingStats.MaxNS << std::endl;
+                }
+
+                ++i;
             }
 
-            ++i;
+            ++id;
         }
     }
 
@@ -4398,180 +4390,184 @@ void CLIntercept::addTimingEvent(
     const size_t* gwo,
     const size_t* gws,
     const size_t* lws,
+    cl_command_queue queue,
     cl_event event )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    SEventListNode* pNode = new SEventListNode;
-    if( pNode )
+    m_EventList.emplace_back();
+
+    SEventListNode& node = m_EventList.back();
+
+    cl_device_id device = NULL;
+    dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_DEVICE,
+        sizeof(device),
+        &device,
+        NULL );
+    if( m_DeviceNameMap.find(device) == m_DeviceNameMap.end() )
     {
-        pNode->FunctionName = functionName;
-        if( kernel )
+        char*   deviceName = NULL;
+
+        allocateAndGetDeviceInfoString(
+            device,
+            CL_DEVICE_NAME,
+            deviceName );
+        if( deviceName )
         {
-            pNode->KernelName = getShortKernelNameWithHash(kernel);
+            m_DeviceNameMap[device] = deviceName;
+        }
 
-            if( config().DevicePerformanceTimeKernelInfoTracking )
+        delete [] deviceName;
+    }
+
+    node.Device = device;
+    node.FunctionName = functionName;
+    node.EnqueueCounter = m_EnqueueCounter;
+    node.QueuedTime = queuedTime;
+    node.Kernel = kernel; // Note: no retain, so cannot count on this value...
+    node.Event = event;
+
+    if( kernel )
+    {
+        node.KernelName = getShortKernelNameWithHash(kernel);
+
+        if( config().DevicePerformanceTimeKernelInfoTracking && device )
+        {
+            std::ostringstream  ss;
             {
-                cl_command_queue queue = NULL;
-                dispatch().clGetEventInfo(
-                    event,
-                    CL_EVENT_COMMAND_QUEUE,
-                    sizeof(queue),
-                    &queue,
+                size_t  pwgsm = 0;
+                dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    device,
+                    CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
+                    sizeof(pwgsm),
+                    &pwgsm,
                     NULL );
-                if( queue )
+                if( pwgsm )
                 {
-                    cl_device_id device = NULL;
-                    dispatch().clGetCommandQueueInfo(
-                        queue,
-                        CL_QUEUE_DEVICE,
-                        sizeof(device),
-                        &device,
-                        NULL );
-                    if( device )
-                    {
-                        std::ostringstream  ss;
-                        {
-                            size_t  pwgsm = 0;
-                            dispatch().clGetKernelWorkGroupInfo(
-                                kernel,
-                                device,
-                                CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
-                                sizeof(pwgsm),
-                                &pwgsm,
-                                NULL );
-                            if( pwgsm )
-                            {
-                                ss << " SIMD" << (unsigned int)pwgsm;
-                            }
-                        }
-                        {
-                            cl_ulong slm = 0;
-                            dispatch().clGetKernelWorkGroupInfo(
-                                kernel,
-                                device,
-                                CL_KERNEL_LOCAL_MEM_SIZE,
-                                sizeof(slm),
-                                &slm,
-                                NULL );
-                            if( slm )
-                            {
-                                ss << " SLM=" << (unsigned int)slm;
-                            }
-                        }
-                        {
-                            cl_ulong tpm = 0;
-                            dispatch().clGetKernelWorkGroupInfo(
-                                kernel,
-                                device,
-                                CL_KERNEL_PRIVATE_MEM_SIZE,
-                                sizeof(tpm),
-                                &tpm,
-                                NULL );
-                            if( tpm )
-                            {
-                                ss << " TPM=" << (unsigned int)tpm;
-                            }
-                        }
-                        {
-                            cl_ulong spill = 0;
-                            dispatch().clGetKernelWorkGroupInfo(
-                                kernel,
-                                device,
-                                CL_KERNEL_SPILL_MEM_SIZE_INTEL,
-                                sizeof(spill),
-                                &spill,
-                                NULL );
-                            if( spill )
-                            {
-                                ss << " SPILL=" << (unsigned int)spill;
-                            }
-                        }
-                        pNode->KernelName += ss.str();
-                    }
+                    ss << " SIMD" << (unsigned int)pwgsm;
                 }
             }
-
-            if( config().DevicePerformanceTimeGWOTracking )
             {
-                std::ostringstream  ss;
-                ss << " GWO[ ";
-                if( gwo )
+                cl_ulong slm = 0;
+                dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    device,
+                    CL_KERNEL_LOCAL_MEM_SIZE,
+                    sizeof(slm),
+                    &slm,
+                    NULL );
+                if( slm )
                 {
-                    if( workDim >= 1 )
-                    {
-                        ss << gwo[0];
-                    }
-                    if( workDim >= 2 )
-                    {
-                        ss << ", " << gwo[1];
-                    }
-                    if( workDim >= 3 )
-                    {
-                        ss << ", " << gwo[2];
-                    }
+                    ss << " SLM=" << (unsigned int)slm;
                 }
-                else
-                {
-                    ss << "NULL";
-                }
-                ss << " ]";
-                pNode->KernelName += ss.str();
             }
-
-            if( config().DevicePerformanceTimeGWSTracking && gws )
             {
-                std::ostringstream  ss;
-                ss << " GWS[ ";
+                cl_ulong tpm = 0;
+                dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    device,
+                    CL_KERNEL_PRIVATE_MEM_SIZE,
+                    sizeof(tpm),
+                    &tpm,
+                    NULL );
+                if( tpm )
+                {
+                    ss << " TPM=" << (unsigned int)tpm;
+                }
+            }
+            {
+                cl_ulong spill = 0;
+                dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    device,
+                    CL_KERNEL_SPILL_MEM_SIZE_INTEL,
+                    sizeof(spill),
+                    &spill,
+                    NULL );
+                if( spill )
+                {
+                    ss << " SPILL=" << (unsigned int)spill;
+                }
+            }
+            node.KernelName += ss.str();
+        }
+
+        if( config().DevicePerformanceTimeGWOTracking )
+        {
+            std::ostringstream  ss;
+            ss << " GWO[ ";
+            if( gwo )
+            {
                 if( workDim >= 1 )
                 {
-                    ss << gws[0];
+                    ss << gwo[0];
                 }
                 if( workDim >= 2 )
                 {
-                    ss << " x " << gws[1];
+                    ss << ", " << gwo[1];
                 }
                 if( workDim >= 3 )
                 {
-                    ss << " x " << gws[2];
+                    ss << ", " << gwo[2];
                 }
-                ss << " ]";
-                pNode->KernelName += ss.str();
             }
-
-            if( config().DevicePerformanceTimeLWSTracking )
+            else
             {
-                std::ostringstream  ss;
-                ss << " LWS[ ";
-                if( lws )
-                {
-                    if( workDim >= 1 )
-                    {
-                        ss << lws[0];
-                    }
-                    if( workDim >= 2 )
-                    {
-                        ss << " x " << lws[1];
-                    }
-                    if( workDim >= 3 )
-                    {
-                        ss << " x " << lws[2];
-                    }
-                }
-                else
-                {
-                    ss << "NULL";
-                }
-                ss << " ]";
-                pNode->KernelName += ss.str();
+                ss << "NULL";
             }
+            ss << " ]";
+            node.KernelName += ss.str();
         }
-        pNode->EnqueueCounter = m_EnqueueCounter;
-        pNode->QueuedTime = queuedTime;
-        pNode->Kernel = kernel; // Note: no retain, so cannot count on this value...
-        pNode->Event = event;
 
-        m_EventList.push_back( pNode );
+        if( config().DevicePerformanceTimeGWSTracking && gws )
+        {
+            std::ostringstream  ss;
+            ss << " GWS[ ";
+            if( workDim >= 1 )
+            {
+                ss << gws[0];
+            }
+            if( workDim >= 2 )
+            {
+                ss << " x " << gws[1];
+            }
+            if( workDim >= 3 )
+            {
+                ss << " x " << gws[2];
+            }
+            ss << " ]";
+            node.KernelName += ss.str();
+        }
+
+        if( config().DevicePerformanceTimeLWSTracking )
+        {
+            std::ostringstream  ss;
+            ss << " LWS[ ";
+            if( lws )
+            {
+                if( workDim >= 1 )
+                {
+                    ss << lws[0];
+                }
+                if( workDim >= 2 )
+                {
+                    ss << " x " << lws[1];
+                }
+                if( workDim >= 3 )
+                {
+                    ss << " x " << lws[2];
+                }
+            }
+            else
+            {
+                ss << "NULL";
+            }
+            ss << " ]";
+            node.KernelName += ss.str();
+        }
     }
 }
 
@@ -4592,10 +4588,10 @@ void CLIntercept::checkTimingEvents()
         next = current;
         ++next;
 
-        SEventListNode* pNode = *current;
+        const SEventListNode& node = *current;
 
         errorCode = dispatch().clGetEventInfo(
-            pNode->Event,
+            node.Event,
             CL_EVENT_COMMAND_EXECUTION_STATUS,
             sizeof( eventStatus ),
             &eventStatus,
@@ -4617,25 +4613,25 @@ void CLIntercept::checkTimingEvents()
                     cl_ulong    commandEnd = 0;
 
                     errorCode |= dispatch().clGetEventProfilingInfo(
-                        pNode->Event,
+                        node.Event,
                         CL_PROFILING_COMMAND_QUEUED,
                         sizeof( commandQueued ),
                         &commandQueued,
                         NULL );
                     errorCode |= dispatch().clGetEventProfilingInfo(
-                        pNode->Event,
+                        node.Event,
                         CL_PROFILING_COMMAND_SUBMIT,
                         sizeof( commandSubmit ),
                         &commandSubmit,
                         NULL );
                     errorCode |= dispatch().clGetEventProfilingInfo(
-                        pNode->Event,
+                        node.Event,
                         CL_PROFILING_COMMAND_START,
                         sizeof( commandStart ),
                         &commandStart,
                         NULL );
                     errorCode |= dispatch().clGetEventProfilingInfo(
-                        pNode->Event,
+                        node.Event,
                         CL_PROFILING_COMMAND_END,
                         sizeof( commandEnd ),
                         &commandEnd,
@@ -4644,12 +4640,12 @@ void CLIntercept::checkTimingEvents()
                     {
                         cl_ulong delta = commandEnd - commandStart;
 
-                        const std::string&  key =
-                            pNode->KernelName.empty() ?
-                            pNode->FunctionName :
-                            pNode->KernelName;
+                        const std::string&  name =
+                            node.KernelName.empty() ?
+                            node.FunctionName :
+                            node.KernelName;
 
-                        SDeviceTimingStats& deviceTimingStats = m_DeviceTimingStatsMap[ key ];
+                        SDeviceTimingStats& deviceTimingStats = m_DeviceTimingStatsMap[node.Device][name];
 
                         deviceTimingStats.NumberOfCalls++;
                         deviceTimingStats.TotalNS += delta;
@@ -4667,7 +4663,7 @@ void CLIntercept::checkTimingEvents()
 
                             ss << "Device Time for "
                                 //<< "call " << numberOfCalls << " to "
-                                << key << " (enqueue " << pNode->EnqueueCounter << ") = "
+                                << name << " (enqueue " << node.EnqueueCounter << ") = "
                                 << queuedDelta << " ns (queued -> submit), "
                                 << submitDelta << " ns (submit -> start), "
                                 << delta << " ns (start -> end)\n";
@@ -4681,7 +4677,7 @@ void CLIntercept::checkTimingEvents()
 
                             ss << "Device Timeline for "
                                 //<< "call " << numberOfCalls << " to "
-                                << key << " (enqueue " << pNode->EnqueueCounter << ") = "
+                                << name << " (enqueue " << node.EnqueueCounter << ") = "
                                 << commandQueued << " ns (queued), "
                                 << commandSubmit << " ns (submit), "
                                 << commandStart << " ns (start), "
@@ -4691,49 +4687,49 @@ void CLIntercept::checkTimingEvents()
                         }
 
                         if( config().SIMDSurvey &&
-                            pNode->Kernel )
+                            node.Kernel )
                         {
                             SSIMDSurveyKernel*  pSIMDSurveyKernel =
-                                m_SIMDSurveyKernelMap[ pNode->Kernel ];
+                                m_SIMDSurveyKernelMap[ node.Kernel ];
                             if( pSIMDSurveyKernel )
                             {
-                                if( pNode->Kernel == pSIMDSurveyKernel->SIMD8Kernel &&
+                                if( node.Kernel == pSIMDSurveyKernel->SIMD8Kernel &&
                                     pSIMDSurveyKernel->SIMD8ExecutionTimeNS > delta )
                                 {
                                     pSIMDSurveyKernel->SIMD8ExecutionTimeNS = delta;
                                     logf( "SIMD Survey: Results: New min SIMD8 Time for kernel %s is: %lu\n",
-                                        pNode->KernelName.c_str(),
+                                        node.KernelName.c_str(),
                                         pSIMDSurveyKernel->SIMD8ExecutionTimeNS );
                                 }
-                                if( pNode->Kernel == pSIMDSurveyKernel->SIMD16Kernel &&
+                                if( node.Kernel == pSIMDSurveyKernel->SIMD16Kernel &&
                                     pSIMDSurveyKernel->SIMD16ExecutionTimeNS > delta )
                                 {
                                     pSIMDSurveyKernel->SIMD16ExecutionTimeNS = delta;
                                     logf( "SIMD Survey: Results: New min SIMD16 Time for kernel %s is: %lu\n",
-                                        pNode->KernelName.c_str(),
+                                        node.KernelName.c_str(),
                                         pSIMDSurveyKernel->SIMD16ExecutionTimeNS );
                                 }
-                                if( pNode->Kernel == pSIMDSurveyKernel->SIMD32Kernel &&
+                                if( node.Kernel == pSIMDSurveyKernel->SIMD32Kernel &&
                                     pSIMDSurveyKernel->SIMD32ExecutionTimeNS > delta )
                                 {
                                     pSIMDSurveyKernel->SIMD32ExecutionTimeNS = delta;
                                     logf( "SIMD Survey: Results: New min SIMD32 Time for kernel %s is: %lu\n",
-                                        pNode->KernelName.c_str(),
+                                        node.KernelName.c_str(),
                                         pSIMDSurveyKernel->SIMD32ExecutionTimeNS );
                                 }
-                                if( pNode->Kernel != pSIMDSurveyKernel->SIMD8Kernel &&
-                                    pNode->Kernel != pSIMDSurveyKernel->SIMD16Kernel &&
-                                    pNode->Kernel != pSIMDSurveyKernel->SIMD32Kernel )
+                                if( node.Kernel != pSIMDSurveyKernel->SIMD8Kernel &&
+                                    node.Kernel != pSIMDSurveyKernel->SIMD16Kernel &&
+                                    node.Kernel != pSIMDSurveyKernel->SIMD32Kernel )
                                 {
                                     logf( "SIMD Survey: Results: Default Time for kernel %s is: %lu\n",
-                                        pNode->KernelName.c_str(),
+                                        node.KernelName.c_str(),
                                         delta );
                                 }
                             }
                             else
                             {
                                 logf( "SIMD Survey: Results: Don't have any information kernel %p!?!?\n",
-                                    pNode->Kernel );
+                                    node.Kernel );
                             }
                         }
                     }
@@ -4743,46 +4739,45 @@ void CLIntercept::checkTimingEvents()
                 if( config().ITTPerformanceTiming )
                 {
                     const std::string& name =
-                        pNode->KernelName.empty() ?
-                        pNode->FunctionName :
-                        pNode->KernelName;
+                        node.KernelName.empty() ?
+                        node.FunctionName :
+                        node.KernelName;
 
                     ittTraceEvent(
                         name,
-                        pNode->Event,
-                        pNode->QueuedTime );
+                        node.Event,
+                        node.QueuedTime );
                 }
 #endif
 
                 if( config().ChromePerformanceTiming )
                 {
                     const std::string& name =
-                        pNode->KernelName.empty() ?
-                        pNode->FunctionName :
-                        pNode->KernelName;
+                        node.KernelName.empty() ?
+                        node.FunctionName :
+                        node.KernelName;
 
                     chromeTraceEvent(
                         name,
-                        pNode->Event,
-                        pNode->QueuedTime );
+                        node.Event,
+                        node.QueuedTime );
                 }
 
 #if defined(USE_MDAPI)
                 if( !config().DevicePerfCounterCustom.empty() )
                 {
                     const std::string& name =
-                        pNode->KernelName.empty() ?
-                        pNode->FunctionName :
-                        pNode->KernelName;
+                        node.KernelName.empty() ?
+                        node.FunctionName :
+                        node.KernelName;
 
                     saveMDAPICounters(
                         name,
-                        pNode->Event );
+                        node.Event );
                 }
 #endif
 
-                dispatch().clReleaseEvent( pNode->Event );
-                delete pNode;
+                dispatch().clReleaseEvent( node.Event );
 
                 m_EventList.erase( current );
             }
@@ -4793,9 +4788,7 @@ void CLIntercept::checkTimingEvents()
                 // added it to the list.  Remove the event from the
                 // list.
                 logf( "Unexpectedly got CL_INVALID_EVENT for an event from %s!\n",
-                    pNode->FunctionName.c_str() );
-
-                delete pNode;
+                    node.FunctionName.c_str() );
 
                 m_EventList.erase( current );
             }
