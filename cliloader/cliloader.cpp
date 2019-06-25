@@ -572,6 +572,13 @@ int main(int argc, char *argv[])
         std::string libPath = path + "/../" + CLILOADER_LIB_DIR;
         found = getEnvVars( libPath, ld_preload, ld_library_path );
     }
+    if( found == false )
+    {
+        // Next, check for an intercept directory.
+        // This is for running cliloader straight from a CMake directory.
+        std::string libPath = path + "/../intercept";
+        found = getEnvVars( libPath, ld_preload, ld_library_path );
+    }
     if( found )
     {
         DEBUG("New %s is %s\n", LD_PRELOAD_ENV, ld_preload.c_str());

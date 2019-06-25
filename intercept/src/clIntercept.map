@@ -22,10 +22,10 @@
 
 INTERNAL {
     global:
-        _binary_Kernels_builtin_kernels_cl_start;
-        _binary_Kernels_builtin_kernels_cl_end;
-        _binary_Kernels_precompiled_kernels_cl_start;
-        _binary_Kernels_precompiled_kernels_cl_end;
+        _binary_kernels_builtin_kernels_cl_start;
+        _binary_kernels_builtin_kernels_cl_end;
+        _binary_kernels_precompiled_kernels_cl_start;
+        _binary_kernels_precompiled_kernels_cl_end;
     local:
         *;
 };
