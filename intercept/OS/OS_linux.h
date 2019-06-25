@@ -82,8 +82,8 @@ inline bool Services::GetCLInterceptName(
 }
 
 #if defined(USE_KERNEL_OVERRIDES)
-extern "C" char _binary_Kernels_precompiled_kernels_cl_start;
-extern "C" char _binary_Kernels_precompiled_kernels_cl_end;
+extern "C" char _binary_kernels_precompiled_kernels_cl_start;
+extern "C" char _binary_kernels_precompiled_kernels_cl_end;
 #endif
 
 inline bool Services::GetPrecompiledKernelString(
@@ -91,16 +91,16 @@ inline bool Services::GetPrecompiledKernelString(
     size_t& length ) const
 {
 #if defined(USE_KERNEL_OVERRIDES)
-    str = &_binary_Kernels_precompiled_kernels_cl_start;
-    length = &_binary_Kernels_precompiled_kernels_cl_end - &_binary_Kernels_precompiled_kernels_cl_start;
+    str = &_binary_kernels_precompiled_kernels_cl_start;
+    length = &_binary_kernels_precompiled_kernels_cl_end - &_binary_kernels_precompiled_kernels_cl_start;
 #endif
 
     return true;
 }
 
 #if defined(USE_KERNEL_OVERRIDES)
-extern "C" char _binary_Kernels_builtin_kernels_cl_start;
-extern "C" char _binary_Kernels_builtin_kernels_cl_end;
+extern "C" char _binary_kernels_builtin_kernels_cl_start;
+extern "C" char _binary_kernels_builtin_kernels_cl_end;
 #endif
 
 inline bool Services::GetBuiltinKernelString(
@@ -108,8 +108,8 @@ inline bool Services::GetBuiltinKernelString(
     size_t& length ) const
 {
 #if defined(USE_KERNEL_OVERRIDES)
-    str = &_binary_Kernels_builtin_kernels_cl_start;
-    length = &_binary_Kernels_builtin_kernels_cl_end - &_binary_Kernels_builtin_kernels_cl_start;
+    str = &_binary_kernels_builtin_kernels_cl_start;
+    length = &_binary_kernels_builtin_kernels_cl_end - &_binary_kernels_builtin_kernels_cl_start;
 #endif
 
     return true;
