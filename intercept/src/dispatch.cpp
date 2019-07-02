@@ -5571,19 +5571,26 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddress)(
     if( pIntercept &&
         pIntercept->dispatch().clGetExtensionFunctionAddress )
     {
-        CALL_LOGGING_ENTER( "func_name = %s", func_name );
+        CALL_LOGGING_ENTER( "func_name = %s", func_name ? func_name : "(NULL)" );
         CPU_PERFORMANCE_TIMING_START();
 
-        // First, check to see if this is an extension we know about.
-        void*   retVal = pIntercept->getExtensionFunctionAddress(
-            NULL,
-            func_name );
-
-        // If it's not, call into the dispatch table as usual.
-        if( retVal == NULL )
+        void*   retVal = NULL;
+        if( func_name != NULL )
         {
-            retVal = pIntercept->dispatch().clGetExtensionFunctionAddress(
-                func_name );
+            // First, check to see if this is an extension we know about.
+            if( retVal == NULL )
+            {
+                retVal = pIntercept->getExtensionFunctionAddress(
+                    NULL,
+                    func_name );
+            }
+
+            // If it's not, call into the dispatch table as usual.
+            if( retVal == NULL )
+            {
+                retVal = pIntercept->dispatch().clGetExtensionFunctionAddress(
+                    func_name );
+            }
         }
 
         CPU_PERFORMANCE_TIMING_END();
@@ -5620,20 +5627,27 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
         }
         CALL_LOGGING_ENTER( "platform = [ %s ], func_name = %s",
             platformInfo.c_str(),
-            func_name );
+            func_name ? func_name : "(NULL)" );
         CPU_PERFORMANCE_TIMING_START();
 
-        // First, check to see if this is an extension we know about.
-        void*   retVal = pIntercept->getExtensionFunctionAddress(
-            platform,
-            func_name );
-
-        // If it's not, call into the dispatch table as usual.
-        if( retVal == NULL )
+        void*   retVal = NULL;
+        if( func_name != NULL )
         {
-            retVal = pIntercept->dispatch().clGetExtensionFunctionAddressForPlatform(
-                platform,
-                func_name );
+            // First, check to see if this is an extension we know about.
+            if( retVal == NULL )
+            {
+                pIntercept->getExtensionFunctionAddress(
+                    platform,
+                    func_name );
+            }
+
+            // If it's not, call into the dispatch table as usual.
+            if( retVal == NULL )
+            {
+                retVal = pIntercept->dispatch().clGetExtensionFunctionAddressForPlatform(
+                    platform,
+                    func_name );
+            }
         }
 
         CPU_PERFORMANCE_TIMING_END();
