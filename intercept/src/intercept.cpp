@@ -2032,12 +2032,19 @@ void CLIntercept::getCreateSubBufferArgsString(
     switch( createType )
     {
     case CL_BUFFER_CREATE_TYPE_REGION:
+        ss << "region = ";
+        if( createInfo != NULL )
         {
             cl_buffer_region*   pRegion = (cl_buffer_region*)createInfo;
-            ss << "origin = "
+            ss << "{ origin = "
                 << pRegion->origin
-                << " size = "
-                << pRegion->size;
+                << ", size = "
+                << pRegion->size
+                << " }";
+        }
+        else
+        {
+            ss << "(NULL)";
         }
         break;
     default:
@@ -2767,7 +2774,10 @@ void CLIntercept::combineProgramStrings(
         if( ( lengths == NULL ) ||
             ( lengths[i] == 0 ) )
         {
-            length = strlen( strings[i] );
+            if( strings[i] != NULL )
+            {
+                length = strlen( strings[i] );
+            }
         }
         else
         {
@@ -2793,19 +2803,25 @@ void CLIntercept::combineProgramStrings(
             if( ( lengths == NULL ) ||
                 ( lengths[i] == 0 ) )
             {
-                length = strlen( strings[i] );
+                if( strings[i] != NULL )
+                {
+                    length = strlen( strings[i] );
+                }
             }
             else
             {
                 length = lengths[i];
             }
-            CLI_MEMCPY(
-                pDst,
-                remaining,
-                strings[i],
-                length );
-            pDst += length;
-            remaining -= length;
+            if( length )
+            {
+                CLI_MEMCPY(
+                    pDst,
+                    remaining,
+                    strings[i],
+                    length );
+                pDst += length;
+                remaining -= length;
+            }
         }
 
         // Replace any NULL chars between kernels with spaces.
