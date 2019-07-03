@@ -869,6 +869,7 @@ private:
 
     std::ofstream   m_MetricDump;
 
+    void    getMDAPICountersFromStream( void );
     void    saveMDAPICounters(
                 const std::string& name,
                 const cl_event event );
@@ -1845,7 +1846,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
         pIntercept->config().SIMDSurvey ||                                  \
-        !pIntercept->config().DevicePerfCounterCustom.empty() ||            \
+        pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
         pIntercept->config().InOrderQueue ||                                \
         pIntercept->config().DefaultQueuePriorityHint ||                    \
         pIntercept->config().DefaultQueueThrottleHint )                     \
@@ -1861,7 +1862,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
         pIntercept->config().SIMDSurvey ||                                  \
-        !pIntercept->config().DevicePerfCounterCustom.empty() ||            \
+        pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
         pIntercept->config().InOrderQueue ||                                \
         pIntercept->config().DefaultQueuePriorityHint ||                    \
         pIntercept->config().DefaultQueueThrottleHint )                     \
@@ -1896,7 +1897,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
         pIntercept->config().SIMDSurvey ||                                  \
-        !pIntercept->config().DevicePerfCounterCustom.empty() )             \
+        pIntercept->config().DevicePerfCounterEventBasedSampling )          \
     {                                                                       \
         queuedTime = pIntercept->OS().GetTimer();                           \
         if( pEvent == NULL )                                                \
@@ -1911,7 +1912,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
           pIntercept->config().ITTPerformanceTiming ||                      \
           pIntercept->config().ChromePerformanceTiming ||                   \
           pIntercept->config().SIMDSurvey ||                                \
-          !pIntercept->config().DevicePerfCounterCustom.empty() ) &&        \
+          pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
         ( pEvent != NULL ) )                                                \
     {                                                                       \
         if( pIntercept->config().DevicePerformanceTimingSkipUnmap &&        \
@@ -1948,7 +1949,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
           pIntercept->config().ITTPerformanceTiming ||                      \
           pIntercept->config().ChromePerformanceTiming ||                   \
           pIntercept->config().SIMDSurvey ||                                \
-          !pIntercept->config().DevicePerfCounterCustom.empty() ) &&        \
+          pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
         ( pEvent != NULL ) )                                                \
     {                                                                       \
         pIntercept->addTimingEvent(                                         \
@@ -1973,7 +1974,8 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
         pIntercept->config().SIMDSurvey ||                                  \
-        !pIntercept->config().DevicePerfCounterCustom.empty() )             \
+        pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
+        pIntercept->config().DevicePerfCounterTimeBasedSampling )           \
     {                                                                       \
         pIntercept->checkTimingEvents();                                    \
     }

@@ -32,7 +32,7 @@
 
 // Enables logs:
 //#ifdef _DEBUG
-//#define MD_DEBUG
+#define MD_DEBUG
 //#endif
 
 #if defined(_WIN32)
@@ -89,11 +89,12 @@ static void DebugPrint(const char* formatString, ...)
 /************************************************************************/
 /* MDHelper constructor                                                 */
 /************************************************************************/
-MDHelper::MDHelper() :
+MDHelper::MDHelper(uint32_t apiMask) :
     m_Initialized (false ),
-    m_APIMask( API_TYPE_OCL ),
+    m_APIMask( apiMask ),
     m_CategoryMask( GPU_RENDER | GPU_COMPUTE | GPU_MEDIA | GPU_GENERIC ),
     m_MetricsDevice( NULL ),
+    m_ConcurrentGroup( NULL ),
     m_MetricSet( NULL )
 {
 }
@@ -113,14 +114,36 @@ MDHelper::~MDHelper()
 }
 
 /************************************************************************/
-/* Create                                                               */
+/* CreateEBS                                                            */
 /************************************************************************/
-MDHelper* MDHelper::Create(
+MDHelper* MDHelper::CreateEBS(
     const std::string& metricSetSymbolName,
     const std::string& metricsFileName,
     const bool includeMaxValues )
 {
-    MDHelper*   pMDHelper = new MDHelper();
+    MDHelper*   pMDHelper = new MDHelper(API_TYPE_OCL);
+    if( pMDHelper )
+    {
+        if( pMDHelper->InitMetricsDiscovery(
+                metricSetSymbolName,
+                metricsFileName,
+                includeMaxValues ) == false )
+        {
+            Delete( pMDHelper );
+        }
+    }
+    return pMDHelper;
+}
+
+/************************************************************************/
+/* CreateTBS                                                            */
+/************************************************************************/
+MDHelper* MDHelper::CreateTBS(
+    const std::string& metricSetSymbolName,
+    const std::string& metricsFileName,
+    const bool includeMaxValues )
+{
+    MDHelper*   pMDHelper = new MDHelper(API_TYPE_IOSTREAM);
     if( pMDHelper )
     {
         if( pMDHelper->InitMetricsDiscovery(
@@ -160,9 +183,9 @@ bool MDHelper::InitMetricsDiscovery(
 
     TCompletionCode res = CC_OK;
 
-    if (m_APIMask & API_TYPE_IOSTREAM)
+    if (m_APIMask & API_TYPE_IOSTREAM && m_APIMask != API_TYPE_IOSTREAM)
     {
-        DebugPrint("API type must not be IOSTREAM.");
+        DebugPrint("API type IOSTREAM cannot be combined with any other API type.");
         return false;
     }
 
@@ -243,6 +266,11 @@ bool MDHelper::InitMetricsDiscovery(
         }
     }
 
+    DebugPrint("Looking for MetricSet: %s, API: %X, Category: %X\n",
+        metricSetSymbolName.c_str(),
+        m_APIMask,
+        m_CategoryMask );
+
     bool found = false;
     for( uint32_t cg = 0; !found && cg < deviceParams->ConcurrentGroupsCount; cg++ )
     {
@@ -268,6 +296,7 @@ bool MDHelper::InitMetricsDiscovery(
                         setParams->CategoryMask );
 
                     found = true;
+                    m_ConcurrentGroup = group;
                     m_MetricSet = metricSet;
                 }
                 else if( setParams )
@@ -358,7 +387,10 @@ void MDHelper::GetMetricsFromReport(
         return;
     }
 
-    const uint32_t reportSize       = m_MetricSet->GetParams()->QueryReportSize;
+    const uint32_t reportSize       =
+        m_APIMask & API_TYPE_IOSTREAM ?
+        m_MetricSet->GetParams()->RawReportSize :
+        m_MetricSet->GetParams()->QueryReportSize;
 
     const uint32_t metricsCount     = m_MetricSet->GetParams()->MetricsCount;
     const uint32_t informationCount = m_MetricSet->GetParams()->InformationCount;
@@ -399,11 +431,143 @@ void MDHelper::GetMetricsFromReport(
 }
 
 /************************************************************************/
+/* GetIOMeasurementInformation                                          */
+/************************************************************************/
+void MDHelper::GetIOMeasurementInformation(
+    std::vector<TTypedValue_1_0>& ioInfoValues )
+{
+    if (!m_Initialized || !m_ConcurrentGroup || !m_MetricSet )
+    {
+        DebugPrint("Can't GetIOMeasurementInformation!\n");
+        return;
+    }
+
+    if( !( m_APIMask & API_TYPE_IOSTREAM ) )
+    {
+        DebugPrint("GetIOMeasurementInformation requires API_TYPE_IOSTREAM!\n");
+        return;
+    }
+
+    const uint32_t ioInformationCount =
+        m_ConcurrentGroup->GetParams()->IoMeasurementInformationCount;
+
+    ioInfoValues.resize(ioInformationCount);
+    TCompletionCode res = m_MetricSet->CalculateIoMeasurementInformation(
+        ioInfoValues.data(),
+        (uint32_t)(ioInfoValues.size() * sizeof(TTypedValue_1_0)) );
+    if( res != CC_OK )
+    {
+        DebugPrint("CalculateIoMeasurementInformation failed!\n");
+        return;
+    }
+}
+
+/************************************************************************/
+/* OpenStream                                                           */
+/************************************************************************/
+void MDHelper::OpenStream( uint32_t timerPeriod, uint32_t bufferSize, uint32_t pid /*= 0 */ )
+{
+    if( !m_Initialized || !m_ConcurrentGroup || !m_MetricSet )
+    {
+        DebugPrint("Can't OpenStream!\n");
+        return;
+    }
+
+    if( !( m_APIMask & API_TYPE_IOSTREAM ) )
+    {
+        DebugPrint("OpenStream requires API_TYPE_IOSTREAM!\n");
+        return;
+    }
+
+    TCompletionCode res = m_ConcurrentGroup->OpenIoStream(
+        m_MetricSet,
+        pid,
+        &timerPeriod,
+        &bufferSize );
+    if( res != CC_OK )
+    {
+        DebugPrint( "OpenStream failed %d\n", res );
+        return;
+    }
+}
+
+/************************************************************************/
+/* GetReportFromStream                                                  */
+/************************************************************************/
+bool MDHelper::GetReportFromStream(
+    std::vector<char>& reportData )
+{
+    if( !m_Initialized || !m_ConcurrentGroup || !m_MetricSet )
+    {
+        DebugPrint("Can't GetReportFromStream!\n");
+        return false;
+    }
+
+    if( !( m_APIMask & API_TYPE_IOSTREAM ) )
+    {
+        DebugPrint("GetReportFromStream requires API_TYPE_IOSTREAM!\n");
+        return false;
+    }
+
+    const uint32_t  reportSize = m_MetricSet->GetParams()->RawReportSize;
+    const uint32_t  maxNumReports = 1;
+
+    reportData.resize( reportSize * maxNumReports );
+
+    uint32_t numReports = maxNumReports;
+    TCompletionCode res = m_ConcurrentGroup->ReadIoStream(
+        &numReports,
+        reportData.data(),
+        0 );
+
+    if( res == CC_READ_PENDING )
+    {
+        DebugPrint("CC_READ_PENDING: Read %d reports from the stream.\n", numReports);
+    }
+    else if( res == CC_OK )
+    {
+        DebugPrint("CC_OK: Read %d reports from the stream.\n", numReports);
+    }
+    else
+    {
+        DebugPrint("Error reading from stream: res = %d\n", (int)res);
+        numReports = 0;
+    }
+
+    return numReports != 0;
+}
+
+/************************************************************************/
+/* CloseStream                                                          */
+/************************************************************************/
+void MDHelper::CloseStream()
+{
+    if( !m_Initialized || !m_ConcurrentGroup )
+    {
+        DebugPrint("Can't CloseStream!\n");
+        return;
+    }
+
+    if( !( m_APIMask & API_TYPE_IOSTREAM ) )
+    {
+        DebugPrint("CloseStream requires API_TYPE_IOSTREAM!\n");
+        return;
+    }
+
+    TCompletionCode res = m_ConcurrentGroup->CloseIoStream();
+    if( res != CC_OK )
+    {
+        DebugPrint( "CloseStream failed: %d\n", res );
+        return;
+    }
+}
+
+/************************************************************************/
 /* PrintMetricNames                                                     */
 /************************************************************************/
 void MDHelper::PrintMetricNames( std::ostream& os )
 {
-    if( !m_Initialized || !m_MetricSet || !os.good() )
+    if( !m_Initialized || !m_ConcurrentGroup || !m_MetricSet || !os.good() )
     {
         DebugPrint("Can't PrintMetricNames!\n");
         return;
@@ -411,7 +575,7 @@ void MDHelper::PrintMetricNames( std::ostream& os )
 
     os << "kernel,";
 
-    for( uint32_t i = 0; i < m_MetricSet->GetParams( )->MetricsCount; i++ )
+    for( uint32_t i = 0; i < m_MetricSet->GetParams()->MetricsCount; i++ )
     {
         os << m_MetricSet->GetMetric( i )->GetParams()->SymbolName << ",";
         if( m_IncludeMaxValues )
@@ -427,6 +591,18 @@ void MDHelper::PrintMetricNames( std::ostream& os )
         os << m_MetricSet->GetInformation( i )->GetParams()->SymbolName << ",";
     }
 
+    if( m_APIMask & API_TYPE_IOSTREAM )
+    {
+        for( uint32_t i = 0; i < m_ConcurrentGroup->GetParams()->IoMeasurementInformationCount; i++ )
+        {
+            IInformation_1_0* mi = m_ConcurrentGroup->GetIoMeasurementInformation( i );
+            if( mi->GetParams()->ApiMask & m_APIMask )
+            {
+                os << mi->GetParams()->SymbolName << ",";
+            }
+        }
+    }
+
     os << std::endl;
 }
 
@@ -435,7 +611,11 @@ void MDHelper::PrintMetricNames( std::ostream& os )
 /************************************************************************/
 void MDHelper::PrintMetricUnits(std::ostream& os )
 {
-    if (!m_Initialized || !m_MetricSet || !os.good()) return;
+    if (!m_Initialized || !m_ConcurrentGroup || !m_MetricSet || !os.good())
+    {
+        DebugPrint("Can't PrintMetricUnits!\n");
+        return;
+    }
 
     os << " ,";
 
@@ -453,6 +633,19 @@ void MDHelper::PrintMetricUnits(std::ostream& os )
         os << ( unit ? unit : " " ) << ",";
     }
 
+    if( m_APIMask & API_TYPE_IOSTREAM )
+    {
+        for( uint32_t i = 0; i < m_ConcurrentGroup->GetParams()->IoMeasurementInformationCount; i++ )
+        {
+            IInformation_1_0* mi = m_ConcurrentGroup->GetIoMeasurementInformation( i );
+            if( mi->GetParams()->ApiMask & m_APIMask )
+            {
+                const char* unit = mi->GetParams()->InfoUnits;
+                os << ( unit ? unit : " " ) << ",";
+            }
+        }
+    }
+
     os << std::endl;
 }
 
@@ -463,9 +656,10 @@ void MDHelper::PrintMetricValues(
     std::ostream& os,
     const std::string& name,
     const std::vector<TTypedValue_1_0>& results,
-    const std::vector<TTypedValue_1_0>& maxValues )
+    const std::vector<TTypedValue_1_0>& maxValues,
+    const std::vector<TTypedValue_1_0>& ioInfoValues )
 {
-    if( !m_Initialized || !m_MetricSet || !os.good() )
+    if( !m_Initialized || !m_ConcurrentGroup || !m_MetricSet || !os.good() )
     {
         DebugPrint("Can't PrintMetricValues!\n");
         return;
@@ -473,7 +667,7 @@ void MDHelper::PrintMetricValues(
 
     os << name << ",";
 
-    uint32_t metricsCount = m_MetricSet->GetParams()->MetricsCount;
+    const uint32_t metricsCount = m_MetricSet->GetParams()->MetricsCount;
     for( uint32_t i = 0; i < metricsCount; i++ )
     {
         PrintValue( os, results[ i ] );
@@ -485,9 +679,22 @@ void MDHelper::PrintMetricValues(
 
     os << ",";
 
-    for( uint32_t i = 0; i < m_MetricSet->GetParams()->InformationCount; i++ )
+    const uint32_t infoCount = m_MetricSet->GetParams()->InformationCount;
+    for( uint32_t i = 0; i < infoCount; i++ )
     {
         PrintValue( os, results[ metricsCount + i ] );
+    }
+
+    if( m_APIMask & API_TYPE_IOSTREAM )
+    {
+        os << ",";
+
+        const uint32_t ioInfoCount =
+            m_ConcurrentGroup->GetParams()->IoMeasurementInformationCount;
+        for( uint32_t i = 0; i < ioInfoCount; i++ )
+        {
+            PrintValue( os, ioInfoValues[i] );
+        }
     }
 
     os << std::endl;

@@ -71,14 +71,26 @@ void CLIntercept::initCustomPerfCounters()
     const std::string& metricsFileName = config().DevicePerfCounterFile;
     const bool includeMaxValues = config().DevicePerfCounterReportMax;
 
-    CLI_ASSERT( !metricSetSymbolName.empty() );
-
     if( m_pMDHelper == NULL )
     {
-        m_pMDHelper = MetricsDiscovery::MDHelper::Create(
-            metricSetSymbolName,
-            metricsFileName,
-            includeMaxValues );
+        if( config().DevicePerfCounterEventBasedSampling )
+        {
+            m_pMDHelper = MetricsDiscovery::MDHelper::CreateEBS(
+                metricSetSymbolName,
+                metricsFileName,
+                includeMaxValues );
+        }
+        else if( config().DevicePerfCounterTimeBasedSampling )
+        {
+            m_pMDHelper = MetricsDiscovery::MDHelper::CreateTBS(
+                metricSetSymbolName,
+                metricsFileName,
+                includeMaxValues );
+        }
+        else
+        {
+            CLI_ASSERT( 0 );
+        }
         if( m_pMDHelper )
         {
             log( "Metric Discovery initialized.\n" );
@@ -89,24 +101,36 @@ void CLIntercept::initCustomPerfCounters()
         }
     }
 
-    // Get the dump directory name and create the dump file for
-    // metrics, if we haven't created it already.
-    if( m_pMDHelper && !m_MetricDump.is_open() )
+    if( m_pMDHelper )
     {
-        std::string fileName = "";
-        OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
-        fileName += '/';
-        fileName += sc_DumpPerfCountersFileNamePrefix;
-        fileName += "_";
-        fileName += metricSetSymbolName;
-        fileName += ".csv";
+        // Get the dump directory name and create the dump file for
+        // metrics, if we haven't created it already.
+        if ( !m_MetricDump.is_open() )
+        {
+            std::string fileName = "";
+            OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+            fileName += '/';
+            fileName += sc_DumpPerfCountersFileNamePrefix;
+            fileName += "_";
+            fileName += metricSetSymbolName;
+            fileName += ".csv";
 
-        OS().MakeDumpDirectories( fileName );
+            OS().MakeDumpDirectories( fileName );
 
-        m_MetricDump.open( fileName.c_str(), std::ios::out );
+            m_MetricDump.open( fileName.c_str(), std::ios::out );
 
-        m_pMDHelper->PrintMetricNames( m_MetricDump );
-        m_pMDHelper->PrintMetricUnits( m_MetricDump );
+            m_pMDHelper->PrintMetricNames( m_MetricDump );
+            m_pMDHelper->PrintMetricUnits( m_MetricDump );
+        }
+
+        // Open the metric stream for time based sampling, if needed.
+        if( config().DevicePerfCounterTimeBasedSampling )
+        {
+            m_pMDHelper->OpenStream(
+                1000000,        // timer period, in nanoseconds -> 1ms
+                1024 * 1024,    // buffer size in bytes -> 1MB
+                0 );            // pid -> sample all processes
+        }
     }
 }
 
@@ -198,6 +222,40 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getMDAPICountersFromStream( void )
+{
+    if( m_pMDHelper )
+    {
+        std::vector<char> reportData;
+
+        std::vector<MetricsDiscovery::TTypedValue_1_0> results;
+        std::vector<MetricsDiscovery::TTypedValue_1_0> maxValues;
+        std::vector<MetricsDiscovery::TTypedValue_1_0> ioInfoValues;
+
+        while( m_pMDHelper->GetReportFromStream( reportData ) )
+        {
+            m_pMDHelper->GetMetricsFromReport(
+                reportData.data(),
+                results,
+                maxValues );
+            if( ioInfoValues.empty() )
+            {
+                m_pMDHelper->GetIOMeasurementInformation(
+                    ioInfoValues );
+            }
+
+            m_pMDHelper->PrintMetricValues(
+                m_MetricDump,
+                "TBS",
+                results,
+                maxValues,
+                ioInfoValues );
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::saveMDAPICounters(
     const std::string& name,
     const cl_event event )
@@ -224,6 +282,7 @@ void CLIntercept::saveMDAPICounters(
 
                 std::vector<MetricsDiscovery::TTypedValue_1_0> results;
                 std::vector<MetricsDiscovery::TTypedValue_1_0> maxValues;
+                std::vector<MetricsDiscovery::TTypedValue_1_0> ioInfoValues; // unused
 
                 m_pMDHelper->GetMetricsFromReport(
                     pReport,
@@ -234,7 +293,8 @@ void CLIntercept::saveMDAPICounters(
                     m_MetricDump,
                     name,
                     results,
-                    maxValues );
+                    maxValues,
+                    ioInfoValues );
                 m_pMDHelper->AggregateMetrics(
                     m_MetricAggregations,
                     name,
@@ -258,6 +318,7 @@ void CLIntercept::saveMDAPICounters(
 void CLIntercept::reportMDAPICounters( std::ostream& os )
 {
     if( config().DevicePerfCounterTiming &&
+        config().DevicePerfCounterEventBasedSampling &&
         !m_MetricAggregations.empty() )
     {
         std::string header;

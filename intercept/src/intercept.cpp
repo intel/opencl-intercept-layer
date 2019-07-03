@@ -182,6 +182,11 @@ CLIntercept::~CLIntercept()
 #if defined(USE_MDAPI)
     if( m_pMDHelper )
     {
+        if( config().DevicePerfCounterTimeBasedSampling )
+        {
+            m_pMDHelper->CloseStream();
+        }
+
         MetricsDiscovery::MDHelper::Delete( m_pMDHelper );
     }
 #endif
@@ -539,6 +544,23 @@ bool CLIntercept::init()
 #if defined(USE_MDAPI)
     if( !m_Config.DevicePerfCounterCustom.empty() )
     {
+        if( !m_Config.DevicePerfCounterEventBasedSampling &&
+            !m_Config.DevicePerfCounterTimeBasedSampling )
+        {
+            log("NOTE: DevicePerfCounterCustom is set to a non-empty value without setting\n");
+            log("    DevicePerfCounterEventBasedSampling or DevicePerfCounterTimeBasedSampling.\n");
+            log("    Enabling DevicePerfCounterEventBasedSampling.  This behavior may be changed\n");
+            log("    in a future version!\n");
+            m_Config.DevicePerfCounterEventBasedSampling = true;
+        }
+        if( m_Config.DevicePerfCounterEventBasedSampling &&
+            m_Config.DevicePerfCounterTimeBasedSampling )
+        {
+            log("NOTE: Both DevicePerfCounterEventBasedSampling and DevicePerfCounterTimeBasedSampling\n");
+            log("    are enabled, but simultaneous collection of both types of counters is not\n");
+            log("    currently supported.  Disabling DevicePerfCounterTimeBasedSampling.\n");
+            m_Config.DevicePerfCounterTimeBasedSampling = false;
+        }
         initCustomPerfCounters();
     }
 #endif
@@ -859,7 +881,7 @@ void CLIntercept::writeReport(
     }
 
 #if defined(USE_MDAPI)
-    if( !config().DevicePerfCounterCustom.empty() )
+    if( config().DevicePerfCounterEventBasedSampling )
     {
         reportMDAPICounters( os );
     }
@@ -4210,7 +4232,7 @@ void CLIntercept::modifyCommandQueueProperties(
         config().ITTPerformanceTiming ||
         config().ChromePerformanceTiming ||
         config().SIMDSurvey ||
-        !config().DevicePerfCounterCustom.empty() )
+        config().DevicePerfCounterEventBasedSampling )
     {
         props |= (cl_command_queue_properties)CL_QUEUE_PROFILING_ENABLE;
     }
@@ -4810,7 +4832,7 @@ void CLIntercept::checkTimingEvents()
                 }
 
 #if defined(USE_MDAPI)
-                if( !config().DevicePerfCounterCustom.empty() )
+                if( config().DevicePerfCounterEventBasedSampling )
                 {
                     const std::string& name =
                         node.KernelName.empty() ?
@@ -4846,6 +4868,13 @@ void CLIntercept::checkTimingEvents()
 
         current = next;
     }
+
+#if defined(USE_MDAPI)
+    if( config().DevicePerfCounterTimeBasedSampling )
+    {
+        getMDAPICountersFromStream();
+    }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
