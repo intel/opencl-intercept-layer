@@ -283,10 +283,16 @@ static bool parseArguments(int argc, char *argv[])
             SETENV("CLI_ContextCallbackLogging", "1");
             SETENV("CLI_ContextHintLevel", "7");    // GOOD, BAD, and NEUTRAL
         }
-        else if( !strcmp(argv[i], "--mdapi-counters") || !strcmp(argv[i], "-mdapi") )
+        else if( !strcmp(argv[i], "--mdapi-ebs") )
         {
             SETENV("CLI_DevicePerfCounterCustom", "ComputeBasic");
+            SETENV("CLI_DevicePerfCounterEventBasedSampling", "1" );
             SETENV("CLI_DevicePerfCounterTiming", "1");
+        }
+        else if( !strcmp(argv[i], "--mdapi-tbs") )
+        {
+            SETENV("CLI_DevicePerfCounterCustom", "ComputeBasic");
+            SETENV("CLI_DevicePerfCounterTimeBasedSampling", "1" );
         }
         else if( !strcmp(argv[i], "-h") || !strcmp(argv[i], "--host-timing") )
         {
@@ -352,7 +358,8 @@ static bool parseArguments(int argc, char *argv[])
             "  --device-timing [-d]             Report Device Execution Time\n"
             "  --device-timing-verbose [-dv]    Report More Detailed Device Execution Time\n"
             "  --driver-diagnostics [-ddiag]    Log Driver Diagnostics\n"
-            "  --mdapi-counters [-mdapi]        Report MDAPI Performance Counters\n"
+            "  --mdapi-ebs                      Collect and Report Event-Based MDAPI Performance Counters\n"
+            "  --mdapi-tbs                      Collect and Report Time-Based MDAPI Performance Counters\n"
             "  --host-timing [-h]               Report Host API Execution Time\n"
             "  --leak-checking [-l]             Track and Report OpenCL Leaks\n"
             "  --output-to-file [-f]            Log and Report to Files vs. stderr\n"
