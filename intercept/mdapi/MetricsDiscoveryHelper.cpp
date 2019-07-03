@@ -522,11 +522,11 @@ bool MDHelper::GetReportFromStream(
 
     if( res == CC_READ_PENDING )
     {
-        DebugPrint("CC_READ_PENDING: Read %d reports from the stream.\n", numReports);
+        //DebugPrint("CC_READ_PENDING: Read %d reports from the stream.\n", numReports);
     }
     else if( res == CC_OK )
     {
-        DebugPrint("CC_OK: Read %d reports from the stream.\n", numReports);
+        //DebugPrint("CC_OK: Read %d reports from the stream.\n", numReports);
     }
     else
     {
@@ -593,13 +593,13 @@ void MDHelper::PrintMetricNames( std::ostream& os )
 
     if( m_APIMask & API_TYPE_IOSTREAM )
     {
-        for( uint32_t i = 0; i < m_ConcurrentGroup->GetParams()->IoMeasurementInformationCount; i++ )
+        os << ",";
+
+        const uint32_t ioInfoCount =
+            m_ConcurrentGroup->GetParams()->IoMeasurementInformationCount;
+        for( uint32_t i = 0; i < ioInfoCount; i++ )
         {
-            IInformation_1_0* mi = m_ConcurrentGroup->GetIoMeasurementInformation( i );
-            if( mi->GetParams()->ApiMask & m_APIMask )
-            {
-                os << mi->GetParams()->SymbolName << ",";
-            }
+            os << m_ConcurrentGroup->GetIoMeasurementInformation( i )->GetParams()->SymbolName << ",";
         }
     }
 
@@ -635,14 +635,14 @@ void MDHelper::PrintMetricUnits(std::ostream& os )
 
     if( m_APIMask & API_TYPE_IOSTREAM )
     {
-        for( uint32_t i = 0; i < m_ConcurrentGroup->GetParams()->IoMeasurementInformationCount; i++ )
+        os << ",";
+
+        const uint32_t ioInfoCount =
+            m_ConcurrentGroup->GetParams()->IoMeasurementInformationCount;
+        for( uint32_t i = 0; i < ioInfoCount; i++ )
         {
-            IInformation_1_0* mi = m_ConcurrentGroup->GetIoMeasurementInformation( i );
-            if( mi->GetParams()->ApiMask & m_APIMask )
-            {
-                const char* unit = mi->GetParams()->InfoUnits;
-                os << ( unit ? unit : " " ) << ",";
-            }
+            const char* unit = m_ConcurrentGroup->GetIoMeasurementInformation( i )->GetParams()->InfoUnits;
+            os << ( unit ? unit : " " ) << ",";
         }
     }
 

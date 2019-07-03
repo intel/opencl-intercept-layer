@@ -103,6 +103,20 @@ void CLIntercept::initCustomPerfCounters()
 
     if( m_pMDHelper )
     {
+        // Open the metric stream for time based sampling, if needed.
+        if( config().DevicePerfCounterTimeBasedSampling )
+        {
+            m_pMDHelper->OpenStream(
+                1000000,        // timer period, in nanoseconds -> 1ms
+                1024 * 1024,    // buffer size in bytes -> 1MB
+                0 );            // pid -> sample all processes
+
+            // Read a dummy report from the stream.  This is needed to
+            // correctly populate the metric names and units.
+            std::vector<char> reportData;
+            m_pMDHelper->GetReportFromStream( reportData );
+        }
+
         // Get the dump directory name and create the dump file for
         // metrics, if we haven't created it already.
         if ( !m_MetricDump.is_open() )
@@ -121,15 +135,6 @@ void CLIntercept::initCustomPerfCounters()
 
             m_pMDHelper->PrintMetricNames( m_MetricDump );
             m_pMDHelper->PrintMetricUnits( m_MetricDump );
-        }
-
-        // Open the metric stream for time based sampling, if needed.
-        if( config().DevicePerfCounterTimeBasedSampling )
-        {
-            m_pMDHelper->OpenStream(
-                1000000,        // timer period, in nanoseconds -> 1ms
-                1024 * 1024,    // buffer size in bytes -> 1MB
-                0 );            // pid -> sample all processes
         }
     }
 }
