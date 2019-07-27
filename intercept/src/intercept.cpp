@@ -303,6 +303,8 @@ bool GetControl<std::string>(
 //
 bool CLIntercept::init()
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     if( m_OS.Init() == false )
     {
 #ifdef __ANDROID__
@@ -310,8 +312,6 @@ bool CLIntercept::init()
 #endif
         return false;
     }
-
-    std::lock_guard<std::mutex> lock(m_Mutex);
 
 #if defined(_WIN32)
     OS::Services_Common::ENV_PREFIX = "CLI_";
@@ -985,12 +985,11 @@ void CLIntercept::callLoggingEnter(
         str += " )";
     }
 
-    char temp[ CLI_MAX_STRING_SIZE ] = "";
-    int size = CLI_VSPRINTF( temp, CLI_MAX_STRING_SIZE, formatStr, args );
-    if( size >= 0 && size < CLI_MAX_STRING_SIZE )
+    int size = CLI_VSPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, formatStr, args );
+    if( size >= 0 && size < CLI_STRING_BUFFER_SIZE )
     {
         str += ": ";
-        str += temp;
+        str += m_StringBuffer;
     }
     else
     {
@@ -1018,11 +1017,10 @@ void CLIntercept::callLoggingInfo(
     va_list args;
     va_start( args, formatStr );
 
-    char temp[ CLI_MAX_STRING_SIZE ] = "";
-    int size = CLI_VSPRINTF( temp, CLI_MAX_STRING_SIZE, formatStr, args );
-    if( size >= 0 && size < CLI_MAX_STRING_SIZE )
+    int size = CLI_VSPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, formatStr, args );
+    if( size >= 0 && size < CLI_STRING_BUFFER_SIZE )
     {
-        callLoggingInfo( std::string( temp ) );
+        callLoggingInfo( std::string( m_StringBuffer ) );
     }
     else
     {
@@ -1048,9 +1046,8 @@ void CLIntercept::callLoggingExit(
 
     if( event )
     {
-        char temp[ CLI_MAX_STRING_SIZE ] = "";
-        CLI_SPRINTF( temp, CLI_MAX_STRING_SIZE, " created event = %p", *event );
-        str += temp;
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " created event = %p", *event );
+        str += m_StringBuffer;
     }
 
     str += " -> ";
@@ -1070,19 +1067,17 @@ void CLIntercept::callLoggingExit(
 
     std::string str = functionName;
 
-    char temp[ CLI_MAX_STRING_SIZE ] = "";
-
     if( event )
     {
-        CLI_SPRINTF( temp, CLI_MAX_STRING_SIZE, " created event = %p", *event );
-        str += temp;
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " created event = %p", *event );
+        str += m_StringBuffer;
     }
 
-    int size = CLI_VSPRINTF( temp, CLI_MAX_STRING_SIZE, formatStr, args );
-    if( size >= 0 && size < CLI_MAX_STRING_SIZE )
+    int size = CLI_VSPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, formatStr, args );
+    if( size >= 0 && size < CLI_STRING_BUFFER_SIZE )
     {
         str += ": ";
-        str += temp;
+        str += m_StringBuffer;
     }
     else
     {
@@ -1540,7 +1535,7 @@ cl_int CLIntercept::allocateAndGetKernelISABinary(
 //
 void CLIntercept::getPlatformInfoString(
     const cl_platform_id platform,
-    std::string& str ) const
+    std::string& str )
 {
     str = "";
 
@@ -1572,7 +1567,7 @@ void CLIntercept::getPlatformInfoString(
 void CLIntercept::getDeviceInfoString(
     cl_uint numDevices,
     const cl_device_id* devices,
-    std::string& str ) const
+    std::string& str )
 {
     str = "";
 
@@ -1626,7 +1621,7 @@ void CLIntercept::getDeviceInfoString(
 void CLIntercept::getEventListString(
     cl_uint numEvents,
     const cl_event* eventList,
-    std::string& str ) const
+    std::string& str )
 {
     {
         std::ostringstream  ss;
@@ -1644,9 +1639,8 @@ void CLIntercept::getEventListString(
                 str += ", ";
             }
             {
-                char temp[ CLI_MAX_STRING_SIZE ] = "";
-                CLI_SPRINTF( temp, CLI_MAX_STRING_SIZE, "%p", eventList[i] );
-                str += temp;
+                CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%p", eventList[i] );
+                str += m_StringBuffer;
             }
         }
     }
@@ -1657,7 +1651,7 @@ void CLIntercept::getEventListString(
 //
 void CLIntercept::getContextPropertiesString(
     const cl_context_properties* properties,
-    std::string& str ) const
+    std::string& str )
 {
     str = "";
 
@@ -1665,8 +1659,6 @@ void CLIntercept::getContextPropertiesString(
     {
         while( properties[0] != 0 )
         {
-            char    temp_str[ CLI_MAX_STRING_SIZE ];
-
             cl_int  property = (cl_int)properties[0];
             str += enumName().name( property ) + " = ";
 
@@ -1689,8 +1681,8 @@ void CLIntercept::getContextPropertiesString(
                 {
                     const void** pp = (const void**)( properties + 1 );
                     const void*  value = pp[0];
-                    CLI_SPRINTF( temp_str, CLI_MAX_STRING_SIZE, "%p", value );
-                    str += temp_str;
+                    CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%p", value );
+                    str += m_StringBuffer;
                 }
                 break;
             case CL_CONTEXT_INTEROP_USER_SYNC:
@@ -1722,7 +1714,7 @@ void CLIntercept::getContextPropertiesString(
 //
 void CLIntercept::getSamplerPropertiesString(
     const cl_sampler_properties* properties,
-    std::string& str ) const
+    std::string& str )
 {
     str = "";
 
@@ -1769,9 +1761,8 @@ void CLIntercept::getSamplerPropertiesString(
 
                     cl_float    value = pf[0];
 
-                    char    fstr[ CLI_MAX_STRING_SIZE ];
-                    CLI_SPRINTF( fstr, CLI_MAX_STRING_SIZE, "%.2f", value );
-                    str += fstr;
+                    CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%.2f", value );
+                    str += m_StringBuffer;
                 }
                 break;
             default:
@@ -1796,7 +1787,7 @@ void CLIntercept::getSamplerPropertiesString(
 //
 void CLIntercept::getCommandQueuePropertiesString(
     const cl_queue_properties* properties,
-    std::string& str ) const
+    std::string& str )
 {
     str = "";
 
@@ -1863,7 +1854,7 @@ void CLIntercept::getCreateKernelsInProgramRetString(
     cl_int retVal,
     cl_kernel* kernels,
     cl_uint* num_kernels_ret,
-    std::string& str ) const
+    std::string& str )
 {
     if( kernels &&
         num_kernels_ret &&
@@ -1893,16 +1884,14 @@ void CLIntercept::getKernelArgString(
     cl_uint arg_index,
     size_t arg_size,
     const void* arg_value,
-    std::string& str ) const
+    std::string& str )
 {
-    char    s[CLI_MAX_STRING_SIZE] = "";
-
     if( getSampler(
             arg_size,
             arg_value,
             str ) )
     {
-        CLI_SPRINTF( s, CLI_MAX_STRING_SIZE, "index = %d, size = %d, value = %s\n",
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d, value = %s\n",
             arg_index,
             (unsigned int)arg_size,
             str.c_str() );
@@ -1911,7 +1900,7 @@ void CLIntercept::getKernelArgString(
              ( arg_size == sizeof(cl_mem) ) )
     {
         cl_mem* pMem = (cl_mem*)arg_value;
-        CLI_SPRINTF( s, CLI_MAX_STRING_SIZE, "index = %d, size = %d, value = %p",
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d, value = %p",
             arg_index,
             (unsigned int)arg_size,
             pMem[0] );
@@ -1920,7 +1909,7 @@ void CLIntercept::getKernelArgString(
              ( arg_size == sizeof(cl_uint) ) )
     {
         cl_uint*    pData = (cl_uint*)arg_value;
-        CLI_SPRINTF( s, CLI_MAX_STRING_SIZE, "index = %d, size = %d, value = 0x%x",
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d, value = 0x%x",
             arg_index,
             (unsigned int)arg_size,
             pData[0] );
@@ -1929,7 +1918,7 @@ void CLIntercept::getKernelArgString(
              ( arg_size == sizeof(cl_ulong) ) )
     {
         cl_ulong*   pData = (cl_ulong*)arg_value;
-        CLI_SPRINTF( s, CLI_MAX_STRING_SIZE, "index = %d, size = %d, value = 0x%jx",
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d, value = 0x%jx",
             arg_index,
             (unsigned int)arg_size,
             pData[0] );
@@ -1938,7 +1927,7 @@ void CLIntercept::getKernelArgString(
              ( arg_size == sizeof(cl_int4) ) )
     {
         cl_int4*   pData = (cl_int4*)arg_value;
-        CLI_SPRINTF( s, CLI_MAX_STRING_SIZE, "index = %d, size = %d, valueX = 0x%0x, valueY = 0x%0x, valueZ = 0x%0x, valueW = 0x%0x",
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d, valueX = 0x%0x, valueY = 0x%0x, valueZ = 0x%0x, valueW = 0x%0x",
             arg_index,
             (unsigned int)arg_size,
             pData->s[0],
@@ -1948,12 +1937,12 @@ void CLIntercept::getKernelArgString(
     }
     else
     {
-        CLI_SPRINTF( s, CLI_MAX_STRING_SIZE, "index = %d, size = %d",
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d",
             arg_index,
             (unsigned int)arg_size );
     }
 
-    str = s;
+    str = m_StringBuffer;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1963,7 +1952,7 @@ void CLIntercept::getEnqueueNDRangeKernelArgsString(
     const size_t* global_work_offset,
     const size_t* global_work_size,
     const size_t* local_work_size,
-    std::string& str ) const
+    std::string& str )
 {
     std::ostringstream  ss;
 
@@ -2025,7 +2014,7 @@ void CLIntercept::getEnqueueNDRangeKernelArgsString(
 void CLIntercept::getCreateSubBufferArgsString(
     cl_buffer_create_type createType,
     const void *createInfo,
-    std::string& str ) const
+    std::string& str )
 {
     std::ostringstream  ss;
 
@@ -9648,11 +9637,10 @@ void CLIntercept::logf( const char* formatStr, ... )
     va_list args;
     va_start( args, formatStr );
 
-    char temp[ CLI_MAX_STRING_SIZE ] = "";
-    int size = CLI_VSPRINTF( temp, CLI_MAX_STRING_SIZE, formatStr, args );
-    if( size >= 0 && size < CLI_MAX_STRING_SIZE )
+    int size = CLI_VSPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, formatStr, args );
+    if( size >= 0 && size < CLI_STRING_BUFFER_SIZE )
     {
-        log( std::string( temp ) );
+        log( std::string( m_StringBuffer ) );
     }
     else
     {
@@ -10266,9 +10254,8 @@ void CLIntercept::ittRegisterCommandQueue(
         trackName += " Queue, ";
 
         {
-            char str[CLI_MAX_STRING_SIZE] = "";
-            CLI_SPRINTF( str, CLI_MAX_STRING_SIZE, "Handle = %p", queue );
-            trackName = trackName + str;
+            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "Handle = %p", queue );
+            trackName = trackName + m_StringBuffer;
         }
 
         // Don't fail if the track cannot be created, it just means we
@@ -10588,9 +10575,8 @@ void CLIntercept::chromeRegisterCommandQueue(
         trackName += " Queue";
 
         //{
-        //    char str[CLI_MAX_STRING_SIZE] = "";
-        //    CLI_SPRINTF( str, CLI_MAX_STRING_SIZE, ", Handle = %p", queue );
-        //    trackName = trackName + str;
+        //    CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, ", Handle = %p", queue );
+        //    trackName = trackName + m_StringBuffer;
         //}
 
         uint64_t    processId = OS().GetProcessID();
