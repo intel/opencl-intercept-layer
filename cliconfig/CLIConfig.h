@@ -28,6 +28,7 @@
 #include <afxcmn.h>
 #include <afxtempl.h>
 
+#include <string>
 #include <vector>
 
 #include "resource.h"
