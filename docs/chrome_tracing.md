@@ -56,11 +56,11 @@ Let's zoom in a bit and look at the what's in the timegraph:
 
 ![Chrome Tracing Detail](images/chrome_tracing_detail.png)
 
-When the `ChromePerformanceTimingInStages flag is also set, the calls are
+When the `ChromePerformanceTimingInStages` flag is also set, the calls are
 further split into stages and reorganized; here is what that looks like on 
 a timegraph:
 
-![Chrome Tracing with Stages Detail](images/chrome_tracing_with_stages.png)
+![Chrome Tracing with Stages Detail](images/chrome_tracing_with_stages.PNG)
 
 ## Overhead
 
