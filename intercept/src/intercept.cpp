@@ -128,6 +128,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
     m_EnqueueCounter = 1;
     m_StartTime = 0;
 
+    m_EventsChromeTraced = 0;
     m_ProgramNumber = 0;
     m_KernelID = 0;
 
@@ -10669,13 +10670,36 @@ void CLIntercept::chromeTraceEvent(
         uint64_t    usDelta = ( commandEnd - commandStart ) / 1000;
 
         uint64_t    processId = OS().GetProcessID();
-        m_InterceptTrace
-            << "{\"ph\":\"X\", \"pid\":" << processId
-            << ", \"tid\":-" << (uintptr_t)queue
-            << ", \"name\":\"" << name
-            << "\", \"ts\":" << usStart
-            << ", \"dur\":" << usDelta
-            << "},\n";
+
+        if (m_Config.ChromePerformanceTimingInStages)
+        {
+            std::string colours[3] = {"thread_state_runnable","cq_build_running","thread_state_iowait"};
+            std::string suffixes[3] = {"(Queued)","(Submitted)","(Execution)"};
+            double starts[3] = {((double)commandQueued - m_StartTime)/1000, ((double)commandSubmit - m_StartTime)/1000, ((double)commandStart - m_StartTime)/1000};
+            double ends[3] = {starts[1], starts[2], ((double)commandEnd - m_StartTime)/1000};
+
+            for (int i = 0; i < 3; i++){
+                m_InterceptTrace
+                    << "{\"name\":\"" << name << " " << suffixes[i]
+                    << "\", \"ph\":\"X\", \"pid\":" << processId
+                    << ", \"tid\":" << m_EventsChromeTraced << "." << (uintptr_t)queue
+                    << ", \"ts\":" << starts[i]
+                    << ", \"dur\":" << (ends[i] - starts[i])
+                    << ", \"cname\":\"" << colours[i]
+                    << "\"},\n";
+            }
+            m_EventsChromeTraced++;
+        }
+        else
+        {
+            m_InterceptTrace
+                << "{\"ph\":\"X\", \"pid\":" << processId
+                << ", \"tid\":-" << (uintptr_t)queue
+                << ", \"name\":\"" << name
+                << "\", \"ts\":" << usStart
+                << ", \"dur\":" << usDelta
+                << "},\n";
+        }
     }
     else
     {

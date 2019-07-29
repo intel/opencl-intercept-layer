@@ -17,7 +17,7 @@ looks like this one:
 
 ## Configuring Chrome Tracing
 
-There are (currently) two Chrome Tracing-related controls for the Intercept
+There are (currently) three Chrome Tracing-related controls for the Intercept
 Layer for OpenCL Applications:
 
 * `ChromeCallLogging`: This is the control for tracing OpenCL host APIs.
@@ -27,10 +27,15 @@ Layer for OpenCL Applications:
   device commands.  It will plot OpenCL commands for each command queue
   created by the application, similar to those dumped when
   `DevicePerformanceTiming` is enabled.
+* `ChromePerformanceTimingInStages`: This is a further control that sits
+  on top of `ChromePerformanceTiming`(it does nothing when this flag is not
+  on). When it is on it splits up the events into "Queued", "Submitted", 
+  and "Execution" stages, and reorders the calls approximately by start time.
+
 
 ## Collecting Chrome Tracing Data
 
-After setting one of these two controls (or both!), run your application,
+After setting some combination of these controls, run your application,
 and you should see a "CLIntercept_trace.json" file in your CLIntercept_Dump
 directory.
 
@@ -51,12 +56,22 @@ Let's zoom in a bit and look at the what's in the timegraph:
 
 ![Chrome Tracing Detail](images/chrome_tracing_detail.png)
 
+When the `ChromePerformanceTimingInStages flag is also set, the calls are
+further split into stages and reorganized; here is what that looks like on 
+a timegraph:
+
+![Chrome Tracing with Stages Detail](images/chrome_tracing_with_stages.png)
+
 ## Overhead
 
 Empirically, the overhead of Chrome Tracing is very low.  The difference in
 scores between a run of LuxMark without Chrome Tracing vs. enabling
 `ChromeCallLogging` and `ChromePerformanceTiming` was less than 1%, and the
-trace file size for the 2+ minutes of execution was 26MB.
+trace file size for the 2+ minutes of execution was 26MB. 
+Similarly, `ChromePerformanceTimingInStages` does not create a noticeable
+performance hit, however the trace file size can be up to 3x larger than
+without it.
+
 
 ---
 
