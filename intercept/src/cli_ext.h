@@ -55,6 +55,24 @@ class ID3D10Texture2D;
 class ID3D10Texture3D;
 
 // cl_khr_d3d10_sharing
+#define CL_INVALID_D3D10_DEVICE_KHR                  -1002
+#define CL_INVALID_D3D10_RESOURCE_KHR                -1003
+#define CL_D3D10_RESOURCE_ALREADY_ACQUIRED_KHR       -1004
+#define CL_D3D10_RESOURCE_NOT_ACQUIRED_KHR           -1005
+
+// cl_khr_d3d10_sharing
+#define CL_D3D10_DEVICE_KHR                          0x4010
+#define CL_D3D10_DXGI_ADAPTER_KHR                    0x4011
+#define CL_PREFERRED_DEVICES_FOR_D3D10_KHR           0x4012
+#define CL_ALL_DEVICES_FOR_D3D10_KHR                 0x4013
+#define CL_CONTEXT_D3D10_DEVICE_KHR                  0x4014
+#define CL_CONTEXT_D3D10_PREFER_SHARED_RESOURCES_KHR 0x402C
+#define CL_MEM_D3D10_RESOURCE_KHR                    0x4015
+#define CL_IMAGE_D3D10_SUBRESOURCE_KHR               0x4016
+#define CL_COMMAND_ACQUIRE_D3D10_OBJECTS_KHR         0x4017
+#define CL_COMMAND_RELEASE_D3D10_OBJECTS_KHR         0x4018
+
+// cl_khr_d3d10_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clGetDeviceIDsFromD3D10KHR(
     cl_platform_id platform,
@@ -118,6 +136,24 @@ typedef cl_uint cl_d3d11_device_set_khr;
 class ID3D11Buffer;
 class ID3D11Texture2D;
 class ID3D11Texture3D;
+
+// cl_khr_d3d11_sharing
+#define CL_INVALID_D3D11_DEVICE_KHR                  -1006
+#define CL_INVALID_D3D11_RESOURCE_KHR                -1007
+#define CL_D3D11_RESOURCE_ALREADY_ACQUIRED_KHR       -1008
+#define CL_D3D11_RESOURCE_NOT_ACQUIRED_KHR           -1009
+
+// cl_khr_d3d11_sharing
+#define CL_D3D11_DEVICE_KHR                          0x4019
+#define CL_D3D11_DXGI_ADAPTER_KHR                    0x401A
+#define CL_PREFERRED_DEVICES_FOR_D3D11_KHR           0x401B
+#define CL_ALL_DEVICES_FOR_D3D11_KHR                 0x401C
+#define CL_CONTEXT_D3D11_DEVICE_KHR                  0x401D
+#define CL_CONTEXT_D3D11_PREFER_SHARED_RESOURCES_KHR 0x402D
+#define CL_MEM_D3D11_RESOURCE_KHR                    0x401E
+#define CL_IMAGE_D3D11_SUBRESOURCE_KHR               0x401F
+#define CL_COMMAND_ACQUIRE_D3D11_OBJECTS_KHR         0x4020
+#define CL_COMMAND_RELEASE_D3D11_OBJECTS_KHR         0x4021
 
 // cl_khr_d3d11_sharing
 extern CL_API_ENTRY
@@ -184,6 +220,27 @@ typedef cl_uint cl_dx9_media_adapter_type_khr;
 class IDirect3DSurface9;
 
 // cl_khr_dx9_media_sharing
+#define CL_INVALID_DX9_MEDIA_ADAPTER_KHR                -1010
+#define CL_INVALID_DX9_MEDIA_SURFACE_KHR                -1011
+#define CL_DX9_MEDIA_SURFACE_ALREADY_ACQUIRED_KHR       -1012
+#define CL_DX9_MEDIA_SURFACE_NOT_ACQUIRED_KHR           -1013
+
+// cl_khr_dx9_media_sharing
+#define CL_ADAPTER_D3D9_KHR                              0x2020
+#define CL_ADAPTER_D3D9EX_KHR                            0x2021
+#define CL_ADAPTER_DXVA_KHR                              0x2022
+#define CL_PREFERRED_DEVICES_FOR_DX9_MEDIA_ADAPTER_KHR   0x2023
+#define CL_ALL_DEVICES_FOR_DX9_MEDIA_ADAPTER_KHR         0x2024
+#define CL_CONTEXT_ADAPTER_D3D9_KHR                      0x2025
+#define CL_CONTEXT_ADAPTER_D3D9EX_KHR                    0x2026
+#define CL_CONTEXT_ADAPTER_DXVA_KHR                      0x2027
+#define CL_MEM_DX9_MEDIA_ADAPTER_TYPE_KHR                0x2028
+#define CL_MEM_DX9_MEDIA_SURFACE_INFO_KHR                0x2029
+#define CL_IMAGE_DX9_MEDIA_PLANE_KHR                     0x202A
+#define CL_COMMAND_ACQUIRE_DX9_MEDIA_SURFACES_KHR        0x202B
+#define CL_COMMAND_RELEASE_DX9_MEDIA_SURFACES_KHR        0x202C
+
+// cl_khr_dx9_media_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
     cl_platform_id platform,
@@ -230,6 +287,28 @@ cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
 typedef cl_uint cl_dx9_device_source_intel;
 typedef cl_uint cl_dx9_device_set_intel;
 class IDirect3DSurface9;
+
+// cl_intel_dx9_media_sharing
+// These error codes are shared with cl_khr_dx9_media_sharing.
+#define CL_INVALID_DX9_DEVICE_INTEL                   -1010
+#define CL_INVALID_DX9_RESOURCE_INTEL                 -1011
+#define CL_DX9_RESOURCE_ALREADY_ACQUIRED_INTEL        -1012
+#define CL_DX9_RESOURCE_NOT_ACQUIRED_INTEL            -1013
+
+// cl_intel_dx9_media_sharing
+#define CL_D3D9_DEVICE_INTEL                          0x4022
+#define CL_D3D9EX_DEVICE_INTEL                        0x4070
+#define CL_DXVA_DEVICE_INTEL                          0x4071
+#define CL_PREFERRED_DEVICES_FOR_DX9_INTEL            0x4024
+#define CL_ALL_DEVICES_FOR_DX9_INTEL                  0x4025
+#define CL_CONTEXT_D3D9_DEVICE_INTEL                  0x4026
+#define CL_CONTEXT_D3D9EX_DEVICE_INTEL                0x4072
+#define CL_CONTEXT_DXVA_DEVICE_INTEL                  0x4073
+#define CL_MEM_DX9_RESOURCE_INTEL                     0x4027
+#define CL_MEM_DX9_SHARED_HANDLE_INTEL                0x4074
+#define CL_IMAGE_DX9_PLANE_INTEL                      0x4075
+#define CL_COMMAND_ACQUIRE_DX9_OBJECTS_INTEL          0x402A
+#define CL_COMMAND_RELEASE_DX9_OBJECTS_INTEL          0x402B
 
 // cl_intel_dx9_media_sharing
 extern CL_API_ENTRY
