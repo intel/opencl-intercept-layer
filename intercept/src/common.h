@@ -93,7 +93,7 @@
     #define CLI_C_ASSERT(e) typedef char __attribute__((unused)) __C_ASSERT__[(e)?1:-1]
 #endif
 
-#define CLI_MAX_STRING_SIZE 1024
+#define CLI_STRING_BUFFER_SIZE (16 * 1024)
 
 /*****************************************************************************\
 

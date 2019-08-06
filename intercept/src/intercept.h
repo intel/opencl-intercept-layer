@@ -124,44 +124,44 @@ public:
 
     void    getPlatformInfoString(
                 cl_platform_id platform,
-                std::string& str ) const;
+                std::string& str );
     void    getDeviceInfoString(
                 cl_uint num_devices,
                 const cl_device_id* devices,
-                std::string& str ) const;
+                std::string& str );
     void    getEventListString(
                 cl_uint num_events,
                 const cl_event* event_list,
-                std::string& str ) const;
+                std::string& str );
     void    getContextPropertiesString(
                 const cl_context_properties* properties,
-                std::string& str ) const;
+                std::string& str );
     void    getSamplerPropertiesString(
                 const cl_sampler_properties* properties,
-                std::string& str ) const;
+                std::string& str );
     void    getCommandQueuePropertiesString(
                 const cl_queue_properties* properties,
-                std::string& str ) const;
+                std::string& str );
     void    getCreateKernelsInProgramRetString(
                 cl_int retVal,
                 cl_kernel* kernels,
                 cl_uint* num_kernels_ret,
-                std::string& str ) const;
+                std::string& str );
     void    getKernelArgString(
                 cl_uint arg_index,
                 size_t arg_size,
                 const void* arg_value,
-                std::string& str ) const;
+                std::string& str );
     void    getEnqueueNDRangeKernelArgsString(
                 cl_uint work_dim,
                 const size_t* global_work_offset,
                 const size_t* global_work_size,
                 const size_t* local_work_size,
-                std::string& str ) const;
+                std::string& str );
     void    getCreateSubBufferArgsString(
                 cl_buffer_create_type createType,
                 const void *createInfo,
-                std::string& str ) const;
+                std::string& str );
 
     void    logCLInfo();
     void    logBuild(
@@ -741,6 +741,7 @@ private:
     std::ofstream   m_InterceptLog;
     std::ofstream   m_InterceptTrace;
 
+    char        m_StringBuffer[CLI_STRING_BUFFER_SIZE];
     bool        m_LoggedCLInfo;
 
     uint64_t    m_EnqueueCounter;
