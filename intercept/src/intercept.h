@@ -750,6 +750,8 @@ private:
     typedef std::map< uint64_t, unsigned int>   CThreadNumberMap;
     CThreadNumberMap    m_ThreadNumberMap;
 
+    unsigned int m_EventsChromeTraced;
+
     unsigned int    m_ProgramNumber;
 
     // This defines a mapping between the program handle and information
