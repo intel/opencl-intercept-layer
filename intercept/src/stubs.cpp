@@ -1955,7 +1955,7 @@ CLdispatch dummyDispatch = {
     NULL, //dummyCreateFromVA_APIMediaSurfaceINTEL
     NULL, //dummyEnqueueAcquireVA_APIMediaSurfacesINTEL
     NULL, //dummyEnqueueReleaseVA_APIMediaSurfacesINTEL
-	// cl_intel_unified_shared_memory
+    // cl_intel_unified_shared_memory
     NULL, //dummyHostMemAllocINTEL
     NULL, //dummyDeviceMemAllocINTEL
     NULL, //dummySharedMemAllocINTEL
