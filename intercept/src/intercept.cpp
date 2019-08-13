@@ -10647,37 +10647,54 @@ void CLIntercept::chromeTraceEvent(
 
     if( errorCode == CL_SUCCESS )
     {
-        uint64_t    normalizedQueuedTimeNS =
+        const uint64_t  normalizedQueuedTimeNS =
             OS().TickToNS( queuedTime - m_StartTime );
-        uint64_t    normalizedStartTimeNS =
-            ( commandStart - commandQueued ) + normalizedQueuedTimeNS;
 
-        uint64_t    usStart = normalizedStartTimeNS / 1000;
-        uint64_t    usDelta = ( commandEnd - commandStart ) / 1000;
+        const uint64_t  processId = OS().GetProcessID();
 
-        uint64_t    processId = OS().GetProcessID();
-
-        if (m_Config.ChromePerformanceTimingInStages)
+        if( m_Config.ChromePerformanceTimingInStages )
         {
-            std::string colours[3] = {"thread_state_runnable","cq_build_running","thread_state_iowait"};
-            std::string suffixes[3] = {"(Queued)","(Submitted)","(Execution)"};
-            double starts[3] = {((double)commandQueued - m_StartTime)/1000, ((double)commandSubmit - m_StartTime)/1000, ((double)commandStart - m_StartTime)/1000};
-            double ends[3] = {starts[1], starts[2], ((double)commandEnd - m_StartTime)/1000};
+            const size_t cNumStates = 3;
+            const std::string   colours[cNumStates] = {
+                "thread_state_runnable",
+                "cq_build_running",
+                "thread_state_iowait"
+            };
+            const std::string   suffixes[cNumStates] = {
+                "(Queued)",
+                "(Submitted)",
+                "(Execution)"
+            };
+            const uint64_t  usStarts[cNumStates] = {
+                normalizedQueuedTimeNS / 1000,
+                (commandSubmit - commandQueued + normalizedQueuedTimeNS) / 1000,
+                (commandStart - commandQueued + normalizedQueuedTimeNS) / 1000
+            };
+            const uint64_t  usDeltas[cNumStates] = {
+                (commandSubmit - commandQueued) / 1000,
+                (commandStart - commandSubmit) / 1000,
+                (commandEnd - commandStart) / 1000
+            };
 
-            for (int i = 0; i < 3; i++){
+            for( int state = 0; state < cNumStates; state++ )
+            {
                 m_InterceptTrace
-                    << "{\"name\":\"" << name << " " << suffixes[i]
+                    << "{\"name\":\"" << name << " " << suffixes[state]
                     << "\", \"ph\":\"X\", \"pid\":" << processId
                     << ", \"tid\":" << m_EventsChromeTraced << "." << (uintptr_t)queue
-                    << ", \"ts\":" << starts[i]
-                    << ", \"dur\":" << (ends[i] - starts[i])
-                    << ", \"cname\":\"" << colours[i]
+                    << ", \"ts\":" << usStarts[state]
+                    << ", \"dur\":" << usDeltas[state]
+                    << ", \"cname\":\"" << colours[state]
                     << "\"},\n";
             }
             m_EventsChromeTraced++;
         }
         else
         {
+            const uint64_t  usStart =
+                (commandStart - commandQueued + normalizedQueuedTimeNS) / 1000;
+            const uint64_t  usDelta = ( commandEnd - commandStart ) / 1000;
+
             m_InterceptTrace
                 << "{\"ph\":\"X\", \"pid\":" << processId
                 << ", \"tid\":-" << (uintptr_t)queue
