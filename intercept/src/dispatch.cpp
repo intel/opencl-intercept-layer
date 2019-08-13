@@ -5636,7 +5636,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
             // First, check to see if this is an extension we know about.
             if( retVal == NULL )
             {
-                pIntercept->getExtensionFunctionAddress(
+                retVal = pIntercept->getExtensionFunctionAddress(
                     platform,
                     func_name );
             }

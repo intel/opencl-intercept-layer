@@ -9603,6 +9603,18 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireVA_APIMediaSurfacesINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseVA_APIMediaSurfacesINTEL );
 
+    // cl_intel_unified_shared_memory
+    CHECK_RETURN_EXTENSION_FUNCTION( clHostMemAllocINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clDeviceMemAllocINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clSharedMemAllocINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clMemFreeINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetMemAllocInfoINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clSetKernelArgMemPointerINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemsetINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemcpyINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMigrateMemINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemAdviseINTEL );
+
     return NULL;
 }
 
