@@ -6597,7 +6597,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelExecInfo) (
 
     if( pIntercept )
     {
-        CALL_LOGGING_ENTER_KERNEL( kernel );
+        CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%08X)",
+            pIntercept->enumName().name( param_name ).c_str(),
+            param_name );
         CPU_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = pIntercept->dispatch().clSetKernelExecInfo(
@@ -8916,6 +8918,550 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
     {
         return CL_INVALID_OPERATION;
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+CL_API_ENTRY void* CL_API_CALL
+clHostMemAllocINTEL(
+    cl_context context,
+    const cl_mem_properties_intel* properties,
+    size_t size,
+    cl_uint alignment,
+    cl_int* errcode_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        // TODO: Make properties string.
+        CALL_LOGGING_ENTER( "context = %p, properties = %p, size = %d, alignment = %d",
+            context,
+            properties,
+            size,
+            alignment );
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
+
+        void*   retVal = NULL;
+        if( pIntercept->dispatch().clHostMemAllocINTEL )
+        {
+            retVal = pIntercept->dispatch().clHostMemAllocINTEL(
+                context,
+                properties,
+                size,
+                alignment,
+                errcode_ret );
+        }
+        else
+        {
+            if( errcode_ret )
+            {
+                errcode_ret[0] = CL_INVALID_OPERATION;
+            }
+        }
+
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( errcode_ret[0] );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+
+        return retVal;
+    }
+
+    return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+CL_API_ENTRY void* CL_API_CALL
+clDeviceMemAllocINTEL(
+    cl_context context,
+    cl_device_id device,
+    const cl_mem_properties_intel* properties,
+    size_t size,
+    cl_uint alignment,
+    cl_int* errcode_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        std::string deviceInfo;
+        if( pIntercept->config().CallLogging )
+        {
+            pIntercept->getDeviceInfoString(
+                1,
+                &device,
+                deviceInfo );
+        }
+        // TODO: Make properties string.
+        CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = %p, size = %d, alignment = %d",
+            context,
+            deviceInfo.c_str(),
+            properties,
+            size,
+            alignment );
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
+
+        void*   retVal = NULL;
+        if( pIntercept->dispatch().clDeviceMemAllocINTEL )
+        {
+            retVal = pIntercept->dispatch().clDeviceMemAllocINTEL(
+                context,
+                device,
+                properties,
+                size,
+                alignment,
+                errcode_ret );
+        }
+        else
+        {
+            if( errcode_ret )
+            {
+                errcode_ret[0] = CL_INVALID_OPERATION;
+            }
+        }
+
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( errcode_ret[0] );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+
+        return retVal;
+    }
+
+    return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+CL_API_ENTRY void* CL_API_CALL
+clSharedMemAllocINTEL(
+    cl_context context,
+    cl_device_id device,
+    const cl_mem_properties_intel* properties,
+    size_t size,
+    cl_uint alignment,
+    cl_int* errcode_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        std::string deviceInfo;
+        if( pIntercept->config().CallLogging )
+        {
+            pIntercept->getDeviceInfoString(
+                1,
+                &device,
+                deviceInfo );
+        }
+        // TODO: Make properties string.
+        CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = %p, size = %d, alignment = %d",
+            context,
+            deviceInfo.c_str(),
+            properties,
+            size,
+            alignment );
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
+
+        void*   retVal = NULL;
+        if( pIntercept->dispatch().clSharedMemAllocINTEL )
+        {
+            retVal = pIntercept->dispatch().clSharedMemAllocINTEL(
+                context,
+                device,
+                properties,
+                size,
+                alignment,
+                errcode_ret );
+        }
+        else
+        {
+            if( errcode_ret )
+            {
+                errcode_ret[0] = CL_INVALID_OPERATION;
+            }
+        }
+
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( errcode_ret[0] );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+
+        return retVal;
+    }
+
+    return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+CL_API_ENTRY cl_int CL_API_CALL
+clMemFreeINTEL(
+    cl_context context,
+    const void* ptr)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        CALL_LOGGING_ENTER( "context = %p, ptr = %p",
+            context,
+            ptr );
+        CPU_PERFORMANCE_TIMING_START();
+
+        cl_int  retVal = CL_INVALID_OPERATION;
+        if( pIntercept->dispatch().clMemFreeINTEL )
+        {
+            retVal = pIntercept->dispatch().clMemFreeINTEL(
+                context,
+                ptr );
+        }
+
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
+
+        return retVal;
+    }
+
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+CL_API_ENTRY cl_int CL_API_CALL clGetMemAllocInfoINTEL(
+    cl_context context,
+    const void* ptr,
+    cl_mem_info_intel param_name,
+    size_t param_value_size,
+    void* param_value,
+    size_t* param_value_size_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        CALL_LOGGING_ENTER( "context = %p, ptr = %p, param_name = %s (%08X)",
+            context,
+            ptr,
+            pIntercept->enumName().name( param_name ).c_str(),
+            param_name );
+        CPU_PERFORMANCE_TIMING_START();
+
+        cl_int  retVal = CL_INVALID_OPERATION;
+        if( pIntercept->dispatch().clGetMemAllocInfoINTEL )
+        {
+            retVal = pIntercept->dispatch().clGetMemAllocInfoINTEL(
+                context,
+                ptr,
+                param_name,
+                param_value_size,
+                param_value,
+                param_value_size_ret );
+        }
+
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
+
+        return retVal;
+    }
+
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
+    cl_kernel kernel,
+    cl_uint arg_index,
+    const void* arg_value)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        CALL_LOGGING_ENTER_KERNEL(
+            kernel,
+            "kernel = %p, index = %d, value = %p",
+            kernel,
+            arg_index,
+            arg_value );
+        SET_KERNEL_ARG_SVM_POINTER( kernel, arg_index, arg_value );
+        CPU_PERFORMANCE_TIMING_START();
+
+        cl_int  retVal = CL_INVALID_OPERATION;
+        if( pIntercept->dispatch().clSetKernelArgMemPointerINTEL )
+        {
+            retVal = pIntercept->dispatch().clSetKernelArgMemPointerINTEL(
+                kernel,
+                arg_index,
+                arg_value );
+        }
+
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
+
+        return retVal;
+    }
+
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(
+    cl_command_queue queue,
+    void* dst_ptr,
+    cl_int value,
+    size_t size,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        cl_int  retVal = CL_SUCCESS;
+
+        CHECK_AUBCAPTURE_START( queue );
+
+        if( pIntercept->nullEnqueue() == false )
+        {
+            CALL_LOGGING_ENTER( "queue = %p, dst_ptr = %p, value = %d, size = %u",
+                queue,
+                dst_ptr,
+                value,
+                (cl_uint)size );
+            CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list );
+            DEVICE_PERFORMANCE_TIMING_START( event );
+            CPU_PERFORMANCE_TIMING_START();
+
+            if( pIntercept->dispatch().clEnqueueMemsetINTEL )
+            {
+                retVal = pIntercept->dispatch().clEnqueueMemsetINTEL(
+                    queue,
+                    dst_ptr,
+                    value,
+                    size,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event );
+            }
+            else
+            {
+                retVal = CL_INVALID_OPERATION;
+            }
+
+            CPU_PERFORMANCE_TIMING_END();
+            DEVICE_PERFORMANCE_TIMING_END( queue, event );
+            CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
+        }
+
+        FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
+        CHECK_AUBCAPTURE_STOP( queue  );
+
+        return retVal;
+    }
+
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
+    cl_command_queue queue,
+    cl_bool blocking,
+    void* dst_ptr,
+    const void* src_ptr,
+    size_t size,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        cl_int  retVal = CL_SUCCESS;
+
+        CHECK_AUBCAPTURE_START( queue );
+
+        if( pIntercept->nullEnqueue() == false )
+        {
+            CALL_LOGGING_ENTER( "queue = %p, %s, dst_ptr = %p, src_ptr = %p, size = %u",
+                queue,
+                blocking ? "blocking" : "non-blocking",
+                dst_ptr,
+                src_ptr,
+                (cl_uint)size );
+            CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list );
+            DEVICE_PERFORMANCE_TIMING_START( event );
+            CPU_PERFORMANCE_TIMING_START();
+
+            if( pIntercept->dispatch().clEnqueueMemcpyINTEL )
+            {
+                retVal = pIntercept->dispatch().clEnqueueMemcpyINTEL(
+                    queue,
+                    blocking,
+                    dst_ptr,
+                    src_ptr,
+                    size,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event );
+            }
+            else
+            {
+                retVal = CL_INVALID_OPERATION;
+            }
+
+            CPU_PERFORMANCE_TIMING_END();
+            DEVICE_PERFORMANCE_TIMING_END( queue, event );
+            CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
+        }
+
+        FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
+        CHECK_AUBCAPTURE_STOP( queue );
+
+        return retVal;
+    }
+
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
+    cl_command_queue queue,
+    const void* ptr,
+    size_t size,
+    cl_mem_migration_flags flags,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        cl_int  retVal = CL_SUCCESS;
+
+        CHECK_AUBCAPTURE_START( queue );
+
+        if( pIntercept->nullEnqueue() == false )
+        {
+            CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %u, flags = %s (%llX)",
+                queue,
+                ptr,
+                (cl_uint)size,
+                pIntercept->enumName().name_mem_migration_flags( flags ).c_str(),
+                flags );
+            CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list );
+            DEVICE_PERFORMANCE_TIMING_START( event );
+            CPU_PERFORMANCE_TIMING_START();
+
+            if( pIntercept->dispatch().clEnqueueMigrateMemINTEL )
+            {
+                retVal = pIntercept->dispatch().clEnqueueMigrateMemINTEL(
+                    queue,
+                    ptr,
+                    size,
+                    flags,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event );
+            }
+            else
+            {
+                retVal = CL_INVALID_OPERATION;
+            }
+
+            CPU_PERFORMANCE_TIMING_END();
+            DEVICE_PERFORMANCE_TIMING_END( queue, event );
+            CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
+        }
+
+        FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
+        CHECK_AUBCAPTURE_STOP( queue );
+
+        return retVal;
+    }
+
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
+    cl_command_queue queue,
+    const void* ptr,
+    size_t size,
+    cl_mem_advice_intel advice,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        cl_int  retVal = CL_SUCCESS;
+
+        CHECK_AUBCAPTURE_START( queue );
+
+        if( pIntercept->nullEnqueue() == false )
+        {
+            CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %u, advice = %s (%llX)",
+                queue,
+                ptr,
+                (cl_uint)size,
+                pIntercept->enumName().name(advice).c_str(),
+                advice );
+            CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list );
+            DEVICE_PERFORMANCE_TIMING_START( event );
+            CPU_PERFORMANCE_TIMING_START();
+
+            if( pIntercept->dispatch().clEnqueueMemAdviseINTEL )
+            {
+                retVal = pIntercept->dispatch().clEnqueueMemAdviseINTEL(
+                    queue,
+                    ptr,
+                    size,
+                    advice,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event );
+            }
+            else
+            {
+                retVal = CL_INVALID_OPERATION;
+            }
+
+            CPU_PERFORMANCE_TIMING_END();
+            DEVICE_PERFORMANCE_TIMING_END( queue, event );
+            CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
+        }
+
+        FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
+        CHECK_AUBCAPTURE_STOP( queue );
+
+        return retVal;
+    }
+
+    return CL_INVALID_OPERATION;
 }
 
 #if defined(__APPLE__)
