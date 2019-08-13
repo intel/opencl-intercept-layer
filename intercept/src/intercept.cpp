@@ -10688,7 +10688,7 @@ void CLIntercept::chromeTraceEvent(
                 (commandEnd - commandStart) / 1000
             };
 
-            for( int state = 0; state < cNumStates; state++ )
+            for( size_t state = 0; state < cNumStates; state++ )
             {
                 m_InterceptTrace
                     << "{\"name\":\"" << name << " " << suffixes[state]
