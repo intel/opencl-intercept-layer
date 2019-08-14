@@ -120,6 +120,8 @@ public:
     GENERATE_MAP_AND_FUNC(          name_program_binary_type,        cl_program_binary_type          );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_svm_mem_flags,              cl_svm_mem_flags                );
     GENERATE_MAP_AND_FUNC(          name_gl,                         GLenum                          );
+    GENERATE_MAP_AND_BITFIELD_FUNC( name_device_usm_capabilities,    cl_unified_shared_memory_capabilities_intel );
+    GENERATE_MAP_AND_BITFIELD_FUNC( name_mem_alloc_flags,            cl_mem_alloc_flags_intel        );
 
     #undef GENERATE_MAP_AND_FUNC
     #undef GENERATE_MAP_AND_BITFIELD_FUNC

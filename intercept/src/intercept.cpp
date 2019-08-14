@@ -1536,7 +1536,7 @@ cl_int CLIntercept::allocateAndGetKernelISABinary(
 //
 void CLIntercept::getPlatformInfoString(
     const cl_platform_id platform,
-    std::string& str )
+    std::string& str ) const
 {
     str = "";
 
@@ -1568,7 +1568,7 @@ void CLIntercept::getPlatformInfoString(
 void CLIntercept::getDeviceInfoString(
     cl_uint numDevices,
     const cl_device_id* devices,
-    std::string& str )
+    std::string& str ) const
 {
     str = "";
 
@@ -1622,7 +1622,7 @@ void CLIntercept::getDeviceInfoString(
 void CLIntercept::getEventListString(
     cl_uint numEvents,
     const cl_event* eventList,
-    std::string& str )
+    std::string& str ) const
 {
     {
         std::ostringstream  ss;
@@ -1652,7 +1652,7 @@ void CLIntercept::getEventListString(
 //
 void CLIntercept::getContextPropertiesString(
     const cl_context_properties* properties,
-    std::string& str )
+    std::string& str ) const
 {
     str = "";
 
@@ -1715,7 +1715,7 @@ void CLIntercept::getContextPropertiesString(
 //
 void CLIntercept::getSamplerPropertiesString(
     const cl_sampler_properties* properties,
-    std::string& str )
+    std::string& str ) const
 {
     str = "";
 
@@ -1788,7 +1788,7 @@ void CLIntercept::getSamplerPropertiesString(
 //
 void CLIntercept::getCommandQueuePropertiesString(
     const cl_queue_properties* properties,
-    std::string& str )
+    std::string& str ) const
 {
     str = "";
 
@@ -1855,7 +1855,7 @@ void CLIntercept::getCreateKernelsInProgramRetString(
     cl_int retVal,
     cl_kernel* kernels,
     cl_uint* num_kernels_ret,
-    std::string& str )
+    std::string& str ) const
 {
     if( kernels &&
         num_kernels_ret &&
@@ -1885,7 +1885,7 @@ void CLIntercept::getKernelArgString(
     cl_uint arg_index,
     size_t arg_size,
     const void* arg_value,
-    std::string& str )
+    std::string& str ) const
 {
     if( getSampler(
             arg_size,
@@ -1953,7 +1953,7 @@ void CLIntercept::getEnqueueNDRangeKernelArgsString(
     const size_t* global_work_offset,
     const size_t* global_work_size,
     const size_t* local_work_size,
-    std::string& str )
+    std::string& str ) const
 {
     std::ostringstream  ss;
 
@@ -2015,7 +2015,7 @@ void CLIntercept::getEnqueueNDRangeKernelArgsString(
 void CLIntercept::getCreateSubBufferArgsString(
     cl_buffer_create_type createType,
     const void *createInfo,
-    std::string& str )
+    std::string& str ) const
 {
     std::ostringstream  ss;
 
@@ -9603,6 +9603,18 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireVA_APIMediaSurfacesINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseVA_APIMediaSurfacesINTEL );
 
+    // cl_intel_unified_shared_memory
+    CHECK_RETURN_EXTENSION_FUNCTION( clHostMemAllocINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clDeviceMemAllocINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clSharedMemAllocINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clMemFreeINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetMemAllocInfoINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clSetKernelArgMemPointerINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemsetINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemcpyINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMigrateMemINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemAdviseINTEL );
+
     return NULL;
 }
 
@@ -10676,7 +10688,7 @@ void CLIntercept::chromeTraceEvent(
                 (commandEnd - commandStart) / 1000
             };
 
-            for( int state = 0; state < cNumStates; state++ )
+            for( size_t state = 0; state < cNumStates; state++ )
             {
                 m_InterceptTrace
                     << "{\"name\":\"" << name << " " << suffixes[state]

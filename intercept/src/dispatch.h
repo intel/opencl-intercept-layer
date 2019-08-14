@@ -1150,7 +1150,7 @@ struct CLdispatch
                 cl_int* errcode_ret);
 
     // Unofficial MDAPI extension:
-    cl_int (CL_API_CALL *clSetPerformanceConfigurationINTEL)(
+    cl_int (CLI_API_CALL *clSetPerformanceConfigurationINTEL)(
         cl_device_id    device,
         cl_uint         count,
         cl_uint*        offsets,
@@ -1215,6 +1215,93 @@ struct CLdispatch
         cl_uint num_events_in_wait_list,
         const cl_event *event_wait_list,
         cl_event *event);
+
+    // cl_intel_unified_shared_memory
+    void* (CLI_API_CALL *clHostMemAllocINTEL) (
+        cl_context context,
+        const cl_mem_properties_intel* properties,
+        size_t size,
+        cl_uint alignment,
+        cl_int* errcode_ret);
+
+    // cl_intel_unified_shared_memory
+    void* (CLI_API_CALL *clDeviceMemAllocINTEL) (
+        cl_context context,
+        cl_device_id device,
+        const cl_mem_properties_intel* properties,
+        size_t size,
+        cl_uint alignment,
+        cl_int* errcode_ret);
+
+    // cl_intel_unified_shared_memory
+    void* (CLI_API_CALL *clSharedMemAllocINTEL) (
+        cl_context context,
+        cl_device_id device,
+        const cl_mem_properties_intel* properties,
+        size_t size,
+        cl_uint alignment,
+        cl_int* errcode_ret);
+
+    // cl_intel_unified_shared_memory
+    cl_int (CLI_API_CALL *clMemFreeINTEL) (
+        cl_context context,
+        const void* ptr); // TBD: const?
+
+    // cl_intel_unified_shared_memory
+    cl_int (CLI_API_CALL *clGetMemAllocInfoINTEL) (
+        cl_context context,
+        const void* ptr,
+        cl_mem_info_intel param_name,
+        size_t param_value_size,
+        void* param_value,
+        size_t* param_value_size_ret);
+
+    // cl_intel_unified_shared_memory
+    cl_int (CLI_API_CALL *clSetKernelArgMemPointerINTEL) (
+        cl_kernel kernel,
+        cl_uint arg_index,
+        const void* arg_value);
+
+    // cl_intel_unified_shared_memory
+    cl_int (CLI_API_CALL *clEnqueueMemsetINTEL) (
+        cl_command_queue command_queue,
+        void* dst_ptr,
+        cl_int value,
+        size_t size,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
+
+    // cl_intel_unified_shared_memory
+    cl_int (CLI_API_CALL *clEnqueueMemcpyINTEL) (
+        cl_command_queue command_queue,
+        cl_bool blocking,
+        void* dst_ptr,
+        const void* src_ptr,
+        size_t size,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
+
+    // cl_intel_unified_shared_memory
+    cl_int (CLI_API_CALL *clEnqueueMigrateMemINTEL) (
+        cl_command_queue command_queue,
+        const void* ptr,
+        size_t size,
+        cl_mem_migration_flags flags,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
+
+    // cl_intel_unified_shared_memory
+    cl_int (CLI_API_CALL *clEnqueueMemAdviseINTEL) (
+        cl_command_queue command_queue,
+        const void* ptr,
+        size_t size,
+        cl_mem_advice_intel advice,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
 };
 
 extern CLdispatch dummyDispatch;
