@@ -676,6 +676,10 @@ void CLIntercept::report()
             writeReport( os );
             os.close();
         }
+        else
+        {
+            logf( "Failed to open report file for writing: %s\n", filepath );
+        }
     }
 }
 
@@ -3578,6 +3582,11 @@ void CLIntercept::dumpProgramSourceScript(
             os.write( singleString, strlen( singleString ) );
             os.close();
         }
+        else
+        {
+            logf( "Failed to open program source dump file for writing: %s\n",
+                filepath );
+        }
     }
 
     SProgramInfo&   programInfo = m_ProgramInfoMap[ program ];
@@ -3647,6 +3656,11 @@ void CLIntercept::dumpProgramSource(
             // don't write the null terminator to the file
             os.write( singleString, strlen( singleString ) );
             os.close();
+        }
+        else
+        {
+            logf( "Failed to open program source dump file for writing: %s\n",
+                fileName.c_str() );
         }
     }
 
@@ -3752,6 +3766,11 @@ void CLIntercept::dumpInputProgramBinaries(
                 lengths[ i ] );
             os.close();
         }
+        else
+        {
+            logf( "Failed to open program binary dump file for writing: %s\n",
+                outputFileName.c_str());
+        }
     }
 
     SProgramInfo&   programInfo = m_ProgramInfoMap[ program ];
@@ -3831,6 +3850,11 @@ void CLIntercept::dumpProgramSPIRV(
                 logf( "Running: %s\n", command.c_str() );
                 OS().ExecuteCommand( command );
             }
+        }
+        else
+        {
+            logf( "Failed to open il program dump file for writing: %s\n",
+                fileName.c_str() );
         }
     }
 
@@ -3953,6 +3977,11 @@ void CLIntercept::dumpProgramOptionsScript(
             os.write( options, strlen( options ) );
             os.close();
         }
+        else
+        {
+            logf( "Failed to open program options dump file for writing: %s\n",
+                filepath );
+        }
     }
 
 #else
@@ -4019,6 +4048,11 @@ void CLIntercept::dumpProgramOptions(
                 // don't write the null terminator to the file
                 os.write( options, strlen( options) );
                 os.close();
+            }
+            else
+            {
+                logf( "Failed to open program options dump file for writing: %s\n",
+                    fileName.c_str() );
             }
         }
     }
@@ -4119,6 +4153,11 @@ void CLIntercept::dumpProgramBuildLog(
             buildLog,
             buildLogSize );
         os.close();
+    }
+    else
+    {
+        logf( "Failed to open program build log dump file for writing: %s\n",
+            fileName.c_str() );
     }
 }
 
@@ -5168,6 +5207,11 @@ void CLIntercept::dumpArgument(
                     os.write( (const char *)pBuffer, size );
                     os.close();
                 }
+                else
+                {
+                    logf( "Failed to open program arg dump file for writing: %s\n",
+                        fileName.c_str() );
+                }
             }
         }
     }
@@ -5484,6 +5528,11 @@ void CLIntercept::dumpBuffersForKernel(
                         os.write( (const char*)allocation, size );
                         os.close();
                     }
+                    else
+                    {
+                        logf( "Failed to open buffer dump file for writing: %s\n",
+                            fileName.c_str() );
+                    }
 
                     dispatch().clEnqueueSVMUnmap(
                         command_queue,
@@ -5520,6 +5569,11 @@ void CLIntercept::dumpBuffersForKernel(
                     {
                         os.write( (const char*)ptr, size );
                         os.close();
+                    }
+                    else
+                    {
+                        logf( "Failed to open buffer dump file for writing: %s\n",
+                            fileName.c_str() );
                     }
 
                     dispatch().clEnqueueUnmapMemObject(
@@ -5663,6 +5717,11 @@ void CLIntercept::dumpImagesForKernel(
                             os.write( readImageData, size );
                             os.close();
                         }
+                        else
+                        {
+                            logf( "Failed to open image dump file for writing: %s\n",
+                                fileName.c_str() );
+                        }
                     }
 
                     delete [] readImageData;
@@ -5760,6 +5819,11 @@ void CLIntercept::dumpBuffer(
                 os.write( (const char*)ptr, size );
                 os.close();
             }
+            else
+            {
+                logf( "Failed to open buffer dump file for writing: %s\n",
+                    fileName.c_str() );
+            }
         }
         else
         {
@@ -5791,6 +5855,11 @@ void CLIntercept::dumpBuffer(
                 {
                     os.write( (const char*)ptr, size );
                     os.close();
+                }
+                else
+                {
+                    logf( "Failed to open buffer dump file for writing: %s\n",
+                        fileName.c_str() );
                 }
 
                 dispatch().clEnqueueUnmapMemObject(
@@ -6863,6 +6932,11 @@ void CLIntercept::dumpProgramBinary(
                         programBinarySizes[ i ] );
                     os.close();
                 }
+                else
+                {
+                    logf( "Failed to open program binary dump file for writing: %s\n",
+                        outputFileName.c_str() );
+                }
             }
         }
 
@@ -7054,6 +7128,11 @@ void CLIntercept::dumpKernelISABinaries(
                             kernelISABinary,
                             kernelISABinarySize );
                         os.close();
+                    }
+                    else
+                    {
+                        logf( "Failed to open kernel ISA dump file for writing: %s\n",
+                            fileName.c_str() );
                     }
                 }
 
