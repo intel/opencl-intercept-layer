@@ -17,6 +17,8 @@ entry points.  Then, whenever the application makes an OpenCL call, the call
 is intercepted and can be passed through to the real OpenCL with or without
 changes.
 
+![Intercept Layer Architecture](docs/images/architecture.png)
+
 This project adheres to the Intercept Layer for OpenCL Application's
 [code of conduct](CODE_OF_CONDUCT.md).  By participating, you are expected to
 uphold this code.

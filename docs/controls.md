@@ -192,7 +192,7 @@ If set to a nonzero value, logs information about the platforms and devices in t
 
 ##### `DumpDir` (string)
 
-If set, the Intercept Layer for OpenCL Applications will emit logs and dumps to this directory instead of the default directory.  The default log and dump directory is "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>" on Windows and "~/CLIntercept\_Dump/\<Process Name\>" on other operating systems.
+If set, the Intercept Layer for OpenCL Applications will emit logs and dumps to this directory instead of the default directory.  The default log and dump directory is "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>" on Windows and "~/CLIntercept\_Dump/\<Process Name\>" on other operating systems.  The log and dump directory must be writeable, otherwise the Intercept Layer for OpenCL Applications will not be able to create or modify log or dump files.
 
 ##### `AppendPid` (bool)
 
@@ -285,6 +285,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will coll
 ##### `ChromePerformanceTiming` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will generate device performance timing information in a JSON file that may be used for Chrome Tracing.
+
+##### `ChromePerformanceTimingInStages` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will separate the performance infomation placed in the JSON file into Queued, Submitted, and Execution stages. It will also reorder the threads/queues by starting runtime. This flag is only functional when ChromePerformanceTiming is also set.
 
 ### Controls for Dumping and Injecting Programs and Build Options
 
