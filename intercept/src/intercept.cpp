@@ -2768,7 +2768,7 @@ void CLIntercept::combineProgramStrings(
         if( ( lengths == NULL ) ||
             ( lengths[i] == 0 ) )
         {
-            if( strings[i] != NULL )
+            if( strings != NULL && strings[i] != NULL )
             {
                 length = strlen( strings[i] );
             }
@@ -2797,7 +2797,7 @@ void CLIntercept::combineProgramStrings(
             if( ( lengths == NULL ) ||
                 ( lengths[i] == 0 ) )
             {
-                if( strings[i] != NULL )
+                if( strings != NULL && strings[i] != NULL )
                 {
                     length = strlen( strings[i] );
                 }
