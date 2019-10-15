@@ -46,13 +46,14 @@ source_group( Source FILES
     ${CLICONFIG_SOURCE_FILES}
 )
 
-add_executable(CLIConfig
+add_executable(CLIConfig WIN32
     ${CLICONFIG_ICON_FILES}
     ${CLICONFIG_SOURCE_FILES}
 )
+target_compile_definitions(CLIConfig PRIVATE _AFXDLL)
 target_compile_definitions(CLIConfig PRIVATE UNICODE _UNICODE)
 target_include_directories(CLIConfig PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../intercept)
-set_target_properties(CLIConfig PROPERTIES LINK_FLAGS "/SUBSYSTEM:WINDOWS")
+set_target_properties(CLIConfig PROPERTIES LINK_FLAGS "/ENTRY:\"wWinMainCRTStartup\"")
 
 foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
     install(TARGETS CLIConfig DESTINATION ${OUTPUTCONFIG}/Config CONFIGURATIONS ${OUTPUTCONFIG})
