@@ -89,6 +89,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformInfo)(
         cl_int  retVal = CL_SUCCESS;
 
         if( pIntercept->overrideGetPlatformInfo(
+                platform,
                 param_name,
                 param_value_size,
                 param_value,
