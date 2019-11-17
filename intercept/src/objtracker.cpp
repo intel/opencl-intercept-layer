@@ -37,15 +37,12 @@ void CObjectTracker::ReportHelper(
         os << "    Number of Retains:     " << tracker.NumRetains << std::endl;
         os << "    Number of Releases:    " << tracker.NumReleases << std::endl;
     }
-    else if( ( tracker.NumReleases > tracker.NumAllocations + tracker.NumRetains ) ||
-             ( tracker.NumAllocations == 0 && ( tracker.NumReleases || tracker.NumRetains ) ) )
+    else if( tracker.NumReleases > tracker.NumAllocations + tracker.NumRetains )
     {
         // If there are more releases than allocations or retains then this
         // is an unexpected situation.  It usually means that some allocations
         // aren't tracked correctly, or that a retain or release returned
         // an error.
-        // Similarly, if we have no allocations but do have retains or
-        // releases, we probably missed an allocation.
         os << "Unexpected counts for type " << label << "!" << std::endl;
         os << "    Number of Allocations: " << tracker.NumAllocations << std::endl;
         os << "    Number of Retains:     " << tracker.NumRetains << std::endl;
