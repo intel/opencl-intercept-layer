@@ -106,15 +106,11 @@ void CLIntercept::initCustomPerfCounters()
         // Open the metric stream for time based sampling, if needed.
         if( config().DevicePerfCounterTimeBasedSampling )
         {
+            uint32_t    timerMS = 10;
             m_pMDHelper->OpenStream(
-                1000000,        // timer period, in nanoseconds -> 1ms
-                1024 * 1024,    // buffer size in bytes -> 1MB
-                0 );            // pid -> sample all processes
-
-            // Read a dummy report from the stream.  This is needed to
-            // correctly populate the metric names and units.
-            std::vector<char> reportData;
-            m_pMDHelper->GetReportFromStream( reportData );
+                timerMS * 1000000,  // timer period, in nanoseconds
+                1024 * 1024,        // buffer size in bytes -> 32MB
+                0 );                // pid -> sample all processes
         }
 
         // Get the dump directory name and create the dump file for
@@ -229,42 +225,53 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
 //
 void CLIntercept::getMDAPICountersFromStream( void )
 {
+    // We should only get here when time based sampling is enabled.
+    CLI_ASSERT( config().DevicePerfCounterTimeBasedSampling );
+
     if( m_pMDHelper )
     {
-        std::vector<char> reportData;
-
         std::vector<MetricsDiscovery::TTypedValue_1_0> results;
         std::vector<MetricsDiscovery::TTypedValue_1_0> maxValues;
         std::vector<MetricsDiscovery::TTypedValue_1_0> ioInfoValues;
 
-        while( m_pMDHelper->GetReportFromStream( reportData ) )
+        while( true )
         {
-            m_pMDHelper->GetMetricsFromReport(
-                reportData.data(),
-                results,
-                maxValues );
-            if( ioInfoValues.empty() )
+            bool report = m_pMDHelper->SaveReportsFromStream();
+            if( report )
             {
+                uint32_t numResults = m_pMDHelper->GetMetricsFromSavedReports(
+                    results,
+                    maxValues );
                 m_pMDHelper->GetIOMeasurementInformation(
                     ioInfoValues );
-            }
 
-            m_pMDHelper->PrintMetricValues(
-                m_MetricDump,
-                "TBS",
-                results,
-                maxValues,
-                ioInfoValues );
+                m_pMDHelper->PrintMetricValues(
+                    m_MetricDump,
+                    "TBS",
+                    numResults,
+                    results,
+                    maxValues,
+                    ioInfoValues );
+
+                m_pMDHelper->ResetSavedReports();
+            }
+            else
+            {
+                break;
+            }
         }
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::saveMDAPICounters(
+void CLIntercept::getMDAPICountersFromEvent(
     const std::string& name,
     const cl_event event )
 {
+    // We should only get here when event based sampling is enabled.
+    CLI_ASSERT( config().DevicePerfCounterEventBasedSampling );
+
     if( m_pMDHelper )
     {
         const size_t reportSize = m_pMDHelper->GetQueryReportSize();
@@ -289,21 +296,26 @@ void CLIntercept::saveMDAPICounters(
                 std::vector<MetricsDiscovery::TTypedValue_1_0> maxValues;
                 std::vector<MetricsDiscovery::TTypedValue_1_0> ioInfoValues; // unused
 
-                m_pMDHelper->GetMetricsFromReport(
+                uint32_t numResults = m_pMDHelper->GetMetricsFromReports(
+                    1,
                     pReport,
                     results,
                     maxValues );
 
-                m_pMDHelper->PrintMetricValues(
-                    m_MetricDump,
-                    name,
-                    results,
-                    maxValues,
-                    ioInfoValues );
-                m_pMDHelper->AggregateMetrics(
-                    m_MetricAggregations,
-                    name,
-                    results );
+                if( numResults )
+                {
+                    m_pMDHelper->PrintMetricValues(
+                        m_MetricDump,
+                        name,
+                        numResults,
+                        results,
+                        maxValues,
+                        ioInfoValues );
+                    m_pMDHelper->AggregateMetrics(
+                        m_MetricAggregations,
+                        name,
+                        results );
+                }
             }
             else
             {

@@ -4839,7 +4839,7 @@ void CLIntercept::checkTimingEvents()
                         node.FunctionName :
                         node.KernelName;
 
-                    saveMDAPICounters(
+                    getMDAPICountersFromEvent(
                         name,
                         node.Event );
                 }

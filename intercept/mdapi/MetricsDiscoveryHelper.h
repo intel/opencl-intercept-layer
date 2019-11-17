@@ -76,7 +76,8 @@ public:
     void    SetMetricSetFiltering(
                 TMetricApiType apiMask );
 
-    void    GetMetricsFromReport(
+    uint32_t GetMetricsFromReports(
+                const uint32_t numReports,
                 const char* pData,
                 std::vector<TTypedValue_1_0>& results,
                 std::vector<TTypedValue_1_0>& maxValues );
@@ -87,8 +88,11 @@ public:
                 uint32_t timerPeriod,
                 uint32_t bufferSize,
                 uint32_t pid );
-    bool    GetReportFromStream(
-                std::vector<char>& reportData );
+    bool    SaveReportsFromStream( void );
+    uint32_t GetMetricsFromSavedReports(
+                std::vector<TTypedValue_1_0>& results,
+                std::vector<TTypedValue_1_0>& maxValues );
+    void    ResetSavedReports( void );
     void    CloseStream( void );
 
     void    PrintMetricNames(
@@ -99,6 +103,7 @@ public:
     void    PrintMetricValues(
                 std::ostream& os,
                 const std::string& name,
+                const uint32_t numResults,
                 const std::vector<TTypedValue_1_0>& results,
                 const std::vector<TTypedValue_1_0>& maxValues,
                 const std::vector<TTypedValue_1_0>& ioInfoValues );
@@ -138,6 +143,10 @@ private:
     IMetricsDevice_1_5*     m_MetricsDevice;
     IConcurrentGroup_1_1*   m_ConcurrentGroup;
     IMetricSet_1_1*         m_MetricSet;
+
+    // Report data for time based sampling:
+    std::vector<char>       m_SavedReportData;
+    uint32_t                m_NumSavedReports;
 
 private:
     MDHelper(MDHelper const&);

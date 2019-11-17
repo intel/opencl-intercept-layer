@@ -870,7 +870,7 @@ private:
     std::ofstream   m_MetricDump;
 
     void    getMDAPICountersFromStream( void );
-    void    saveMDAPICounters(
+    void    getMDAPICountersFromEvent(
                 const std::string& name,
                 const cl_event event );
     void    reportMDAPICounters(
