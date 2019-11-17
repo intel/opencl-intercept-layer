@@ -426,7 +426,8 @@ public:
     void    checkEventList(
                 const std::string& functionName,
                 cl_uint numEvents,
-                const cl_event* eventList );
+                const cl_event* eventList,
+                cl_event* event );
 
     void    startAubCapture(
                 const std::string& functionName,
@@ -2030,10 +2031,14 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-#define CHECK_EVENT_LIST( _numEvents, _eventList )                          \
+#define CHECK_EVENT_LIST( _numEvents, _eventList, _event )                  \
     if( pIntercept->config().EventChecking )                                \
     {                                                                       \
-        pIntercept->checkEventList( __FUNCTION__, _numEvents, _eventList ); \
+        pIntercept->checkEventList(                                         \
+            __FUNCTION__,                                                   \
+            _numEvents,                                                     \
+            _eventList,                                                     \
+            _event );                                                       \
     }
 
 ///////////////////////////////////////////////////////////////////////////////

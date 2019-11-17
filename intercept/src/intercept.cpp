@@ -5879,7 +5879,8 @@ void CLIntercept::dumpBuffer(
 void CLIntercept::checkEventList(
     const std::string& functionName,
     cl_uint numEvents,
-    const cl_event* eventList )
+    const cl_event* eventList,
+    cl_event* event )
 {
     if( numEvents != 0 && eventList == NULL )
     {
@@ -5892,6 +5893,15 @@ void CLIntercept::checkEventList(
     {
         for( cl_uint i = 0; i < numEvents; i++ )
         {
+            if( event != NULL && *event == eventList[i] )
+            {
+                std::lock_guard<std::mutex> lock(m_Mutex);
+                logf( "Check Events for %s: outgoing event %p is also in the event wait list!\n",
+                    functionName.c_str(),
+                    eventList[i] );
+                continue;
+            }
+
             cl_int  eventCommandExecutionStatus = 0;
             cl_int  errorCode = dispatch().clGetEventInfo(
                 eventList[i],
@@ -5902,7 +5912,7 @@ void CLIntercept::checkEventList(
             if( errorCode != CL_SUCCESS )
             {
                 std::lock_guard<std::mutex> lock(m_Mutex);
-                logf( "Check Events for %s: clGetEventInfo for event %p returned %s (%d)!\n",
+                logf( "Check Events for %s: clGetEventInfo for wait event %p returned %s (%d)!\n",
                     functionName.c_str(),
                     eventList[i],
                     enumName().name(errorCode).c_str(),
@@ -5911,7 +5921,7 @@ void CLIntercept::checkEventList(
             else if( eventCommandExecutionStatus < 0 )
             {
                 std::lock_guard<std::mutex> lock(m_Mutex);
-                logf( "Check Events for %s: event %p is in an error state (%d)!\n",
+                logf( "Check Events for %s: wait event %p is in an error state (%d)!\n",
                     functionName.c_str(),
                     eventList[i],
                     eventCommandExecutionStatus );
