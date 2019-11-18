@@ -812,12 +812,24 @@ clSetKernelArgMemPointerINTEL(
             cl_uint arg_index,
             const void* arg_value);
 
-// TBD: Memset API vs. "fill" API.  Is this sufficient?
+// Memset has been deprecated and replaced by Memfill.
+// This function can eventually be removed.
 extern CL_API_ENTRY cl_int CL_API_CALL
 clEnqueueMemsetINTEL(
             cl_command_queue command_queue,
             void* dst_ptr,
             cl_int value,
+            size_t size,
+            cl_uint num_events_in_wait_list,
+            const cl_event* event_wait_list,
+            cl_event* event);
+
+extern CL_API_ENTRY cl_int CL_API_CALL
+clEnqueueMemFillINTEL(
+            cl_command_queue command_queue,
+            void* dst_ptr,
+            const void* pattern,
+            size_t pattern_size,
             size_t size,
             cl_uint num_events_in_wait_list,
             const cl_event* event_wait_list,

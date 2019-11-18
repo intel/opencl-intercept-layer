@@ -9213,7 +9213,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
     cl_command_queue queue,
     void* dst_ptr,
     cl_int value,
@@ -9247,6 +9247,70 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(
                     queue,
                     dst_ptr,
                     value,
+                    size,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event );
+            }
+            else
+            {
+                retVal = CL_INVALID_OPERATION;
+            }
+
+            CPU_PERFORMANCE_TIMING_END();
+            DEVICE_PERFORMANCE_TIMING_END( queue, event );
+            CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
+        }
+
+        FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
+        CHECK_AUBCAPTURE_STOP( queue  );
+
+        return retVal;
+    }
+
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
+    cl_command_queue queue,
+    void* dst_ptr,
+    const void* pattern,
+    size_t pattern_size,
+    size_t size,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        cl_int  retVal = CL_SUCCESS;
+
+        CHECK_AUBCAPTURE_START( queue );
+
+        if( pIntercept->nullEnqueue() == false )
+        {
+            CALL_LOGGING_ENTER( "queue = %p, dst_ptr = %p, pattern_size = %u, size = %u",
+                queue,
+                dst_ptr,
+                (cl_uint)pattern_size,
+                (cl_uint)size );
+            CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+            DEVICE_PERFORMANCE_TIMING_START( event );
+            CPU_PERFORMANCE_TIMING_START();
+
+            if( pIntercept->dispatch().clEnqueueMemFillINTEL )
+            {
+                retVal = pIntercept->dispatch().clEnqueueMemFillINTEL(
+                    queue,
+                    dst_ptr,
+                    pattern,
+                    pattern_size,
                     size,
                     num_events_in_wait_list,
                     event_wait_list,
