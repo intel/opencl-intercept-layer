@@ -1263,10 +1263,21 @@ struct CLdispatch
         const void* arg_value);
 
     // cl_intel_unified_shared_memory
-    cl_int (CLI_API_CALL *clEnqueueMemsetINTEL) (
+    cl_int (CLI_API_CALL *clEnqueueMemsetINTEL) (   // Deprecated
         cl_command_queue command_queue,
         void* dst_ptr,
         cl_int value,
+        size_t size,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
+
+    // cl_intel_unified_shared_memory
+    cl_int (CLI_API_CALL *clEnqueueMemFillINTEL) (
+        cl_command_queue command_queue,
+        void* dst_ptr,
+        const void* pattern,
+        size_t pattern_size,
         size_t size,
         cl_uint num_events_in_wait_list,
         const cl_event* event_wait_list,
