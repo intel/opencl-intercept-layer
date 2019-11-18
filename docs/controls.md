@@ -88,13 +88,34 @@ will record any controls that are set to non-default values.
 
 ### Setup and Loading Controls
 
-##### `DllName` (string)
+##### `OpenCLFileName` (string)
 
-Used to control the DLL or Shared Library that the Intercept Layer for OpenCL Applications loads to make real OpenCL calls.  If present, only this DLL name is loaded.  If omitted, the Intercept Layer for OpenCL Applications tries to load the real OpenCL DLL from file names in this order:
+Used to control the DLL or Shared Library that the Intercept Layer for OpenCL Applications loads to make real OpenCL calls.
+This can be a relative file name or a full absolute file name, but an absolute file name is recommended.
+If present, only this file name is loaded.
+If omitted, the Intercept Layer for OpenCL Applications tries to load the real OpenCL from file names in this order:
 
-- real_OpenCL.dll (anywhere in the system path)
-- %WINDIR%\SysWOW64\OpenCL.dll (32-bit DLLs only)
-- %WINDIR%\System32\OpenCL.dll
+For Windows:
+
+- `real_OpenCL.dll` (anywhere in the system path)
+- `%WINDIR%\SysWOW64\OpenCL.dll` (32-bit DLLs only)
+- `%WINDIR%\System32\OpenCL.dll`
+
+For Linux:
+
+- `./real_libOpenCL.so`
+- `/usr/lib/x86_64-linux-gnu/libOpenCL.so`
+- `/opt/intel/opencl/lib64/libOpenCL.so`
+
+For Android:
+
+- `/system/vendor/lib/real_libOpenCL.so`
+- `real_libOpenCL.so`
+
+This control is not used for OSX.
+
+This control used to be called `DllName`.
+The old name may still be used for backwards compatibility, but switching to the new name is recommended.
 
 ##### `BreakOnLoad` (bool)
 

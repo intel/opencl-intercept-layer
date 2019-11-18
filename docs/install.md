@@ -69,11 +69,11 @@ Note: If the real ICD loader library is in a system directory, you may need to p
 4. Create a config file or setup environment variables to tell the Intercept Layer for OpenCL Applications where to find the real ICD loader.
 For example, you could create a `clintercept.conf` file with content:
 
-       DllName=path/to/your/real_libOpenCL.so
+       OpenCLFileName=path/to/your/real_libOpenCL.so
 
     Or, you could set an environment variable:
 
-       export CLI_DllName=path/to/your/real_libOpenCL.so
+       export CLI_OpenCLFileName=path/to/your/real_libOpenCL.so
 
     See the [controls documentation](controls.md) for more detail.
 
@@ -95,7 +95,7 @@ using only environment variables.  If the application specifies an rpath or
 otherwise circumvents the OS's method of identifying an appropriate
 libOpenCL.so, this method won't work.  Example:
 
-    LD_LIBRARY_PATH=/path/to/build/output CLI_DllName=/path/to/real/libOpenCL.so \
+    LD_LIBRARY_PATH=/path/to/build/output CLI_OpenCLFileName=/path/to/real/libOpenCL.so \
     CLI_DumpProgramSource=1 ./oclapplication
 
 ## Mac OSX

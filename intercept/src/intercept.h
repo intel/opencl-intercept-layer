@@ -710,7 +710,7 @@ private:
     void    logDeviceInfo( cl_device_id device );
 
 #if defined(_WIN32) || defined(__linux__)
-    bool    initDispatch( const std::string& dllName );
+    bool    initDispatch( const std::string& libName );
 #elif defined(__APPLE__)
     bool    initDispatch( void );
 #else

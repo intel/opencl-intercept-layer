@@ -331,9 +331,6 @@ bool CLIntercept::init()
         CLI_DEBUG_BREAK();
     }
 
-    std::string dllName = "";
-    GetControl( m_OS, "DllName", dllName );
-
     // A few control aliases, for backwards compatibility:
     GetControl( m_OS, "DevicePerformanceTimeHashTracking",m_Config.KernelNameHashTracking );
     GetControl( m_OS, "SimpleDumpProgram",                m_Config.SimpleDumpProgramSource );
@@ -341,6 +338,10 @@ bool CLIntercept::init()
     GetControl( m_OS, "DumpProgramsInject",               m_Config.DumpProgramSource );
     GetControl( m_OS, "InjectPrograms",                   m_Config.InjectProgramSource );
     GetControl( m_OS, "LogDir",                           m_Config.DumpDir );
+
+    std::string libName = "";
+    GetControl( m_OS, "DllName", libName ); // alias
+    GetControl( m_OS, "OpenCLFileName", libName );
 
 #define CLI_CONTROL( _type, _name, _init, _desc ) GetControl( m_OS, #_name, m_Config . _name );
 #include "controls.h"
@@ -456,12 +457,12 @@ bool CLIntercept::init()
     // Windows and Linux load the real OpenCL library and retrieve
     // the OpenCL entry points from the real library dynamically.
 #if defined(_WIN32) || defined(__linux__)
-    if( dllName != "" )
+    if( libName != "" )
     {
-        log( "Read DLL name from user parameters: " + dllName + "\n" );
-        log( "Trying to load dispatch from: " + dllName + "\n" );
+        log( "Read OpenCL file name from user parameters: " + libName + "\n" );
+        log( "Trying to load dispatch from: " + libName + "\n" );
 
-        if( initDispatch( dllName ) )
+        if( initDispatch( libName ) )
         {
             log( "... success!\n" );
         }
@@ -476,7 +477,7 @@ bool CLIntercept::init()
         _dupenv_s( &windir, &length, "windir" );
 
         // Try some common DLL names.
-        const std::string dllNames[] =
+        const std::string libNames[] =
         {
             "real_opencl.dll",
         #if defined(WIN32)
@@ -489,7 +490,7 @@ bool CLIntercept::init()
 
 #elif defined(__ANDROID__)
 
-        const std::string dllNames[] =
+        const std::string libNames[] =
         {
             "/system/vendor/lib/real_libOpenCL.so",
             "real_libOpenCL.so",
@@ -497,7 +498,7 @@ bool CLIntercept::init()
 
 #elif defined(__linux__)
 
-        const std::string dllNames[] =
+        const std::string libNames[] =
         {
             "./real_libOpenCL.so",
             "/usr/lib/x86_64-linux-gnu/libOpenCL.so",
@@ -508,14 +509,14 @@ bool CLIntercept::init()
 #error Unknown OS!
 #endif
 
-        const int numNames = sizeof(dllNames) / sizeof(dllNames[0]);
+        const int numNames = sizeof(libNames) / sizeof(libNames[0]);
         int i = 0;
 
         for( i = 0; i < numNames; i++ )
         {
-            log( "Trying to load dispatch from: " + dllNames[i] + "\n" );
+            log( "Trying to load dispatch from: " + libNames[i] + "\n" );
 
-            if( initDispatch( dllNames[i] ) )
+            if( initDispatch( libNames[i] ) )
             {
                 log( "... success!\n" );
                 break;
@@ -9913,16 +9914,16 @@ void CLIntercept::logDeviceInfo( cl_device_id device )
         *pfunc = func;                                                      \
     }                                                                       \
 }
-bool CLIntercept::initDispatch( const std::string& dllName )
+bool CLIntercept::initDispatch( const std::string& libName )
 {
     bool success = true;
 
     if( success )
     {
-        m_OpenCLLibraryHandle = OS().LoadLibrary( dllName.c_str() );
+        m_OpenCLLibraryHandle = OS().LoadLibrary( libName.c_str() );
         if( m_OpenCLLibraryHandle == NULL )
         {
-            log( std::string("Couldn't load library from: ") + dllName + "\n");
+            log( std::string("Couldn't load library: ") + libName + "\n");
             success = false;
         }
     }
