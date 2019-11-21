@@ -34,6 +34,7 @@ source_group( Source FILES
 add_executable(cliprof
     ${CLIPROF_SOURCE_FILES}
 )
+add_dependencies(cliprof OpenCL)
 target_include_directories(cliprof PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
 )
