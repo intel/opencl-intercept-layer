@@ -50,6 +50,7 @@ add_executable(CLIConfig WIN32
     ${CLICONFIG_ICON_FILES}
     ${CLICONFIG_SOURCE_FILES}
 )
+add_dependencies(CLIConfig OpenCL)
 target_compile_definitions(CLIConfig PRIVATE _AFXDLL)
 target_compile_definitions(CLIConfig PRIVATE UNICODE _UNICODE)
 target_include_directories(CLIConfig PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../intercept)
