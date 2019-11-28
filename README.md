@@ -39,6 +39,7 @@ Detailed instructions:
 * [How to Inject Modified Programs](docs/injecting_programs.md)
 * [How to Dump and Disassemble Kernel ISA](docs/kernel_isa.md)
 * [How to Capture AUB Files](docs/aubcapture.md)
+* [How to Collect MDAPI Performance Metrics](docs/mdapi.md)
 * [How to Use the Intercept Layer for OpenCL Applications with VTune](docs/vtune_logging.md)
 * [How to Use the Intercept Layer for OpenCL Applications with Chrome](docs/chrome_tracing.md)
 
