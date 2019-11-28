@@ -74,6 +74,16 @@ To enable MDAPI Time-Based Sampling, set the following controls:
 
 These controls can be enabled via `cliloader`, by specifying the `--mdapi-tbs` option.
 
+## Notes and Tips
+
+* On Windows, the MDAPI library is distributed with the GPU driver.
+* On Linux, the MDAPI library should be built and installed from source.
+* MDAPI time-based sampling currently requires elevated privileges
+because metrics are collected system-wide.
+* MDAPI metrics are logged to CSV files in the usual log directory.
+* To debug MDAPI issues, consider enabling MDAPI logging by defining `MD_DEBUG` in
+[MetricsDiscoveryHelper.cpp](../intercept/mdapi/MetricsDiscoveryHelper.cpp).
+
 ---
 
 \* Other names and brands may be claimed as the property of others.
