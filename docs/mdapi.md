@@ -20,7 +20,7 @@ data.
 MDAPI event-based sampling is implemented as an extension to standard OpenCL
 [event profiling](https://www.khronos.org/registry/OpenCL/specs/2.2/html/OpenCL_API.html#event-profiling-info-table).
 Effectively, an OpenCL command queue must be created that supports MDAPI event-based
-sampling, similar to the way an OpenCL command queue is supported that supports
+sampling, similar to the way an OpenCL command queue is created that supports
 event profiling.  Commands that are enqueued into this command queue support a
 new `clGetEventProfilingInfo` query to return a buffer containing MDAPI performance
 counter deltas.  This buffer can then be passed to MDAPI to decode and log the
@@ -54,8 +54,8 @@ MDAPI time-based sampling is implemented entirely within MDAPI itself, and relie
 on internal MDAPI instrumentation and buffers to collect and report performance metrics
 at regular time intervals.
 
-MDAPI time-based sampling does not rely on any functionality in the OpenCL
-implementation itself and hence may be supported on wherever MDAPI is supported.
+Because MDAPI time-based sampling does not rely on any functionality in the OpenCL
+implementation itself, it is supported on wherever MDAPI is supported.
 MDAPI time-based sampling has been tested on Windows and Linux.  MDAPI time-based
 sampling may eventually be supported on OSX (see [intel/opencl-intercept-layer #105](https://github.com/intel/opencl-intercept-layer/issues/105))
 but is not currently implemented or tested.
