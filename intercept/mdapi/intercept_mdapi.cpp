@@ -109,7 +109,7 @@ void CLIntercept::initCustomPerfCounters()
             uint32_t    timerMS = 10;
             m_pMDHelper->OpenStream(
                 timerMS * 1000000,  // timer period, in nanoseconds
-                1024 * 1024,        // buffer size in bytes -> 1MB
+                0,                  // buffer size in bytes -> device maximum
                 0 );                // pid -> sample all processes
         }
 

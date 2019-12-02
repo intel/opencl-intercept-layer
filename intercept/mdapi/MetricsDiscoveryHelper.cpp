@@ -56,7 +56,7 @@ static const char* cMDLibFileName = "libmd.so";
 #define OpenLibrary(_filename)              dlopen( _filename, RTLD_LAZY | RTLD_LOCAL )
 #define GetFunctionAddress(_handle, _name)  dlsym(_handle, _name)
 #define GetLastError()                      dlerror()
-#define OutputDebugString(_buf)             fprintf(stderr, "%s\n", _buf);
+#define OutputDebugString(_buf)             fprintf(stderr, "%s", _buf);
 
 #endif
 
@@ -471,7 +471,7 @@ void MDHelper::GetIOMeasurementInformation(
 /************************************************************************/
 /* OpenStream                                                           */
 /************************************************************************/
-void MDHelper::OpenStream( uint32_t timerPeriod, uint32_t bufferSize, uint32_t pid /*= 0 */ )
+void MDHelper::OpenStream( uint32_t timerPeriod, uint32_t bufferSize, uint32_t pid )
 {
     if( !m_Initialized || !m_ConcurrentGroup || !m_MetricSet )
     {
@@ -485,6 +485,22 @@ void MDHelper::OpenStream( uint32_t timerPeriod, uint32_t bufferSize, uint32_t p
         return;
     }
 
+    if( bufferSize == 0 )
+    {
+        TTypedValue_1_0* oaBufferSize = m_MetricsDevice->
+            GetGlobalSymbolValueByName( "OABufferMaxSize" );
+        if( oaBufferSize )
+        {
+            bufferSize = oaBufferSize->ValueUInt32;
+            DebugPrint("Trying device maximum buffer size = %u bytes.\n", bufferSize);
+        }
+        else
+        {
+            bufferSize = 4 * 1024 * 1024;   // 4MB
+            DebugPrint("Trying default maximum buffer size = %u bytes.\n", bufferSize);
+        }
+    }
+
     TCompletionCode res = m_ConcurrentGroup->OpenIoStream(
         m_MetricSet,
         pid,
@@ -492,8 +508,14 @@ void MDHelper::OpenStream( uint32_t timerPeriod, uint32_t bufferSize, uint32_t p
         &bufferSize );
     if( res != CC_OK )
     {
-        DebugPrint( "OpenStream failed %d\n", res );
+        DebugPrint("OpenIoStream failed %d\n", res);
         return;
+    }
+    else
+    {
+        DebugPrint("OpenIoStream succeeded: timer period = %u ns, buffer size = %u bytes.\n",
+            timerPeriod,
+            bufferSize);
     }
 
     // Read a dummy report from the stream, to populate the metric names and units.
@@ -509,7 +531,7 @@ void MDHelper::OpenStream( uint32_t timerPeriod, uint32_t bufferSize, uint32_t p
         IO_READ_FLAG_DROP_OLD_REPORTS );
     if( res != CC_OK && res != CC_READ_PENDING )
     {
-        DebugPrint( "Dummy ReadIoStream failed %d\n", res );
+        DebugPrint("Dummy ReadIoStream failed %d\n", res);
         return;
     }
 }
