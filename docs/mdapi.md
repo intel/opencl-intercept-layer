@@ -32,6 +32,12 @@ mechanism to collect MDAPI performance metrics, however it has some limitations:
 * MDAPI event-based sampling is currently only available on Windows.
 * MDAPI event-based sampling on Linux is tracked here: [intel/compute-runtime #182](https://github.com/intel/compute-runtime/issues/182).
 * MDAPI event-based sampling is unlikely to be supported on OSX.
+* The API to create an OpenCL command queue that supports MDAPI event-based
+sampling currently does not support newer OpenCL command queue properties such
+as command queue [priority hints](https://www.khronos.org/registry/OpenCL/specs/2.2/html/OpenCL_Ext.html#cl_khr_priority_hints)
+and [throttle hints](https://www.khronos.org/registry/OpenCL/specs/2.2/html/OpenCL_Ext.html#cl_khr_throttle_hints).
+OpenCL command queues that are created with these properties will not support
+MDAPI event-based sampling.
 
 Additionally, because MDAPI event-based sampling relies on an extension to event
 profiling, event-based sampling may serialize all command execution, complicating
