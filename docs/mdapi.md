@@ -80,6 +80,15 @@ These controls can be enabled via `cliloader`, by specifying the `--mdapi-tbs` o
 * On Linux, the MDAPI library should be built and installed from source.
 * MDAPI time-based sampling currently requires elevated privileges
 because metrics are collected system-wide.
+* On Linux, MDAPI time-based sampling may be enabled for non-root users
+by setting `/proc/sys/dev/i915/perf_stream_paranoid` to `0`:
+
+    ```sh
+    $ echo 0 > /proc/sys/dev/i915/perf_stream_paranoid
+    ```
+
+    For more information, see:
+    * https://software.intel.com/en-us/vtune-cookbook-real-time-monitoring-with-system-analyzer
 * MDAPI metrics are logged to CSV files in the usual log directory.
 * To debug MDAPI issues, consider enabling MDAPI logging by defining `MD_DEBUG` in
 [MetricsDiscoveryHelper.cpp](../intercept/mdapi/MetricsDiscoveryHelper.cpp).
