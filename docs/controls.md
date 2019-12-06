@@ -279,6 +279,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will log 
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will log the device execution times for each OpenCL command.  This can be useful to visualize the execution timeline of OpenCL commands that execute on the device.  If DevicePerformanceTiming is disabled then this control will have no effect.
 
+##### `DevicePerfCounterLibName` (string)
+
+Full path to MDAPI shared library. If not set, the default MDAPI library will be used.
+
 ##### `DevicePerfCounterEventBasedSampling` (bool)
 
 If set to a nonzero value and DevicePerfCounterCustom is set, the Intercept Layer for OpenCL Applications will enable Intel GPU Performance Counters to track the minimum, maximum, and average performance counter deltas for each OpenCL command. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. This feature will only function if the Intercept Layer for OpenCL Applications is built with MDAPI support.
