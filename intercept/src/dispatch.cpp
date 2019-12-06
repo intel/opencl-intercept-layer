@@ -3854,9 +3854,12 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillBuffer)(
 
         if( pIntercept->nullEnqueue() == false )
         {
-            CALL_LOGGING_ENTER( "queue = %p, buffer = %p",
+            CALL_LOGGING_ENTER( "queue = %p, buffer = %p, pattern_size = %u, offset = %u, size = %u",
                 command_queue,
-                buffer );
+                buffer,
+                (cl_uint)pattern_size,
+                (cl_uint)offset,
+                (cl_uint)size );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -6380,8 +6383,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemFill) (
 
         if( pIntercept->nullEnqueue() == false )
         {
-            CALL_LOGGING_ENTER( "queue = %p",
-                command_queue );
+            CALL_LOGGING_ENTER( "queue = %p, svm_ptr = %p, pattern_size = %u, size = %u",
+                command_queue,
+                svm_ptr,
+                (cl_uint)pattern_size,
+                (cl_uint)size );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
