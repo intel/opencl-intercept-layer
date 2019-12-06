@@ -58,10 +58,12 @@ class MDHelper
 {
 public:
     static MDHelper* CreateEBS(
+        const std::string& metricsLibraryName,
         const std::string& metricSetSymbolName,
         const std::string& metricsFileName,
         const bool includeMaxValues );
     static MDHelper* CreateTBS(
+        const std::string& metricsLibraryName,
         const std::string& metricSetSymbolName,
         const std::string& metricsFileName,
         const bool includeMaxValues );
@@ -118,6 +120,7 @@ private:
     ~MDHelper();
 
     bool InitMetricsDiscovery(
+        const std::string& metricsLibraryName,
         const std::string& metricSetSymbolName,
         const std::string& metricsFileName,
         const bool includeMaxValues );
