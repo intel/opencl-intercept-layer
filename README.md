@@ -35,6 +35,8 @@ Instructions for the old loader (`cliprof`) can still be found [here](docs/clipr
 
 Instructions to install the Intercept Layer for OpenCL Applications can be found [here](docs/install.md).
 
+Troubleshooting steps and answers to frequently asked questions can be found [here](docs/FAQ.md).
+
 Detailed instructions:
 * [How to Inject Modified Programs](docs/injecting_programs.md)
 * [How to Dump and Disassemble Kernel ISA](docs/kernel_isa.md)
