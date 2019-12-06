@@ -76,6 +76,7 @@ void CLIntercept::initCustomPerfCounters()
         if( config().DevicePerfCounterEventBasedSampling )
         {
             m_pMDHelper = MetricsDiscovery::MDHelper::CreateEBS(
+                config().DevicePerfCounterLibName,
                 metricSetSymbolName,
                 metricsFileName,
                 includeMaxValues );
@@ -83,6 +84,7 @@ void CLIntercept::initCustomPerfCounters()
         else if( config().DevicePerfCounterTimeBasedSampling )
         {
             m_pMDHelper = MetricsDiscovery::MDHelper::CreateTBS(
+                config().DevicePerfCounterLibName,
                 metricSetSymbolName,
                 metricsFileName,
                 includeMaxValues );
