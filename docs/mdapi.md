@@ -63,8 +63,8 @@ at regular time intervals.
 Because MDAPI time-based sampling does not rely on any functionality in the OpenCL
 implementation itself, it is supported on wherever MDAPI is supported.
 MDAPI time-based sampling has been tested on Windows and Linux.  MDAPI time-based
-sampling may eventually be supported on OSX (see [intel/opencl-intercept-layer #105](https://github.com/intel/opencl-intercept-layer/issues/105))
-but is not currently implemented or tested.
+sampling is supported on macOS. See [Notes and Tips](#notes-and-tips) section
+below for instructions.
 
 MDAPI time-based sampling is not as precise as MDAPI event-based sampling, but
 because MDAPI time-based sampling does not rely on event profiling, MDAPI
@@ -84,6 +84,12 @@ These controls can be enabled via `cliloader`, by specifying the `--mdapi-tbs` o
 
 * On Windows, the MDAPI library is distributed with the GPU driver.
 * On Linux, the MDAPI library should be built and installed from source.
+* On macOS, the path to MDAPI library should be set manually with
+`DevicePerfCounterLibName` control. The library is named `libigdmd.dylib` and
+it usually resides under `/System/Library/Extensions/AppleIntel<CPU NAME>GraphicsMTLDriver.bundle/Contents/MacOS/libigdmd.dylib`,
+where `<CPU NAME>` is a short name of your CPU generation. For example, on Kaby
+Lake machines `<CPU NAME>` is `KBL`. You can also add path to `libigdmd.dylib`
+library to `DYLD_LIBRARY_PATH` environment library, so that it can be found system-wide.
 * MDAPI time-based sampling currently requires elevated privileges
 because metrics are collected system-wide.
 * On Linux, MDAPI time-based sampling may be enabled for non-root users
