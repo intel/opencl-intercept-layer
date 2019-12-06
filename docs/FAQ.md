@@ -2,12 +2,13 @@
 
 This document describes common troubleshooting steps, solutions to common problems encountered when using the Intercept Layer for OpenCL Applications, and other answers to other frequently asked questions.
 
-## What can I do with this?
+## What is the Intercept Layer for OpenCL Applications?  Why should I use it?
 
-In short, the Intercept Layer for OpenCL Applications is designed to enable OpenCL developers to quickly debug, analyze, and optimize OpenCL applications.
-It is thin and fast and can easily be enabled during development and testing, then disabled for deployment.
-It almost always works without any application modifications, and has been tested with OpenCL implementations from multiple vendors.
-It is regularly used on Windows and Linux, generally works on OSX, and has been used on Android.
+In short, the Intercept Layer for OpenCL Applications is a tool enabling OpenCL developers to quickly debug, analyze, and optimize OpenCL applications.
+It is thin and fast.
+It can easily be enabled during development and testing, then disabled for deployment.
+It almost always works without any application modifications and has been tested with OpenCL implementations from multiple vendors.
+It is regularly used on Windows and Linux, generally works on OSX, and has been successfully used on Android.
 
 The Intercept Layer for OpenCL Applications can:
 
@@ -17,7 +18,7 @@ The Intercept Layer for OpenCL Applications can:
 * dump the contents of buffers before and after OpenCL kernels.
 * and much more!
 
-## It's not working!
+## It's not working!  Help!
 
 In most cases, when the Intercept Layer for OpenCL Applications is not working it is not installed correctly.
 If you think you have installed the Intercept Layer for OpenCL Applications but you don't see any additional output to stderr or the log file when you run your application, then it's very likely that the Intercept Layer was not properly installed.
@@ -121,7 +122,7 @@ If possible, please include exact steps to reproduce the issue, and include your
 ## How do I contribute?
 
 Contributions to the Intercept Layer for OpenCL Applications are welcomed and encouraged.
-Please see [CONTRIBUTING](CONTRIBUTING.md) for details how to contribute to the project.
+Please see [CONTRIBUTING](../CONTRIBUTING.md) for details how to contribute to the project.
 
 ## How should I cite this project?
 
