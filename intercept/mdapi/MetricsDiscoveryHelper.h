@@ -57,7 +57,11 @@ typedef std::map<const std::string, CMetricAggregationsForKernel> CMetricAggrega
 class MDHelper
 {
 public:
-    static MDHelper* Create(
+    static MDHelper* CreateEBS(
+        const std::string& metricSetSymbolName,
+        const std::string& metricsFileName,
+        const bool includeMaxValues );
+    static MDHelper* CreateTBS(
         const std::string& metricSetSymbolName,
         const std::string& metricsFileName,
         const bool includeMaxValues );
@@ -72,20 +76,37 @@ public:
     void    SetMetricSetFiltering(
                 TMetricApiType apiMask );
 
-    void    GetMetricsFromReport(
+    uint32_t GetMetricsFromReports(
+                const uint32_t numReports,
                 const char* pData,
                 std::vector<TTypedValue_1_0>& results,
                 std::vector<TTypedValue_1_0>& maxValues );
+    void    GetIOMeasurementInformation(
+                std::vector<TTypedValue_1_0>& ioInfoValues );
 
-    void    PrintMetricUnits(
-                std::ostream& os );
+    void    OpenStream(
+                uint32_t timerPeriod,
+                uint32_t bufferSize,
+                uint32_t pid );
+    bool    SaveReportsFromStream( void );
+    uint32_t GetMetricsFromSavedReports(
+                std::vector<TTypedValue_1_0>& results,
+                std::vector<TTypedValue_1_0>& maxValues );
+    void    ResetSavedReports( void );
+    void    CloseStream( void );
+
     void    PrintMetricNames(
                 std::ostream& os );
+    void    PrintMetricUnits(
+                std::ostream& os );
+
     void    PrintMetricValues(
                 std::ostream& os,
                 const std::string& name,
+                const uint32_t numResults,
                 const std::vector<TTypedValue_1_0>& results,
-                const std::vector<TTypedValue_1_0>& maxValues );
+                const std::vector<TTypedValue_1_0>& maxValues,
+                const std::vector<TTypedValue_1_0>& ioInfoValues );
 
     void    AggregateMetrics(
                 CMetricAggregations& aggregations,
@@ -93,7 +114,7 @@ public:
                 const std::vector<TTypedValue_1_0>& results );
 
 private:
-    MDHelper();
+    MDHelper(uint32_t apiMask);
     ~MDHelper();
 
     bool InitMetricsDiscovery(
@@ -120,7 +141,12 @@ private:
     uint32_t                m_CategoryMask;
 
     IMetricsDevice_1_5*     m_MetricsDevice;
+    IConcurrentGroup_1_1*   m_ConcurrentGroup;
     IMetricSet_1_1*         m_MetricSet;
+
+    // Report data for time based sampling:
+    std::vector<char>       m_SavedReportData;
+    uint32_t                m_NumSavedReports;
 
 private:
     MDHelper(MDHelper const&);

@@ -754,7 +754,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
         CPU_PERFORMANCE_TIMING_START();
 
 #if defined(USE_MDAPI)
-        if( !pIntercept->config().DevicePerfCounterCustom.empty() )
+        if( pIntercept->config().DevicePerfCounterEventBasedSampling )
         {
             if( ( retVal == NULL ) && newProperties )
             {
@@ -6756,7 +6756,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
         CPU_PERFORMANCE_TIMING_START();
 
 #if defined(USE_MDAPI)
-        if( !pIntercept->config().DevicePerfCounterCustom.empty() )
+        if( pIntercept->config().DevicePerfCounterEventBasedSampling )
         {
             if( ( retVal == NULL ) && newProperties )
             {
@@ -6851,7 +6851,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
         CPU_PERFORMANCE_TIMING_START();
 
 #if defined(USE_MDAPI)
-        if( !pIntercept->config().DevicePerfCounterCustom.empty() )
+        if( pIntercept->config().DevicePerfCounterEventBasedSampling )
         {
             if( ( retVal == NULL ) && newProperties )
             {
@@ -8451,7 +8451,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
             pIntercept->config().ITTPerformanceTiming ||
             pIntercept->config().ChromePerformanceTiming ||
             pIntercept->config().SIMDSurvey ||
-            !pIntercept->config().DevicePerfCounterCustom.empty() )
+            pIntercept->config().DevicePerfCounterEventBasedSampling )
         {
             properties |= (cl_command_queue_properties)CL_QUEUE_PROFILING_ENABLE;
         }
