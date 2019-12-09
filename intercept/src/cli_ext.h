@@ -696,6 +696,7 @@ cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 #define CL_INVALID_PAK_REFERENCE_IMAGE_INDEX_INTEL      CL_INVALID_VALUE
 
 // cl_intel_unified_shared_memory POC
+// These enums are in sync with revision H of the USM spec.
 
 /* cl_device_info */
 #define CL_DEVICE_HOST_MEM_CAPABILITIES_INTEL                   0x4190
@@ -730,9 +731,9 @@ typedef cl_uint cl_mem_info_intel;
 #define CL_MEM_ALLOC_TYPE_INTEL         0x419A
 #define CL_MEM_ALLOC_BASE_PTR_INTEL     0x419B
 #define CL_MEM_ALLOC_SIZE_INTEL         0x419C
-#define CL_MEM_ALLOC_INFO_TBD0_INTEL    0x419D  /* reserved for future */
-#define CL_MEM_ALLOC_INFO_TBD1_INTEL    0x419E  /* reserved for future */
-#define CL_MEM_ALLOC_INFO_TBD2_INTEL    0x419F  /* reserved for future */
+#define CL_MEM_ALLOC_DEVICE_INTEL       0x419D
+#define CL_MEM_ALLOC_INFO_TBD0_INTEL    0x419E  /* reserved for future */
+#define CL_MEM_ALLOC_INFO_TBD1_INTEL    0x419F  /* reserved for future */
 
 typedef cl_uint cl_unified_shared_memory_type_intel;
 
@@ -761,7 +762,7 @@ typedef cl_uint cl_mem_advice_intel;
 #define CL_KERNEL_EXEC_INFO_USM_PTRS_INTEL                  0x4203
 
 /* cl_command_type */
-#define CL_COMMAND_MEMSET_INTEL         0x4204
+#define CL_COMMAND_MEMFILL_INTEL        0x4204
 #define CL_COMMAND_MEMCPY_INTEL         0x4205
 #define CL_COMMAND_MIGRATEMEM_INTEL     0x4206
 #define CL_COMMAND_MEMADVISE_INTEL      0x4207
