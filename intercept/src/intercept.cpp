@@ -4477,14 +4477,32 @@ void CLIntercept::addTimingEvent(
     if( m_DeviceNameMap.find(device) == m_DeviceNameMap.end() )
     {
         char*   deviceName = NULL;
+        cl_uint deviceComputeUnits = 0;
+        cl_uint deviceMaxClockFrequency = 0;
 
         allocateAndGetDeviceInfoString(
             device,
             CL_DEVICE_NAME,
             deviceName );
+        dispatch().clGetDeviceInfo(
+            device,
+            CL_DEVICE_MAX_COMPUTE_UNITS,
+            sizeof(deviceComputeUnits),
+            &deviceComputeUnits,
+            NULL );
+        dispatch().clGetDeviceInfo(
+            device,
+            CL_DEVICE_MAX_CLOCK_FREQUENCY,
+            sizeof(deviceMaxClockFrequency),
+            &deviceMaxClockFrequency,
+            NULL );
         if( deviceName )
         {
-            m_DeviceNameMap[device] = deviceName;
+            std::ostringstream  ss;
+            ss << deviceName << " ("
+                << deviceComputeUnits << "CUs, "
+                << deviceMaxClockFrequency << "MHz)";
+            m_DeviceNameMap[device] = ss.str();
         }
 
         delete [] deviceName;
