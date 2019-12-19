@@ -126,7 +126,6 @@ CLIntercept::CLIntercept( void* pGlobalData )
     m_LoggedCLInfo = false;
 
     m_EnqueueCounter = 1;
-    m_StartTime = 0;
 
     m_EventsChromeTraced = 0;
     m_ProgramNumber = 0;
@@ -565,8 +564,24 @@ bool CLIntercept::init()
     }
 #endif
 
-    m_StartTime = m_OS.GetTimer();
+    m_StartTime = clock::now();
     log( "Timer Started!\n" );
+
+    if( m_Config.ChromeCallLogging ||
+        m_Config.ChromePerformanceTiming )
+    {
+        uint64_t    processId = OS().GetProcessID();
+        uint64_t    threadId = OS().GetThreadID();
+
+        using us = std::chrono::microseconds;
+        uint64_t    usStartTime =
+            std::chrono::duration_cast<us>(m_StartTime.time_since_epoch()).count();
+        m_InterceptTrace
+            << "{\"ph\":\"M\", \"name\":\"clintercept_start_time\", \"pid\":" << processId
+            << ", \"tid\":" << threadId
+            << ", \"args\":{\"start_time\":" << usStartTime
+            << "}},\n";
+    }
 
     log( "... loading complete.\n" );
 
@@ -759,7 +774,7 @@ void CLIntercept::writeReport(
     {
         os << std::endl << "Host Performance Timing Results:" << std::endl;
 
-        uint64_t    totalTotalTicks = 0;
+        uint64_t    totalTotalNS = 0;
         size_t      longestName = 32;
 
         CHostTimingStatsMap::const_iterator i = m_HostTimingStatsMap.begin();
@@ -770,14 +785,13 @@ void CLIntercept::writeReport(
 
             if( !name.empty() )
             {
-                totalTotalTicks += hostTimingStats.TotalTicks;
+                totalTotalNS += hostTimingStats.TotalNS;
                 longestName = std::max< size_t >( name.length(), longestName );
             }
 
             ++i;
         }
 
-        const uint64_t totalTotalNS = OS().TickToNS( totalTotalTicks );
         os << std::endl << "Total Time (ns): " << totalTotalNS << std::endl;
 
         os << std::endl
@@ -797,17 +811,13 @@ void CLIntercept::writeReport(
 
             if( !name.empty() )
             {
-                const uint64_t totalNS = OS().TickToNS( hostTimingStats.TotalTicks );
-                const uint64_t minNS = OS().TickToNS( hostTimingStats.MinTicks );
-                const uint64_t maxNS = OS().TickToNS( hostTimingStats.MaxTicks );
-
                 os << std::right << std::setw(longestName) << name << ", "
                     << std::right << std::setw( 6) << hostTimingStats.NumberOfCalls << ", "
-                    << std::right << std::setw(13) << totalNS << ", "
-                    << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << totalNS * 100.0f / totalTotalNS << "%, "
-                    << std::right << std::setw(13) << totalNS / hostTimingStats.NumberOfCalls << ", "
-                    << std::right << std::setw(13) << minNS << ", "
-                    << std::right << std::setw(13) << maxNS << std::endl;
+                    << std::right << std::setw(13) << hostTimingStats.TotalNS << ", "
+                    << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << hostTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
+                    << std::right << std::setw(13) << hostTimingStats.TotalNS / hostTimingStats.NumberOfCalls << ", "
+                    << std::right << std::setw(13) << hostTimingStats.MinNS << ", "
+                    << std::right << std::setw(13) << hostTimingStats.MaxNS << std::endl;
             }
 
             ++i;
@@ -914,11 +924,10 @@ void CLIntercept::getCallLoggingPrefix(
 {
     if( m_Config.CallLoggingElapsedTime )
     {
-        uint64_t    tickDelta =
-            OS().GetTimer() -
-            m_StartTime;
-        uint64_t    usDelta =
-            OS().TickToNS( tickDelta ) / 1000;
+        using us = std::chrono::microseconds;
+        uint64_t usDelta =
+            std::chrono::duration_cast<us>(clock::now() - m_StartTime).count();
+
         std::ostringstream  ss;
 
         ss << "Time: ";
@@ -2176,12 +2185,13 @@ void CLIntercept::logCLInfo()
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::logBuild(
-    uint64_t buildTimeStart,
+    clock::time_point buildTimeStart,
     const cl_program program,
     cl_uint numDevices,
     const cl_device_id* deviceList )
 {
-    uint64_t    buildTimeEnd = m_OS.GetTimer();
+    std::chrono::duration<float, std::milli>    buildDuration =
+        clock::now() - buildTimeStart;
 
     std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -2234,7 +2244,7 @@ void CLIntercept::logBuild(
             numberString,
             numDevices );
 
-        float   buildTimeMS = m_OS.TickToNS( buildTimeEnd - buildTimeStart ) / 1e6f;
+        float   buildTimeMS = buildDuration.count();
         logf( "    Build finished in %.2f ms.\n", buildTimeMS );
     }
 
@@ -4190,8 +4200,8 @@ void CLIntercept::dumpProgramBuildLog(
 void CLIntercept::updateHostTimingStats(
     const std::string& functionName,
     cl_kernel kernel,
-    uint64_t start,
-    uint64_t end )
+    clock::time_point start,
+    clock::time_point end )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -4206,17 +4216,17 @@ void CLIntercept::updateHostTimingStats(
 
     SHostTimingStats& hostTimingStats = m_HostTimingStatsMap[ key ];
 
-    uint64_t    tickDelta = end - start;
+    using ns = std::chrono::nanoseconds;
+    uint64_t    nsDelta = std::chrono::duration_cast<ns>(end - start).count();
 
     hostTimingStats.NumberOfCalls++;
-    hostTimingStats.TotalTicks += tickDelta;
-    hostTimingStats.MinTicks = std::min< uint64_t >( hostTimingStats.MinTicks, tickDelta );
-    hostTimingStats.MaxTicks = std::max< uint64_t >( hostTimingStats.MaxTicks, tickDelta );
+    hostTimingStats.TotalNS += nsDelta;
+    hostTimingStats.MinNS = std::min<uint64_t>( hostTimingStats.MinNS, nsDelta );
+    hostTimingStats.MaxNS = std::max<uint64_t>( hostTimingStats.MaxNS, nsDelta );
 
     if( config().HostPerformanceTimeLogging )
     {
         uint64_t    numberOfCalls = hostTimingStats.NumberOfCalls;
-        uint64_t    nsDelta = OS().TickToNS( tickDelta );
         logf( "Host Time for call %u: %s = %u\n",
             (unsigned int)numberOfCalls,
             key.c_str(),
@@ -4453,7 +4463,7 @@ void CLIntercept::createCommandQueuePropertiesCleanup(
 //
 void CLIntercept::addTimingEvent(
     const std::string& functionName,
-    const uint64_t queuedTime,
+    const clock::time_point queuedTime,
     const cl_kernel kernel,
     const cl_uint workDim,
     const size_t* gwo,
@@ -10649,7 +10659,7 @@ void ITTAPI CLIntercept::ittClockInfoCallback(
     const SITTQueueInfo* pQueueInfo = (const SITTQueueInfo*)pData;
 
     uint64_t    cpuTickDelta =
-        pQueueInfo->pIntercept->OS().GetTimer() -
+        clock::now() -
         pQueueInfo->CPUReferenceTime;
 
     uint64_t    cpuDeltaNS = pQueueInfo->pIntercept->OS().TickToNS( cpuTickDelta );
@@ -10661,7 +10671,7 @@ void ITTAPI CLIntercept::ittClockInfoCallback(
 void CLIntercept::ittTraceEvent(
     const std::string& name,
     cl_event event,
-    uint64_t queuedTime )
+    clock::time_point queuedTime )
 {
     cl_int  errorCode = CL_SUCCESS;
 
@@ -10800,8 +10810,8 @@ void CLIntercept::ittTraceEvent(
 void CLIntercept::chromeCallLoggingExit(
     const std::string& functionName,
     const cl_kernel kernel,
-    uint64_t tickStart,
-    uint64_t tickEnd )
+    clock::time_point tickStart,
+    clock::time_point tickEnd )
 {
     // Critical section?
 
@@ -10821,10 +10831,11 @@ void CLIntercept::chromeCallLoggingExit(
     uint64_t    threadId =
         OS().GetThreadID();
 
+    using us = std::chrono::microseconds;
     uint64_t    usStart =
-        OS().TickToNS( tickStart - m_StartTime ) / 1000;
+        std::chrono::duration_cast<us>(tickStart - m_StartTime).count();
     uint64_t    usDelta =
-        OS().TickToNS( tickEnd - tickStart ) / 1000;
+        std::chrono::duration_cast<us>(tickEnd - tickStart).count();
 
     m_InterceptTrace
         << "{\"ph\":\"X\", \"pid\":" << processId
@@ -10927,7 +10938,7 @@ void CLIntercept::chromeRegisterCommandQueue(
 void CLIntercept::chromeTraceEvent(
     const std::string& name,
     cl_event event,
-    uint64_t queuedTime )
+    const clock::time_point queuedTime )
 {
     cl_int  errorCode = CL_SUCCESS;
 
@@ -10980,8 +10991,9 @@ void CLIntercept::chromeTraceEvent(
 
     if( errorCode == CL_SUCCESS )
     {
+        using ns = std::chrono::nanoseconds;
         const uint64_t  normalizedQueuedTimeNS =
-            OS().TickToNS( queuedTime - m_StartTime );
+            std::chrono::duration_cast<ns>(queuedTime - m_StartTime).count();
 
         const uint64_t  processId = OS().GetProcessID();
 

@@ -21,6 +21,7 @@
 */
 #pragma once
 
+#include <chrono>
 #include <fstream>
 #include <list>
 #include <vector>
@@ -61,6 +62,8 @@ class CLIntercept
     struct Config;
 
 public:
+    using clock = std::chrono::system_clock;
+
     static bool Create( void* pGlobalData, CLIntercept*& pIntercept );
     static void Delete( CLIntercept*& pIntercept );
 
@@ -165,7 +168,7 @@ public:
 
     void    logCLInfo();
     void    logBuild(
-                uint64_t buildTimeStart,
+                clock::time_point buildTimeStart,
                 const cl_program program,
                 cl_uint num_devices,
                 const cl_device_id* device_list );
@@ -326,8 +329,8 @@ public:
     void    updateHostTimingStats(
                 const std::string& functionName ,
                 const cl_kernel kernel,
-                uint64_t start,
-                uint64_t end );
+                clock::time_point start,
+                clock::time_point end );
 
     void    modifyCommandQueueProperties(
                 cl_command_queue_properties& props ) const;
@@ -345,7 +348,7 @@ public:
                 cl_queue_properties*& pLocalQueueProperties ) const;
     void    addTimingEvent(
                 const std::string& functionName,
-                const uint64_t queuedTime,
+                const clock::time_point queuedTime,
                 const cl_kernel kernel,
                 const cl_uint workDim,
                 const size_t* gwo,
@@ -673,20 +676,20 @@ public:
     void    ittTraceEvent(
                 const std::string& name,
                 cl_event event,
-                uint64_t queuedTime );
+                const clock::time_point queuedTime );
 #endif
 
     void    chromeCallLoggingExit(
                 const std::string& functionName,
                 const cl_kernel kernel,
-                uint64_t start,
-                uint64_t end );
+                clock::time_point start,
+                clock::time_point end );
     void    chromeRegisterCommandQueue(
                 cl_command_queue queue );
     void    chromeTraceEvent(
                 const std::string& name,
                 cl_event event,
-                uint64_t queuedTime );
+                clock::time_point queuedTime );
 
 private:
     static const char* sc_URL;
@@ -750,7 +753,8 @@ private:
     bool        m_LoggedCLInfo;
 
     uint64_t    m_EnqueueCounter;
-    uint64_t    m_StartTime;
+
+    clock::time_point   m_StartTime;
 
     typedef std::map< uint64_t, unsigned int>   CThreadNumberMap;
     CThreadNumberMap    m_ThreadNumberMap;
@@ -778,14 +782,14 @@ private:
     {
         SHostTimingStats() :
             NumberOfCalls(0),
-            MinTicks(ULLONG_MAX),
-            MaxTicks(0),
-            TotalTicks(0) {}
+            MinNS(ULLONG_MAX),
+            MaxNS(0),
+            TotalNS(0) {}
 
         uint64_t    NumberOfCalls;
-        uint64_t    MinTicks;
-        uint64_t    MaxTicks;
-        uint64_t    TotalTicks;
+        uint64_t    MinNS;
+        uint64_t    MaxNS;
+        uint64_t    TotalNS;
     };
 
     typedef std::map< std::string, SHostTimingStats >   CHostTimingStatsMap;
@@ -854,13 +858,13 @@ private:
 
     struct SEventListNode
     {
-        cl_device_id    Device;
-        std::string     FunctionName;
-        std::string     KernelName;
-        uint64_t        EnqueueCounter;
-        uint64_t        QueuedTime;
-        cl_kernel       Kernel;
-        cl_event        Event;
+        cl_device_id        Device;
+        std::string         FunctionName;
+        std::string         KernelName;
+        uint64_t            EnqueueCounter;
+        clock::time_point   QueuedTime;
+        cl_kernel           Kernel;
+        cl_event            Event;
     };
 
     typedef std::list< SEventListNode > CEventList;
@@ -1076,10 +1080,10 @@ inline CObjectTracker& CLIntercept::objectTracker()
 ///////////////////////////////////////////////////////////////////////////////
 //
 #define BUILD_LOGGING_INIT()                                                \
-    uint64_t    buildTimeStart = 0;                                         \
+    CLIntercept::clock::time_point  buildTimeStart;                         \
     if( pIntercept->config().BuildLogging )                                 \
     {                                                                       \
-        buildTimeStart = pIntercept->OS().GetTimer();                       \
+        buildTimeStart = CLIntercept::clock::now();                         \
     }
 
 #define BUILD_LOGGING( program, num_devices, device_list )                  \
@@ -1790,18 +1794,18 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 ///////////////////////////////////////////////////////////////////////////////
 //
 #define CPU_PERFORMANCE_TIMING_START()                                      \
-    uint64_t    cpuStart = 0, cpuEnd = 0;                                   \
+    CLIntercept::clock::time_point   cpuStart, cpuEnd;                      \
     if( pIntercept->config().HostPerformanceTiming ||                       \
         pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
-        cpuStart = pIntercept->OS().GetTimer();                             \
+        cpuStart = CLIntercept::clock::now();                               \
     }
 
 #define CPU_PERFORMANCE_TIMING_END()                                        \
     if( pIntercept->config().HostPerformanceTiming ||                       \
         pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
-        cpuEnd = pIntercept->OS().GetTimer();                               \
+        cpuEnd = CLIntercept::clock::now();                                 \
         if( pIntercept->config().HostPerformanceTiming )                    \
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
@@ -1824,7 +1828,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
     if( pIntercept->config().HostPerformanceTiming ||                       \
         pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
-        cpuEnd = pIntercept->OS().GetTimer();                               \
+        cpuEnd = CLIntercept::clock::now();                                 \
         if( pIntercept->config().HostPerformanceTiming )                    \
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
@@ -1894,7 +1898,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
     }
 
 #define DEVICE_PERFORMANCE_TIMING_START( pEvent )                           \
-    uint64_t    queuedTime = 0;                                             \
+    CLIntercept::clock::time_point   queuedTime;                            \
     cl_event    local_event = NULL;                                         \
     bool        retainAppEvent = true;                                      \
     if( pIntercept->config().DevicePerformanceTiming ||                     \
@@ -1903,7 +1907,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
         pIntercept->config().SIMDSurvey ||                                  \
         pIntercept->config().DevicePerfCounterEventBasedSampling )          \
     {                                                                       \
-        queuedTime = pIntercept->OS().GetTimer();                           \
+        queuedTime = CLIntercept::clock::now();                             \
         if( pEvent == NULL )                                                \
         {                                                                   \
             pEvent = &local_event;                                          \
