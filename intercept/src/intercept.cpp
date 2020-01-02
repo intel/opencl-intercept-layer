@@ -4020,7 +4020,11 @@ void CLIntercept::dumpProgramOptions(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    CLI_ASSERT( config().DumpProgramSource || config().DumpProgramBinaries || config().DumpProgramSPIRV );
+    CLI_ASSERT(
+        config().DumpProgramSource ||
+        config().DumpInputProgramBinaries ||
+        config().DumpProgramBinaries ||
+        config().DumpProgramSPIRV );
 
     const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 

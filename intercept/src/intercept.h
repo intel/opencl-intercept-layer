@@ -1709,6 +1709,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 #define DUMP_PROGRAM_OPTIONS( program, options )                            \
     if( ( modified == false ) &&                                            \
         ( pIntercept->config().DumpProgramSource ||                         \
+          pIntercept->config().DumpInputProgramBinaries ||                  \
           pIntercept->config().DumpProgramBinaries ||                       \
           pIntercept->config().DumpProgramSPIRV ) )                         \
     {                                                                       \
