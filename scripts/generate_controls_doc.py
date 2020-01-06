@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2019 Intel Corporation
+# Copyright (c) 2018-2020 Intel Corporation
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -156,7 +156,7 @@ def GetFooter():
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018-2019, Intel(R) Corporation
+Copyright (c) 2018-2020, Intel(R) Corporation
 """
 
 printHelp = False

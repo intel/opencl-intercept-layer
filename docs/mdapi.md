@@ -107,4 +107,4 @@ by setting `/proc/sys/dev/i915/perf_stream_paranoid` to `0`:
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018-2019, Intel(R) Corporation
+Copyright (c) 2018-2020, Intel(R) Corporation
