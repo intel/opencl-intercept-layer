@@ -2307,7 +2307,8 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         BUILD_LOGGING( retVal, num_devices, device_list );
-        CALL_LOGGING_EXIT( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         // TODO: How do we compute a hash for the linked program?
         // This is a new program object, so we don't currently have a hash for it.
