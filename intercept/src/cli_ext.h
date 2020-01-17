@@ -397,6 +397,15 @@ cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
 #define CL_QUEUE_THROTTLE_MED_KHR (1<<1)
 #define CL_QUEUE_THROTTLE_LOW_KHR (1<<2)
 
+// cl_khr_extended_versioning
+#define CL_PLATFORM_NUMERIC_VERSION_KHR                  0x0906
+#define CL_PLATFORM_EXTENSIONS_WITH_VERSION_KHR          0x0907
+#define CL_DEVICE_NUMERIC_VERSION_KHR                    0x105E
+#define CL_DEVICE_OPENCL_C_NUMERIC_VERSION_KHR           0x105F
+#define CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR            0x1060
+#define CL_DEVICE_ILS_WITH_VERSION_KHR                   0x1061
+#define CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR      0x1062
+
 // Unofficial MDAPI extension:
 extern CL_API_ENTRY
 cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(

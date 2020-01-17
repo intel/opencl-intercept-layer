@@ -892,6 +892,15 @@ CEnumNameMap::CEnumNameMap()
     // cl_khr_throttle_hints extension
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_THROTTLE_KHR );
 
+    // cl_khr_extended_versioning extension
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_NUMERIC_VERSION_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_EXTENSIONS_WITH_VERSION_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUMERIC_VERSION_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_OPENCL_C_NUMERIC_VERSION_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ILS_WITH_VERSION_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR );
+
     // cl_nv_device_attribute_query
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV );
