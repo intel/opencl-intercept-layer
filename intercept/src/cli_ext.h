@@ -696,7 +696,7 @@ cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 #define CL_INVALID_PAK_REFERENCE_IMAGE_INDEX_INTEL      CL_INVALID_VALUE
 
 // cl_intel_unified_shared_memory POC
-// These enums are in sync with revision H of the USM spec.
+// These enums are in sync with revision O of the USM spec.
 
 /* cl_device_info */
 #define CL_DEVICE_HOST_MEM_CAPABILITIES_INTEL                   0x4190
@@ -705,8 +705,7 @@ cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 #define CL_DEVICE_CROSS_DEVICE_SHARED_MEM_CAPABILITIES_INTEL    0x4193
 #define CL_DEVICE_SHARED_SYSTEM_MEM_CAPABILITIES_INTEL          0x4194
 
-// TODO: should this be cl_device_unified_shared_memory_capabilities_intel?
-typedef cl_bitfield cl_unified_shared_memory_capabilities_intel;
+typedef cl_bitfield cl_device_unified_shared_memory_capabilities_intel;
 
 /* cl_unified_shared_memory_capabilities_intel - bitfield */
 #define CL_UNIFIED_SHARED_MEMORY_ACCESS_INTEL                   (1 << 0)
@@ -796,7 +795,7 @@ clSharedMemAllocINTEL(
 extern CL_API_ENTRY cl_int CL_API_CALL
 clMemFreeINTEL(
             cl_context context,
-            const void* ptr); // TBD: const?
+            void* ptr);
 
 extern CL_API_ENTRY cl_int CL_API_CALL
 clGetMemAllocInfoINTEL(

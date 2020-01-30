@@ -9106,7 +9106,7 @@ clSharedMemAllocINTEL(
 CL_API_ENTRY cl_int CL_API_CALL
 clMemFreeINTEL(
     cl_context context,
-    const void* ptr)
+    void* ptr)
 {
     CLIntercept*    pIntercept = GetIntercept();
 
@@ -9195,7 +9195,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
             kernel,
             arg_index,
             arg_value );
-        SET_KERNEL_ARG_SVM_POINTER( kernel, arg_index, arg_value );
+        CHECK_KERNEL_ARG_USM_POINTER( kernel, arg_value );
         CPU_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = CL_INVALID_OPERATION;

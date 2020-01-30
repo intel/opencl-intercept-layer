@@ -207,6 +207,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will chec
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will check for leaks of various OpenCL objects, such as memory objects and events.
 
+##### `USMChecking` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will check for incorrect usage of Unified Shard Memory (USM) pointers.
+
 ##### `CLInfoLogging` (bool)
 
 If set to a nonzero value, logs information about the platforms and devices in the system on the first call to clGetPlatformIDs().

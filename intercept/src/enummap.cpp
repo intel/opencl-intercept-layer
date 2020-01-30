@@ -806,10 +806,10 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_MIGRATEMEM_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_MEMADVISE_INTEL );
 
-    ADD_ENUM_NAME( m_cl_unified_shared_memory_capabilities_intel, CL_UNIFIED_SHARED_MEMORY_ACCESS_INTEL );
-    ADD_ENUM_NAME( m_cl_unified_shared_memory_capabilities_intel, CL_UNIFIED_SHARED_MEMORY_ATOMIC_ACCESS_INTEL );
-    ADD_ENUM_NAME( m_cl_unified_shared_memory_capabilities_intel, CL_UNIFIED_SHARED_MEMORY_CONCURRENT_ACCESS_INTEL );
-    ADD_ENUM_NAME( m_cl_unified_shared_memory_capabilities_intel, CL_UNIFIED_SHARED_MEMORY_CONCURRENT_ATOMIC_ACCESS_INTEL );
+    ADD_ENUM_NAME( m_cl_device_unified_shared_memory_capabilities_intel, CL_UNIFIED_SHARED_MEMORY_ACCESS_INTEL );
+    ADD_ENUM_NAME( m_cl_device_unified_shared_memory_capabilities_intel, CL_UNIFIED_SHARED_MEMORY_ATOMIC_ACCESS_INTEL );
+    ADD_ENUM_NAME( m_cl_device_unified_shared_memory_capabilities_intel, CL_UNIFIED_SHARED_MEMORY_CONCURRENT_ACCESS_INTEL );
+    ADD_ENUM_NAME( m_cl_device_unified_shared_memory_capabilities_intel, CL_UNIFIED_SHARED_MEMORY_CONCURRENT_ATOMIC_ACCESS_INTEL );
 
     ADD_ENUM_NAME( m_cl_mem_alloc_flags_intel, CL_MEM_ALLOC_WRITE_COMBINED_INTEL );
 
