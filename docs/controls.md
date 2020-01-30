@@ -209,7 +209,7 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will chec
 
 ##### `USMChecking` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will check for incorrect usage of Unified Shard Memory (USM) pointers.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will check for incorrect usage of Unified Shared Memory (USM) pointers.
 
 ##### `CLInfoLogging` (bool)
 
