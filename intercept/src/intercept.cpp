@@ -1599,8 +1599,7 @@ void CLIntercept::getDeviceInfoString(
 {
     str = "";
 
-    unsigned int    i = 0;
-    for( i = 0; i < numDevices; i++ )
+    for( cl_uint i = 0; i < numDevices; i++ )
     {
         cl_int  errorCode = CL_SUCCESS;
 
@@ -2241,8 +2240,7 @@ void CLIntercept::logBuild(
 
     if( errorCode == CL_SUCCESS )
     {
-        size_t i = 0;
-        for( i = 0; i < numDevices; i++ )
+        for( cl_uint i = 0; i < numDevices; i++ )
         {
             if( m_Config.BuildLogging )
             {
@@ -2442,8 +2440,7 @@ void CLIntercept::logPreferredWorkGroupSizeMultiple(
             }
             if( errorCode == CL_SUCCESS )
             {
-                size_t i = 0;
-                for( i = 0; i < numDevices; i++ )
+                for( cl_uint i = 0; i < numDevices; i++ )
                 {
                     size_t  kernelPreferredWorkGroupSizeMultiple = 0;
                     errorCode = dispatch().clGetKernelWorkGroupInfo(
@@ -5984,6 +5981,190 @@ void CLIntercept::checkEventList(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::checkKernelArgUSMPointer(
+    cl_kernel kernel,
+    const void* arg )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    if( arg == NULL )
+    {
+        logf( "mem pointer %p is NULL\n", arg );
+    }
+    else
+    {
+        cl_int errorCode = CL_SUCCESS;
+
+        cl_context  context = NULL;
+        if( errorCode == CL_SUCCESS )
+        {
+            errorCode = dispatch().clGetKernelInfo(
+                kernel,
+                CL_KERNEL_CONTEXT,
+                sizeof(context),
+                &context,
+                NULL );
+        }
+
+        cl_unified_shared_memory_type_intel memType = CL_MEM_TYPE_UNKNOWN_INTEL;
+        cl_device_id associatedDevice = NULL;
+        if( errorCode == CL_SUCCESS )
+        {
+            dispatch().clGetMemAllocInfoINTEL(
+                context,
+                arg,
+                CL_MEM_ALLOC_TYPE_INTEL,
+                sizeof(memType),
+                &memType,
+                NULL );
+            dispatch().clGetMemAllocInfoINTEL(
+                context,
+                arg,
+                CL_MEM_ALLOC_DEVICE_INTEL,
+                sizeof(associatedDevice),
+                &associatedDevice,
+                NULL );
+
+            char* deviceName = NULL;
+            if( associatedDevice )
+            {
+                allocateAndGetDeviceInfoString(
+                    associatedDevice,
+                    CL_DEVICE_NAME,
+                    deviceName );
+            }
+
+            if( memType == CL_MEM_TYPE_DEVICE_INTEL )
+            {
+                if( deviceName )
+                {
+                    logf( "mem pointer %p is a DEVICE pointer associated with device %s\n",
+                        arg,
+                        deviceName );
+                }
+                else if( associatedDevice )
+                {
+                    logf( "mem pointer %p is a DEVICE pointer associated with device %p\n",
+                        arg,
+                        associatedDevice );
+                }
+                else
+                {
+                    CLI_ASSERT( 0 );
+                    logf( "mem pointer %p is a DEVICE pointer but has no associated device?\n",
+                        arg );
+                }
+            }
+            else if( memType == CL_MEM_TYPE_HOST_INTEL )
+            {
+                logf( "mem pointer %p is a HOST pointer\n",
+                    arg );
+            }
+            else if( memType == CL_MEM_TYPE_SHARED_INTEL )
+            {
+                if( deviceName )
+                {
+                    logf( "mem pointer %p is a SHARED pointer associated with device %s\n",
+                        arg,
+                        deviceName );
+                }
+                else if( associatedDevice )
+                {
+                    logf( "mem pointer %p is a SHARED pointer associated with device %p\n",
+                        arg,
+                        associatedDevice );
+                }
+                else
+                {
+                    logf( "mem pointer %p is a SHARED pointer without an associated device\n",
+                        arg );
+                }
+            }
+            else if( memType == CL_MEM_TYPE_UNKNOWN_INTEL )
+            {
+                // This could be a system shared USM pointer, or this could be an error.
+                // Check the devices associatd with this kernel to see if any support
+                // system shared USM allocations.
+                cl_program  program = NULL;
+                if( errorCode == CL_SUCCESS )
+                {
+                    errorCode = dispatch().clGetKernelInfo(
+                        kernel,
+                        CL_KERNEL_PROGRAM,
+                        sizeof(program),
+                        &program,
+                        NULL );
+                }
+
+                cl_uint         numDevices = 0;
+                cl_device_id*   deviceList = NULL;
+                if( errorCode == CL_SUCCESS )
+                {
+                    errorCode = allocateAndGetProgramDeviceList(
+                        program,
+                        numDevices,
+                        deviceList );
+                }
+
+                if( errorCode == CL_SUCCESS )
+                {
+                    bool supportsSystemSharedUSM = false;
+                    for( cl_uint d = 0; d < numDevices; d++ )
+                    {
+                        cl_device_unified_shared_memory_capabilities_intel usmCaps = 0;
+                        dispatch().clGetDeviceInfo(
+                            deviceList[d],
+                            CL_DEVICE_SHARED_SYSTEM_MEM_CAPABILITIES_INTEL,
+                            sizeof(usmCaps),
+                            &usmCaps,
+                            NULL);
+                        if( usmCaps != 0 )
+                        {
+                            supportsSystemSharedUSM = true;
+                            break;
+                        }
+                    }
+
+                    if( supportsSystemSharedUSM )
+                    {
+                        logf( "mem pointer %p is an UNKNOWN pointer and could be a shared system pointer\n",
+                            arg );
+                    }
+                    else
+                    {
+                        logf( "mem pointer %p is an UNKNOWN pointer and no device support shared system pointers!\n",
+                            arg );
+                    }
+                }
+                else
+                {
+                    logf( "mem pointer %p is an UNKNOWN pointer and additional queries returned an error!\n",
+                        arg );
+                }
+
+                delete [] deviceList;
+            }
+            else
+            {
+                CLI_ASSERT( 0 );
+                logf( "query for mem pointer %p returned an unknown memory type %08X!\n",
+                    arg,
+                    memType );
+            }
+
+            delete [] deviceName;
+        }
+        else
+        {
+            logf( "couldn't query context for kernel %p for mem pointer %p!\n",
+                kernel,
+                arg );
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::startAubCapture(
     const std::string& functionName,
     const cl_kernel kernel,
@@ -6302,8 +6483,7 @@ void CLIntercept::initPrecompiledKernelOverrides(
 
                         if( tempErrorCode == CL_SUCCESS )
                         {
-                            cl_uint i = 0;
-                            for( i = 0; i < numDevices; i++ )
+                            for( cl_uint i = 0; i < numDevices; i++ )
                             {
                                 size_t  buildLogSize = 0;
                                 dispatch().clGetProgramBuildInfo(
@@ -6517,8 +6697,7 @@ void CLIntercept::initBuiltinKernelOverrides(
 
                         if( tempErrorCode == CL_SUCCESS )
                         {
-                            cl_uint i = 0;
-                            for( i = 0; i < numDevices; i++ )
+                            for( cl_uint i = 0; i < numDevices; i++ )
                             {
                                 size_t  buildLogSize = 0;
                                 dispatch().clGetProgramBuildInfo(

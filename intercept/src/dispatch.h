@@ -1245,7 +1245,7 @@ struct CLdispatch
     // cl_intel_unified_shared_memory
     cl_int (CLI_API_CALL *clMemFreeINTEL) (
         cl_context context,
-        const void* ptr); // TBD: const?
+        void* ptr);
 
     // cl_intel_unified_shared_memory
     cl_int (CLI_API_CALL *clGetMemAllocInfoINTEL) (

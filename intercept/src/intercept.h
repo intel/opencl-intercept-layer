@@ -428,6 +428,9 @@ public:
                 cl_uint numEvents,
                 const cl_event* eventList,
                 cl_event* event );
+    void    checkKernelArgUSMPointer(
+                cl_kernel kernel,
+                const void* arg );
 
     void    startAubCapture(
                 const std::string& functionName,
@@ -2042,6 +2045,16 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
             _numEvents,                                                     \
             _eventList,                                                     \
             _event );                                                       \
+    }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+#define CHECK_KERNEL_ARG_USM_POINTER( _kernel, _arg )                       \
+    if( pIntercept->config().USMChecking )                                  \
+    {                                                                       \
+        pIntercept->checkKernelArgUSMPointer(                               \
+            _kernel,                                                        \
+            _arg );                                                         \
     }
 
 ///////////////////////////////////////////////////////////////////////////////
