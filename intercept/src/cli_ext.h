@@ -936,6 +936,10 @@ clEnqueueMemAdviseINTEL(
 #define CL_DEVICE_GFXIP_MAJOR_AMD                   0x404A
 #define CL_DEVICE_GFXIP_MINOR_AMD                   0x404B
 #define CL_DEVICE_AVAILABLE_ASYNC_QUEUES_AMD        0x404C
+#define CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_AMD     0x4030
+#define CL_DEVICE_MAX_WORK_GROUP_SIZE_AMD           0x4031
+#define CL_DEVICE_PREFERRED_CONSTANT_BUFFER_SIZE_AMD    0x4033
+#define CL_DEVICE_PCIE_ID_AMD                       0x4034
 
 // cl_amd_offline_devices
 #define CL_CONTEXT_OFFLINE_DEVICES_AMD              0x403F
