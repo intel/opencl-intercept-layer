@@ -62,7 +62,7 @@ class CLIntercept
     struct Config;
 
 public:
-    using clock = std::chrono::system_clock;
+    using clock = std::chrono::steady_clock;
 
     static bool Create( void* pGlobalData, CLIntercept*& pIntercept );
     static void Delete( CLIntercept*& pIntercept );
