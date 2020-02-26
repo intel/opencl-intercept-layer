@@ -30,7 +30,6 @@ source_group(CL FILES
 
 set(CLINTERCEPT_OS_FILES
     OS/OS.h
-    OS/OS_timer.h
 )
 if(WIN32)
     list(APPEND CLINTERCEPT_OS_FILES

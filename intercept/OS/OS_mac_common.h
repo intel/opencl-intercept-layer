@@ -83,10 +83,6 @@ public:
     void    OutputDebugString(
                 const std::string& str ) const;
 
-    uint64_t    GetTimer() const;
-    uint64_t    TickToNS(
-                    uint64_t delta ) const;
-
     void*   LoadLibrary(
                 const std::string& libraryName ) const;
     void    UnloadLibrary(
@@ -159,20 +155,6 @@ inline void Services_Common::OutputDebugString(
     const std::string& str ) const
 {
     syslog( LOG_USER | LOG_INFO, "%s", str.c_str() );
-}
-
-inline uint64_t Services_Common::GetTimer() const
-{
-    timeval i;
-    gettimeofday( &i, NULL );
-    return i.tv_sec * 1000000 + i.tv_usec;
-}
-
-inline uint64_t Services_Common::TickToNS(
-    uint64_t delta ) const
-{
-    double  ns = delta * 1000.0;
-    return (uint64_t)ns;
 }
 
 inline void* Services_Common::LoadLibrary(
