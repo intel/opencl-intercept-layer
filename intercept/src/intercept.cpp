@@ -1143,30 +1143,59 @@ cl_int CLIntercept::getDeviceMajorMinorVersion(
     {
         // According to the spec, the device version string should have the form:
         //   OpenCL <Major>.<Minor> <Vendor Specific Info>
-        // So, skip the prefix, then extract the major and minor version number.
-        const char* prefix = "OpenCL ";
-        if( strlen(deviceVersion) > strlen(prefix) )
-        {
-            char*   sMajor = deviceVersion + strlen(prefix);
-            char*   sMinor = NULL;
-            majorVersion = strtol( sMajor, &sMinor, 10 );
-            if( sMinor != NULL && *sMinor == '.' )
-            {
-                sMinor++;
-                minorVersion = strtol( sMinor, NULL, 10 );
-            }
-            else
-            {
-                CLI_ASSERT( 0 );
-                minorVersion = 0;
-            }
-        }
+        getMajorMinorVersionFromString(
+            "OpenCL ",
+            deviceVersion,
+            majorVersion,
+            minorVersion );
     }
 
     delete [] deviceVersion;
     deviceVersion = NULL;
 
     return errorCode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+bool CLIntercept::getMajorMinorVersionFromString(
+    const char* prefix,
+    const char* str,
+    size_t& major,
+    size_t& minor ) const
+{
+    major = 0;
+    minor = 0;
+
+    if( str && prefix )
+    {
+        if( strncmp(str, prefix, strlen(prefix)) == 0 )
+        {
+            str += strlen(prefix);
+            while( isdigit(str[0]) )
+            {
+                major *= 10;
+                major += str[0] - '0';
+                str++;
+            }
+            if( str[0] == '.' )
+            {
+                str++;
+            }
+            else
+            {
+                CLI_ASSERT( 0 );
+            }
+            while( isdigit(str[0]) )
+            {
+                minor *= 10;
+                minor += str[0] - '0';
+                str++;
+            }
+        }
+    }
+
+    return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1219,7 +1248,6 @@ bool CLIntercept::checkDeviceForExtension(
 
     return supported;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -7729,7 +7757,286 @@ cl_int CLIntercept::writeParamToMemory(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+static cl_int parseExtensionString(
+    const char* originalStr,
+    cl_name_version_khr* ptr,
+    size_t param_value_size,
+    size_t* param_value_size_ret )
+{
+    cl_int  errorCode = CL_SUCCESS;
+
+    // Go through the string once to count the number of tokens:
+    const char* str = originalStr;
+    int     numTokens = 0;
+    while( str != NULL && str[0] != '\0' )
+    {
+        // Skip any preceding spaces
+        while( isspace(str[0]) )
+        {
+            str++;
+        }
+        if( str[0] != '\0' )
+        {
+            // Find the next space, or end of string
+            size_t  nameSize = 0;
+            while( str[0] != '\0' && !isspace(str[0]) )
+            {
+                str++;
+                nameSize++;
+            }
+            CLI_ASSERT( nameSize < CL_NAME_VERSION_MAX_NAME_SIZE_KHR );
+            numTokens++;
+        }
+    }
+
+    if( ptr != NULL )
+    {
+        if( param_value_size < numTokens * sizeof(cl_name_version_khr) )
+        {
+            errorCode = CL_INVALID_VALUE;
+        }
+        else
+        {
+            str = originalStr;
+            while( str != NULL && str[0] != '\0' )
+            {
+                // skip any preceding spaces
+                while( isspace(str[0]) )
+                {
+                    str++;
+                }
+                if( str[0] != '\0' )
+                {
+                    memset(ptr->name, 0, sizeof(ptr->name));
+                    ptr->version = 0;
+
+                    // find the next space, or end of string
+                    size_t  nameSize = 0;
+                    while( str[0] != '\0' && !isspace(str[0]) )
+                    {
+                        if( nameSize < sizeof(ptr->name) )
+                        {
+                            ptr->name[nameSize] = str[0];
+                        }
+                        str++;
+                        nameSize++;
+                    }
+                    ptr->name[sizeof(ptr->name) - 1] = '\0';
+                    ptr++;
+                }
+            }
+        }
+    }
+    if( param_value_size_ret != NULL )
+    {
+        *param_value_size_ret = numTokens * sizeof(cl_name_version_khr);
+    }
+
+    return errorCode;
+}
+
+static cl_int parseILString(
+    const char* originalStr,
+    cl_name_version_khr* ptr,
+    size_t param_value_size,
+    size_t* param_value_size_ret )
+{
+    cl_int  errorCode = CL_SUCCESS;
+
+    // Go through the string once to count the number of tokens:
+    const char* str = originalStr;
+    int     numTokens = 0;
+    while( str != NULL && str[0] != '\0' )
+    {
+        // Skip any preceding spaces
+        while( isspace(str[0]) )
+        {
+            str++;
+        }
+        if( str[0] != '\0' )
+        {
+            // Find the next space, or end of string
+            size_t  nameSize = 0;
+            while( str[0] != '\0' && !isspace(str[0]) )
+            {
+                str++;
+                nameSize++;
+            }
+            CLI_ASSERT( nameSize < CL_NAME_VERSION_MAX_NAME_SIZE_KHR );
+            numTokens++;
+        }
+    }
+
+    if( ptr != NULL )
+    {
+        if( param_value_size < numTokens * sizeof(cl_name_version_khr) )
+        {
+            errorCode = CL_INVALID_VALUE;
+        }
+        else
+        {
+            str = originalStr;
+            while( str != NULL && str[0] != '\0' )
+            {
+                // skip any preceding spaces
+                while( isspace(str[0]) )
+                {
+                    str++;
+                }
+                if( str[0] != '\0' )
+                {
+                    memset(ptr->name, 0, sizeof(ptr->name));
+
+                    // find the next space, underscore, or end of string
+                    size_t  nameSize = 0;
+                    while( str[0] != '\0' && str[0] != '_' && !isspace(str[0]) )
+                    {
+                        if( nameSize < sizeof(ptr->name) )
+                        {
+                            ptr->name[nameSize] = str[0];
+                        }
+                        str++;
+                        nameSize++;
+                    }
+                    ptr->name[sizeof(ptr->name) - 1] = '\0';
+
+                    // version
+                    cl_uint major = 0;
+                    cl_uint minor = 0;
+                    cl_uint patch = 0;
+                    if( str[0] == '_' )
+                    {
+                        str++;
+                        while( isdigit(str[0]) )
+                        {
+                            major *= 10;
+                            major += str[0] - '0';
+                            str++;
+                        }
+                        if( str[0] == '.' )
+                        {
+                            str++;
+                        }
+                        while( isdigit(str[0]) )
+                        {
+                            minor *= 10;
+                            minor += str[0] - '0';
+                            str++;
+                        }
+                        if( str[0] == '.' )
+                        {
+                            str++;
+                        }
+                        while( isdigit(str[0]) )
+                        {
+                            patch *= 10;
+                            patch += str[0] - '0';
+                            str++;
+                        }
+                    }
+                    ptr->version = CL_MAKE_VERSION_KHR( major, minor, patch );
+
+                    // find the next space or end of string
+                    while( str[0] != '\0' && !isspace(str[0]) )
+                    {
+                        str++;
+                    }
+
+                    ptr++;
+                }
+            }
+        }
+    }
+    if( param_value_size_ret != NULL )
+    {
+        *param_value_size_ret = numTokens * sizeof(cl_name_version_khr);
+    }
+
+    return errorCode;
+}
+
+static cl_int parseBuiltInKernelsString(
+    const char* originalStr,
+    cl_name_version_khr* ptr,
+    size_t param_value_size,
+    size_t* param_value_size_ret )
+{
+    cl_int  errorCode = CL_SUCCESS;
+
+    // Go through the string once to count the number of tokens:
+    const char* str = originalStr;
+    int     numTokens = 0;
+    while( str != NULL && str[0] != '\0' )
+    {
+        // Skip any preceding spaces or semicolons
+        while( isspace(str[0]) || str[0] == ';' )
+        {
+            str++;
+        }
+        if( str[0] != '\0' )
+        {
+            // Find the next semicolon, or end of string
+            size_t  nameSize = 0;
+            while( str[0] != '\0' && str[0] != ';' )
+            {
+                str++;
+                nameSize++;
+            }
+            CLI_ASSERT( nameSize < CL_NAME_VERSION_MAX_NAME_SIZE_KHR );
+            numTokens++;
+        }
+    }
+
+    if( ptr != NULL )
+    {
+        if( param_value_size < numTokens * sizeof(cl_name_version_khr) )
+        {
+            errorCode = CL_INVALID_VALUE;
+        }
+        else
+        {
+            str = originalStr;
+            while( str != NULL && str[0] != '\0' )
+            {
+                // Skip any preceding spaces or semicolons
+                while( isspace(str[0]) || str[0] == ';' )
+                {
+                    str++;
+                }
+                if( str[0] != '\0' )
+                {
+                    memset(ptr->name, 0, sizeof(ptr->name));
+                    ptr->version = 0;
+
+                    // find the next semicolon, or end of string
+                    size_t  nameSize = 0;
+                    while( str[0] != '\0' && str[0] != ';' )
+                    {
+                        if( nameSize < sizeof(ptr->name) )
+                        {
+                            ptr->name[nameSize] = str[0];
+                        }
+                        str++;
+                        nameSize++;
+                    }
+                    ptr->name[sizeof(ptr->name) - 1] = '\0';
+                    ptr++;
+                }
+            }
+        }
+    }
+    if( param_value_size_ret != NULL )
+    {
+        *param_value_size_ret = numTokens * sizeof(cl_name_version_khr);
+    }
+
+    return errorCode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 bool CLIntercept::overrideGetPlatformInfo(
+    cl_platform_id platform,
     cl_platform_info param_name,
     size_t param_value_size,
     void* param_value,
@@ -7790,6 +8097,66 @@ bool CLIntercept::overrideGetPlatformInfo(
             override = true;
         }
         break;
+    case CL_PLATFORM_NUMERIC_VERSION_KHR:
+        if( m_Config.Emulate_cl_khr_extended_versioning )
+        {
+            char*   platformVersion = NULL;
+
+            errorCode = allocateAndGetPlatformInfoString(
+                platform,
+                CL_PLATFORM_VERSION,
+                platformVersion );
+            if( errorCode == CL_SUCCESS && platformVersion )
+            {
+                // According to the spec, the device version string should have the form:
+                //   OpenCL <Major>.<Minor> <Vendor Specific Info>
+                size_t  major = 0;
+                size_t  minor = 0;
+                if( getMajorMinorVersionFromString(
+                        "OpenCL ",
+                        platformVersion,
+                        major,
+                        minor ) )
+                {
+                    cl_version_khr* ptr = (cl_version_khr*)param_value;
+                    cl_version_khr  version = CL_MAKE_VERSION_KHR( major, minor, 0 );
+                    errorCode = writeParamToMemory(
+                        param_value_size,
+                        version,
+                        param_value_size_ret,
+                        ptr );
+                    override = true;
+                }
+            }
+
+            delete [] platformVersion;
+            platformVersion = NULL;
+        }
+        break;
+    case CL_PLATFORM_EXTENSIONS_WITH_VERSION_KHR:
+        if( m_Config.Emulate_cl_khr_extended_versioning )
+        {
+            char*   platformExtensions = NULL;
+
+            allocateAndGetPlatformInfoString(
+                platform,
+                CL_PLATFORM_EXTENSIONS,
+                platformExtensions );
+
+            // Parse the extension string even if the query returned an error.
+            // In this case we will simply return that zero extensions are supported.
+            cl_name_version_khr*    ptr = (cl_name_version_khr*)param_value;
+            errorCode = parseExtensionString(
+                platformExtensions,
+                ptr,
+                param_value_size,
+                param_value_size_ret );
+            override = true;
+
+            delete [] platformExtensions;
+            platformExtensions = NULL;
+        }
+        break;
     default:
         break;
     }
@@ -7848,6 +8215,37 @@ bool CLIntercept::overrideGetDeviceInfo(
                 param_value_size_ret,
                 ptr );
             override = true;
+        }
+        else if( m_Config.Emulate_cl_khr_extended_versioning )
+        {
+            std::string newExtensions;
+            if( m_Config.Emulate_cl_khr_extended_versioning &&
+                !checkDeviceForExtension( device, "cl_khr_extended_versioning") )
+            {
+                newExtensions += "cl_khr_extended_versioning ";
+            }
+
+            if( !newExtensions.empty() )
+            {
+                char*   deviceExtensions = NULL;
+                cl_int  errorCode = allocateAndGetDeviceInfoString(
+                    device,
+                    CL_DEVICE_EXTENSIONS,
+                    deviceExtensions );
+                if( errorCode == CL_SUCCESS && deviceExtensions )
+                {
+                    newExtensions += deviceExtensions;
+
+                    char*   ptr = (char*)param_value;
+                    errorCode = writeStringToMemory(
+                        param_value_size,
+                        newExtensions,
+                        param_value_size_ret,
+                        ptr );
+                    override = true;
+                }
+                delete [] deviceExtensions;
+            }
         }
         break;
     case CL_DEVICE_VENDOR:
@@ -8006,80 +8404,155 @@ bool CLIntercept::overrideGetDeviceInfo(
             override = true;
         }
         break;
-#if 0
-    // This is a hack to get Sandra to try to compile fp64
-    // kernels on devices that do not report fp64 capabilities.
-    case CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE:
+    case CL_DEVICE_NUMERIC_VERSION_KHR:
+        if( m_Config.Emulate_cl_khr_extended_versioning )
         {
-            cl_uint*    ptr = (cl_uint*)param_value;
-            errorCode = writeParamToMemory(
-                param_value_size,
-                (cl_uint)1,
-                param_value_size_ret,
-                ptr );
-            override = true;
-        }
-        break;
-    case CL_DEVICE_NATIVE_VECTOR_WIDTH_DOUBLE:
-        {
-            cl_uint*    ptr = (cl_uint*)param_value;
-            errorCode = writeParamToMemory(
-                param_value_size,
-                (cl_uint)1,
-                param_value_size_ret,
-                ptr );
-            override = true;
-        }
-        break;
-#endif
-#if 0
-    // This is a hack to get fp16 conformance tests to run on
-    // Broadwell.
-    case CL_DEVICE_HALF_FP_CONFIG:
-        {
-            cl_device_fp_config value =
-                CL_FP_ROUND_TO_NEAREST |
-                CL_FP_ROUND_TO_ZERO |
-                CL_FP_INF_NAN |
-                CL_FP_ROUND_TO_INF;
+            char*   deviceVersion = NULL;
 
-            cl_device_fp_config*    ptr = (cl_device_fp_config*)param_value;
-            errorCode = writeParamToMemory(
-                param_value_size,
-                value,
-                param_value_size_ret,
-                ptr );
-            override = true;
-        }
-        break;
-#endif
-#if 0
-    // This is a hack to get fp32 denormal tests to run on Broadwell.
-    case CL_DEVICE_SINGLE_FP_CONFIG:
-        {
-            cl_device_fp_config value = 0;
-            errorCode = dispatch().clGetDeviceInfo(
+            errorCode = allocateAndGetDeviceInfoString(
                 device,
-                param_name,
-                sizeof(value),
-                &value,
-                NULL );
-            if( errorCode == CL_SUCCESS )
+                CL_DEVICE_VERSION,
+                deviceVersion );
+            if( errorCode == CL_SUCCESS && deviceVersion )
             {
-                value |= CL_FP_DENORM;
-
-                cl_device_fp_config*    ptr = (cl_device_fp_config*)param_value;
-                errorCode = writeParamToMemory(
-                    param_value_size,
-                    value,
-                    param_value_size_ret,
-                    ptr );
-                override = true;
+                // According to the spec, the device version string should have the form:
+                //   OpenCL <Major>.<Minor> <Vendor Specific Info>
+                size_t  major = 0;
+                size_t  minor = 0;
+                if( getMajorMinorVersionFromString(
+                        "OpenCL ",
+                        deviceVersion,
+                        major,
+                        minor ) )
+                {
+                    cl_version_khr* ptr = (cl_version_khr*)param_value;
+                    cl_version_khr  version = CL_MAKE_VERSION_KHR( major, minor, 0 );
+                    errorCode = writeParamToMemory(
+                        param_value_size,
+                        version,
+                        param_value_size_ret,
+                        ptr );
+                    override = true;
+                }
             }
 
+            delete [] deviceVersion;
+            deviceVersion = NULL;
         }
         break;
-#endif
+    case CL_DEVICE_OPENCL_C_NUMERIC_VERSION_KHR:
+        if( m_Config.Emulate_cl_khr_extended_versioning )
+        {
+            char*   deviceOpenCLCVersion = NULL;
+
+            errorCode = allocateAndGetDeviceInfoString(
+                device,
+                CL_DEVICE_OPENCL_C_VERSION,
+                deviceOpenCLCVersion );
+            if( errorCode == CL_SUCCESS && deviceOpenCLCVersion )
+            {
+                // According to the spec, the OpenCL C version string should have the form:
+                //   OpenCL C <Major>.<Minor> <Vendor Specific Info>
+                size_t  major = 0;
+                size_t  minor = 0;
+                if( getMajorMinorVersionFromString(
+                        "OpenCL C ",
+                        deviceOpenCLCVersion,
+                        major,
+                        minor ) )
+                {
+                    cl_version_khr* ptr = (cl_version_khr*)param_value;
+                    cl_version_khr  version = CL_MAKE_VERSION_KHR( major, minor, 0 );
+                    errorCode = writeParamToMemory(
+                        param_value_size,
+                        version,
+                        param_value_size_ret,
+                        ptr );
+                    override = true;
+                }
+            }
+
+            delete [] deviceOpenCLCVersion;
+            deviceOpenCLCVersion = NULL;
+        }
+        break;
+    case CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR:
+        if( m_Config.Emulate_cl_khr_extended_versioning )
+        {
+            std::string deviceExtensions =
+                "cl_khr_extended_versioning ";
+
+            char*   tempDeviceExtensions = NULL;
+
+            allocateAndGetDeviceInfoString(
+                device,
+                CL_DEVICE_EXTENSIONS,
+                tempDeviceExtensions );
+            deviceExtensions += tempDeviceExtensions;
+
+            // Parse the extension string even if the query returned an error.
+            // In this case we will simply return that zero extensions are supported.
+            cl_name_version_khr*    ptr = (cl_name_version_khr*)param_value;
+            errorCode = parseExtensionString(
+                deviceExtensions.c_str(),
+                ptr,
+                param_value_size,
+                param_value_size_ret );
+            override = true;
+
+            delete [] tempDeviceExtensions;
+            tempDeviceExtensions = NULL;
+        }
+        break;
+    case CL_DEVICE_ILS_WITH_VERSION_KHR:
+        if( m_Config.Emulate_cl_khr_extended_versioning )
+        {
+            char*   deviceILs = NULL;
+
+            allocateAndGetDeviceInfoString(
+                device,
+                CL_DEVICE_IL_VERSION,
+                deviceILs );
+
+            // Parse the extension string even if the query returned an error.
+            // In this case we will simply return that zero ILs are supported.
+            cl_name_version_khr*    ptr = (cl_name_version_khr*)param_value;
+            errorCode = parseILString(
+                deviceILs,
+                ptr,
+                param_value_size,
+                param_value_size_ret );
+            override = true;
+
+            delete [] deviceILs;
+            deviceILs = NULL;
+        }
+        break;
+    case CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR:
+        if( m_Config.Emulate_cl_khr_extended_versioning )
+        {
+            char*   deviceBuiltInKernels = NULL;
+
+            allocateAndGetDeviceInfoString(
+                device,
+                CL_DEVICE_BUILT_IN_KERNELS,
+                deviceBuiltInKernels );
+
+            // Parse the built-in kernels string even if the query returned
+            // an error.  In this case we will simply return that zero
+            // built-in kernels are supported.
+            cl_name_version_khr*    ptr = (cl_name_version_khr*)param_value;
+            errorCode = parseBuiltInKernelsString(
+                deviceBuiltInKernels,
+                ptr,
+                param_value_size,
+                param_value_size_ret );
+            override = true;
+
+            delete [] deviceBuiltInKernels;
+            deviceBuiltInKernels = NULL;
+        }
+        break;
     default:
         break;
     }

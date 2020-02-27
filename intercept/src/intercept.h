@@ -99,6 +99,11 @@ public:
                 cl_device_id device,
                 size_t& majorVersion,
                 size_t& minorVersion ) const;
+    bool    getMajorMinorVersionFromString(
+                const char* prefix,
+                const char* str,
+                size_t& majorVersion,
+                size_t& minorVersion ) const;
     bool    checkDeviceForExtension(
                 cl_device_id device,
                 const char* extensionName ) const;
@@ -463,6 +468,7 @@ public:
                 T* pointer ) const;
 
     bool    overrideGetPlatformInfo(
+                cl_platform_id platform,
                 cl_platform_info param_name,
                 size_t param_value_size,
                 void* param_value,

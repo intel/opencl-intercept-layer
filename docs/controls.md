@@ -389,6 +389,12 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump kernel ISA binaries for every kernel, if supported.  An ISA binaries can decoded into ISA text with a disassembler.  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>\_\<Kernel Name\>.isabin".
 
+### Controls for Emulating Features
+
+##### `Emulate_cl_khr_extended_versioning` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl\_khr\_extended\_versioning extension.
+
 ### Controls for Automatically Creating SPIR-V Modules
 
 ##### `AutoCreateSPIRV` (bool)
