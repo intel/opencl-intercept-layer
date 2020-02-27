@@ -7784,7 +7784,7 @@ static cl_int parseExtensionString(
                 str++;
                 nameSize++;
             }
-            CLI_ASSERT( nameSize < CL_NAME_VERSION_MAX_NAME_SIZE );
+            CLI_ASSERT( nameSize < CL_NAME_VERSION_MAX_NAME_SIZE_KHR );
             numTokens++;
         }
     }
@@ -7862,7 +7862,7 @@ static cl_int parseILString(
                 str++;
                 nameSize++;
             }
-            CLI_ASSERT( nameSize < CL_NAME_VERSION_MAX_NAME_SIZE );
+            CLI_ASSERT( nameSize < CL_NAME_VERSION_MAX_NAME_SIZE_KHR );
             numTokens++;
         }
     }
@@ -7982,7 +7982,7 @@ static cl_int parseBuiltInKernelsString(
                 str++;
                 nameSize++;
             }
-            CLI_ASSERT( nameSize < CL_NAME_VERSION_MAX_NAME_SIZE );
+            CLI_ASSERT( nameSize < CL_NAME_VERSION_MAX_NAME_SIZE_KHR );
             numTokens++;
         }
     }
