@@ -22,8 +22,6 @@
 
 #pragma once
 
-#include "OS_timer.h"
-
 #include <sys/stat.h>
 #include <dlfcn.h>
 #include <pthread.h>
@@ -87,10 +85,6 @@ public:
     void    OutputDebugString(
                 const std::string& str ) const;
 
-    uint64_t    GetTimer() const;
-    uint64_t    TickToNS(
-                    uint64_t delta ) const;
-
     void*   LoadLibrary(
                 const std::string& libraryName ) const;
     void    UnloadLibrary(
@@ -113,8 +107,6 @@ public:
                 const std::string& fileName ) const;
 
 private:
-    Timer           m_Timer;
-
     bool    GetControlFromFile(
                 const std::string& fileName,
                 const std::string& controlName,
@@ -169,17 +161,6 @@ inline void Services_Common::OutputDebugString(
     const std::string& str ) const
 {
     syslog( LOG_USER | LOG_INFO, "%s", str.c_str() );
-}
-
-inline uint64_t Services_Common::GetTimer() const
-{
-    return m_Timer.GetTimer();
-}
-
-inline uint64_t Services_Common::TickToNS(
-    uint64_t delta ) const
-{
-    return m_Timer.TickToNS( delta );
 }
 
 inline void* Services_Common::LoadLibrary(
