@@ -2428,7 +2428,7 @@ void CLIntercept::logFlushOrFinishAfterEnqueueEnd(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::logPreferredWorkGroupSizeMultiple(
+void CLIntercept::logKernelInfo(
     const cl_kernel* kernels,
     cl_uint numKernels )
 {
@@ -2467,45 +2467,91 @@ void CLIntercept::logPreferredWorkGroupSizeMultiple(
 
         // Log the preferred work group size multiple for each kernel,
         // for each device.
-        while( numKernels-- )
+        while( numDevices && numKernels-- )
         {
             cl_kernel   kernel = kernels[ numKernels ];
 
-            if( errorCode == CL_SUCCESS )
+            const std::string& kernelName = getShortKernelNameWithHash(kernel);
+            log( "Kernel Info for: " + kernelName + "\n" );
+
+            for( cl_uint i = 0; i < numDevices; i++ )
             {
-                const std::string& kernelName = getShortKernelNameWithHash(kernel);
-                log( "Preferred Work Group Size Multiple for: '" + kernelName + "':\n" );
-            }
-            if( errorCode == CL_SUCCESS )
-            {
-                for( cl_uint i = 0; i < numDevices; i++ )
+                char*   deviceName = NULL;
+                errorCode = allocateAndGetDeviceInfoString(
+                    deviceList[i],
+                    CL_DEVICE_NAME,
+                    deviceName );
+
+                size_t  pwgsm = 0;
+                errorCode |= dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    deviceList[i],
+                    CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
+                    sizeof(pwgsm),
+                    &pwgsm,
+                    NULL );
+                size_t  wgs = 0;
+                errorCode |= dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    deviceList[i],
+                    CL_KERNEL_WORK_GROUP_SIZE,
+                    sizeof(wgs),
+                    &wgs,
+                    NULL );
+                cl_ulong pms = 0;
+                errorCode |= dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    deviceList[i],
+                    CL_KERNEL_PRIVATE_MEM_SIZE,
+                    sizeof(pms),
+                    &pms,
+                    NULL );
+                cl_ulong lms = 0;
+                errorCode |= dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    deviceList[i],
+                    CL_KERNEL_LOCAL_MEM_SIZE,
+                    sizeof(lms),
+                    &lms,
+                    NULL );
+                cl_ulong sms = 0;
+                cl_int errorCode_sms =dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    deviceList[i],
+                    CL_KERNEL_SPILL_MEM_SIZE_INTEL,
+                    sizeof(sms),
+                    &sms,
+                    NULL );
+                if( errorCode == CL_SUCCESS )
                 {
-                    size_t  kernelPreferredWorkGroupSizeMultiple = 0;
-                    errorCode = dispatch().clGetKernelWorkGroupInfo(
-                        kernel,
-                        deviceList[i],
-                        CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
-                        sizeof(kernelPreferredWorkGroupSizeMultiple),
-                        &kernelPreferredWorkGroupSizeMultiple,
-                        NULL );
-                    if( errorCode == CL_SUCCESS )
+                    logf( "    For device: %s\n",
+                        deviceName );
+                    if( config().KernelInfoLogging ||
+                        config().PreferredWorkGroupSizeMultipleLogging )
                     {
-                        char*   deviceName = NULL;
-
-                        errorCode = allocateAndGetDeviceInfoString(
-                            deviceList[i],
-                            CL_DEVICE_NAME,
-                            deviceName );
-                        if( errorCode == CL_SUCCESS )
+                        logf( "        Preferred Work Group Size Multiple: %u\n", (cl_uint)pwgsm);
+                    }
+                    if( config().KernelInfoLogging )
+                    {
+                        logf( "        Work Group Size: %u\n", (cl_uint)wgs);
+                        logf( "        Private Mem Size: %u\n", (cl_uint)pms);
+                        logf( "        Local Mem Size: %u\n", (cl_uint)lms);
+                        if( errorCode_sms == CL_SUCCESS )
                         {
-                            logf( "    for device %s: %u\n",
-                                deviceName,
-                                (unsigned int)kernelPreferredWorkGroupSizeMultiple );
+                            logf( "        Spill Mem Size: %u\n", (cl_uint)sms);
                         }
-
-                        delete [] deviceName;
                     }
                 }
+                else if( deviceName )
+                {
+                    logf( "Error querying kernel info for device %s!\n", deviceName );
+                }
+                else
+                {
+                    logf( "Error querying kernel info!\n" );
+                }
+
+                delete [] deviceName;
             }
         }
 

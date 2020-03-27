@@ -187,7 +187,7 @@ public:
                 const std::string& flushOrFinish,
                 const std::string& functionName,
                 cl_int errorCode );
-    void    logPreferredWorkGroupSizeMultiple(
+    void    logKernelInfo(
                 const cl_kernel* kernels,
                 cl_uint numKernels );
 
