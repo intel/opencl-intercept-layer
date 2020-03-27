@@ -151,6 +151,10 @@ If set to a nonzero value, logs the program build log after each call to clBuild
 
 If set to a nonzero value, logs the preferred work group size multiple for each kernel after each call to clCreateKernel().  On some devices this is the equivalent of the SIMD size for this kernel.
 
+##### `KernelInfoLogging` (bool)
+
+If set to a nonzero value, logs information about the kernel after each call to clCreateKernel().
+
 ##### `CallLogging` (bool)
 
 If set to a nonzero value, logs function entry and exit information for every OpenCL call.  This can be used to easily determine which OpenCL call is causing an application to crash or fail or if a crash occurs outside of an OpenCL call.  This setting is best used with LogToFile or LogToDebugger as it can generate a lot of log data.
