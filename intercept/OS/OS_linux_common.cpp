@@ -116,6 +116,20 @@ bool Services_Common::GetControl(
     return found;
 }
 
+static std::string trim(const std::string& str)
+{
+    const std::string whitespace(" \t");
+    const auto start = str.find_first_not_of(whitespace);
+    const auto end = str.find_last_not_of(whitespace);
+
+    if( start == std::string::npos || end == std::string::npos )
+    {
+        return "";
+    }
+
+    return str.substr(start, end - start + 1);
+}
+
 bool Services_Common::GetControlFromFile(
     const std::string& fileName,
     const std::string& controlName,
@@ -151,11 +165,9 @@ bool Services_Common::GetControlFromFile(
         size_t  pos = s.find('=');
         if( pos != std::string::npos )
         {
-            std::string var = s.substr( 0, pos );
-            var.erase(std::remove_if(var.begin(), var.end(), ::isspace), var.end());
-
-            std::string value = s.substr( pos + 1 );
-            value.erase(std::remove_if(value.begin(), value.end(), ::isspace), value.end());
+            const std::string whitespace(" \t");
+            std::string var = trim(s.substr( 0, pos ));
+            std::string value = trim(s.substr( pos + 1 ));
 
             if( var == controlName )
             {
