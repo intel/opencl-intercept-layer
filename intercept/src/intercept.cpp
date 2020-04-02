@@ -6071,14 +6071,66 @@ void CLIntercept::checkKernelArgUSMPointer(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    if( arg == NULL )
+    cl_int errorCode = CL_SUCCESS;
+
+    // If we don't have a function pointer for clGetMemAllocINFO, try to
+    // get one.  It's possible that the function pointer exists but
+    // the application hasn't queried for it yet, in which case it won't
+    // be installed into the dispatch table.
+    if( dispatch().clGetMemAllocInfoINTEL == NULL )
+    {
+        cl_program  program = NULL;
+        if( errorCode == CL_SUCCESS )
+        {
+            errorCode = dispatch().clGetKernelInfo(
+                kernel,
+                CL_KERNEL_PROGRAM,
+                sizeof(program),
+                &program,
+                NULL );
+        }
+
+        cl_uint         numDevices = 0;
+        cl_device_id*   deviceList = NULL;
+        if( errorCode == CL_SUCCESS )
+        {
+            errorCode = allocateAndGetProgramDeviceList(
+                program,
+                numDevices,
+                deviceList );
+        }
+
+        cl_platform_id  platform = NULL;
+        if( errorCode == CL_SUCCESS && numDevices > 0 )
+        {
+            errorCode = dispatch().clGetDeviceInfo(
+                deviceList[0],
+                CL_DEVICE_PLATFORM,
+                sizeof(platform),
+                &platform,
+                NULL );
+        }
+
+        if( errorCode == CL_SUCCESS )
+        {
+            getExtensionFunctionAddress(
+                platform,
+                "clGetMemAllocInfoINTEL" );
+        }
+
+        delete [] deviceList;
+    }
+
+    if( dispatch().clGetMemAllocInfoINTEL == NULL )
+    {
+        logf( "function pointer for clGetMemAllocInfoINTEL is NULL\n" );
+    }
+    else if( arg == NULL )
     {
         logf( "mem pointer %p is NULL\n", arg );
     }
     else
     {
-        cl_int errorCode = CL_SUCCESS;
-
         cl_context  context = NULL;
         if( errorCode == CL_SUCCESS )
         {
@@ -6090,10 +6142,11 @@ void CLIntercept::checkKernelArgUSMPointer(
                 NULL );
         }
 
-        cl_unified_shared_memory_type_intel memType = CL_MEM_TYPE_UNKNOWN_INTEL;
-        cl_device_id associatedDevice = NULL;
         if( errorCode == CL_SUCCESS )
         {
+            cl_unified_shared_memory_type_intel memType = CL_MEM_TYPE_UNKNOWN_INTEL;
+            cl_device_id associatedDevice = NULL;
+
             dispatch().clGetMemAllocInfoINTEL(
                 context,
                 arg,
@@ -6135,7 +6188,7 @@ void CLIntercept::checkKernelArgUSMPointer(
                 else
                 {
                     CLI_ASSERT( 0 );
-                    logf( "mem pointer %p is a DEVICE pointer but has no associated device?\n",
+                    logf( "mem pointer %p is a DEVICE pointer without an associated device???\n",
                         arg );
                 }
             }
@@ -6167,7 +6220,7 @@ void CLIntercept::checkKernelArgUSMPointer(
             else if( memType == CL_MEM_TYPE_UNKNOWN_INTEL )
             {
                 // This could be a system shared USM pointer, or this could be an error.
-                // Check the devices associatd with this kernel to see if any support
+                // Check the devices associated with this kernel to see if any support
                 // system shared USM allocations.
                 cl_program  program = NULL;
                 if( errorCode == CL_SUCCESS )
