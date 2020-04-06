@@ -32,7 +32,7 @@
 
 // Enables logs:
 //#ifdef _DEBUG
-//#define MD_DEBUG
+#define MD_DEBUG
 //#endif
 
 #if defined(_WIN32)
@@ -139,7 +139,7 @@ MDHelper* MDHelper::CreateEBS(
     const std::string& metricsFileName,
     const bool includeMaxValues )
 {
-    MDHelper*   pMDHelper = new MDHelper(API_TYPE_OCL);
+    MDHelper*   pMDHelper = new MDHelper(API_TYPE_OCL|API_TYPE_OGL4_X);
     if( pMDHelper )
     {
         if( pMDHelper->InitMetricsDiscovery(
