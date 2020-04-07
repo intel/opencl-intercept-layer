@@ -2482,6 +2482,14 @@ void CLIntercept::logKernelInfo(
                     CL_DEVICE_NAME,
                     deviceName );
 
+                cl_uint args = 0;
+                errorCode |= dispatch().clGetKernelInfo(
+                    kernel,
+                    CL_KERNEL_NUM_ARGS,
+                    sizeof(args),
+                    &args,
+                    NULL );
+
                 size_t  pwgsm = 0;
                 errorCode |= dispatch().clGetKernelWorkGroupInfo(
                     kernel,
@@ -2526,6 +2534,10 @@ void CLIntercept::logKernelInfo(
                 {
                     logf( "    For device: %s\n",
                         deviceName );
+                    if( config().KernelInfoLogging )
+                    {
+                        logf( "        Num Args: %u\n", args);
+                    }
                     if( config().KernelInfoLogging ||
                         config().PreferredWorkGroupSizeMultipleLogging )
                     {
