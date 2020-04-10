@@ -9141,6 +9141,40 @@ clMemFreeINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+CL_API_ENTRY cl_int CL_API_CALL
+clMemBlockingFreeINTEL(
+    cl_context context,
+    void* ptr)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        CALL_LOGGING_ENTER( "context = %p, ptr = %p",
+            context,
+            ptr );
+        CPU_PERFORMANCE_TIMING_START();
+
+        cl_int  retVal = CL_INVALID_OPERATION;
+        if( pIntercept->dispatch().clMemBlockingFreeINTEL )
+        {
+            retVal = pIntercept->dispatch().clMemBlockingFreeINTEL(
+                context,
+                ptr );
+        }
+
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
+
+        return retVal;
+    }
+
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 CL_API_ENTRY cl_int CL_API_CALL clGetMemAllocInfoINTEL(
     cl_context context,
     const void* ptr,
