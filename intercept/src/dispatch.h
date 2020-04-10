@@ -1248,6 +1248,11 @@ struct CLdispatch
         void* ptr);
 
     // cl_intel_unified_shared_memory
+    cl_int (CLI_API_CALL *clMemBlockingFreeINTEL) (
+        cl_context context,
+        void* ptr);
+
+    // cl_intel_unified_shared_memory
     cl_int (CLI_API_CALL *clGetMemAllocInfoINTEL) (
         cl_context context,
         const void* ptr,

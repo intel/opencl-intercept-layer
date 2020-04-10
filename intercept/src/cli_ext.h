@@ -732,7 +732,7 @@ cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 #define CL_INVALID_PAK_REFERENCE_IMAGE_INDEX_INTEL      CL_INVALID_VALUE
 
 // cl_intel_unified_shared_memory POC
-// These enums are in sync with revision O of the USM spec.
+// These enums are in sync with revision Q of the USM spec.
 
 /* cl_device_info */
 #define CL_DEVICE_HOST_MEM_CAPABILITIES_INTEL                   0x4190
@@ -757,7 +757,6 @@ typedef cl_bitfield cl_mem_properties_intel;
 typedef cl_bitfield cl_mem_alloc_flags_intel;
 
 /* cl_mem_alloc_flags_intel - bitfield */
-#define CL_MEM_ALLOC_DEFAULT_INTEL                      0
 #define CL_MEM_ALLOC_WRITE_COMBINED_INTEL               (1 << 0)
 
 typedef cl_uint cl_mem_info_intel;
@@ -767,6 +766,7 @@ typedef cl_uint cl_mem_info_intel;
 #define CL_MEM_ALLOC_BASE_PTR_INTEL     0x419B
 #define CL_MEM_ALLOC_SIZE_INTEL         0x419C
 #define CL_MEM_ALLOC_DEVICE_INTEL       0x419D
+/* CL_MEM_ALLOC_FLAGS_INTEL - defined above */
 #define CL_MEM_ALLOC_INFO_TBD0_INTEL    0x419E  /* reserved for future */
 #define CL_MEM_ALLOC_INFO_TBD1_INTEL    0x419F  /* reserved for future */
 
@@ -834,6 +834,11 @@ clMemFreeINTEL(
             void* ptr);
 
 extern CL_API_ENTRY cl_int CL_API_CALL
+clMemBlockingFreeINTEL(
+            cl_context context,
+            void* ptr);
+
+extern CL_API_ENTRY cl_int CL_API_CALL
 clGetMemAllocInfoINTEL(
             cl_context context,
             const void* ptr,
@@ -851,7 +856,7 @@ clSetKernelArgMemPointerINTEL(
 // Memset has been deprecated and replaced by Memfill.
 // This function can eventually be removed.
 extern CL_API_ENTRY cl_int CL_API_CALL
-clEnqueueMemsetINTEL(
+clEnqueueMemsetINTEL(       // Deprecated
             cl_command_queue command_queue,
             void* dst_ptr,
             cl_int value,
