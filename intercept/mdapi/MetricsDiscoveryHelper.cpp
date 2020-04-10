@@ -139,7 +139,13 @@ MDHelper* MDHelper::CreateEBS(
     const std::string& metricsFileName,
     const bool includeMaxValues )
 {
+#if defined(__linux__)
+    // This is a temporary workaround until the Linux MDAPI is updated
+    // to expose metrics for OpenCL.
+    MDHelper*   pMDHelper = new MDHelper(API_TYPE_OCL|API_TYPE_OGL4_X);
+#else
     MDHelper*   pMDHelper = new MDHelper(API_TYPE_OCL);
+#endif
     if( pMDHelper )
     {
         if( pMDHelper->InitMetricsDiscovery(

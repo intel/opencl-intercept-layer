@@ -29,8 +29,7 @@ MDAPI performance counters for each event.
 MDAPI event-based sampling has been supported for some time and is the most robust
 mechanism to collect MDAPI performance metrics, however it has some limitations:
 
-* MDAPI event-based sampling is currently only available on Windows.
-* MDAPI event-based sampling on Linux is tracked here: [intel/compute-runtime #182](https://github.com/intel/compute-runtime/issues/182).
+* MDAPI event-based sampling is only available on Windows and newer Linux drivers.
 * MDAPI event-based sampling is unlikely to be supported on OSX.
 * The API to create an OpenCL command queue that supports MDAPI event-based
 sampling currently does not support newer OpenCL command queue properties such
@@ -88,9 +87,9 @@ it usually resides under `/System/Library/Extensions/AppleIntel<CPU NAME>Graphic
 where `<CPU NAME>` is a short name of your CPU generation. For example, on Kaby
 Lake machines `<CPU NAME>` is `KBL`. You can also add path to `libigdmd.dylib`
 library to `DYLD_LIBRARY_PATH` environment library, so that it can be found system-wide.
-* MDAPI time-based sampling currently requires elevated privileges
+* Collecting MDAPI metrics currently requires elevated privileges
 because metrics are collected system-wide.
-* On Linux, MDAPI time-based sampling may be enabled for non-root users
+* On Linux, MDAPI metrics may be enabled for non-root users
 by setting `/proc/sys/dev/i915/perf_stream_paranoid` to `0`:
 
     ```sh
