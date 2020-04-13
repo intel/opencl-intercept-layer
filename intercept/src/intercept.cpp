@@ -10994,6 +10994,10 @@ bool CLIntercept::initDispatch( const std::string& libName )
         INIT_EXPORTED_FUNC(clSetProgramReleaseCallback);
         INIT_EXPORTED_FUNC(clSetProgramSpecializationConstant);
 
+        // OpenCL 3.0 Entry Points (optional)
+        INIT_EXPORTED_FUNC(clCreateBufferWithProperties);
+        INIT_EXPORTED_FUNC(clCreateImageWithProperties);
+
         // CL-GL Entry Points (optional)
         INIT_EXPORTED_FUNC(clCreateFromGLBuffer);
         INIT_EXPORTED_FUNC(clCreateFromGLTexture);

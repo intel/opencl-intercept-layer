@@ -1046,6 +1046,62 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// OpenCL 3.0
+CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
+    cl_context context,
+    const cl_mem_properties * properties,
+    cl_mem_flags flags,
+    size_t size,
+    void* host_ptr,
+    cl_int* errcode_ret )
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        CALL_LOGGING_ENTER( "context = %p, properties = %p, flags = %s (%llX), size = %d, host_ptr = %p",
+            context,
+            properties,
+            pIntercept->enumName().name_mem_flags( flags ).c_str(),
+            flags,
+            size,
+            host_ptr );
+        INITIALIZE_BUFFER_CONTENTS_INIT( flags, size, host_ptr );
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
+
+        cl_mem  retVal = pIntercept->dispatch().clCreateBufferWithProperties(
+            context,
+            properties,
+            flags,
+            size,
+            host_ptr,
+            errcode_ret );
+
+        CPU_PERFORMANCE_TIMING_END();
+        ADD_BUFFER( retVal );
+        INITIALIZE_BUFFER_CONTENTS_CLEANUP( flags, host_ptr );
+        DUMP_BUFFER_AFTER_CREATE( retVal, flags, host_ptr, size );
+        CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+
+        return retVal;
+    }
+    else
+    {
+        return dummyDispatch.clCreateBufferWithProperties(
+            context,
+            properties,
+            flags,
+            size,
+            host_ptr,
+            errcode_ret );
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // OpenCL 1.1
 CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateSubBuffer)(
     cl_mem buffer,
@@ -1178,6 +1234,97 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
     {
         return dummyDispatch.clCreateImage(
             context,
+            flags,
+            image_format,
+            image_desc,
+            host_ptr,
+            errcode_ret );
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// OpenCL 3.0
+CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImageWithProperties)(
+    cl_context context,
+    const cl_mem_properties* properties,
+    cl_mem_flags flags,
+    const cl_image_format* image_format,
+    const cl_image_desc* image_desc,
+    void* host_ptr,
+    cl_int* errcode_ret )
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        if( image_desc && image_format )
+        {
+            CALL_LOGGING_ENTER(
+                "context = %p, "
+                "properties = %p, "
+                "flags = %s (%llX), "
+                "format->channel_order = %s, "
+                "format->channel_data_type = %s, "
+                "desc->type = %s, "
+                "desc->width = %d, "
+                "desc->height = %d, "
+                "desc->depth = %d, "
+                "desc->array_size = %d, "
+                "desc->row_pitch = %d, "
+                "desc->slice_pitch = %d, "
+                "desc->num_mip_levels = %d, "
+                "desc->num_samples = %d, "
+                "desc->mem_object = %p, "
+                "host_ptr = %p ",
+                context,
+                properties,
+                pIntercept->enumName().name_mem_flags( flags ).c_str(),
+                flags,
+                pIntercept->enumName().name( image_format->image_channel_order ).c_str(),
+                pIntercept->enumName().name( image_format->image_channel_data_type ).c_str(),
+                pIntercept->enumName().name( image_desc->image_type ).c_str(),
+                image_desc->image_width,
+                image_desc->image_height,
+                image_desc->image_depth,
+                image_desc->image_array_size,
+                image_desc->image_row_pitch,
+                image_desc->image_slice_pitch,
+                image_desc->num_mip_levels,
+                image_desc->num_samples,
+                image_desc->mem_object,
+                host_ptr );
+        }
+        else
+        {
+            CALL_LOGGING_ENTER();
+        }
+
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
+
+        cl_mem  retVal = pIntercept->dispatch().clCreateImageWithProperties(
+            context,
+            properties,
+            flags,
+            image_format,
+            image_desc,
+            host_ptr,
+            errcode_ret );
+
+        CPU_PERFORMANCE_TIMING_END();
+        ADD_IMAGE( retVal );
+        CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+
+        return retVal;
+    }
+    else
+    {
+        return dummyDispatch.clCreateImageWithProperties(
+            context,
+            properties,
             flags,
             image_format,
             image_desc,
