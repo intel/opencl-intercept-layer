@@ -4564,6 +4564,8 @@ void CLIntercept::addTimingEvent(
 
     SEventListNode& node = m_EventList.back();
 
+    cl_int  errorCode = CL_SUCCESS;
+
     cl_device_id device = NULL;
     dispatch().clGetCommandQueueInfo(
         queue,
@@ -4620,7 +4622,90 @@ void CLIntercept::addTimingEvent(
         {
             std::ostringstream  ss;
             {
+                size_t  maxsgs = 0;
                 size_t  pwgsm = 0;
+                size_t  simd = 0;
+
+                // Use the kernel "max subgroup size" and "preferred work
+                // group size multiple" to get a reasonable estimate of
+                // the kernel "SIMD size".  We'll try to query both values,
+                // and if both queries are successful, we'll pick the
+                // smallest one.  Empirically, this is reasonably accurate.
+
+                // First, query the "max subgroup size":
+
+                // The query for the max subgroup size requires passing in
+                // a local work size.  We'll use the local work size provided
+                // by the app if there is one, otherwise we will query the
+                // max local work size for this kernel and use it.
+                const size_t*   queryLWS = lws;
+                cl_uint queryWorkDim = workDim;
+
+                size_t  kwgs = 0;
+                if( queryLWS == NULL )
+                {
+                    dispatch().clGetKernelWorkGroupInfo(
+                        kernel,
+                        device,
+                        CL_KERNEL_WORK_GROUP_SIZE,
+                        sizeof(kwgs),
+                        &kwgs,
+                        NULL );
+                    queryLWS = &kwgs;
+                    queryWorkDim = 1;
+                }
+
+                if( dispatch().clGetKernelSubGroupInfoKHR == NULL )
+                {
+                    cl_platform_id  platform = NULL;
+                    dispatch().clGetDeviceInfo(
+                        device,
+                        CL_DEVICE_PLATFORM,
+                        sizeof(platform),
+                        &platform,
+                        NULL );
+                    getExtensionFunctionAddress(
+                        platform,
+                        "clGetKernelSubGroupInfoKHR" );
+                }
+                if( dispatch().clGetKernelSubGroupInfoKHR && maxsgs == 0 )
+                {
+                    dispatch().clGetKernelSubGroupInfoKHR(
+                        kernel,
+                        device,
+                        CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR,
+                        queryWorkDim * sizeof(queryLWS[0]),
+                        queryLWS,
+                        sizeof(maxsgs),
+                        &maxsgs,
+                        NULL );
+                }
+                if( dispatch().clGetKernelSubGroupInfo && maxsgs == 0 )
+                {
+                    size_t  deviceMajorVersion = 0;
+                    size_t  deviceMinorVersion = 0;
+
+                    getDeviceMajorMinorVersion(
+                        device,
+                        deviceMajorVersion,
+                        deviceMinorVersion );
+                    if( deviceMajorVersion > 2 ||
+                        ( deviceMajorVersion == 2 && deviceMinorVersion >= 1) )
+                    {
+                        dispatch().clGetKernelSubGroupInfo(
+                            kernel,
+                            device,
+                            CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE,
+                            queryWorkDim * sizeof(queryLWS[0]),
+                            queryLWS,
+                            sizeof(maxsgs),
+                            &maxsgs,
+                            NULL );
+                    }
+                }
+
+                // Next, query the "preferred work group size multiple":
+
                 dispatch().clGetKernelWorkGroupInfo(
                     kernel,
                     device,
@@ -4628,9 +4713,17 @@ void CLIntercept::addTimingEvent(
                     sizeof(pwgsm),
                     &pwgsm,
                     NULL );
-                if( pwgsm )
+
+                // If either query is zero, use the other query.
+                // Otherwise, use the smallest query.
+
+                maxsgs = ( maxsgs == 0 ) ? pwgsm : maxsgs;
+                pwgsm = ( pwgsm == 0 ) ? maxsgs : pwgsm;
+                simd = ( maxsgs < pwgsm ) ? maxsgs : pwgsm;
+
+                if( simd )
                 {
-                    ss << " SIMD" << (unsigned int)pwgsm;
+                    ss << " SIMD" << (unsigned int)simd;
                 }
             }
             {
