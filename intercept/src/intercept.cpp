@@ -4959,11 +4959,9 @@ void CLIntercept::addTimingEvent(
 
         if( config().DevicePerformanceTimeLWSTracking )
         {
-            size_t suggestedLWS[3] = { 0, 0, 0 };
-            size_t emptyGWO[3] = { 0, 0, 0 };
-
-            std::ostringstream  ss;
-            ss << " LWS[ ";
+            bool    useSuggestedLWS = false;
+            size_t  suggestedLWS[3] = { 0, 0, 0 };
+            size_t  emptyGWO[3] = { 0, 0, 0 };
 
             if( lws == NULL &&
                 workDim <= 3 &&
@@ -4995,12 +4993,19 @@ void CLIntercept::addTimingEvent(
                         gwo == NULL ? emptyGWO : gwo,
                         gws,
                         suggestedLWS );
-                    if( errorCode == CL_SUCCESS )
-                    {
-                        ss << "suggested ";
-                        lws = suggestedLWS;
-                    }
+                    useSuggestedLWS = ( errorCode == CL_SUCCESS );
                 }
+            }
+
+            std::ostringstream  ss;
+            if( useSuggestedLWS )
+            {
+                ss << " SLWS[ ";
+                lws = suggestedLWS;
+            }
+            else
+            {
+                ss << " LWS[ ";
             }
 
             if( lws )
