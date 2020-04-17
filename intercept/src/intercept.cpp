@@ -4960,6 +4960,7 @@ void CLIntercept::addTimingEvent(
         if( config().DevicePerformanceTimeLWSTracking )
         {
             size_t suggestedLWS[3] = { 0, 0, 0 };
+            size_t emptyGWO[3] = { 0, 0, 0 };
 
             std::ostringstream  ss;
             ss << " LWS[ ";
@@ -4974,7 +4975,7 @@ void CLIntercept::addTimingEvent(
                 if( dispatch().clGetKernelSuggestedLocalWorkSizeINTEL == NULL )
                 {
                     cl_platform_id  platform = NULL;
-                    clGetDeviceInfo(
+                    dispatch().clGetDeviceInfo(
                         device,
                         CL_DEVICE_PLATFORM,
                         sizeof(platform),
@@ -4991,7 +4992,7 @@ void CLIntercept::addTimingEvent(
                         queue,
                         kernel,
                         workDim,
-                        gwo,
+                        gwo == NULL ? emptyGWO : gwo,
                         gws,
                         suggestedLWS );
                     if( errorCode == CL_SUCCESS )
