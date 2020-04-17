@@ -4657,16 +4657,21 @@ void CLIntercept::addTimingEvent(
 
                 if( dispatch().clGetKernelSubGroupInfoKHR == NULL )
                 {
-                    cl_platform_id  platform = NULL;
-                    dispatch().clGetDeviceInfo(
-                        device,
-                        CL_DEVICE_PLATFORM,
-                        sizeof(platform),
-                        &platform,
-                        NULL );
-                    getExtensionFunctionAddress(
-                        platform,
-                        "clGetKernelSubGroupInfoKHR" );
+                    if( checkDeviceForExtension(
+                            device,
+                            "cl_khr_subgroups") )
+                    {
+                        cl_platform_id  platform = NULL;
+                        dispatch().clGetDeviceInfo(
+                            device,
+                            CL_DEVICE_PLATFORM,
+                            sizeof(platform),
+                            &platform,
+                            NULL );
+                        getExtensionFunctionAddress(
+                            platform,
+                            "clGetKernelSubGroupInfoKHR" );
+                    }
                 }
                 if( dispatch().clGetKernelSubGroupInfoKHR && maxsgs == 0 )
                 {
