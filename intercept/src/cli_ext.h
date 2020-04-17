@@ -378,7 +378,7 @@ cl_program CL_API_CALL clCreateProgramWithILKHR(
     cl_int* errcode_ret );
 
 ///////////////////////////////////////////////////////////////////////////////
-// cl_khr_initalize_memory
+// cl_khr_initialize_memory
 
 #define CL_CONTEXT_MEMORY_INITIALIZE_KHR            0x2030
 
@@ -1071,6 +1071,17 @@ cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
 #define CL_PROGRAM_DEBUG_INFO_SIZES_INTEL               0x4101
 #define CL_KERNEL_BINARIES_INTEL                        0x4102
 #define CL_KERNEL_BINARY_SIZES_INTEL                    0x4103
+
+///////////////////////////////////////////////////////////////////////////////
+// Unofficial cl_get_kernel_suggested_local_work_size extension:
+extern CL_API_ENTRY
+cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeINTEL(
+    cl_command_queue commandQueue,
+    cl_kernel kernel,
+    cl_uint workDim,
+    const size_t *globalWorkOffset,
+    const size_t *globalWorkSize,
+    size_t *suggestedLocalWorkSize);
 
 #ifdef __cplusplus
 }

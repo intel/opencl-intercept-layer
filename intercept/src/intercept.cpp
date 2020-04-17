@@ -10522,6 +10522,9 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clCreatePerfCountersCommandQueueINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clSetPerformanceConfigurationINTEL );
 
+    // Unofficial cl_get_kernel_suggested_local_work_size extension:
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeINTEL );
+
     // cl_intel_accelerator
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateAcceleratorINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clGetAcceleratorInfoINTEL );

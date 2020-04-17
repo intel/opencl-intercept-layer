@@ -7971,6 +7971,46 @@ CL_API_ENTRY cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// Unofficial cl_get_kernel_suggested_local_work_size extension:
+CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeINTEL(
+    cl_command_queue commandQueue,
+    cl_kernel kernel,
+    cl_uint workDim,
+    const size_t *globalWorkOffset,
+    const size_t *globalWorkSize,
+    size_t *suggestedLocalWorkSize)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(commandQueue);
+        if( dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL )
+        {
+            CALL_LOGGING_ENTER();
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int retVal = dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL(
+                commandQueue,
+                kernel,
+                workDim,
+                globalWorkOffset,
+                globalWorkSize,
+                suggestedLocalWorkSize );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_intel_accelerator
 CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
     cl_context context,
