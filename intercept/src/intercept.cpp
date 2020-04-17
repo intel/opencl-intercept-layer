@@ -4737,6 +4737,8 @@ void CLIntercept::addTimingEvent(
 
     SEventListNode& node = m_EventList.back();
 
+    cl_int  errorCode = CL_SUCCESS;
+
     cl_device_id device = NULL;
     dispatch().clGetCommandQueueInfo(
         queue,
@@ -4957,8 +4959,49 @@ void CLIntercept::addTimingEvent(
 
         if( config().DevicePerformanceTimeLWSTracking )
         {
+            size_t suggestedLWS[3] = { 0, 0, 0 };
+
             std::ostringstream  ss;
             ss << " LWS[ ";
+
+            if( lws == NULL &&
+                workDim <= 3 &&
+                config().DevicePerformanceTimeSuggestedLWSTracking )
+            {
+                // Try to get a function pointer for
+                // clGetKernelSuggestedLocalWorkSizeINTEL.
+                // It's possible this won't exist.
+                if( dispatch().clGetKernelSuggestedLocalWorkSizeINTEL == NULL )
+                {
+                    cl_platform_id  platform = NULL;
+                    clGetDeviceInfo(
+                        device,
+                        CL_DEVICE_PLATFORM,
+                        sizeof(platform),
+                        &platform,
+                        NULL );
+                    getExtensionFunctionAddress(
+                        platform,
+                        "clGetKernelSuggestedLocalWorkSizeINTEL" );
+                }
+
+                if( dispatch().clGetKernelSuggestedLocalWorkSizeINTEL )
+                {
+                    errorCode = dispatch().clGetKernelSuggestedLocalWorkSizeINTEL(
+                        queue,
+                        kernel,
+                        workDim,
+                        gwo,
+                        gws,
+                        suggestedLWS );
+                    if( errorCode == CL_SUCCESS )
+                    {
+                        ss << "suggested ";
+                        lws = suggestedLWS;
+                    }
+                }
+            }
+
             if( lws )
             {
                 if( workDim >= 1 )

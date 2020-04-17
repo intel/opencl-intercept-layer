@@ -275,6 +275,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dist
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between OpenCL NDRange kernels with different local work sizes for the purpose of device performance timing.
 
+##### `DevicePerformanceTimeSuggestedLWSTracking` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will query for a suggested local work size when the passed-in local work size is NULL.
+
 ##### `DevicePerformanceTimingSkipUnmap` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will skip device performance timing for unmap operations.  This is a workaround for a bug in some OpenCL implementations, where querying events created from unmap operations results in driver crashes.
