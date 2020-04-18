@@ -833,9 +833,9 @@ void CLIntercept::writeReport(
             const cl_device_id  device = (*id).first;
             const CDeviceTimingStatsMap& dtsm = (*id).second;
 
-            const std::string&  deviceName = m_DeviceNameMap[device];
+            const SDeviceInfo&  deviceInfo = m_DeviceInfoMap[device];
 
-            os << std::endl << "Device Performance Timing Results for " << deviceName<< ":" << std::endl;
+            os << std::endl << "Device Performance Timing Results for " << deviceInfo.NameForReport << ":" << std::endl;
 
             cl_ulong    totalTotalNS = 0;
             size_t      longestName = 32;
@@ -1124,6 +1124,67 @@ void CLIntercept::callLoggingExit(
     callLoggingExit( str, errorCode, NULL );
 
     va_end( args );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::cacheDeviceInfo(
+    cl_device_id device )
+{
+    if( device && m_DeviceInfoMap.find(device) == m_DeviceInfoMap.end() )
+    {
+        SDeviceInfo&    deviceInfo = m_DeviceInfoMap[device];
+
+        char*   deviceName = NULL;
+        cl_uint deviceComputeUnits = 0;
+        cl_uint deviceMaxClockFrequency = 0;
+
+        allocateAndGetDeviceInfoString(
+            device,
+            CL_DEVICE_NAME,
+            deviceName );
+        dispatch().clGetDeviceInfo(
+            device,
+            CL_DEVICE_MAX_COMPUTE_UNITS,
+            sizeof(deviceComputeUnits),
+            &deviceComputeUnits,
+            NULL );
+        dispatch().clGetDeviceInfo(
+            device,
+            CL_DEVICE_MAX_CLOCK_FREQUENCY,
+            sizeof(deviceMaxClockFrequency),
+            &deviceMaxClockFrequency,
+            NULL );
+        if( deviceName )
+        {
+            std::ostringstream  ss;
+            ss << deviceName << " ("
+                << deviceComputeUnits << "CUs, "
+                << deviceMaxClockFrequency << "MHz)";
+
+            deviceInfo.Name = deviceName;
+            deviceInfo.NameForReport = ss.str();
+        }
+
+        size_t majorVersion = 0;
+        size_t minorVersion = 0;
+        getDeviceMajorMinorVersion(
+            device,
+            majorVersion,
+            minorVersion );
+        deviceInfo.NumericVersion =
+            CL_MAKE_VERSION_KHR( majorVersion, minorVersion, 0 );
+
+        deviceInfo.NumComputeUnits = deviceComputeUnits;
+        deviceInfo.MaxClockFrequency = deviceMaxClockFrequency;
+
+        deviceInfo.Supports_cl_khr_create_command_queue =
+            checkDeviceForExtension( device, "cl_khr_create_command_queue" );
+        deviceInfo.Supports_cl_khr_subgroups =
+            checkDeviceForExtension( device, "cl_khr_subgroups" );
+
+        delete [] deviceName;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2775,7 +2836,7 @@ void CLIntercept::eventCallbackCaller(
 //
 void CLIntercept::eventCallback(
     cl_event event,
-    int status )
+    cl_int status )
 {
     // TODO: Since we call log the eventCallbackCaller, do we need to do
     //       anything here?
@@ -4573,39 +4634,10 @@ void CLIntercept::addTimingEvent(
         sizeof(device),
         &device,
         NULL );
-    if( m_DeviceNameMap.find(device) == m_DeviceNameMap.end() )
-    {
-        char*   deviceName = NULL;
-        cl_uint deviceComputeUnits = 0;
-        cl_uint deviceMaxClockFrequency = 0;
 
-        allocateAndGetDeviceInfoString(
-            device,
-            CL_DEVICE_NAME,
-            deviceName );
-        dispatch().clGetDeviceInfo(
-            device,
-            CL_DEVICE_MAX_COMPUTE_UNITS,
-            sizeof(deviceComputeUnits),
-            &deviceComputeUnits,
-            NULL );
-        dispatch().clGetDeviceInfo(
-            device,
-            CL_DEVICE_MAX_CLOCK_FREQUENCY,
-            sizeof(deviceMaxClockFrequency),
-            &deviceMaxClockFrequency,
-            NULL );
-        if( deviceName )
-        {
-            std::ostringstream  ss;
-            ss << deviceName << " ("
-                << deviceComputeUnits << "CUs, "
-                << deviceMaxClockFrequency << "MHz)";
-            m_DeviceNameMap[device] = ss.str();
-        }
-
-        delete [] deviceName;
-    }
+    // Cache the device info if it's not cached already, since we'll print
+    // the device name and other device properties as part of the report.
+    cacheDeviceInfo( device );
 
     node.Device = device;
     node.FunctionName = functionName;
@@ -4620,6 +4652,8 @@ void CLIntercept::addTimingEvent(
 
         if( config().DevicePerformanceTimeKernelInfoTracking && device )
         {
+            const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
+
             std::ostringstream  ss;
             {
                 size_t  maxsgs = 0;
@@ -4655,11 +4689,10 @@ void CLIntercept::addTimingEvent(
                     queryWorkDim = 1;
                 }
 
-                if( dispatch().clGetKernelSubGroupInfoKHR == NULL )
+                if( maxsgs == 0 &&
+                    deviceInfo.Supports_cl_khr_subgroups )
                 {
-                    if( checkDeviceForExtension(
-                            device,
-                            "cl_khr_subgroups") )
+                    if( dispatch().clGetKernelSubGroupInfoKHR == NULL )
                     {
                         cl_platform_id  platform = NULL;
                         dispatch().clGetDeviceInfo(
@@ -4672,41 +4705,32 @@ void CLIntercept::addTimingEvent(
                             platform,
                             "clGetKernelSubGroupInfoKHR" );
                     }
-                }
-                if( dispatch().clGetKernelSubGroupInfoKHR && maxsgs == 0 )
-                {
-                    dispatch().clGetKernelSubGroupInfoKHR(
-                        kernel,
-                        device,
-                        CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR,
-                        queryWorkDim * sizeof(queryLWS[0]),
-                        queryLWS,
-                        sizeof(maxsgs),
-                        &maxsgs,
-                        NULL );
-                }
-                if( dispatch().clGetKernelSubGroupInfo && maxsgs == 0 )
-                {
-                    size_t  deviceMajorVersion = 0;
-                    size_t  deviceMinorVersion = 0;
-
-                    getDeviceMajorMinorVersion(
-                        device,
-                        deviceMajorVersion,
-                        deviceMinorVersion );
-                    if( deviceMajorVersion > 2 ||
-                        ( deviceMajorVersion == 2 && deviceMinorVersion >= 1) )
+                    if( dispatch().clGetKernelSubGroupInfoKHR )
                     {
-                        dispatch().clGetKernelSubGroupInfo(
+                        dispatch().clGetKernelSubGroupInfoKHR(
                             kernel,
                             device,
-                            CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE,
+                            CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR,
                             queryWorkDim * sizeof(queryLWS[0]),
                             queryLWS,
                             sizeof(maxsgs),
                             &maxsgs,
                             NULL );
                     }
+                }
+                if( maxsgs == 0 &&
+                    deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(2, 1, 0) &&
+                    dispatch().clGetKernelSubGroupInfo )
+                {
+                    dispatch().clGetKernelSubGroupInfo(
+                        kernel,
+                        device,
+                        CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE,
+                        queryWorkDim * sizeof(queryLWS[0]),
+                        queryLWS,
+                        sizeof(maxsgs),
+                        &maxsgs,
+                        NULL );
                 }
 
                 // Next, query the "preferred work group size multiple":
@@ -5100,60 +5124,49 @@ cl_command_queue CLIntercept::createCommandQueueWithProperties(
 {
     cl_command_queue    retVal = NULL;
 
+    // Cache the device info if it's not cached already.
+    cacheDeviceInfo( device );
+
+    const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
+
     // First, check if this is an OpenCL 2.0 or newer device.  If it is, we can
     // simply call the clCreateCommandQueueWithProperties function.
-    if( retVal == NULL )
+    if( retVal == NULL &&
+        deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(2, 0, 0) )
     {
-        size_t  deviceMajorVersion = 0;
-        size_t  deviceMinorVersion = 0;
-
-        cl_int  errorCode = getDeviceMajorMinorVersion(
+        retVal = dispatch().clCreateCommandQueueWithProperties(
+            context,
             device,
-            deviceMajorVersion,
-            deviceMinorVersion );
-
-        if( errorCode == CL_SUCCESS && deviceMajorVersion >= 2 )
-        {
-            retVal = dispatch().clCreateCommandQueueWithProperties(
-                context,
-                device,
-                properties,
-                errcode_ret );
-        }
+            properties,
+            errcode_ret );
     }
 
     // If this didn't work, try to use the create command queue with properties
     // extension.
     if( retVal == NULL &&
-        checkDeviceForExtension(
-            device,
-            "cl_khr_create_command_queue" ) )
+        deviceInfo.Supports_cl_khr_create_command_queue )
     {
-        cl_platform_id  platform = NULL;
-        cl_int  errorCode = dispatch().clGetDeviceInfo(
-            device,
-            CL_DEVICE_PLATFORM,
-            sizeof(platform),
-            &platform,
-            NULL );
-        if( errorCode == CL_SUCCESS && platform != NULL )
+        if( dispatch().clCreateCommandQueueWithPropertiesKHR == NULL )
         {
-            // Note: This works fine for one device, but if there are two
-            // devices then we will need a different mechanism to get a
-            // device-specific function pointer.
+            cl_platform_id  platform = NULL;
+            dispatch().clGetDeviceInfo(
+                device,
+                CL_DEVICE_PLATFORM,
+                sizeof(platform),
+                &platform,
+                NULL );
             getExtensionFunctionAddress(
                 platform,
                 "clCreateCommandQueueWithPropertiesKHR" );
-            if( dispatch().clCreateCommandQueueWithPropertiesKHR )
-            {
-                retVal = dispatch().clCreateCommandQueueWithPropertiesKHR(
-                    context,
-                    device,
-                    properties,
-                    errcode_ret );
-            }
         }
-
+        if( dispatch().clCreateCommandQueueWithPropertiesKHR )
+        {
+            retVal = dispatch().clCreateCommandQueueWithPropertiesKHR(
+                context,
+                device,
+                properties,
+                errcode_ret );
+        }
     }
 
     return retVal;

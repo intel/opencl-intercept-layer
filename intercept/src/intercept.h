@@ -95,6 +95,8 @@ public:
                 const char* formatStr,
                 ... );
 
+    void    cacheDeviceInfo(
+                cl_device_id device  );
     cl_int  getDeviceMajorMinorVersion(
                 cl_device_id device,
                 size_t& majorVersion,
@@ -801,11 +803,25 @@ private:
     typedef std::map< std::string, SHostTimingStats >   CHostTimingStatsMap;
     CHostTimingStatsMap  m_HostTimingStatsMap;
 
-    // These structures define a mapping between a device ID handle and the
-    // device ID string, for reporting purposes.
+    // These structures define a mapping between a device ID handle and
+    // properties of a device, for easier querying.
 
-    typedef std::map< cl_device_id, std::string >   CDeviceNameMap;
-    CDeviceNameMap  m_DeviceNameMap;
+    struct SDeviceInfo
+    {
+        std::string Name;
+        std::string NameForReport;
+
+        cl_uint     NumericVersion;
+
+        cl_uint     NumComputeUnits;
+        cl_uint     MaxClockFrequency;
+
+        bool        Supports_cl_khr_create_command_queue;
+        bool        Supports_cl_khr_subgroups;
+    };
+
+    typedef std::map< cl_device_id, SDeviceInfo >   CDeviceInfoMap;
+    CDeviceInfoMap  m_DeviceInfoMap;
 
     // These structures define a mapping between a key and a device
     // timing record.  The key consists of a device ID and a string
