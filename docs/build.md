@@ -17,7 +17,9 @@ Windows developers can get CMake [here][CMake].  For Linux, CMake is likely
 available via your distribution package manager.  For example, to install
 CMake on Ubuntu all that is needed is:
 
-    sudo apt-get install cmake-gui
+```sh
+sudo apt-get install cmake-gui
+```
 
 ## CMake Recommendations
 
@@ -30,17 +32,26 @@ For Linux and OSX, recommended folders are `_bin32`, `_bin64`, or just plain `_b
 
 For most 32-bit Windows and Linux usages, you can simply run:
 
-    cmake ..
+```sh
+cmake ..
+```
 
 in one of the `_bin` directories described above to generate build files.
 
-For 64-bit Windows you'll need to specify a 64-bit generator manually, for
-example:
+For 64-bit Windows you may need to specify a 64-bit generator manually, for
+example, to create a 64-bit solution files for Visual Studio 2015, you
+could type:
 
-    cmake.exe -G "Visual Studio 14 2015 Win64" .
+```sh
+cmake.exe -G "Visual Studio 14 2015 Win64" ..
+```
 
-Additional options may be specified via the CMake command line; please refer to CMake documentation and supported CMake variables below.
-Some users may prefer to use the CMake GUI (`cmake-gui`) or `ccmake` to generate build files or to specify additional options.
+To view all generators supported by your platform, run `cmake --help`.
+Please refer to CMake documentation for more details.
+
+Other Intercept Layer for OpenCL Applications options may be specified via the CMake command line; please refer the table of supported CMake variables below.
+
+Some users may prefer to use the CMake GUI (`cmake-gui`) or `ccmake` to generate build files.
 
 ## Building
 
@@ -50,37 +61,51 @@ The exact build steps will depend on the type of generated build files, however 
 
 To use CMake to build from a command line, after creating build files, consider usage such as:
 
-    cmake --build <dir> --config <config> --target <target>
+```sh
+cmake --build <dir> --config <config> --target <target>
+```
 
 For example, to build a "debug" `cliloader` and its dependencies using build files in the current directory (`.`), use:
 
-    cmake --build . --config Debug --target cliloader
+```sh
+cmake --build . --config Debug --target cliloader
+```
 
 For some types of build files, the "config" specified on the command line is ignored; please refer to CMake documentation for details.
 
 Building the `install` target will build all files and copy to an "install" directory, for example:
 
-    cmake --build . --config RelWithDebInfo --target install
+```sh
+cmake --build . --config RelWithDebInfo --target install
+```
 
 ### Using Makefiles
 
 To build using generated Makefiles, consider usage such as:
 
-    make <target>
+```sh
+make <target>
+```
 
 For example, to build `cliloader` and its dependencies using generated Makefiles, use:
 
-    make cliloader
+```sh
+make cliloader
+```
 
 Note that for Makefiles, the build configuration is determined when Makefiles are generated.
 By default, Makefiles are generated for the `RelWithDebInfo` build configuration.
 To generate Makefiles for another configuration, pass the build type to CMake, for example:
 
-    cmake .. -DCMAKE_BUILD_TYPE=Debug
+```sh
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+```
 
 Building the `install` target will build all files and copy to an "install" directory, for example:
 
-    make install
+```sh
+make install
+```
 
 ### Using Visual Studio Solutions
 
