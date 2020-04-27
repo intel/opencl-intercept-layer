@@ -121,6 +121,8 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_VENDOR );
     ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_EXTENSIONS );
     ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_HOST_TIMER_RESOLUTION );
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_NUMERIC_VERSION );
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_EXTENSIONS_WITH_VERSION );
 
     /* cl_device_type - bitfield */
     ADD_ENUM_NAME( m_cl_device_type, CL_DEVICE_TYPE_DEFAULT );
@@ -227,6 +229,20 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_IL_VERSION );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_NUM_SUB_GROUPS );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SUB_GROUP_INDEPENDENT_FORWARD_PROGRESS );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUMERIC_VERSION );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_EXTENSIONS_WITH_VERSION );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ILS_WITH_VERSION );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ATOMIC_MEMORY_CAPABILITIES );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ATOMIC_FENCE_CAPABILITIES );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NON_UNIFORM_WORK_GROUP_SUPPORT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_OPENCL_C_ALL_VERSIONS );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_MULTIPLE );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_WORK_GROUP_COLLECTIVE_FUNCTIONS_SUPPORT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GENERIC_ADDRESS_SPACE_SUPPORT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_OPENCL_C_FEATURES );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_DEVICE_ENQUEUE_SUPPORT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PIPE_SUPPORT );
 
     /* cl_device_fp_config - bitfield */
     ADD_ENUM_NAME( m_cl_device_fp_config, CL_FP_DENORM );
@@ -294,6 +310,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_PROPERTIES );
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_SIZE );
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_DEVICE_DEFAULT );
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_PROPERTIES_ARRAY );
 
     /* cl_mem_flags - bitfield */
     ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_READ_WRITE );
@@ -374,6 +391,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_MEM_ASSOCIATED_MEMOBJECT );
     ADD_ENUM_NAME( m_cl_int, CL_MEM_OFFSET );
     ADD_ENUM_NAME( m_cl_int, CL_MEM_USES_SVM_POINTER );
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_PROPERTIES );
 
     /* cl_image_info */
     ADD_ENUM_NAME( m_cl_int, CL_IMAGE_FORMAT );
@@ -391,6 +409,7 @@ CEnumNameMap::CEnumNameMap()
     /* cl_pipe_info */
     ADD_ENUM_NAME( m_cl_int, CL_PIPE_PACKET_SIZE );
     ADD_ENUM_NAME( m_cl_int, CL_PIPE_MAX_PACKETS );
+    ADD_ENUM_NAME( m_cl_int, CL_PIPE_PROPERTIES );
 
     /* cl_addressing_mode */
     ADD_ENUM_NAME( m_cl_int, CL_ADDRESS_NONE );
@@ -412,6 +431,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_SAMPLER_MIP_FILTER_MODE );
     ADD_ENUM_NAME( m_cl_int, CL_SAMPLER_LOD_MIN );
     ADD_ENUM_NAME( m_cl_int, CL_SAMPLER_LOD_MAX );
+    ADD_ENUM_NAME( m_cl_int, CL_SAMPLER_PROPERTIES );
 
     /* cl_map_flags - bitfield */
     ADD_ENUM_NAME( m_cl_map_flags, CL_MAP_READ );
@@ -542,6 +562,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_SVM_MEMFILL );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_SVM_MAP );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_SVM_UNMAP );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_SVM_MIGRATE_MEM );
 
     /* command execution status */
     ADD_ENUM_NAME( m_cl_command_exec_status, CL_COMPLETE );
@@ -565,6 +586,14 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_svm_mem_flags, CL_MEM_READ_ONLY );
     ADD_ENUM_NAME( m_cl_svm_mem_flags, CL_MEM_SVM_FINE_GRAIN_BUFFER );
     ADD_ENUM_NAME( m_cl_svm_mem_flags, CL_MEM_SVM_ATOMICS );
+
+    ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_ORDER_RELAXED );
+    ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_ORDER_ACQ_REL );
+    ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_ORDER_SEQ_CST );
+    ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_SCOPE_WORK_ITEM );
+    ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_SCOPE_WORK_GROUP );
+    ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_SCOPE_DEVICE );
+    ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_SCOPE_ALL_DEVICES );
 
     // Intel Extensions
 
@@ -892,7 +921,9 @@ CEnumNameMap::CEnumNameMap()
     // cl_khr_throttle_hints extension
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_THROTTLE_KHR );
 
+#ifndef CL_VERSION_3_0
     // cl_khr_extended_versioning extension
+    // The enums for this extension were added to OpenCL 3.0.
     ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_NUMERIC_VERSION_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_EXTENSIONS_WITH_VERSION_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUMERIC_VERSION_KHR );
@@ -900,6 +931,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ILS_WITH_VERSION_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR );
+#endif
 
     // cl_nv_device_attribute_query
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV );

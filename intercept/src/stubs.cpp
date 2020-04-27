@@ -588,31 +588,6 @@ CLI_API_ENTRY cl_program CLI_API_CALL dummyLinkProgram(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// OpenCL 2.2
-CLI_API_ENTRY cl_int CLI_API_CALL dummySetProgramReleaseCallback(
-    cl_program program,
-    void (CL_CALLBACK *pfn_notify)(cl_program program, void* user_data),
-    void* user_data )
-{
-    DUMMY_ASSERT();
-    return CL_INVALID_OPERATION;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// OpenCL 2.2
-CLI_API_ENTRY cl_int CLI_API_CALL dummySetProgramSpecializationConstant(
-    cl_program program,
-    cl_uint spec_id,
-    size_t spec_size,
-    const void* spec_value )
-{
-    DUMMY_ASSERT();
-    return CL_INVALID_OPERATION;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // OpenCL 1.2
 CLI_API_ENTRY cl_int CLI_API_CALL dummyUnloadPlatformCompiler(
     cl_platform_id platform )
@@ -1771,6 +1746,72 @@ CLI_API_ENTRY cl_int CLI_API_CALL dummyEnqueueSVMMigrateMem(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// OpenCL 2.2
+CLI_API_ENTRY cl_int CLI_API_CALL dummySetProgramReleaseCallback(
+    cl_program program,
+    void (CL_CALLBACK *pfn_notify)(cl_program program, void* user_data),
+    void* user_data )
+{
+    DUMMY_ASSERT();
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// OpenCL 2.2
+CLI_API_ENTRY cl_int CLI_API_CALL dummySetProgramSpecializationConstant(
+    cl_program program,
+    cl_uint spec_id,
+    size_t spec_size,
+    const void* spec_value )
+{
+    DUMMY_ASSERT();
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// OpenCL 3.0
+CLI_API_ENTRY cl_mem CLI_API_CALL dummyCreateBufferWithProperties(
+    cl_context context,
+    const cl_mem_properties* properties,
+    cl_mem_flags flags,
+    size_t size,
+    void* host_ptr,
+    cl_int* errcode_ret)
+{
+    if( errcode_ret )
+    {
+        errcode_ret[0] = CL_INVALID_OPERATION;
+    }
+
+    DUMMY_ASSERT();
+    return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// OpenCL 3.0
+CLI_API_ENTRY cl_mem CLI_API_CALL dummyCreateImageWithProperties(
+    cl_context context,
+    const cl_mem_properties* properties,
+    cl_mem_flags flags,
+    const cl_image_format* image_format,
+    const cl_image_desc* image_desc,
+    void* host_ptr,
+    cl_int* errcode_ret)
+{
+    if( errcode_ret )
+    {
+        errcode_ret[0] = CL_INVALID_OPERATION;
+    }
+
+    DUMMY_ASSERT();
+    return NULL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 CLdispatch dummyDispatch = {
     dummyGetPlatformIDs,
     dummyGetPlatformInfo,
@@ -1812,8 +1853,6 @@ CLdispatch dummyDispatch = {
     dummyBuildProgram,
     dummyCompileProgram,
     dummyLinkProgram,
-    dummySetProgramReleaseCallback,
-    dummySetProgramSpecializationConstant,
     dummyUnloadPlatformCompiler,
     dummyUnloadCompiler,
     dummyGetProgramInfo,
@@ -1902,6 +1941,14 @@ CLdispatch dummyDispatch = {
     dummyCloneKernel,
     dummyGetKernelSubGroupInfo,
     dummyEnqueueSVMMigrateMem,
+
+    // OpenCL 2.2
+    dummySetProgramReleaseCallback,
+    dummySetProgramSpecializationConstant,
+
+    // OpenCL 3.0
+    dummyCreateBufferWithProperties,
+    dummyCreateImageWithProperties,
 
     // KHR Extensions
 

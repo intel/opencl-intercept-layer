@@ -290,19 +290,6 @@ struct CLdispatch
                 void* user_data,
                 cl_int* errcode_ret );
 
-    // OpenCL 2.2
-    cl_int  (CLI_API_CALL *clSetProgramReleaseCallback) (
-                cl_program program,
-                void (CL_CALLBACK *pfn_notify)(cl_program program, void* user_data),
-                void* user_data );
-
-    // OpenCL 2.2
-    cl_int  (CLI_API_CALL *clSetProgramSpecializationConstant) (
-                cl_program program,
-                cl_uint spec_id,
-                size_t spec_size,
-                const void* spec_value );
-
     // OpenCL 1.2
     cl_int  (CLI_API_CALL *clUnloadPlatformCompiler) (
                 cl_platform_id platform );
@@ -912,6 +899,38 @@ struct CLdispatch
                 cl_uint num_events_in_wait_list,
                 const cl_event* event_wait_list,
                 cl_event* event );
+
+    // OpenCL 2.2
+    cl_int  (CLI_API_CALL *clSetProgramReleaseCallback) (
+                cl_program program,
+                void (CL_CALLBACK *pfn_notify)(cl_program program, void* user_data),
+                void* user_data );
+
+    // OpenCL 2.2
+    cl_int  (CLI_API_CALL *clSetProgramSpecializationConstant) (
+                cl_program program,
+                cl_uint spec_id,
+                size_t spec_size,
+                const void* spec_value );
+
+    // OpenCL 3.0
+    cl_mem (CLI_API_CALL *clCreateBufferWithProperties) (
+                cl_context context,
+                const cl_mem_properties* properties,
+                cl_mem_flags flags,
+                size_t size,
+                void* host_ptr,
+                cl_int* errcode_ret);
+
+    // OpenCL 3.0
+    cl_mem (CLI_API_CALL *clCreateImageWithProperties) (
+                cl_context context,
+                const cl_mem_properties* properties,
+                cl_mem_flags flags,
+                const cl_image_format* image_format,
+                const cl_image_desc* image_desc,
+                void* host_ptr,
+                cl_int* errcode_ret);
 
     // These are Khronos Extensions.
     // They aren't exported from the ICD or from this DLL, but we'll still
