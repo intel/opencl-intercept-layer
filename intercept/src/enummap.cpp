@@ -921,17 +921,15 @@ CEnumNameMap::CEnumNameMap()
     // cl_khr_throttle_hints extension
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_THROTTLE_KHR );
 
-#ifndef CL_VERSION_3_0
     // cl_khr_extended_versioning extension
-    // The enums for this extension were added to OpenCL 3.0.
-    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_NUMERIC_VERSION_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_EXTENSIONS_WITH_VERSION_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUMERIC_VERSION_KHR );
+    // Most enums for this extension were added to OpenCL 3.0.
+    //CL_PLATFORM_NUMERIC_VERSION_KHR                  0x0906
+    //CL_PLATFORM_EXTENSIONS_WITH_VERSION_KHR          0x0907
+    //CL_DEVICE_NUMERIC_VERSION_KHR                    0x105E
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_OPENCL_C_NUMERIC_VERSION_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ILS_WITH_VERSION_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR );
-#endif
+    //CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR            0x1060
+    //CL_DEVICE_ILS_WITH_VERSION_KHR                   0x1061
+    //CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR      0x1062
 
     // cl_nv_device_attribute_query
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV );
@@ -941,11 +939,19 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GPU_OVERLAP_NV );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_KERNEL_EXEC_TIMEOUT_NV );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_INTEGRATED_MEMORY_NV );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT_NV );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_BUS_ID_NV );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_SLOT_ID_NV );
+
 
     // cl_ext_atomic_counters
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT );
 
     // cl_amd_device_attribute_query
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_WORK_GROUP_SIZE_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_CONSTANT_BUFFER_SIZE_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCIE_ID_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PROFILING_TIMER_OFFSET_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TOPOLOGY_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_BOARD_NAME_AMD );
@@ -963,10 +969,6 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GFXIP_MAJOR_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GFXIP_MINOR_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_AVAILABLE_ASYNC_QUEUES_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_WORK_GROUP_SIZE_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_CONSTANT_BUFFER_SIZE_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCIE_ID_AMD );
 
     // cl_amd_offline_devices
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_OFFLINE_DEVICES_AMD );
