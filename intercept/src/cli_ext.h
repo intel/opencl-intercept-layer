@@ -946,11 +946,18 @@ clEnqueueMemAdviseINTEL(
 #define CL_DEVICE_GPU_OVERLAP_NV                    0x4004
 #define CL_DEVICE_KERNEL_EXEC_TIMEOUT_NV            0x4005
 #define CL_DEVICE_INTEGRATED_MEMORY_NV              0x4006
+#define CL_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT_NV   0x4007
+#define CL_DEVICE_PCI_BUS_ID_NV                     0x4008
+#define CL_DEVICE_PCI_SLOT_ID_NV                    0x4009
 
 // cl_ext_atomic_counters
 #define CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT           0x4032
 
 // cl_amd_device_attribute_query
+#define CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_AMD     0x4030
+#define CL_DEVICE_MAX_WORK_GROUP_SIZE_AMD           0x4031
+#define CL_DEVICE_PREFERRED_CONSTANT_BUFFER_SIZE_AMD    0x4033
+#define CL_DEVICE_PCIE_ID_AMD                       0x4034
 #define CL_DEVICE_PROFILING_TIMER_OFFSET_AMD        0x4036
 #define CL_DEVICE_TOPOLOGY_AMD                      0x4037
 #define CL_DEVICE_BOARD_NAME_AMD                    0x4038
@@ -968,10 +975,6 @@ clEnqueueMemAdviseINTEL(
 #define CL_DEVICE_GFXIP_MAJOR_AMD                   0x404A
 #define CL_DEVICE_GFXIP_MINOR_AMD                   0x404B
 #define CL_DEVICE_AVAILABLE_ASYNC_QUEUES_AMD        0x404C
-#define CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_AMD     0x4030
-#define CL_DEVICE_MAX_WORK_GROUP_SIZE_AMD           0x4031
-#define CL_DEVICE_PREFERRED_CONSTANT_BUFFER_SIZE_AMD    0x4033
-#define CL_DEVICE_PCIE_ID_AMD                       0x4034
 
 // cl_amd_offline_devices
 #define CL_CONTEXT_OFFLINE_DEVICES_AMD              0x403F
