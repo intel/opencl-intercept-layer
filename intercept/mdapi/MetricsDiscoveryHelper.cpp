@@ -252,6 +252,10 @@ bool MDHelper::InitMetricsDiscovery(
         res = OpenMetricsDeviceFromFile(metricsFileName.c_str(), (void*)"", &m_MetricsDevice);
         if (res != CC_OK)
         {
+            res = OpenMetricsDeviceFromFile(metricsFileName.c_str(), (void*)"abcdefghijklmnop", &m_MetricsDevice);
+        }
+        if (res != CC_OK)
+        {
             DebugPrint("OpenMetricsDeviceFromFile failed, res: %d", res);
             return false;
         }
