@@ -541,12 +541,13 @@ bool CLIntercept::init()
 #undef CLI_CONTROL
 
 #if defined(USE_MDAPI)
-    if( !m_Config.DevicePerfCounterCustom.empty() )
+    if( !m_Config.DevicePerfCounterCustom.empty() ||
+        !m_Config.DevicePerfCounterFile.empty() )
     {
         if( !m_Config.DevicePerfCounterEventBasedSampling &&
             !m_Config.DevicePerfCounterTimeBasedSampling )
         {
-            log("NOTE: DevicePerfCounterCustom is set to a non-empty value without setting\n");
+            log("NOTE: Device Performance Counters are enabled without setting\n");
             log("    DevicePerfCounterEventBasedSampling or DevicePerfCounterTimeBasedSampling.\n");
             log("    Enabling DevicePerfCounterEventBasedSampling.  This behavior may be changed\n");
             log("    in a future version!\n");
