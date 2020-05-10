@@ -275,6 +275,14 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dist
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will skip device performance timing for unmap operations.  This is a workaround for a bug in some OpenCL implementations, where querying events created from unmap operations results in driver crashes.
 
+##### `DevicePerformanceTimingMinEnqueue` (cl_uint)
+
+The Intercept Layer for OpenCL Applications will only collect device performance timing metrics when the enqueue counter is greater than this value, inclusive.
+
+##### `DevicePerformanceTimingMaxEnqueue` (cl_uint)
+
+The Intercept Layer for OpenCL Applications will only collect device performance timing metrics when the enqueue counter is less than this value, inclusive.
+
 ##### `HostPerformanceTimeLogging` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will log the host elapsed time for each OpenCL entry point.  This can be useful to identify OpenCL entry points that execute significantly slower or faster than average on the host.
