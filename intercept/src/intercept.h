@@ -353,6 +353,7 @@ public:
                 cl_queue_properties*& pLocalQueueProperties ) const;
     void    createCommandQueuePropertiesCleanup(
                 cl_queue_properties*& pLocalQueueProperties ) const;
+    bool    checkDevicePerformanceTimingEnqueueLimits() const;
     void    addTimingEvent(
                 const std::string& functionName,
                 const clock::time_point queuedTime,
@@ -1871,6 +1872,12 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits() const
+{
+    return ( m_EnqueueCounter >= m_Config.DevicePerformanceTimingMinEnqueue ) &&
+           ( m_EnqueueCounter <= m_Config.DevicePerformanceTimingMaxEnqueue );
+}
+
 #define CREATE_COMMAND_QUEUE_OVERRIDE_INIT( _device, _props, _newprops )    \
     if( pIntercept->config().DevicePerformanceTiming ||                     \
         pIntercept->config().ITTPerformanceTiming ||                        \
@@ -1945,8 +1952,9 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
           pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
         ( pEvent != NULL ) )                                                \
     {                                                                       \
-        if( pIntercept->config().DevicePerformanceTimingSkipUnmap &&        \
-            std::string(__FUNCTION__) == "clEnqueueUnmapMemObject" )        \
+        if( !pIntercept->checkDevicePerformanceTimingEnqueueLimits() ||     \
+            ( pIntercept->config().DevicePerformanceTimingSkipUnmap &&      \
+              std::string(__FUNCTION__) == "clEnqueueUnmapMemObject" ) )    \
         {                                                                   \
             if( retainAppEvent == false )                                   \
             {                                                               \
@@ -1982,20 +1990,31 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
           pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
         ( pEvent != NULL ) )                                                \
     {                                                                       \
-        pIntercept->addTimingEvent(                                         \
-            __FUNCTION__,                                                   \
-            queuedTime,                                                     \
-            kernel,                                                         \
-            wd, gwo, gws, lws,                                              \
-            queue,                                                          \
-            pEvent[0] );                                                    \
-        if( retainAppEvent )                                                \
+        if( !pIntercept->checkDevicePerformanceTimingEnqueueLimits() )      \
         {                                                                   \
-            pIntercept->dispatch().clRetainEvent( pEvent[0] );              \
+            if( retainAppEvent == false )                                   \
+            {                                                               \
+                pIntercept->dispatch().clReleaseEvent( pEvent[0] );         \
+                pEvent = NULL;                                              \
+            }                                                               \
         }                                                                   \
         else                                                                \
         {                                                                   \
-            pEvent = NULL;                                                  \
+            pIntercept->addTimingEvent(                                     \
+                __FUNCTION__,                                               \
+                queuedTime,                                                 \
+                kernel,                                                     \
+                wd, gwo, gws, lws,                                          \
+                queue,                                                      \
+                pEvent[0] );                                                \
+            if( retainAppEvent )                                            \
+            {                                                               \
+                pIntercept->dispatch().clRetainEvent( pEvent[0] );          \
+            }                                                               \
+            else                                                            \
+            {                                                               \
+                pEvent = NULL;                                              \
+            }                                                               \
         }                                                                   \
     }
 
