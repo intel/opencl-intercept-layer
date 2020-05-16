@@ -4626,8 +4626,6 @@ void CLIntercept::addTimingEvent(
 
     SEventListNode& node = m_EventList.back();
 
-    cl_int  errorCode = CL_SUCCESS;
-
     cl_device_id device = NULL;
     dispatch().clGetCommandQueueInfo(
         queue,
@@ -11264,7 +11262,6 @@ void CLIntercept::ittRegisterCommandQueue(
 
         queueInfo.itt_track = NULL;
         queueInfo.itt_clock_domain = NULL;
-        queueInfo.CPUReferenceTime = 0;
         queueInfo.CLReferenceTime = 0;
 
 #if 0
@@ -11359,13 +11356,12 @@ void ITTAPI CLIntercept::ittClockInfoCallback(
 {
     const SITTQueueInfo* pQueueInfo = (const SITTQueueInfo*)pData;
 
-    uint64_t    cpuTickDelta =
-        clock::now() -
-        pQueueInfo->CPUReferenceTime;
+    using ns = std::chrono::nanoseconds;
+    uint64_t    nsDelta =
+        std::chrono::duration_cast<ns>(
+            clock::now() - pQueueInfo->CPUReferenceTime).count();
 
-    uint64_t    cpuDeltaNS = pQueueInfo->pIntercept->OS().TickToNS( cpuTickDelta );
-
-    pClockInfo->clock_base = pQueueInfo->CLReferenceTime + cpuDeltaNS;
+    pClockInfo->clock_base = pQueueInfo->CLReferenceTime + nsDelta;
     pClockInfo->clock_freq = 1000000000;    // NS
 }
 
@@ -11452,9 +11448,9 @@ void CLIntercept::ittTraceEvent(
 
             if( commandQueued == 0 )
             {
-                clockOffset = queuedTime;
-                clockOffset -= queueInfo.CPUReferenceTime;
-                clockOffset = OS().TickToNS( clockOffset );
+                using ns = std::chrono::nanoseconds;
+                clockOffset = std::chrono::duration_cast<ns>(
+                    queuedTime - queueInfo.CPUReferenceTime).count();
             }
 
             commandQueued += clockOffset;

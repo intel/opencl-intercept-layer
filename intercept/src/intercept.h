@@ -1028,7 +1028,7 @@ private:
 
         __itt_track*        itt_track;
         __itt_clock_domain* itt_clock_domain;
-        uint64_t            CPUReferenceTime;
+        clock::time_point   CPUReferenceTime;
         cl_ulong            CLReferenceTime;
     };
 
