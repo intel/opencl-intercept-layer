@@ -353,6 +353,7 @@ public:
                 cl_queue_properties*& pLocalQueueProperties ) const;
     void    createCommandQueuePropertiesCleanup(
                 cl_queue_properties*& pLocalQueueProperties ) const;
+    bool    checkHostPerformanceTimingEnqueueLimits() const;
     bool    checkDevicePerformanceTimingEnqueueLimits() const;
     void    addTimingEvent(
                 const std::string& functionName,
@@ -1816,17 +1817,25 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits() const
+{
+    return ( m_EnqueueCounter >= m_Config.HostPerformanceTimingMinEnqueue ) &&
+           ( m_EnqueueCounter <= m_Config.HostPerformanceTimingMaxEnqueue );
+}
+
 #define CPU_PERFORMANCE_TIMING_START()                                      \
     CLIntercept::clock::time_point   cpuStart, cpuEnd;                      \
-    if( pIntercept->config().HostPerformanceTiming ||                       \
-        pIntercept->config().ChromeCallLogging )                            \
+    if( ( pIntercept->config().HostPerformanceTiming ||                     \
+          pIntercept->config().ChromeCallLogging ) &&                       \
+        pIntercept->checkHostPerformanceTimingEnqueueLimits() )             \
     {                                                                       \
         cpuStart = CLIntercept::clock::now();                               \
     }
 
 #define CPU_PERFORMANCE_TIMING_END()                                        \
-    if( pIntercept->config().HostPerformanceTiming ||                       \
-        pIntercept->config().ChromeCallLogging )                            \
+    if( ( pIntercept->config().HostPerformanceTiming ||                     \
+          pIntercept->config().ChromeCallLogging ) &&                       \
+        pIntercept->checkHostPerformanceTimingEnqueueLimits() )             \
     {                                                                       \
         cpuEnd = CLIntercept::clock::now();                                 \
         if( pIntercept->config().HostPerformanceTiming )                    \
@@ -1848,8 +1857,9 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits() const
     }
 
 #define CPU_PERFORMANCE_TIMING_END_KERNEL( _kernel )                        \
-    if( pIntercept->config().HostPerformanceTiming ||                       \
-        pIntercept->config().ChromeCallLogging )                            \
+    if( ( pIntercept->config().HostPerformanceTiming ||                     \
+          pIntercept->config().ChromeCallLogging ) &&                       \
+        pIntercept->checkHostPerformanceTimingEnqueueLimits() )             \
     {                                                                       \
         cpuEnd = CLIntercept::clock::now();                                 \
         if( pIntercept->config().HostPerformanceTiming )                    \
