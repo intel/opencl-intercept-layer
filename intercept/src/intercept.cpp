@@ -304,6 +304,17 @@ bool GetControl<std::string>(
     return success;
 }
 
+template<class T>
+static std::string GetNonDefaultString(
+    const char* name,
+    const T& value )
+{
+    std::ostringstream ss;
+    ss << std::boolalpha;
+    ss << "Control " << name << " is set to non-default value: " << value << "\n";
+    return ss.str();
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 bool CLIntercept::init()
@@ -536,7 +547,10 @@ bool CLIntercept::init()
 #error Unknown OS!
 #endif
 
-#define CLI_CONTROL( _type, _name, _init, _desc ) if ( m_Config . _name != _init ) { log( #_name " is set to a non-default value!\n" ); }
+#define CLI_CONTROL( _type, _name, _init, _desc )                   \
+    if ( m_Config . _name != _init ) {                              \
+        log( GetNonDefaultString( #_name, m_Config . _name ) );     \
+    }
 #include "controls.h"
 #undef CLI_CONTROL
 
