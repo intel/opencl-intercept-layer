@@ -8788,6 +8788,18 @@ bool CLIntercept::overrideGetDeviceInfo(
             deviceBuiltInKernels = NULL;
         }
         break;
+    case CL_DRIVER_VERSION:
+        if( m_Config.DriverVersion != "" )
+        {
+            char*   ptr = (char*)param_value;
+            errorCode = writeStringToMemory(
+                param_value_size,
+                m_Config.DriverVersion,
+                param_value_size_ret,
+                ptr );
+            override = true;
+        }
+        break;
     default:
         break;
     }

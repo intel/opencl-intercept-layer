@@ -697,6 +697,10 @@ If set to a non-negative value, the clGetDeviceInfo() query for CL\_DEVICE\_PREF
 
 If set to a non-negative value, the clGetDeviceInfo() query for CL\_DEVICE\_PREFERRED\_VECTOR\_WIDTH\_DOUBLE will return this value instead of the true device preferred vector width.
 
+##### `DriverVersion` (string)
+
+If set to a non-empty string, the clGetDeviceInfo() query for CL\_DRIVER\_VERSION will return this value instead of the true driver version.
+
 ### Precompiled Kernel and Builtin Kernel Override Controls
 
 ##### `ForceByteBufferOverrides` (bool)
