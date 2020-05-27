@@ -8453,7 +8453,7 @@ bool CLIntercept::overrideGetDeviceInfo(
             override = true;
         }
         else if( m_Config.Emulate_cl_khr_extended_versioning ||
-		         m_Config.Emulate_cl_intel_unified_shared_memory )
+                 m_Config.Emulate_cl_intel_unified_shared_memory )
         {
             std::string newExtensions;
             if( m_Config.Emulate_cl_khr_extended_versioning &&
@@ -8721,8 +8721,17 @@ bool CLIntercept::overrideGetDeviceInfo(
     case CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR:
         if( m_Config.Emulate_cl_khr_extended_versioning )
         {
-            std::string deviceExtensions =
-                "cl_khr_extended_versioning ";
+            std::string deviceExtensions;
+            if( m_Config.Emulate_cl_khr_extended_versioning &&
+                !checkDeviceForExtension( device, "cl_khr_extended_versioning") )
+            {
+                deviceExtensions += "cl_khr_extended_versioning ";
+            }
+            if( m_Config.Emulate_cl_intel_unified_shared_memory &&
+                !checkDeviceForExtension( device, "cl_intel_unified_shared_memory") )
+            {
+                deviceExtensions += "cl_intel_unified_shared_memory ";
+            }
 
             char*   tempDeviceExtensions = NULL;
 
@@ -12135,7 +12144,7 @@ bool CLIntercept::checkAubCaptureKernelSignature(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-static bool shimValidateMemProperties(
+static bool validateUSMMemProperties(
     const cl_mem_properties_intel* properties )
 {
     if( properties )
@@ -12171,14 +12180,14 @@ static bool shimValidateMemProperties(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void* CLIntercept::shimHostMemAlloc(
+void* CLIntercept::emulatedHostMemAlloc(
     cl_context context,
     const cl_mem_properties_intel* properties,
     size_t size,
     cl_uint alignment,
     cl_int* errcode_ret)
 {
-    if( !shimValidateMemProperties(properties) )
+    if( !validateUSMMemProperties(properties) )
     {
         if( errcode_ret )
         {
@@ -12234,7 +12243,7 @@ void* CLIntercept::shimHostMemAlloc(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void* CLIntercept::shimDeviceMemAlloc(
+void* CLIntercept::emulatedDeviceMemAlloc(
     cl_context context,
     cl_device_id device,
     const cl_mem_properties_intel* properties,
@@ -12242,7 +12251,7 @@ void* CLIntercept::shimDeviceMemAlloc(
     cl_uint alignment,
     cl_int* errcode_ret)
 {
-    if( !shimValidateMemProperties(properties) )
+    if( !validateUSMMemProperties(properties) )
     {
         if( errcode_ret )
         {
@@ -12287,7 +12296,7 @@ void* CLIntercept::shimDeviceMemAlloc(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void* CLIntercept::shimSharedMemAlloc(
+void* CLIntercept::emulatedSharedMemAlloc(
     cl_context context,
     cl_device_id device,
     const cl_mem_properties_intel* properties,
@@ -12295,7 +12304,7 @@ void* CLIntercept::shimSharedMemAlloc(
     cl_uint alignment,
     cl_int* errcode_ret)
 {
-    if( !shimValidateMemProperties(properties) )
+    if( !validateUSMMemProperties(properties) )
     {
         if( errcode_ret )
         {
@@ -12352,7 +12361,7 @@ void* CLIntercept::shimSharedMemAlloc(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-cl_int CLIntercept::shimMemFree(
+cl_int CLIntercept::emulatedMemFree(
     cl_context context,
     const void* ptr )
 {
@@ -12408,7 +12417,7 @@ cl_int CLIntercept::shimMemFree(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-cl_int CLIntercept::shimGetMemAllocInfoINTEL(
+cl_int CLIntercept::emulatedGetMemAllocInfoINTEL(
     cl_context context,
     const void* ptr,
     cl_mem_info_intel param_name,
@@ -12511,7 +12520,7 @@ cl_int CLIntercept::shimGetMemAllocInfoINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-cl_int CLIntercept::shimTrackKernelExecInfo(
+cl_int CLIntercept::trackUSMKernelExecInfo(
     cl_kernel kernel,
     cl_kernel_exec_info param_name,
     size_t param_value_size,
@@ -12591,7 +12600,7 @@ cl_int CLIntercept::shimTrackKernelExecInfo(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-cl_int CLIntercept::shimSetKernelIndirectUSMExecInfo(
+cl_int CLIntercept::setUSMKernelExecInfo(
     cl_command_queue commandQueue,
     cl_kernel kernel )
 {

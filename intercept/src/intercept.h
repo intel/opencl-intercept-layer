@@ -701,33 +701,31 @@ public:
                 cl_event event,
                 clock::time_point queuedTime );
 
-    // USM Shim:
-    void*   shimHostMemAlloc(
+    // USM Emulation:
+    void*   emulatedHostMemAlloc(
                 cl_context context,
                 const cl_mem_properties_intel* properties,
                 size_t size,
                 cl_uint alignment,
                 cl_int* errcode_ret);
-    void*   shimDeviceMemAlloc(
-                cl_context context,
-                cl_device_id device,
-                const cl_mem_properties_intel* properties,
-                size_t size,
-                cl_uint alignment,
-                cl_int* errcode_ret);
-    void*   shimSharedMemAlloc(
+    void*   emulatedDeviceMemAlloc(
                 cl_context context,
                 cl_device_id device,
                 const cl_mem_properties_intel* properties,
                 size_t size,
                 cl_uint alignment,
                 cl_int* errcode_ret);
-
-    cl_int  shimMemFree(
+    void*   emulatedSharedMemAlloc(
+                cl_context context,
+                cl_device_id device,
+                const cl_mem_properties_intel* properties,
+                size_t size,
+                cl_uint alignment,
+                cl_int* errcode_ret);
+    cl_int  emulatedMemFree(
                 cl_context context,
                 const void* ptr );
-
-    cl_int  shimGetMemAllocInfoINTEL(
+    cl_int  emulatedGetMemAllocInfoINTEL(
                 cl_context context,
                 const void* ptr,
                 cl_mem_info_intel param_name,
@@ -735,13 +733,12 @@ public:
                 void* param_value,
                 size_t* param_value_size_ret);
 
-    cl_int  shimTrackKernelExecInfo(
+    cl_int  trackUSMKernelExecInfo(
                 cl_kernel kernel,
                 cl_kernel_exec_info param_name,
                 size_t param_value_size,
                 const void* param_value);
-
-    cl_int  shimSetKernelIndirectUSMExecInfo(
+    cl_int  setUSMKernelExecInfo(
                 cl_command_queue queue,
                 cl_kernel kernel );
 
@@ -1081,7 +1078,7 @@ private:
     CITTQueueInfoMap    m_ITTQueueInfoMap;
 #endif
 
-    // USM Shim:
+    // USM Emulation:
     struct SUSMAllocInfo
     {
         SUSMAllocInfo() :

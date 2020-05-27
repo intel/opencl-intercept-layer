@@ -38,7 +38,7 @@ void* CLI_API_CALL clHostMemAllocINTEL_EMU(
 
     if( pIntercept && pIntercept->config().Emulate_cl_intel_unified_shared_memory )
     {
-        return pIntercept->shimHostMemAlloc(
+        return pIntercept->emulatedHostMemAlloc(
             context,
             properties,
             size,
@@ -64,7 +64,7 @@ void* CLI_API_CALL clDeviceMemAllocINTEL_EMU(
 
     if( pIntercept && pIntercept->config().Emulate_cl_intel_unified_shared_memory )
     {
-        return pIntercept->shimDeviceMemAlloc(
+        return pIntercept->emulatedDeviceMemAlloc(
             context,
             device,
             properties,
@@ -91,7 +91,7 @@ void* CLI_API_CALL clSharedMemAllocINTEL_EMU(
 
     if( pIntercept && pIntercept->config().Emulate_cl_intel_unified_shared_memory )
     {
-        return pIntercept->shimSharedMemAlloc(
+        return pIntercept->emulatedSharedMemAlloc(
             context,
             device,
             properties,
@@ -114,7 +114,7 @@ cl_int CLI_API_CALL clMemFreeINTEL_EMU(
 
     if( pIntercept && pIntercept->config().Emulate_cl_intel_unified_shared_memory )
     {
-        return pIntercept->shimMemFree(
+        return pIntercept->emulatedMemFree(
             context,
             ptr );
     }
@@ -134,7 +134,7 @@ cl_int CLI_API_CALL clMemBlockingFreeINTEL_EMU(
     if( pIntercept && pIntercept->config().Emulate_cl_intel_unified_shared_memory )
     {
         // TODO: Track queues and block all.
-        return pIntercept->shimMemFree(
+        return pIntercept->emulatedMemFree(
             context,
             ptr );
     }
@@ -157,7 +157,7 @@ cl_int CLI_API_CALL clGetMemAllocInfoINTEL_EMU(
 
     if( pIntercept && pIntercept->config().Emulate_cl_intel_unified_shared_memory )
     {
-        return pIntercept->shimGetMemAllocInfoINTEL(
+        return pIntercept->emulatedGetMemAllocInfoINTEL(
             context,
             ptr,
             param_name,

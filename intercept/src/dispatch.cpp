@@ -5238,7 +5238,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
 
             if( pIntercept->config().Emulate_cl_intel_unified_shared_memory )
             {
-                pIntercept->shimSetKernelIndirectUSMExecInfo(
+                pIntercept->setUSMKernelExecInfo(
                     command_queue,
                     kernel );
             }
@@ -6770,7 +6770,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelExecInfo) (
 
         if( pIntercept->config().Emulate_cl_intel_unified_shared_memory )
         {
-            retVal = pIntercept->shimTrackKernelExecInfo(
+            retVal = pIntercept->trackUSMKernelExecInfo(
                 kernel,
                 param_name,
                 param_value_size,
