@@ -1109,8 +1109,8 @@ private:
         CUSMAllocVector SharedAllocVector;
     };
 
-    // TODO: Support multiple contexts by mapping context -> USMContextInfo?
-    SUSMContextInfo m_USMContextInfo;
+    typedef std::map< cl_context, SUSMContextInfo > CUSMContextInfoMap;
+    CUSMContextInfoMap  m_USMContextInfoMap;
 
     struct SUSMKernelInfo
     {
@@ -1128,7 +1128,6 @@ private:
     };
 
     typedef std::map< cl_kernel, SUSMKernelInfo >   CUSMKernelInfoMap;
-
     CUSMKernelInfoMap   m_USMKernelInfoMap;
 
     DISALLOW_COPY_AND_ASSIGN( CLIntercept );

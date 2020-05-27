@@ -12226,13 +12226,14 @@ void* CLIntercept::emulatedHostMemAlloc(
     }
 
     // Record this allocation in the alloc map:
-    SUSMAllocInfo&  allocInfo = m_USMContextInfo.AllocMap[ ptr ];
+    SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
+    SUSMAllocInfo&      allocInfo = usmContextInfo.AllocMap[ptr];
     allocInfo.Type = CL_MEM_TYPE_HOST_INTEL;
     allocInfo.BaseAddress = ptr;
     allocInfo.Size = size;
     allocInfo.Alignment = alignment;
 
-    m_USMContextInfo.HostAllocVector.push_back( ptr );
+    usmContextInfo.HostAllocVector.push_back( ptr );
 
     if( errcode_ret )
     {
@@ -12278,14 +12279,15 @@ void* CLIntercept::emulatedDeviceMemAlloc(
     }
 
     // Record this allocation in the alloc map:
-    SUSMAllocInfo&  allocInfo = m_USMContextInfo.AllocMap[ ptr ];
+    SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
+    SUSMAllocInfo&      allocInfo = usmContextInfo.AllocMap[ptr];
     allocInfo.Type = CL_MEM_TYPE_DEVICE_INTEL;
     allocInfo.Device = device;
     allocInfo.BaseAddress = ptr;
     allocInfo.Size = size;
     allocInfo.Alignment = alignment;
 
-    m_USMContextInfo.DeviceAllocVector.push_back( ptr );
+    usmContextInfo.DeviceAllocVector.push_back( ptr );
 
     if( errcode_ret )
     {
@@ -12343,14 +12345,15 @@ void* CLIntercept::emulatedSharedMemAlloc(
     }
 
     // Record this allocation in the alloc map:
-    SUSMAllocInfo&  allocInfo = m_USMContextInfo.AllocMap[ ptr ];
+    SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
+    SUSMAllocInfo&      allocInfo = usmContextInfo.AllocMap[ptr];
     allocInfo.Type = CL_MEM_TYPE_SHARED_INTEL;
     allocInfo.Device = device;
     allocInfo.BaseAddress = ptr;
     allocInfo.Size = size;
     allocInfo.Alignment = alignment;
 
-    m_USMContextInfo.SharedAllocVector.push_back( ptr );
+    usmContextInfo.SharedAllocVector.push_back( ptr );
 
     if( errcode_ret )
     {
@@ -12365,39 +12368,41 @@ cl_int CLIntercept::emulatedMemFree(
     cl_context context,
     const void* ptr )
 {
-    CUSMAllocMap::iterator iter = m_USMContextInfo.AllocMap.find( ptr );
-    if( iter != m_USMContextInfo.AllocMap.end() )
+    SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
+
+    CUSMAllocMap::iterator iter = usmContextInfo.AllocMap.find( ptr );
+    if( iter != usmContextInfo.AllocMap.end() )
     {
         const SUSMAllocInfo &allocInfo = iter->second;
 
         switch( allocInfo.Type )
         {
         case CL_MEM_TYPE_HOST_INTEL:
-            m_USMContextInfo.HostAllocVector.erase(
+            usmContextInfo.HostAllocVector.erase(
                 std::find(
-                    m_USMContextInfo.HostAllocVector.begin(),
-                    m_USMContextInfo.HostAllocVector.end(),
+                    usmContextInfo.HostAllocVector.begin(),
+                    usmContextInfo.HostAllocVector.end(),
                     ptr ) );
             break;
         case CL_MEM_TYPE_DEVICE_INTEL:
-            m_USMContextInfo.DeviceAllocVector.erase(
+            usmContextInfo.DeviceAllocVector.erase(
                 std::find(
-                    m_USMContextInfo.DeviceAllocVector.begin(),
-                    m_USMContextInfo.DeviceAllocVector.end(),
+                    usmContextInfo.DeviceAllocVector.begin(),
+                    usmContextInfo.DeviceAllocVector.end(),
                     ptr ) );
             break;
         case CL_MEM_TYPE_SHARED_INTEL:
-            m_USMContextInfo.SharedAllocVector.erase(
+            usmContextInfo.SharedAllocVector.erase(
                 std::find(
-                    m_USMContextInfo.SharedAllocVector.begin(),
-                    m_USMContextInfo.SharedAllocVector.end(),
+                    usmContextInfo.SharedAllocVector.begin(),
+                    usmContextInfo.SharedAllocVector.end(),
                     ptr ) );
         default:
             CLI_ASSERT( 0 );
             break;
         }
 
-        m_USMContextInfo.AllocMap.erase( ptr );
+        usmContextInfo.AllocMap.erase( ptr );
 
 #ifdef USE_DRIVER_SVM
         dispatch().clSVMFree(
@@ -12430,17 +12435,19 @@ cl_int CLIntercept::emulatedGetMemAllocInfoINTEL(
         return CL_INVALID_VALUE;
     }
 
-    if( m_USMContextInfo.AllocMap.size() == 0 )
+    SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
+
+    if( usmContextInfo.AllocMap.size() == 0 )
     {
         // No pointers allocated?
         return CL_INVALID_MEM_OBJECT;   // TODO: new error code?
     }
 
-    CUSMAllocMap::iterator iter = m_USMContextInfo.AllocMap.lower_bound( ptr );
+    CUSMAllocMap::iterator iter = usmContextInfo.AllocMap.lower_bound( ptr );
 
     if( iter->first != ptr )
     {
-        if( iter == m_USMContextInfo.AllocMap.begin() )
+        if( iter == usmContextInfo.AllocMap.begin() )
         {
             // This pointer is not in the map.
             return CL_INVALID_MEM_OBJECT;
@@ -12612,10 +12619,15 @@ cl_int CLIntercept::setUSMKernelExecInfo(
         usmKernelInfo.IndirectDeviceAccess ||
         usmKernelInfo.IndirectSharedAccess )
     {
-        // If we supported multiple contexts, we'd get the context from
-        // the queue, and map it to a USM context info structure here.
+        cl_context  context = NULL;
+        dispatch().clGetCommandQueueInfo(
+            commandQueue,
+            CL_QUEUE_CONTEXT,
+            sizeof( context ),
+            &context,
+            NULL );
 
-        const SUSMContextInfo& usmContextInfo = m_USMContextInfo;
+        const SUSMContextInfo& usmContextInfo = m_USMContextInfoMap[context];
 
         // If we supported multiple devices, we'd get the device from
         // the queue and map it to the device's allocation vector here.
