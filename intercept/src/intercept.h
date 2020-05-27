@@ -1104,9 +1104,10 @@ private:
         CUSMAllocMap    AllocMap;
 
         CUSMAllocVector HostAllocVector;
-        // TODO: Support multiple devices by mapping device-> vector?
         CUSMAllocVector DeviceAllocVector;
         CUSMAllocVector SharedAllocVector;
+        // Note: We could differentiate between device allocs for
+        // specific devices, but we do not do this currently.
     };
 
     typedef std::map< cl_context, SUSMContextInfo > CUSMContextInfoMap;

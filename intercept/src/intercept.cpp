@@ -12629,9 +12629,6 @@ cl_int CLIntercept::setUSMKernelExecInfo(
 
         const SUSMContextInfo& usmContextInfo = m_USMContextInfoMap[context];
 
-        // If we supported multiple devices, we'd get the device from
-        // the queue and map it to the device's allocation vector here.
-
         std::lock_guard<std::mutex> lock(m_Mutex);
 
         bool    hasSVMPtrs =
