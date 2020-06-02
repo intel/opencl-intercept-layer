@@ -12711,12 +12711,11 @@ cl_int CLIntercept::setUSMKernelExecInfo(
             size_t  count =
                 usmKernelInfo.SVMPtrs.size() +
                 usmKernelInfo.USMPtrs.size() +
-                setHostAllocs ? usmContextInfo.HostAllocVector.size() : 0 +
-                setDeviceAllocs ? usmContextInfo.DeviceAllocVector.size() : 0 +
-                setSharedAllocs ? usmContextInfo.SharedAllocVector.size() : 0;
+                ( setHostAllocs ? usmContextInfo.HostAllocVector.size() : 0 ) +
+                ( setDeviceAllocs ? usmContextInfo.DeviceAllocVector.size() : 0 ) +
+                ( setSharedAllocs ? usmContextInfo.SharedAllocVector.size() : 0 );
 
-            std::vector<const void*>  combined;
-            combined.reserve( count );
+            std::vector<const void*>  combined( count );
 
             combined.insert(
                 combined.end(),
