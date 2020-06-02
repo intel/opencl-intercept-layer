@@ -10708,7 +10708,7 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
     {                                                                       \
         if( dispatch() . funcname == NULL )                                 \
         {                                                                   \
-            void *func = funcname##_EMU;                                    \
+            void *func = (void*)funcname##_EMU;                             \
             void** pfunc = (void**)( &m_Dispatch . funcname );              \
             *pfunc = func;                                                  \
         }                                                                   \
