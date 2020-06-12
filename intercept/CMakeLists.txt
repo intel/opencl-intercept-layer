@@ -78,6 +78,8 @@ set(CLINTERCEPT_SOURCE_FILES
     src/controls.h
     src/dispatch.cpp
     src/dispatch.h
+    src/emulate.cpp
+    src/emulate.h
     src/enummap.cpp
     src/enummap.h
     src/instrumentation.h

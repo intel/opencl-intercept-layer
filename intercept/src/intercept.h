@@ -701,6 +701,47 @@ public:
                 cl_event event,
                 clock::time_point queuedTime );
 
+    // USM Emulation:
+    void*   emulatedHostMemAlloc(
+                cl_context context,
+                const cl_mem_properties_intel* properties,
+                size_t size,
+                cl_uint alignment,
+                cl_int* errcode_ret);
+    void*   emulatedDeviceMemAlloc(
+                cl_context context,
+                cl_device_id device,
+                const cl_mem_properties_intel* properties,
+                size_t size,
+                cl_uint alignment,
+                cl_int* errcode_ret);
+    void*   emulatedSharedMemAlloc(
+                cl_context context,
+                cl_device_id device,
+                const cl_mem_properties_intel* properties,
+                size_t size,
+                cl_uint alignment,
+                cl_int* errcode_ret);
+    cl_int  emulatedMemFree(
+                cl_context context,
+                const void* ptr );
+    cl_int  emulatedGetMemAllocInfoINTEL(
+                cl_context context,
+                const void* ptr,
+                cl_mem_info_intel param_name,
+                size_t param_value_size,
+                void* param_value,
+                size_t* param_value_size_ret);
+
+    cl_int  trackUSMKernelExecInfo(
+                cl_kernel kernel,
+                cl_kernel_exec_info param_name,
+                size_t param_value_size,
+                const void* param_value);
+    cl_int  setUSMKernelExecInfo(
+                cl_command_queue queue,
+                cl_kernel kernel );
+
 private:
     static const char* sc_URL;
     static const char* sc_DumpDirectoryName;
@@ -1036,6 +1077,59 @@ private:
     typedef std::map< cl_command_queue, SITTQueueInfo > CITTQueueInfoMap;
     CITTQueueInfoMap    m_ITTQueueInfoMap;
 #endif
+
+    // USM Emulation:
+    struct SUSMAllocInfo
+    {
+        SUSMAllocInfo() :
+            Type( CL_MEM_TYPE_UNKNOWN_INTEL ),
+            Device( NULL ),
+            BaseAddress( NULL ),
+            Size( 0 ),
+            Alignment( 0 ) {}
+
+        cl_unified_shared_memory_type_intel Type;
+        cl_device_id    Device;
+
+        const void*     BaseAddress;
+        size_t          Size;
+        size_t          Alignment;
+    };
+
+    typedef std::map< const void*, SUSMAllocInfo >  CUSMAllocMap;
+    typedef std::vector<const void*>    CUSMAllocVector;
+
+    struct SUSMContextInfo
+    {
+        CUSMAllocMap    AllocMap;
+
+        CUSMAllocVector HostAllocVector;
+        CUSMAllocVector DeviceAllocVector;
+        CUSMAllocVector SharedAllocVector;
+        // Note: We could differentiate between device allocs for
+        // specific devices, but we do not do this currently.
+    };
+
+    typedef std::map< cl_context, SUSMContextInfo > CUSMContextInfoMap;
+    CUSMContextInfoMap  m_USMContextInfoMap;
+
+    struct SUSMKernelInfo
+    {
+        SUSMKernelInfo() :
+            IndirectHostAccess( false ),
+            IndirectDeviceAccess( false ),
+            IndirectSharedAccess( false ) {}
+
+        bool    IndirectHostAccess;
+        bool    IndirectDeviceAccess;
+        bool    IndirectSharedAccess;
+
+        std::vector<void*>  SVMPtrs;
+        std::vector<void*>  USMPtrs;
+    };
+
+    typedef std::map< cl_kernel, SUSMKernelInfo >   CUSMKernelInfoMap;
+    CUSMKernelInfoMap   m_USMKernelInfoMap;
 
     DISALLOW_COPY_AND_ASSIGN( CLIntercept );
 };
@@ -2195,10 +2289,10 @@ inline cl_device_type CLIntercept::filterDeviceType( cl_device_type device_type 
     return device_type;
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//
 #if defined(USE_ITT)
 
+///////////////////////////////////////////////////////////////////////////////
+//
 inline __itt_domain* CLIntercept::ittDomain() const
 {
     return m_ITTDomain;

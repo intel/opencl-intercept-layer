@@ -5236,6 +5236,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
             ITT_ADD_ARRAY_PARAM_AS_METADATA(work_dim, local_work_size);
             ITT_ADD_ARRAY_PARAM_AS_METADATA(num_events_in_wait_list, event_wait_list);
 
+            if( pIntercept->config().Emulate_cl_intel_unified_shared_memory )
+            {
+                pIntercept->setUSMKernelExecInfo(
+                    command_queue,
+                    kernel );
+            }
+
             retVal = CL_INVALID_OPERATION;
 
             if( ( retVal != CL_SUCCESS ) &&
@@ -6759,11 +6766,25 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelExecInfo) (
             param_name );
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_int  retVal = pIntercept->dispatch().clSetKernelExecInfo(
-            kernel,
-            param_name,
-            param_value_size,
-            param_value );
+        cl_int  retVal = CL_INVALID_OPERATION;
+
+        if( pIntercept->config().Emulate_cl_intel_unified_shared_memory )
+        {
+            retVal = pIntercept->trackUSMKernelExecInfo(
+                kernel,
+                param_name,
+                param_value_size,
+                param_value );
+        }
+
+        if( retVal != CL_SUCCESS )
+        {
+            retVal = pIntercept->dispatch().clSetKernelExecInfo(
+                kernel,
+                param_name,
+                param_value_size,
+                param_value );
+        }
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
@@ -9079,8 +9100,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-CL_API_ENTRY void* CL_API_CALL
-clHostMemAllocINTEL(
+// cl_intel_unified_shared_memory
+CL_API_ENTRY void* CL_API_CALL clHostMemAllocINTEL(
     cl_context context,
     const cl_mem_properties_intel* properties,
     size_t size,
@@ -9089,7 +9110,8 @@ clHostMemAllocINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clHostMemAllocINTEL )
     {
         // TODO: Make properties string.
         CALL_LOGGING_ENTER( "context = %p, properties = %p, size = %d, alignment = %d",
@@ -9100,23 +9122,12 @@ clHostMemAllocINTEL(
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
-        void*   retVal = NULL;
-        if( pIntercept->dispatch().clHostMemAllocINTEL )
-        {
-            retVal = pIntercept->dispatch().clHostMemAllocINTEL(
-                context,
-                properties,
-                size,
-                alignment,
-                errcode_ret );
-        }
-        else
-        {
-            if( errcode_ret )
-            {
-                errcode_ret[0] = CL_INVALID_OPERATION;
-            }
-        }
+        void*   retVal = pIntercept->dispatch().clHostMemAllocINTEL(
+            context,
+            properties,
+            size,
+            alignment,
+            errcode_ret );
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
@@ -9130,8 +9141,8 @@ clHostMemAllocINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-CL_API_ENTRY void* CL_API_CALL
-clDeviceMemAllocINTEL(
+// cl_intel_unified_shared_memory
+CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
     cl_context context,
     cl_device_id device,
     const cl_mem_properties_intel* properties,
@@ -9141,7 +9152,8 @@ clDeviceMemAllocINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clDeviceMemAllocINTEL )
     {
         std::string deviceInfo;
         if( pIntercept->config().CallLogging )
@@ -9161,24 +9173,13 @@ clDeviceMemAllocINTEL(
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
-        void*   retVal = NULL;
-        if( pIntercept->dispatch().clDeviceMemAllocINTEL )
-        {
-            retVal = pIntercept->dispatch().clDeviceMemAllocINTEL(
-                context,
-                device,
-                properties,
-                size,
-                alignment,
-                errcode_ret );
-        }
-        else
-        {
-            if( errcode_ret )
-            {
-                errcode_ret[0] = CL_INVALID_OPERATION;
-            }
-        }
+        void*   retVal = pIntercept->dispatch().clDeviceMemAllocINTEL(
+            context,
+            device,
+            properties,
+            size,
+            alignment,
+            errcode_ret );
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
@@ -9192,8 +9193,8 @@ clDeviceMemAllocINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-CL_API_ENTRY void* CL_API_CALL
-clSharedMemAllocINTEL(
+// cl_intel_unified_shared_memory
+CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
     cl_context context,
     cl_device_id device,
     const cl_mem_properties_intel* properties,
@@ -9203,7 +9204,8 @@ clSharedMemAllocINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clSharedMemAllocINTEL )
     {
         std::string deviceInfo;
         if( pIntercept->config().CallLogging )
@@ -9223,24 +9225,13 @@ clSharedMemAllocINTEL(
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
-        void*   retVal = NULL;
-        if( pIntercept->dispatch().clSharedMemAllocINTEL )
-        {
-            retVal = pIntercept->dispatch().clSharedMemAllocINTEL(
-                context,
-                device,
-                properties,
-                size,
-                alignment,
-                errcode_ret );
-        }
-        else
-        {
-            if( errcode_ret )
-            {
-                errcode_ret[0] = CL_INVALID_OPERATION;
-            }
-        }
+        void*   retVal = pIntercept->dispatch().clSharedMemAllocINTEL(
+            context,
+            device,
+            properties,
+            size,
+            alignment,
+            errcode_ret );
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
@@ -9254,27 +9245,24 @@ clSharedMemAllocINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-CL_API_ENTRY cl_int CL_API_CALL
-clMemFreeINTEL(
+// cl_intel_unified_shared_memory
+CL_API_ENTRY cl_int CL_API_CALL clMemFreeINTEL(
     cl_context context,
     void* ptr)
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clMemFreeINTEL )
     {
         CALL_LOGGING_ENTER( "context = %p, ptr = %p",
             context,
             ptr );
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_int  retVal = CL_INVALID_OPERATION;
-        if( pIntercept->dispatch().clMemFreeINTEL )
-        {
-            retVal = pIntercept->dispatch().clMemFreeINTEL(
-                context,
-                ptr );
-        }
+        cl_int  retVal = pIntercept->dispatch().clMemFreeINTEL(
+            context,
+            ptr );
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
@@ -9288,6 +9276,7 @@ clMemFreeINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_intel_unified_shared_memory
 CL_API_ENTRY cl_int CL_API_CALL
 clMemBlockingFreeINTEL(
     cl_context context,
@@ -9295,20 +9284,17 @@ clMemBlockingFreeINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clMemBlockingFreeINTEL )
     {
         CALL_LOGGING_ENTER( "context = %p, ptr = %p",
             context,
             ptr );
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_int  retVal = CL_INVALID_OPERATION;
-        if( pIntercept->dispatch().clMemBlockingFreeINTEL )
-        {
-            retVal = pIntercept->dispatch().clMemBlockingFreeINTEL(
-                context,
-                ptr );
-        }
+        cl_int  retVal = pIntercept->dispatch().clMemBlockingFreeINTEL(
+            context,
+            ptr );
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
@@ -9322,6 +9308,7 @@ clMemBlockingFreeINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_intel_unified_shared_memory
 CL_API_ENTRY cl_int CL_API_CALL clGetMemAllocInfoINTEL(
     cl_context context,
     const void* ptr,
@@ -9332,7 +9319,8 @@ CL_API_ENTRY cl_int CL_API_CALL clGetMemAllocInfoINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clGetMemAllocInfoINTEL )
     {
         CALL_LOGGING_ENTER( "context = %p, ptr = %p, param_name = %s (%08X)",
             context,
@@ -9341,17 +9329,13 @@ CL_API_ENTRY cl_int CL_API_CALL clGetMemAllocInfoINTEL(
             param_name );
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_int  retVal = CL_INVALID_OPERATION;
-        if( pIntercept->dispatch().clGetMemAllocInfoINTEL )
-        {
-            retVal = pIntercept->dispatch().clGetMemAllocInfoINTEL(
-                context,
-                ptr,
-                param_name,
-                param_value_size,
-                param_value,
-                param_value_size_ret );
-        }
+        cl_int  retVal = pIntercept->dispatch().clGetMemAllocInfoINTEL(
+            context,
+            ptr,
+            param_name,
+            param_value_size,
+            param_value,
+            param_value_size_ret );
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
@@ -9365,6 +9349,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetMemAllocInfoINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_intel_unified_shared_memory
 CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
     cl_kernel kernel,
     cl_uint arg_index,
@@ -9372,7 +9357,8 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clSetKernelArgMemPointerINTEL )
     {
         CALL_LOGGING_ENTER_KERNEL(
             kernel,
@@ -9383,14 +9369,10 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
         CHECK_KERNEL_ARG_USM_POINTER( kernel, arg_value );
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_int  retVal = CL_INVALID_OPERATION;
-        if( pIntercept->dispatch().clSetKernelArgMemPointerINTEL )
-        {
-            retVal = pIntercept->dispatch().clSetKernelArgMemPointerINTEL(
-                kernel,
-                arg_index,
-                arg_value );
-        }
+        cl_int  retVal = pIntercept->dispatch().clSetKernelArgMemPointerINTEL(
+            kernel,
+            arg_index,
+            arg_value );
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
@@ -9404,6 +9386,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_intel_unified_shared_memory
 CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
     cl_command_queue queue,
     void* dst_ptr,
@@ -9415,7 +9398,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clEnqueueMemsetINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9432,21 +9416,14 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
 
-            if( pIntercept->dispatch().clEnqueueMemsetINTEL )
-            {
-                retVal = pIntercept->dispatch().clEnqueueMemsetINTEL(
-                    queue,
-                    dst_ptr,
-                    value,
-                    size,
-                    num_events_in_wait_list,
-                    event_wait_list,
-                    event );
-            }
-            else
-            {
-                retVal = CL_INVALID_OPERATION;
-            }
+            retVal = pIntercept->dispatch().clEnqueueMemsetINTEL(
+                queue,
+                dst_ptr,
+                value,
+                size,
+                num_events_in_wait_list,
+                event_wait_list,
+                event );
 
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( queue, event );
@@ -9466,6 +9443,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_intel_unified_shared_memory
 CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
     cl_command_queue queue,
     void* dst_ptr,
@@ -9478,7 +9456,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clEnqueueMemFillINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9495,22 +9474,15 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
 
-            if( pIntercept->dispatch().clEnqueueMemFillINTEL )
-            {
-                retVal = pIntercept->dispatch().clEnqueueMemFillINTEL(
-                    queue,
-                    dst_ptr,
-                    pattern,
-                    pattern_size,
-                    size,
-                    num_events_in_wait_list,
-                    event_wait_list,
-                    event );
-            }
-            else
-            {
-                retVal = CL_INVALID_OPERATION;
-            }
+            retVal = pIntercept->dispatch().clEnqueueMemFillINTEL(
+                queue,
+                dst_ptr,
+                pattern,
+                pattern_size,
+                size,
+                num_events_in_wait_list,
+                event_wait_list,
+                event );
 
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( queue, event );
@@ -9530,6 +9502,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_intel_unified_shared_memory
 CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
     cl_command_queue queue,
     cl_bool blocking,
@@ -9542,7 +9515,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clEnqueueMemcpyINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9560,22 +9534,15 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
 
-            if( pIntercept->dispatch().clEnqueueMemcpyINTEL )
-            {
-                retVal = pIntercept->dispatch().clEnqueueMemcpyINTEL(
-                    queue,
-                    blocking,
-                    dst_ptr,
-                    src_ptr,
-                    size,
-                    num_events_in_wait_list,
-                    event_wait_list,
-                    event );
-            }
-            else
-            {
-                retVal = CL_INVALID_OPERATION;
-            }
+            retVal = pIntercept->dispatch().clEnqueueMemcpyINTEL(
+                queue,
+                blocking,
+                dst_ptr,
+                src_ptr,
+                size,
+                num_events_in_wait_list,
+                event_wait_list,
+                event );
 
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( queue, event );
@@ -9595,6 +9562,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_intel_unified_shared_memory
 CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
     cl_command_queue queue,
     const void* ptr,
@@ -9606,7 +9574,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clEnqueueMigrateMemINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9624,21 +9593,14 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
 
-            if( pIntercept->dispatch().clEnqueueMigrateMemINTEL )
-            {
-                retVal = pIntercept->dispatch().clEnqueueMigrateMemINTEL(
-                    queue,
-                    ptr,
-                    size,
-                    flags,
-                    num_events_in_wait_list,
-                    event_wait_list,
-                    event );
-            }
-            else
-            {
-                retVal = CL_INVALID_OPERATION;
-            }
+            retVal = pIntercept->dispatch().clEnqueueMigrateMemINTEL(
+                queue,
+                ptr,
+                size,
+                flags,
+                num_events_in_wait_list,
+                event_wait_list,
+                event );
 
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( queue, event );
@@ -9658,6 +9620,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_intel_unified_shared_memory
 CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
     cl_command_queue queue,
     const void* ptr,
@@ -9669,7 +9632,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept &&
+        pIntercept->dispatch().clEnqueueMemAdviseINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9687,21 +9651,14 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
 
-            if( pIntercept->dispatch().clEnqueueMemAdviseINTEL )
-            {
-                retVal = pIntercept->dispatch().clEnqueueMemAdviseINTEL(
-                    queue,
-                    ptr,
-                    size,
-                    advice,
-                    num_events_in_wait_list,
-                    event_wait_list,
-                    event );
-            }
-            else
-            {
-                retVal = CL_INVALID_OPERATION;
-            }
+            retVal = pIntercept->dispatch().clEnqueueMemAdviseINTEL(
+                queue,
+                ptr,
+                size,
+                advice,
+                num_events_in_wait_list,
+                event_wait_list,
+                event );
 
             CPU_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( queue, event );

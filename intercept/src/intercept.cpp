@@ -30,6 +30,7 @@
 #include <time.h>       // strdate
 
 #include "common.h"
+#include "emulate.h"
 #include "intercept.h"
 
 /*****************************************************************************\
@@ -8451,13 +8452,19 @@ bool CLIntercept::overrideGetDeviceInfo(
                 ptr );
             override = true;
         }
-        else if( m_Config.Emulate_cl_khr_extended_versioning )
+        else if( m_Config.Emulate_cl_khr_extended_versioning ||
+                 m_Config.Emulate_cl_intel_unified_shared_memory )
         {
             std::string newExtensions;
             if( m_Config.Emulate_cl_khr_extended_versioning &&
                 !checkDeviceForExtension( device, "cl_khr_extended_versioning") )
             {
                 newExtensions += "cl_khr_extended_versioning ";
+            }
+            if( m_Config.Emulate_cl_intel_unified_shared_memory &&
+                !checkDeviceForExtension( device, "cl_intel_unified_shared_memory") )
+            {
+                newExtensions += "cl_intel_unified_shared_memory ";
             }
 
             if( !newExtensions.empty() )
@@ -8714,8 +8721,17 @@ bool CLIntercept::overrideGetDeviceInfo(
     case CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR:
         if( m_Config.Emulate_cl_khr_extended_versioning )
         {
-            std::string deviceExtensions =
-                "cl_khr_extended_versioning ";
+            std::string deviceExtensions;
+            if( m_Config.Emulate_cl_khr_extended_versioning &&
+                !checkDeviceForExtension( device, "cl_khr_extended_versioning") )
+            {
+                deviceExtensions += "cl_khr_extended_versioning ";
+            }
+            if( m_Config.Emulate_cl_intel_unified_shared_memory &&
+                !checkDeviceForExtension( device, "cl_intel_unified_shared_memory") )
+            {
+                deviceExtensions += "cl_intel_unified_shared_memory ";
+            }
 
             char*   tempDeviceExtensions = NULL;
 
@@ -8798,6 +8814,121 @@ bool CLIntercept::overrideGetDeviceInfo(
                 param_value_size_ret,
                 ptr );
             override = true;
+        }
+        break;
+    case CL_DEVICE_HOST_MEM_CAPABILITIES_INTEL:
+    case CL_DEVICE_DEVICE_MEM_CAPABILITIES_INTEL:
+    case CL_DEVICE_SINGLE_DEVICE_SHARED_MEM_CAPABILITIES_INTEL:
+    case CL_DEVICE_CROSS_DEVICE_SHARED_MEM_CAPABILITIES_INTEL:
+    case CL_DEVICE_SHARED_SYSTEM_MEM_CAPABILITIES_INTEL:
+        if( m_Config.Emulate_cl_intel_unified_shared_memory )
+        {
+            // Shorthand:
+            const cl_bitfield acc = CL_UNIFIED_SHARED_MEMORY_ACCESS_INTEL;
+            const cl_bitfield ato = CL_UNIFIED_SHARED_MEMORY_ATOMIC_ACCESS_INTEL;
+            const cl_bitfield cacc = CL_UNIFIED_SHARED_MEMORY_CONCURRENT_ACCESS_INTEL;
+            const cl_bitfield cato = CL_UNIFIED_SHARED_MEMORY_CONCURRENT_ATOMIC_ACCESS_INTEL;
+
+            // Caps:
+            cl_device_unified_shared_memory_capabilities_intel hostCaps = 0;
+            cl_device_unified_shared_memory_capabilities_intel deviceCaps = 0;
+            cl_device_unified_shared_memory_capabilities_intel sdSharedCaps = 0;
+            cl_device_unified_shared_memory_capabilities_intel cdSharedCaps = 0;
+            cl_device_unified_shared_memory_capabilities_intel sysSharedCaps = 0;
+
+            cl_device_svm_capabilities svmCaps = 0;
+            dispatch().clGetDeviceInfo(
+                device,
+                CL_DEVICE_SVM_CAPABILITIES,
+                sizeof(svmCaps),
+                &svmCaps,
+                NULL );
+            if( svmCaps & CL_DEVICE_SVM_FINE_GRAIN_SYSTEM )
+            {
+                //log( "Returning USM caps for: System SVM\n" );
+                hostCaps =      acc | ato | cacc;
+                deviceCaps =    acc | ato;
+                sdSharedCaps =  acc | ato | cacc;
+                cdSharedCaps =  acc | ato | cacc;
+                sysSharedCaps = acc | ato | cacc;
+                if( svmCaps & CL_DEVICE_SVM_ATOMICS )
+                {
+                    hostCaps |=      cato;
+                    deviceCaps |=    cato;
+                    sdSharedCaps |=  cato;
+                    cdSharedCaps |=  cato;
+                    sysSharedCaps |= cato;
+                }
+            }
+            else if( svmCaps & CL_DEVICE_SVM_FINE_GRAIN_BUFFER )
+            {
+                //log( "Returning USM caps for: Fine Grain Buffer SVM\n" );
+                hostCaps =      acc | ato | cacc;
+                deviceCaps =    acc | ato;
+                sdSharedCaps =  acc | ato | cacc;
+                cdSharedCaps =  acc | ato | cacc;
+                if( svmCaps & CL_DEVICE_SVM_ATOMICS )
+                {
+                    hostCaps |=     cato;
+                    deviceCaps |=   cato;
+                    sdSharedCaps |= cato;
+                    cdSharedCaps |=   cato;
+                }
+            }
+            else if( svmCaps & CL_DEVICE_SVM_COARSE_GRAIN_BUFFER )
+            {
+                //log( "Returning USM caps for: Coarse Grain Buffer SVM\n" );
+                deviceCaps = acc | ato;
+            }
+
+            cl_device_unified_shared_memory_capabilities_intel*    ptr =
+                (cl_device_unified_shared_memory_capabilities_intel*)param_value;
+
+            switch( param_name )
+            {
+            case CL_DEVICE_HOST_MEM_CAPABILITIES_INTEL:
+                errorCode = writeParamToMemory(
+                    param_value_size,
+                    hostCaps,
+                    param_value_size_ret,
+                    ptr );
+                override = true;
+                break;
+            case CL_DEVICE_DEVICE_MEM_CAPABILITIES_INTEL:
+                errorCode = writeParamToMemory(
+                    param_value_size,
+                    deviceCaps,
+                    param_value_size_ret,
+                    ptr );
+                override = true;
+                break;
+            case CL_DEVICE_SINGLE_DEVICE_SHARED_MEM_CAPABILITIES_INTEL:
+                errorCode = writeParamToMemory(
+                    param_value_size,
+                    sdSharedCaps,
+                    param_value_size_ret,
+                    ptr );
+                override = true;
+                break;
+            case CL_DEVICE_CROSS_DEVICE_SHARED_MEM_CAPABILITIES_INTEL:
+                errorCode = writeParamToMemory(
+                    param_value_size,
+                    cdSharedCaps,
+                    param_value_size_ret,
+                    ptr );
+                override = true;
+                break;
+            case CL_DEVICE_SHARED_SYSTEM_MEM_CAPABILITIES_INTEL:
+                errorCode = writeParamToMemory(
+                    param_value_size,
+                    sysSharedCaps,
+                    param_value_size_ret,
+                    ptr );
+                override = true;
+                break;
+            default:
+                break;
+            }
         }
         break;
     default:
@@ -10571,6 +10702,24 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
     }                                                                       \
 }
 
+#define CHECK_RETURN_EXTENSION_FUNCTION_EMU(funcname)                       \
+{                                                                           \
+    if( func_name == #funcname )                                            \
+    {                                                                       \
+        if( dispatch() . funcname == NULL )                                 \
+        {                                                                   \
+            void *func = (void*)funcname##_EMU;                             \
+            void** pfunc = (void**)( &m_Dispatch . funcname );              \
+            *pfunc = func;                                                  \
+        }                                                                   \
+        if( dispatch() . funcname )                                         \
+        {                                                                   \
+            return (void*)( funcname );                                     \
+        }                                                                   \
+    }                                                                       \
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 void* CLIntercept::getExtensionFunctionAddress(
@@ -10653,19 +10802,36 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireVA_APIMediaSurfacesINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseVA_APIMediaSurfacesINTEL );
 
-    // cl_intel_unified_shared_memory
-    CHECK_RETURN_EXTENSION_FUNCTION( clHostMemAllocINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clDeviceMemAllocINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clSharedMemAllocINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clMemFreeINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clMemBlockingFreeINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetMemAllocInfoINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clSetKernelArgMemPointerINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemsetINTEL );    // Deprecated
-    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemFillINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemcpyINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMigrateMemINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemAdviseINTEL );
+    if( m_Config.Emulate_cl_intel_unified_shared_memory )
+    {
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clHostMemAllocINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clDeviceMemAllocINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clSharedMemAllocINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clMemFreeINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clMemBlockingFreeINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clGetMemAllocInfoINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clSetKernelArgMemPointerINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clEnqueueMemsetINTEL );    // Deprecated
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clEnqueueMemFillINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clEnqueueMemcpyINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clEnqueueMigrateMemINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clEnqueueMemAdviseINTEL );
+    }
+    else
+    {
+        CHECK_RETURN_EXTENSION_FUNCTION( clHostMemAllocINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION( clDeviceMemAllocINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION( clSharedMemAllocINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION( clMemFreeINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION( clMemBlockingFreeINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION( clGetMemAllocInfoINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION( clSetKernelArgMemPointerINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemsetINTEL );    // Deprecated
+        CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemFillINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemcpyINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMigrateMemINTEL );
+        CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemAdviseINTEL );
+    }
 
     return NULL;
 }
@@ -11972,4 +12138,629 @@ bool CLIntercept::checkAubCaptureKernelSignature(
     }
 
     return match;
+}
+
+#define USE_DRIVER_SVM
+
+///////////////////////////////////////////////////////////////////////////////
+//
+static bool validateUSMMemProperties(
+    const cl_mem_properties_intel* properties )
+{
+    if( properties )
+    {
+        while( properties[0] != 0 )
+        {
+            cl_int  property = (cl_int)properties[0];
+            switch( property )
+            {
+            case CL_MEM_ALLOC_FLAGS_INTEL:
+                {
+                    const cl_mem_alloc_flags_intel* pf =
+                        (const cl_mem_alloc_flags_intel*)( properties + 1 );
+                    cl_mem_alloc_flags_intel    flags = pf[0];
+                    cl_mem_alloc_flags_intel    valid =
+                        CL_MEM_ALLOC_WRITE_COMBINED_INTEL;
+                    if( flags & ~valid )
+                    {
+                        return false;
+                    }
+                }
+                break;
+            default:
+                return false;
+            }
+
+            properties += 2;
+        }
+    }
+
+    return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void* CLIntercept::emulatedHostMemAlloc(
+    cl_context context,
+    const cl_mem_properties_intel* properties,
+    size_t size,
+    cl_uint alignment,
+    cl_int* errcode_ret)
+{
+    if( !validateUSMMemProperties(properties) )
+    {
+        if( errcode_ret )
+        {
+            errcode_ret[0] = CL_INVALID_PROPERTY;
+        }
+        return NULL;
+    }
+
+#ifdef USE_DRIVER_SVM
+    void*   ptr = dispatch().clSVMAlloc ?
+        dispatch().clSVMAlloc(
+            context,
+            CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
+            size,
+            alignment ) : NULL;
+#else
+    // For now, the only valid alignments are "0":
+    if( alignment != 0 )
+    {
+        if( errcode_ret )
+        {
+            errcode_ret[0] = CL_INVALID_VALUE;
+        }
+        return NULL;
+    }
+
+    void*   ptr = new char[size];
+#endif
+    if( ptr == NULL )
+    {
+        if( errcode_ret )
+        {
+            errcode_ret[0] = CL_OUT_OF_RESOURCES;// TODO: Which error?
+        }
+        return NULL;
+    }
+
+    // Record this allocation in the alloc map:
+    SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
+    SUSMAllocInfo&      allocInfo = usmContextInfo.AllocMap[ptr];
+    allocInfo.Type = CL_MEM_TYPE_HOST_INTEL;
+    allocInfo.BaseAddress = ptr;
+    allocInfo.Size = size;
+    allocInfo.Alignment = alignment;
+
+    usmContextInfo.HostAllocVector.push_back( ptr );
+
+    if( errcode_ret )
+    {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+    return ptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void* CLIntercept::emulatedDeviceMemAlloc(
+    cl_context context,
+    cl_device_id device,
+    const cl_mem_properties_intel* properties,
+    size_t size,
+    cl_uint alignment,
+    cl_int* errcode_ret)
+{
+    if( !validateUSMMemProperties(properties) )
+    {
+        if( errcode_ret )
+        {
+            errcode_ret[0] = CL_INVALID_PROPERTY;
+        }
+        return NULL;
+    }
+
+    // Unconditionally use coarse grain SVM for device allocations:
+
+    void*   ptr = dispatch().clSVMAlloc ?
+        dispatch().clSVMAlloc(
+            context,
+            CL_MEM_READ_WRITE,
+            size,
+            alignment ) : NULL;
+    if( ptr == NULL )
+    {
+        if( errcode_ret )
+        {
+            errcode_ret[0] = CL_OUT_OF_RESOURCES;// TODO: Which error?
+        }
+        return NULL;
+    }
+
+    // Record this allocation in the alloc map:
+    SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
+    SUSMAllocInfo&      allocInfo = usmContextInfo.AllocMap[ptr];
+    allocInfo.Type = CL_MEM_TYPE_DEVICE_INTEL;
+    allocInfo.Device = device;
+    allocInfo.BaseAddress = ptr;
+    allocInfo.Size = size;
+    allocInfo.Alignment = alignment;
+
+    usmContextInfo.DeviceAllocVector.push_back( ptr );
+
+    if( errcode_ret )
+    {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+    return ptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void* CLIntercept::emulatedSharedMemAlloc(
+    cl_context context,
+    cl_device_id device,
+    const cl_mem_properties_intel* properties,
+    size_t size,
+    cl_uint alignment,
+    cl_int* errcode_ret)
+{
+    if( !validateUSMMemProperties(properties) )
+    {
+        if( errcode_ret )
+        {
+            errcode_ret[0] = CL_INVALID_PROPERTY;
+        }
+        return NULL;
+    }
+
+#ifdef USE_DRIVER_SVM
+    void*   ptr = dispatch().clSVMAlloc ?
+        dispatch().clSVMAlloc(
+            context,
+            CL_MEM_READ_WRITE | CL_MEM_SVM_FINE_GRAIN_BUFFER,
+            size,
+            alignment ) : NULL;
+#else
+    // For now, the only valid alignments are "0":
+    if( alignment != 0 )
+    {
+        if( errcode_ret )
+        {
+            errcode_ret[0] = CL_INVALID_VALUE;
+        }
+        return NULL;
+    }
+
+    void*   ptr = new char[size];
+#endif
+    if( ptr == NULL )
+    {
+        if( errcode_ret )
+        {
+            errcode_ret[0] = CL_OUT_OF_RESOURCES;// TODO: Which error?
+        }
+        return NULL;
+    }
+
+    // Record this allocation in the alloc map:
+    SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
+    SUSMAllocInfo&      allocInfo = usmContextInfo.AllocMap[ptr];
+    allocInfo.Type = CL_MEM_TYPE_SHARED_INTEL;
+    allocInfo.Device = device;
+    allocInfo.BaseAddress = ptr;
+    allocInfo.Size = size;
+    allocInfo.Alignment = alignment;
+
+    usmContextInfo.SharedAllocVector.push_back( ptr );
+
+    if( errcode_ret )
+    {
+        errcode_ret[0] = CL_SUCCESS;
+    }
+    return ptr;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+cl_int CLIntercept::emulatedMemFree(
+    cl_context context,
+    const void* ptr )
+{
+    SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
+
+    CUSMAllocMap::iterator iter = usmContextInfo.AllocMap.find( ptr );
+    if( iter != usmContextInfo.AllocMap.end() )
+    {
+        const SUSMAllocInfo &allocInfo = iter->second;
+
+        switch( allocInfo.Type )
+        {
+        case CL_MEM_TYPE_HOST_INTEL:
+            usmContextInfo.HostAllocVector.erase(
+                std::find(
+                    usmContextInfo.HostAllocVector.begin(),
+                    usmContextInfo.HostAllocVector.end(),
+                    ptr ) );
+            break;
+        case CL_MEM_TYPE_DEVICE_INTEL:
+            usmContextInfo.DeviceAllocVector.erase(
+                std::find(
+                    usmContextInfo.DeviceAllocVector.begin(),
+                    usmContextInfo.DeviceAllocVector.end(),
+                    ptr ) );
+            break;
+        case CL_MEM_TYPE_SHARED_INTEL:
+            usmContextInfo.SharedAllocVector.erase(
+                std::find(
+                    usmContextInfo.SharedAllocVector.begin(),
+                    usmContextInfo.SharedAllocVector.end(),
+                    ptr ) );
+        default:
+            CLI_ASSERT( 0 );
+            break;
+        }
+
+        usmContextInfo.AllocMap.erase( ptr );
+
+#ifdef USE_DRIVER_SVM
+        dispatch().clSVMFree(
+            context,
+            (void*)ptr );
+        ptr = NULL;
+#else
+        delete [] ptr;
+        ptr = NULL;
+#endif
+
+        return CL_SUCCESS;
+    }
+
+    return CL_INVALID_MEM_OBJECT;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+cl_int CLIntercept::emulatedGetMemAllocInfoINTEL(
+    cl_context context,
+    const void* ptr,
+    cl_mem_info_intel param_name,
+    size_t param_value_size,
+    void* param_value,
+    size_t* param_value_size_ret)
+{
+    if( ptr == NULL )
+    {
+        return CL_INVALID_VALUE;
+    }
+
+    SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
+
+    if( usmContextInfo.AllocMap.size() == 0 )
+    {
+        // No pointers allocated?
+        return CL_INVALID_MEM_OBJECT;   // TODO: new error code?
+    }
+
+    CUSMAllocMap::iterator iter = usmContextInfo.AllocMap.lower_bound( ptr );
+
+    if( iter->first != ptr )
+    {
+        if( iter == usmContextInfo.AllocMap.begin() )
+        {
+            // This pointer is not in the map.
+            return CL_INVALID_MEM_OBJECT;
+        }
+
+        // Go to the previous iterator.
+        --iter;
+    }
+
+    const SUSMAllocInfo &allocInfo = iter->second;
+
+    const void* startPtr = allocInfo.BaseAddress;
+    const void* endPtr = (const char*)allocInfo.BaseAddress + allocInfo.Size;
+    //logf("start = %p, ptr = %p, end = %p\n",
+    //    startPtr,
+    //    ptr,
+    //    endPtr );
+
+    if( ptr < startPtr || ptr >= endPtr )
+    {
+        return CL_INVALID_MEM_OBJECT;
+    }
+
+    //logf("For ptr = %p: base = %p, size = %p\n",
+    //    ptr,
+    //    allocInfo.BaseAddress,
+    //    allocInfo.Size );
+
+    switch( param_name )
+    {
+    case CL_MEM_ALLOC_TYPE_INTEL:
+        {
+            cl_unified_shared_memory_type_intel* ptr =
+                (cl_unified_shared_memory_type_intel*)param_value;
+            return writeParamToMemory(
+                param_value_size,
+                allocInfo.Type,
+                param_value_size_ret,
+                ptr);
+        }
+    case CL_MEM_ALLOC_BASE_PTR_INTEL:
+        {
+            const void** ptr =
+                (const void**)param_value;
+            return writeParamToMemory(
+                param_value_size,
+                allocInfo.BaseAddress,
+                param_value_size_ret,
+                ptr);
+        }
+    case CL_MEM_ALLOC_SIZE_INTEL:
+        {
+            size_t* ptr =
+                (size_t*)param_value;
+            return writeParamToMemory(
+                param_value_size,
+                allocInfo.Size,
+                param_value_size_ret,
+                ptr);
+        }
+    case CL_MEM_ALLOC_DEVICE_INTEL:
+        {
+            cl_device_id* ptr =
+                (cl_device_id*)param_value;
+            return writeParamToMemory(
+                param_value_size,
+                allocInfo.Device,
+                param_value_size_ret,
+                ptr);
+        }
+    default:
+        break;
+    }
+
+    return CL_INVALID_VALUE;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+cl_int CLIntercept::trackUSMKernelExecInfo(
+    cl_kernel kernel,
+    cl_kernel_exec_info param_name,
+    size_t param_value_size,
+    const void* param_value)
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_int  retVal = CL_INVALID_VALUE;
+
+    switch( param_name )
+    {
+    case CL_KERNEL_EXEC_INFO_INDIRECT_HOST_ACCESS_INTEL:
+        if( param_value_size == sizeof(cl_bool) )
+        {
+            SUSMKernelInfo& kernelInfo = m_USMKernelInfoMap[kernel];
+            cl_bool*    pBool = (cl_bool*)param_value;
+
+            kernelInfo.IndirectHostAccess = ( pBool[0] == CL_TRUE );
+            retVal = CL_SUCCESS;
+        }
+        break;
+    case CL_KERNEL_EXEC_INFO_INDIRECT_DEVICE_ACCESS_INTEL:
+        if( param_value_size == sizeof(cl_bool) )
+        {
+            SUSMKernelInfo& kernelInfo = m_USMKernelInfoMap[kernel];
+            cl_bool*    pBool = (cl_bool*)param_value;
+
+            kernelInfo.IndirectDeviceAccess = ( pBool[0] == CL_TRUE );
+            retVal = CL_SUCCESS;
+        }
+        break;
+    case CL_KERNEL_EXEC_INFO_INDIRECT_SHARED_ACCESS_INTEL:
+        if( param_value_size == sizeof(cl_bool) )
+        {
+            SUSMKernelInfo& kernelInfo = m_USMKernelInfoMap[kernel];
+            cl_bool*    pBool = (cl_bool*)param_value;
+
+            kernelInfo.IndirectSharedAccess = ( pBool[0] == CL_TRUE );
+            retVal = CL_SUCCESS;
+        }
+        break;
+    case CL_KERNEL_EXEC_INFO_USM_PTRS_INTEL:
+        {
+            SUSMKernelInfo& kernelInfo = m_USMKernelInfoMap[kernel];
+            void**  pPtrs = (void**)param_value;
+            size_t  numPtrs = param_value_size / sizeof(void*);
+
+            kernelInfo.USMPtrs.clear();
+            kernelInfo.USMPtrs.reserve(numPtrs);
+            kernelInfo.USMPtrs.insert(
+                kernelInfo.USMPtrs.begin(),
+                pPtrs,
+                pPtrs + numPtrs );
+        }
+        break;
+    case CL_KERNEL_EXEC_INFO_SVM_PTRS:
+        {
+            SUSMKernelInfo& kernelInfo = m_USMKernelInfoMap[kernel];
+            void**  pPtrs = (void**)param_value;
+            size_t  numPtrs = param_value_size / sizeof(void*);
+
+            kernelInfo.SVMPtrs.clear();
+            kernelInfo.SVMPtrs.reserve(numPtrs);
+            kernelInfo.SVMPtrs.insert(
+                kernelInfo.SVMPtrs.begin(),
+                pPtrs,
+                pPtrs + numPtrs );
+
+            // Don't set CL_SUCCESS so the call passes through.
+        }
+        break;
+    default: break;
+    }
+
+    return retVal;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+cl_int CLIntercept::setUSMKernelExecInfo(
+    cl_command_queue commandQueue,
+    cl_kernel kernel )
+{
+    const SUSMKernelInfo& usmKernelInfo = m_USMKernelInfoMap[ kernel ];
+
+    cl_int  errorCode = CL_SUCCESS;
+
+    if( usmKernelInfo.IndirectHostAccess ||
+        usmKernelInfo.IndirectDeviceAccess ||
+        usmKernelInfo.IndirectSharedAccess )
+    {
+        cl_context  context = NULL;
+        dispatch().clGetCommandQueueInfo(
+            commandQueue,
+            CL_QUEUE_CONTEXT,
+            sizeof( context ),
+            &context,
+            NULL );
+
+        const SUSMContextInfo& usmContextInfo = m_USMContextInfoMap[context];
+
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        bool    hasSVMPtrs =
+                    !usmKernelInfo.SVMPtrs.empty();
+        bool    hasUSMPtrs =
+                    !usmKernelInfo.USMPtrs.empty();
+        bool    setHostAllocs =
+                    !usmContextInfo.HostAllocVector.empty() &&
+                    usmKernelInfo.IndirectHostAccess;
+        bool    setDeviceAllocs =
+                    !usmContextInfo.DeviceAllocVector.empty() &&
+                    usmKernelInfo.IndirectDeviceAccess;
+        bool    setSharedAllocs =
+                    !usmContextInfo.SharedAllocVector.empty() &&
+                    usmKernelInfo.IndirectSharedAccess;
+
+        bool    fastPath =
+                    ( hasSVMPtrs == false ) &&
+                    ( hasUSMPtrs == false ) &&
+                    ( ( !setHostAllocs && !setDeviceAllocs && !setSharedAllocs ) ||
+                      (  setHostAllocs && !setDeviceAllocs && !setSharedAllocs ) ||
+                      ( !setHostAllocs &&  setDeviceAllocs && !setSharedAllocs ) ||
+                      ( !setHostAllocs && !setDeviceAllocs &&  setSharedAllocs ) );
+
+        if( fastPath )
+        {
+            if( setHostAllocs )
+            {
+                size_t  count = usmContextInfo.HostAllocVector.size();
+
+                logf("Indirect USM Allocs for kernel %s: Fast path for %u host allocs\n",
+                    getShortKernelName(kernel).c_str(),
+                    (cl_uint)count );
+
+                errorCode = dispatch().clSetKernelExecInfo(
+                    kernel,
+                    CL_KERNEL_EXEC_INFO_SVM_PTRS,
+                    count * sizeof(void*),
+                    usmContextInfo.HostAllocVector.data() );
+            }
+            if( setDeviceAllocs )
+            {
+                size_t  count = usmContextInfo.DeviceAllocVector.size();
+
+                logf("Indirect USM Allocs for kernel %s: Fast path for %u device allocs\n",
+                    getShortKernelName(kernel).c_str(),
+                    (cl_uint)count );
+
+                errorCode = dispatch().clSetKernelExecInfo(
+                    kernel,
+                    CL_KERNEL_EXEC_INFO_SVM_PTRS,
+                    count * sizeof(void*),
+                    usmContextInfo.DeviceAllocVector.data() );
+            }
+            if( setSharedAllocs )
+            {
+                size_t  count = usmContextInfo.SharedAllocVector.size();
+
+                logf("Indirect USM Allocs for kernel %s: Fast path for %u shared allocs\n",
+                    getShortKernelName(kernel).c_str(),
+                    (cl_uint)count );
+
+                errorCode = dispatch().clSetKernelExecInfo(
+                    kernel,
+                    CL_KERNEL_EXEC_INFO_SVM_PTRS,
+                    count * sizeof(void*),
+                    usmContextInfo.SharedAllocVector.data() );
+            }
+        }
+        else
+        {
+            logf("Indirect USM allocs for kernel %s: %u svm ptrs, %u usm ptrs, %u host allocs, %u device allocs, %u shared allocs\n",
+                getShortKernelName(kernel).c_str(),
+                (cl_uint)usmKernelInfo.SVMPtrs.size(),
+                (cl_uint)usmKernelInfo.USMPtrs.size(),
+                setHostAllocs ? (cl_uint)usmContextInfo.HostAllocVector.size() : 0,
+                setDeviceAllocs ? (cl_uint)usmContextInfo.DeviceAllocVector.size() : 0,
+                setSharedAllocs ? (cl_uint)usmContextInfo.SharedAllocVector.size() : 0 );
+
+            size_t  count =
+                usmKernelInfo.SVMPtrs.size() +
+                usmKernelInfo.USMPtrs.size() +
+                ( setHostAllocs ? usmContextInfo.HostAllocVector.size() : 0 ) +
+                ( setDeviceAllocs ? usmContextInfo.DeviceAllocVector.size() : 0 ) +
+                ( setSharedAllocs ? usmContextInfo.SharedAllocVector.size() : 0 );
+
+            std::vector<const void*>  combined( count );
+
+            combined.insert(
+                combined.end(),
+                usmKernelInfo.SVMPtrs.begin(),
+                usmKernelInfo.SVMPtrs.end() );
+            combined.insert(
+                combined.end(),
+                usmKernelInfo.USMPtrs.begin(),
+                usmKernelInfo.USMPtrs.end() );
+            if( setHostAllocs )
+            {
+                combined.insert(
+                    combined.end(),
+                    usmContextInfo.HostAllocVector.begin(),
+                    usmContextInfo.HostAllocVector.end() );
+            }
+            if( setDeviceAllocs )
+            {
+                combined.insert(
+                    combined.end(),
+                    usmContextInfo.DeviceAllocVector.begin(),
+                    usmContextInfo.DeviceAllocVector.end() );
+            }
+            if( setSharedAllocs )
+            {
+                combined.insert(
+                    combined.end(),
+                    usmContextInfo.SharedAllocVector.begin(),
+                    usmContextInfo.SharedAllocVector.end() );
+            }
+
+            errorCode = dispatch().clSetKernelExecInfo(
+                kernel,
+                CL_KERNEL_EXEC_INFO_SVM_PTRS,
+                count * sizeof(void*),
+                combined.data() );
+        }
+
+        if( errorCode != CL_SUCCESS )
+        {
+            logf("clSetKernelExecInfo to set indirect USM allocations returned %s (%d)!\n",
+                enumName().name(errorCode).c_str(),
+                errorCode );
+        }
+    }
+
+    return errorCode;
 }
