@@ -11536,7 +11536,7 @@ void CLIntercept::chromeCallLoggingExit(
     clock::time_point tickStart,
     clock::time_point tickEnd )
 {
-    // Critical section?
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
     std::string str;
     str += functionName;
