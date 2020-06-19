@@ -1338,5 +1338,3 @@ struct CLdispatch
         const cl_event* event_wait_list,
         cl_event* event);
 };
-
-extern CLdispatch dummyDispatch;

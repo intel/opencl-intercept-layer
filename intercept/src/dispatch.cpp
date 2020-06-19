@@ -33,7 +33,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformIDs)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetPlatformIDs )
     {
         LOG_CLINFO();
 
@@ -51,13 +51,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformIDs)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetPlatformIDs(
-            num_entries,
-            platforms,
-            num_platforms );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -71,7 +66,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetPlatformInfo )
     {
         std::string platformInfo;
         if( pIntercept->callLogging() )
@@ -110,15 +105,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetPlatformInfo(
-            platform,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -132,7 +120,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceIDs)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetDeviceIDs )
     {
         std::string platformInfo;
         if( pIntercept->callLogging() )
@@ -164,15 +152,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceIDs)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetDeviceIDs(
-            platform,
-            device_type,
-            num_entries,
-            devices,
-            num_devices );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -185,7 +166,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceInfo)(
     size_t* param_value_size_ret )
 {
     CLIntercept*    pIntercept = GetIntercept();
-    if (pIntercept)
+
+    if( pIntercept && pIntercept->dispatch().clGetDeviceInfo )
     {
         std::string deviceInfo;
         if( pIntercept->callLogging() )
@@ -225,15 +207,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetDeviceInfo(
-            device,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -248,7 +223,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateSubDevices)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateSubDevices )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -275,15 +250,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateSubDevices)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateSubDevices(
-            in_device,
-            properties,
-            num_devices,
-            out_devices,
-            num_devices_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -294,7 +262,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainDevice)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clRetainDevice )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -332,11 +300,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainDevice)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clRetainDevice(
-            device );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -347,7 +312,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clReleaseDevice )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -381,11 +346,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clReleaseDevice(
-            device );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 #ifdef __ANDROID__
@@ -406,7 +368,7 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContext)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateContext )
     {
         cl_context_properties*  newProperties = NULL;
         cl_context  retVal = NULL;
@@ -470,16 +432,8 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContext)(
 #endif
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateContext(
-            properties,
-            num_devices,
-            devices,
-            pfn_notify,
-            user_data,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -493,7 +447,7 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContextFromType)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateContextFromType )
     {
         cl_context_properties*  newProperties = NULL;
         cl_context  retVal = NULL;
@@ -552,15 +506,8 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContextFromType)(
 #endif
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateContextFromType(
-            properties,
-            device_type,
-            pfn_notify,
-            user_data,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -570,7 +517,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainContext)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clRetainContext )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -608,11 +555,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainContext)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clRetainContext(
-            context );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -622,7 +566,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clReleaseContext )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -670,11 +614,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
 #endif
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clReleaseContext(
-            context );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -688,7 +629,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetContextInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetContextInfo )
     {
         CALL_LOGGING_ENTER( "param_name = %s (%08X)",
             pIntercept->enumName().name( param_name ).c_str(),
@@ -708,15 +649,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetContextInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetContextInfo(
-            context,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -729,7 +663,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateCommandQueue )
     {
         cl_queue_properties*    newProperties = NULL;
         cl_command_queue    retVal = NULL;
@@ -803,14 +737,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateCommandQueue(
-            context,
-            device,
-            properties,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -820,7 +748,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainCommandQueue)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clRetainCommandQueue )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -858,11 +786,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainCommandQueue)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clRetainCommandQueue(
-            command_queue );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -872,7 +797,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseCommandQueue)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clReleaseCommandQueue )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -907,11 +832,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseCommandQueue)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clReleaseCommandQueue(
-            command_queue );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -925,7 +847,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetCommandQueueInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetCommandQueueInfo )
     {
         CALL_LOGGING_ENTER( "param_name = %s (%08X)",
             pIntercept->enumName().name( param_name ).c_str(),
@@ -945,15 +867,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetCommandQueueInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetCommandQueueInfo(
-            command_queue,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -966,7 +881,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetCommandQueueProperty)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSetCommandQueueProperty )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -983,14 +898,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetCommandQueueProperty)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSetCommandQueueProperty(
-            command_queue,
-            properties,
-            enable,
-            old_properties );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1004,7 +913,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateBuffer )
     {
         CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), size = %d, host_ptr = %p",
             context,
@@ -1033,15 +942,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateBuffer(
-            context,
-            flags,
-            size,
-            host_ptr,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1057,7 +959,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateBufferWithProperties )
     {
         CALL_LOGGING_ENTER( "context = %p, properties = %p, flags = %s (%llX), size = %d, host_ptr = %p",
             context,
@@ -1088,16 +990,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateBufferWithProperties(
-            context,
-            properties,
-            flags,
-            size,
-            host_ptr,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1112,7 +1006,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateSubBuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateSubBuffer )
     {
         std::string argsString;
         if( pIntercept->callLogging() )
@@ -1145,15 +1039,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateSubBuffer)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateSubBuffer(
-            buffer,
-            flags,
-            buffer_create_type,
-            buffer_create_info,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1169,7 +1056,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateImage )
     {
         if( image_desc && image_format )
         {
@@ -1230,16 +1117,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateImage(
-            context,
-            flags,
-            image_format,
-            image_desc,
-            host_ptr,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1256,7 +1135,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImageWithProperties)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateImageWithProperties )
     {
         if( image_desc && image_format )
         {
@@ -1320,17 +1199,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImageWithProperties)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateImageWithProperties(
-            context,
-            properties,
-            flags,
-            image_format,
-            image_desc,
-            host_ptr,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1347,7 +1217,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage2D)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateImage2D )
     {
         if( image_format )
         {
@@ -1396,18 +1266,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage2D)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateImage2D(
-            context,
-            flags,
-            image_format,
-            image_width,
-            image_height,
-            image_row_pitch,
-            host_ptr,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1426,7 +1286,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage3D)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateImage3D )
     {
         if( image_format )
         {
@@ -1480,20 +1340,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage3D)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateImage3D(
-            context,
-            flags,
-            image_format,
-            image_width,
-            image_height,
-            image_depth,
-            image_row_pitch,
-            image_slice_pitch,
-            host_ptr,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1503,7 +1351,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainMemObject)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clRetainMemObject )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -1541,11 +1389,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainMemObject)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clRetainMemObject(
-            memobj );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1555,7 +1400,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseMemObject)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clReleaseMemObject )
     {
         REMOVE_MEMOBJ( memobj );
 
@@ -1591,11 +1436,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseMemObject)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clReleaseMemObject(
-            memobj );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1610,7 +1452,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetSupportedImageFormats)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetSupportedImageFormats )
     {
         CALL_LOGGING_ENTER( "flags = %s (%llX), image_type = %s (%X)",
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
@@ -1633,16 +1475,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetSupportedImageFormats)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetSupportedImageFormats(
-            context,
-            flags,
-            image_type,
-            num_entries,
-            image_formats,
-            num_image_formats );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1656,7 +1490,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetMemObjectInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetMemObjectInfo )
     {
         CALL_LOGGING_ENTER( "mem = %p, param_name = %s (%08X)",
             memobj,
@@ -1677,15 +1511,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetMemObjectInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetMemObjectInfo(
-            memobj,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1699,7 +1526,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetImageInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetImageInfo )
     {
         CALL_LOGGING_ENTER( "mem = %p, param_name = %s (%08X)",
             image,
@@ -1720,15 +1547,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetImageInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetImageInfo(
-            image,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1741,7 +1561,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetMemObjectDestructorCallback)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSetMemObjectDestructorCallback )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -1757,13 +1577,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetMemObjectDestructorCallback)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSetMemObjectDestructorCallback(
-            memobj,
-            pfn_notify,
-            user_data );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1777,7 +1592,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateSampler )
     {
         std::string samplerProperties;
         if( pIntercept->callLogging() )
@@ -1814,15 +1629,8 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateSampler(
-            context,
-            normalized_coords,
-            addressing_mode,
-            filter_mode,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1832,7 +1640,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainSampler)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clRetainSampler )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -1870,11 +1678,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainSampler)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clRetainSampler(
-            sampler );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1884,7 +1689,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseSampler)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clReleaseSampler )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -1922,11 +1727,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseSampler)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clReleaseSampler(
-            sampler );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1940,7 +1742,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetSamplerInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetSamplerInfo )
     {
         CALL_LOGGING_ENTER( "param_name = %s (%08X)",
             pIntercept->enumName().name( param_name ).c_str(),
@@ -1960,15 +1762,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetSamplerInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetSamplerInfo(
-            sampler,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1982,7 +1777,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithSource)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateProgramWithSource )
     {
         char*       singleString = NULL;
         uint64_t    hash = 0;
@@ -2046,15 +1841,8 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithSource)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateProgramWithSource(
-            context,
-            count,
-            strings,
-            lengths,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2070,7 +1858,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBinary)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateProgramWithBinary )
     {
         uint64_t    hash = 0;
 
@@ -2119,17 +1907,8 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBinary)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateProgramWithBinary(
-            context,
-            num_devices,
-            device_list,
-            lengths,
-            binaries,
-            binary_status,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2144,7 +1923,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBuiltInKernels)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateProgramWithBuiltInKernels )
     {
         CALL_LOGGING_ENTER( "context = %p, num_devices = %d, kernel_names = [ %s ]",
             context,
@@ -2179,15 +1958,8 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBuiltInKernels)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateProgramWithBuiltInKernels(
-            context,
-            num_devices,
-            device_list,
-            kernel_names,
-            errcode_ret);
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2197,7 +1969,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainProgram)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clRetainProgram )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -2235,11 +2007,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainProgram)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clRetainProgram(
-            program );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2249,7 +2018,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseProgram)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clReleaseProgram )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -2283,11 +2052,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseProgram)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clReleaseProgram(
-            program );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2302,7 +2068,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clBuildProgram )
     {
         char*   newOptions = NULL;
 
@@ -2340,16 +2106,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clBuildProgram(
-            program,
-            num_devices,
-            device_list,
-            options,
-            pfn_notify,
-            user_data );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2368,7 +2126,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCompileProgram )
     {
         const bool  modified = false;
 
@@ -2398,19 +2156,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCompileProgram(
-            program,
-            num_devices,
-            device_list,
-            options,
-            num_input_headers,
-            input_headers,
-            header_include_names,
-            pfn_notify,
-            user_data );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2429,7 +2176,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clLinkProgram )
     {
         const bool  modified = false;
 
@@ -2469,19 +2216,8 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clLinkProgram(
-            context,
-            num_devices,
-            device_list,
-            options,
-            num_input_programs,
-            input_programs,
-            pfn_notify,
-            user_data,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2494,7 +2230,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramReleaseCallback)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSetProgramReleaseCallback )
     {
         CALL_LOGGING_ENTER( "program = %p", program );
         CPU_PERFORMANCE_TIMING_START();
@@ -2510,13 +2246,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramReleaseCallback)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSetProgramReleaseCallback(
-            program,
-            pfn_notify,
-            user_data );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2530,7 +2261,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramSpecializationConstant)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSetProgramSpecializationConstant )
     {
         CALL_LOGGING_ENTER( "program = %p, spec_id = %u, spec_size = %u",
             program,
@@ -2550,14 +2281,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramSpecializationConstant)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSetProgramSpecializationConstant(
-            program,
-            spec_id,
-            spec_size,
-            spec_value );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2568,7 +2293,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clUnloadPlatformCompiler)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clUnloadPlatformCompiler )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -2582,11 +2307,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clUnloadPlatformCompiler)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clUnloadPlatformCompiler(
-            platform);
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2595,7 +2317,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clUnloadCompiler)( void )
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clUnloadCompiler )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -2608,10 +2330,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clUnloadCompiler)( void )
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clUnloadCompiler();
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2625,7 +2345,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetProgramInfo )
     {
         CALL_LOGGING_ENTER( "param_name = %s (%08X)",
             pIntercept->enumName().name( param_name ).c_str(),
@@ -2645,15 +2365,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetProgramInfo(
-            program,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2668,7 +2381,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramBuildInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetProgramBuildInfo )
     {
         CALL_LOGGING_ENTER( "param_name = %s (%08X)",
             pIntercept->enumName().name( param_name ).c_str(),
@@ -2689,16 +2402,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramBuildInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetProgramBuildInfo(
-            program,
-            device,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 
@@ -2711,7 +2416,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateKernel )
     {
         CALL_LOGGING_ENTER( "program = %p, kernel_name = %s",
             program,
@@ -2761,13 +2466,8 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateKernel(
-            program,
-            kernel_name,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2780,7 +2480,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateKernelsInProgram)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateKernelsInProgram )
     {
         cl_uint local_num_kernels_ret = 0;
 
@@ -2839,14 +2539,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateKernelsInProgram)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateKernelsInProgram(
-            program,
-            num_kernels,
-            kernels,
-            num_kernels_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2856,7 +2550,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainKernel)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clRetainKernel )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -2894,11 +2588,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainKernel)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clRetainKernel(
-            kernel );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2908,7 +2599,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseKernel)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clReleaseKernel )
     {
         pIntercept->removeKernel( kernel );
 
@@ -2944,11 +2635,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseKernel)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clReleaseKernel(
-            kernel );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2961,7 +2649,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSetKernelArg )
     {
         std::string argsString;
         if( pIntercept->callLogging() )
@@ -3003,14 +2691,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSetKernelArg(
-            kernel,
-            arg_index,
-            arg_size,
-            arg_value );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3024,7 +2706,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetKernelInfo )
     {
         CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%X)",
             pIntercept->enumName().name( param_name ).c_str(),
@@ -3044,15 +2726,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetKernelInfo(
-            kernel,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3068,7 +2743,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelArgInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetKernelArgInfo )
     {
         CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%X)",
             pIntercept->enumName().name( param_name ).c_str(),
@@ -3089,16 +2764,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelArgInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetKernelArgInfo(
-            kernel,
-            arg_indx,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3113,7 +2780,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelWorkGroupInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetKernelWorkGroupInfo )
     {
         CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%X)",
             pIntercept->enumName().name( param_name ).c_str(),
@@ -3134,16 +2801,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelWorkGroupInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetKernelWorkGroupInfo(
-            kernel,
-            device,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3154,7 +2813,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clWaitForEvents )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -3186,12 +2845,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clWaitForEvents(
-            num_events,
-            event_list );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3205,7 +2860,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetEventInfo )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -3231,15 +2886,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetEventInfo(
-            event,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3251,7 +2899,7 @@ CL_API_ENTRY cl_event CL_API_CALL CLIRN(clCreateUserEvent)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateUserEvent )
     {
         cl_event    retVal = NULL;
 
@@ -3274,12 +2922,8 @@ CL_API_ENTRY cl_event CL_API_CALL CLIRN(clCreateUserEvent)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateUserEvent(
-            context,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3289,7 +2933,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainEvent)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clRetainEvent )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -3327,11 +2971,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainEvent)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clRetainEvent(
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3341,7 +2982,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseEvent)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clReleaseEvent )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -3375,11 +3016,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseEvent)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clReleaseEvent(
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3391,7 +3029,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetUserEventStatus)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSetUserEventStatus )
     {
         CALL_LOGGING_ENTER( "event = %p, status = %s (%d)",
             event,
@@ -3409,12 +3047,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetUserEventStatus)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSetUserEventStatus(
-            event,
-            execution_status );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3428,7 +3062,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetEventCallback)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSetEventCallback )
     {
         CALL_LOGGING_ENTER( "event = %p, callback_type = %s (%d)",
             event,
@@ -3450,14 +3084,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetEventCallback)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSetEventCallback(
-            event,
-            command_exec_callback_type,
-            pfn_notify,
-            user_data );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3471,7 +3099,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventProfilingInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetEventProfilingInfo )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -3496,15 +3124,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventProfilingInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetEventProfilingInfo(
-            event,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3514,7 +3135,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFlush)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clFlush )
     {
         CALL_LOGGING_ENTER( "queue = %p", command_queue );
         CPU_PERFORMANCE_TIMING_START();
@@ -3530,11 +3151,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFlush)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clFlush(
-            command_queue );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3544,7 +3162,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFinish)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clFinish )
     {
         CALL_LOGGING_ENTER( "queue = %p", command_queue );
         CPU_PERFORMANCE_TIMING_START();
@@ -3560,11 +3178,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFinish)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clFinish(
-            command_queue );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3582,7 +3197,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueReadBuffer )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -3648,19 +3263,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueReadBuffer(
-            command_queue,
-            buffer,
-            blocking_read,
-            offset,
-            cb,
-            ptr,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3684,7 +3288,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueReadBufferRect )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -3754,24 +3358,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueReadBufferRect(
-                command_queue,
-                buffer,
-                blocking_read,
-                buffer_origin,
-                host_origin,
-                region,
-                buffer_row_pitch,
-                buffer_slice_pitch,
-                host_row_pitch,
-                host_slice_pitch,
-                ptr,
-                num_events_in_wait_list,
-                event_wait_list,
-                event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3789,7 +3377,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueWriteBuffer )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -3855,19 +3443,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueWriteBuffer(
-            command_queue,
-            buffer,
-            blocking_write,
-            offset,
-            cb,
-            ptr,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3891,7 +3468,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueWriteBufferRect )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -3961,24 +3538,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueWriteBufferRect(
-            command_queue,
-            buffer,
-            blocking_write,
-            buffer_origin,
-            host_origin,
-            region,
-            buffer_row_pitch,
-            buffer_slice_pitch,
-            host_row_pitch,
-            host_slice_pitch,
-            ptr,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3997,7 +3558,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillBuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueFillBuffer )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -4038,19 +3599,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillBuffer)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueFillBuffer(
-            command_queue,
-            buffer,
-            pattern,
-            pattern_size,
-            offset,
-            size,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4068,7 +3618,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueCopyBuffer )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -4126,19 +3676,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBuffer)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueCopyBuffer(
-            command_queue,
-            src_buffer,
-            dst_buffer,
-            src_offset,
-            dst_offset,
-            cb,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4161,7 +3700,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferRect)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueCopyBufferRect )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -4221,23 +3760,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferRect)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueCopyBufferRect(
-            command_queue,
-            src_buffer,
-            dst_buffer,
-            src_origin,
-            dst_origin,
-            region,
-            src_row_pitch,
-            src_slice_pitch,
-            dst_row_pitch,
-            dst_slice_pitch,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4257,7 +3781,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueReadImage )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -4340,21 +3864,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueReadImage(
-            command_queue,
-            image,
-            blocking_read,
-            origin,
-            region,
-            row_pitch,
-            slice_pitch,
-            ptr,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4374,7 +3885,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueWriteImage )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -4442,21 +3953,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueWriteImage(
-            command_queue,
-            image,
-            blocking_write,
-            origin,
-            region,
-            input_row_pitch,
-            input_slice_pitch,
-            ptr,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4474,7 +3972,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillImage)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueFillImage )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -4511,18 +4009,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillImage)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueFillImage(
-            command_queue,
-            image,
-            fill_color,
-            origin,
-            region,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4540,7 +4028,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImage)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueCopyImage )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -4595,19 +4083,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImage)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueCopyImage(
-            command_queue,
-            src_image,
-            dst_image,
-            src_origin,
-            dst_origin,
-            region,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4625,7 +4102,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImageToBuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueCopyImageToBuffer )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -4664,19 +4141,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImageToBuffer)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueCopyImageToBuffer(
-            command_queue,
-            src_image,
-            dst_buffer,
-            src_origin,
-            region,
-            dst_offset,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4694,7 +4160,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferToImage)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueCopyBufferToImage )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -4733,19 +4199,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferToImage)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueCopyBufferToImage(
-            command_queue,
-            src_buffer,
-            dst_image,
-            src_offset,
-            dst_origin,
-            region,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4764,7 +4219,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueMapBuffer )
     {
         void*   retVal = NULL;
 
@@ -4854,20 +4309,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueMapBuffer(
-            command_queue,
-            buffer,
-            blocking_map,
-            map_flags,
-            offset,
-            cb,
-            num_events_in_wait_list,
-            event_wait_list,
-            event,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4888,7 +4331,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueMapImage )
     {
         void*   retVal = NULL;
 
@@ -4982,22 +4425,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueMapImage(
-            command_queue,
-            image,
-            blocking_map,
-            map_flags,
-            origin,
-            region,
-            image_row_pitch,
-            image_slice_pitch,
-            num_events_in_wait_list,
-            event_wait_list,
-            event,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5012,7 +4441,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueUnmapMemObject)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueUnmapMemObject )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -5084,16 +4513,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueUnmapMemObject)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueUnmapMemObject(
-            command_queue,
-            memobj,
-            mapped_ptr,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5110,7 +4531,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMigrateMemObjects)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueMigrateMemObjects )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -5144,17 +4565,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMigrateMemObjects)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueMigrateMemObjects(
-            command_queue,
-            num_mem_objects,
-            mem_objects,
-            flags,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5172,7 +4584,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueNDRangeKernel )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -5296,19 +4708,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueNDRangeKernel(
-            command_queue,
-            kernel,
-            work_dim,
-            global_work_offset,
-            global_work_size,
-            local_work_size,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5322,7 +4723,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueTask )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -5365,15 +4766,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueTask(
-            command_queue,
-            kernel,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5392,7 +4786,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNativeKernel)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueNativeKernel )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -5430,20 +4824,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNativeKernel)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueNativeKernel(
-            command_queue,
-            user_func,
-            args,
-            cb_args,
-            num_mem_objects,
-            mem_list,
-            args_mem_loc,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5454,7 +4836,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarker)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueMarker )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -5483,12 +4865,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarker)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueMarker(
-            command_queue,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5500,7 +4878,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWaitForEvents)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueWaitForEvents )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -5543,13 +4921,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWaitForEvents)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueWaitForEvents(
-            command_queue,
-            num_events,
-            event_list );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5559,7 +4932,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrier)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueBarrier )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -5585,11 +4958,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrier)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueBarrier(
-            command_queue );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5603,7 +4973,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarkerWithWaitList)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueMarkerWithWaitList )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -5646,14 +5016,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarkerWithWaitList)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueMarkerWithWaitList(
-            command_queue,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5667,7 +5031,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrierWithWaitList)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueBarrierWithWaitList )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -5711,26 +5075,18 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrierWithWaitList)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueBarrierWithWaitList(
-            command_queue,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Optional?
 CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddress)(
     const char* func_name )
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetExtensionFunctionAddress )
+    if( pIntercept && pIntercept->dispatch().clGetExtensionFunctionAddress )
     {
         CALL_LOGGING_ENTER( "func_name = %s", func_name ? func_name : "(NULL)" );
         CPU_PERFORMANCE_TIMING_START();
@@ -5761,14 +5117,12 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddress)(
     }
     else
     {
-        return dummyDispatch.clGetExtensionFunctionAddress(
-            func_name );
+        return NULL;
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Optional?
 // OpenCL 1.2
 CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
     cl_platform_id platform,
@@ -5776,8 +5130,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetExtensionFunctionAddressForPlatform )
+    if( pIntercept && pIntercept->dispatch().clGetExtensionFunctionAddressForPlatform )
     {
         std::string platformInfo;
         if( pIntercept->callLogging() )
@@ -5818,9 +5171,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
     }
     else
     {
-        return dummyDispatch.clGetExtensionFunctionAddressForPlatform(
-            platform,
-            func_name );
+        return NULL;
     }
 }
 
@@ -5836,8 +5187,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromGLBuffer )
+    if( pIntercept && pIntercept->dispatch().clCreateFromGLBuffer )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -5862,19 +5212,12 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateFromGLBuffer(
-            context,
-            flags,
-            bufobj,
-            errcode_ret);
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// Optional?
 // OpenCL 1.2
 CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
     cl_context context,
@@ -5886,8 +5229,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromGLTexture )
+    if( pIntercept && pIntercept->dispatch().clCreateFromGLTexture )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -5925,16 +5267,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateFromGLTexture(
-            context,
-            flags,
-            target,
-            miplevel,
-            texture,
-            errcode_ret);
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5949,8 +5283,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture2D)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromGLTexture2D )
+    if( pIntercept && pIntercept->dispatch().clCreateFromGLTexture2D )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -5988,16 +5321,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture2D)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateFromGLTexture2D(
-            context,
-            flags,
-            target,
-            miplevel,
-            texture,
-            errcode_ret);
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6012,8 +5337,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture3D)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromGLTexture3D )
+    if( pIntercept && pIntercept->dispatch().clCreateFromGLTexture3D )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -6051,16 +5375,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture3D)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateFromGLTexture3D(
-            context,
-            flags,
-            target,
-            miplevel,
-            texture,
-            errcode_ret);
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6073,8 +5389,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLRenderbuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromGLRenderbuffer )
+    if( pIntercept && pIntercept->dispatch().clCreateFromGLRenderbuffer )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -6099,14 +5414,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLRenderbuffer)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateFromGLRenderbuffer(
-            context,
-            flags,
-            renderbuffer,
-            errcode_ret);
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6118,8 +5427,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLObjectInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetGLObjectInfo )
+    if( pIntercept && pIntercept->dispatch().clGetGLObjectInfo )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -6135,13 +5443,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLObjectInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetGLObjectInfo(
-            memobj,
-            gl_object_type,
-            gl_object_name);
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6155,8 +5458,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLTextureInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetGLTextureInfo )
+    if( pIntercept && pIntercept->dispatch().clGetGLTextureInfo )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -6174,15 +5476,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLTextureInfo)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetGLTextureInfo(
-            memobj,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret);
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6197,8 +5492,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueAcquireGLObjects)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueAcquireGLObjects )
+    if( pIntercept && pIntercept->dispatch().clEnqueueAcquireGLObjects )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -6232,16 +5526,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueAcquireGLObjects)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueAcquireGLObjects(
-            command_queue,
-            num_objects,
-            mem_objects,
-            num_events_in_wait_list,
-            event_wait_list,
-            event);
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6256,8 +5542,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueReleaseGLObjects )
+    if( pIntercept && pIntercept->dispatch().clEnqueueReleaseGLObjects )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -6293,16 +5578,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueReleaseGLObjects(
-            command_queue,
-            num_objects,
-            mem_objects,
-            num_events_in_wait_list,
-            event_wait_list,
-            event);
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6316,7 +5593,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clSVMAlloc) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSVMAlloc )
     {
         CALL_LOGGING_ENTER( "flags = %s (%llX), size = %d, alignment = %d",
             pIntercept->enumName().name_svm_mem_flags( flags ).c_str(),
@@ -6343,14 +5620,9 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clSVMAlloc) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSVMAlloc(
-            context,
-            flags,
-            size,
-            alignment );
-    }
+
+    cl_int* errcode_ret = NULL;
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6362,7 +5634,7 @@ CL_API_ENTRY void CL_API_CALL CLIRN(clSVMFree) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSVMFree )
     {
         CALL_LOGGING_ENTER( "svm_pointer = %p",
             svm_pointer );
@@ -6375,12 +5647,6 @@ CL_API_ENTRY void CL_API_CALL CLIRN(clSVMFree) (
         CPU_PERFORMANCE_TIMING_END();
         REMOVE_SVM_ALLOCATION( svm_pointer );
         CALL_LOGGING_EXIT( CL_SUCCESS );
-    }
-    else
-    {
-        dummyDispatch.clSVMFree(
-            context,
-            svm_pointer );
     }
 }
 
@@ -6403,7 +5669,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMFree) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueSVMFree )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -6439,18 +5705,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMFree) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueSVMFree(
-            command_queue,
-            num_svm_pointers,
-            svm_pointers,
-            pfn_free_func,
-            user_data,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6468,7 +5724,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueSVMMemcpy )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -6504,18 +5760,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueSVMMemcpy(
-            command_queue,
-            blocking_copy,
-            dst_ptr,
-            src_ptr,
-            size,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6533,7 +5779,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemFill) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueSVMMemFill )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -6572,18 +5818,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemFill) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueSVMMemFill(
-            command_queue,
-            svm_ptr,
-            pattern,
-            pattern_size,
-            size,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6601,7 +5837,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueSVMMap )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -6637,18 +5873,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueSVMMap(
-            command_queue,
-            blocking_map,
-            map_flags,
-            svm_ptr,
-            size,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6663,7 +5889,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMUnmap) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueSVMUnmap )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -6696,15 +5922,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMUnmap) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueSVMUnmap(
-            command_queue,
-            svm_ptr,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6717,7 +5936,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArgSVMPointer) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSetKernelArgSVMPointer )
     {
         CALL_LOGGING_ENTER_KERNEL(
             kernel,
@@ -6739,13 +5958,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArgSVMPointer) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSetKernelArgSVMPointer(
-            kernel,
-            arg_index,
-            arg_value );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6759,7 +5973,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelExecInfo) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSetKernelExecInfo )
     {
         CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%08X)",
             pIntercept->enumName().name( param_name ).c_str(),
@@ -6792,14 +6006,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelExecInfo) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSetKernelExecInfo(
-            kernel,
-            param_name,
-            param_value_size,
-            param_value );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6815,7 +6023,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreatePipe) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreatePipe )
     {
         CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), pipe_packet_size = %u, pipe_max_packets = %u",
             context,
@@ -6841,16 +6049,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreatePipe) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreatePipe(
-            context,
-            flags,
-            pipe_packet_size,
-            pipe_max_packets,
-            properties,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6865,7 +6065,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPipeInfo) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetPipeInfo )
     {
         CALL_LOGGING_ENTER( "mem = %p, param_name = %s (%08X)",
             pipe,
@@ -6886,15 +6086,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPipeInfo) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetPipeInfo(
-            pipe,
-            param_name,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6908,7 +6101,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateCommandQueueWithProperties )
     {
         cl_queue_properties*    newProperties = NULL;
         cl_command_queue    retVal = NULL;
@@ -6980,14 +6173,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateCommandQueueWithProperties(
-            context,
-            device,
-            properties,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7002,8 +6189,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateCommandQueueWithPropertiesKHR )
+    if( pIntercept && pIntercept->dispatch().clCreateCommandQueueWithPropertiesKHR )
     {
         cl_queue_properties*    newProperties = NULL;
         cl_command_queue    retVal = NULL;
@@ -7075,14 +6261,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7095,7 +6275,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateSamplerWithProperties )
     {
         std::string samplerProperties;
         if( pIntercept->callLogging() )
@@ -7123,13 +6303,8 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateSamplerWithProperties(
-            context,
-            sampler_properties,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7142,7 +6317,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetDefaultDeviceCommandQueue) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clSetDefaultDeviceCommandQueue )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -7158,13 +6333,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetDefaultDeviceCommandQueue) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSetDefaultDeviceCommandQueue(
-            context,
-            device,
-            command_queue );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7177,7 +6347,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceAndHostTimer) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetDeviceAndHostTimer )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -7193,13 +6363,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceAndHostTimer) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetDeviceAndHostTimer(
-            device,
-            device_timestamp,
-            host_timestamp );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7211,7 +6376,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetHostTimer) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetHostTimer )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -7226,12 +6391,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetHostTimer) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetHostTimer(
-            device,
-            host_timestamp );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7245,7 +6406,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithIL) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCreateProgramWithIL )
     {
         char*       injectedSPIRV = NULL;
         uint64_t    hash = 0;
@@ -7276,14 +6437,8 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithIL) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCreateProgramWithIL(
-            context,
-            il,
-            length,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7298,8 +6453,7 @@ CL_API_ENTRY cl_program CL_API_CALL clCreateProgramWithILKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateProgramWithILKHR )
+    if( pIntercept && pIntercept->dispatch().clCreateProgramWithILKHR )
     {
         char*       injectedSPIRV = NULL;
         uint64_t    hash = 0;
@@ -7330,14 +6484,8 @@ CL_API_ENTRY cl_program CL_API_CALL clCreateProgramWithILKHR(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7349,7 +6497,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCloneKernel) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clCloneKernel )
     {
         CALL_LOGGING_ENTER();
         CHECK_ERROR_INIT( errcode_ret );
@@ -7365,12 +6513,8 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCloneKernel) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clCloneKernel(
-            source_kernel,
-            errcode_ret );
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7388,7 +6532,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelSubGroupInfo) (
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetKernelSubGroupInfo )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -7411,18 +6555,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelSubGroupInfo) (
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clGetKernelSubGroupInfo(
-            kernel,
-            device,
-            param_name,
-            input_value_size,
-            input_value,
-            param_value_size,
-            param_value,
-            param_value_size_ret );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7441,8 +6575,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetKernelSubGroupInfoKHR )
+    if( pIntercept && pIntercept->dispatch().clGetKernelSubGroupInfoKHR )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -7465,10 +6598,8 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7486,7 +6617,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clEnqueueSVMMigrateMem )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -7521,18 +6652,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clEnqueueSVMMigrateMem(
-            command_queue,
-            num_svm_pointers,
-            svm_pointers,
-            sizes,
-            flags,
-            num_events_in_wait_list,
-            event_wait_list,
-            event );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7547,8 +6668,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetGLContextInfoKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetGLContextInfoKHR )
+    if( pIntercept && pIntercept->dispatch().clGetGLContextInfoKHR )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -7566,10 +6686,8 @@ CL_API_ENTRY cl_int CL_API_CALL clGetGLContextInfoKHR(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7582,8 +6700,7 @@ CL_API_ENTRY cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateEventFromGLsyncKHR )
+    if( pIntercept && pIntercept->dispatch().clCreateEventFromGLsyncKHR )
     {
         CALL_LOGGING_ENTER( "context = %p",
             context );
@@ -7602,14 +6719,8 @@ CL_API_ENTRY cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 #if defined(_WIN32)
@@ -7628,8 +6739,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D10KHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetDeviceIDsFromD3D10KHR )
+    if( pIntercept && pIntercept->dispatch().clGetDeviceIDsFromD3D10KHR )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -7649,10 +6759,8 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D10KHR(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7666,8 +6774,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromD3D10BufferKHR )
+    if( pIntercept && pIntercept->dispatch().clCreateFromD3D10BufferKHR )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -7692,14 +6799,8 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7714,8 +6815,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromD3D10Texture2DKHR )
+    if( pIntercept && pIntercept->dispatch().clCreateFromD3D10Texture2DKHR )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -7741,14 +6841,8 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7763,8 +6857,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromD3D10Texture3DKHR )
+    if( pIntercept && pIntercept->dispatch().clCreateFromD3D10Texture3DKHR )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -7790,14 +6883,8 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7813,8 +6900,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueAcquireD3D10ObjectsKHR )
+    if( pIntercept && pIntercept->dispatch().clEnqueueAcquireD3D10ObjectsKHR )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -7847,10 +6933,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7866,8 +6950,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueReleaseD3D10ObjectsKHR )
+    if( pIntercept && pIntercept->dispatch().clEnqueueReleaseD3D10ObjectsKHR )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -7902,10 +6985,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7922,8 +7003,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D11KHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetDeviceIDsFromD3D11KHR )
+    if( pIntercept && pIntercept->dispatch().clGetDeviceIDsFromD3D11KHR )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -7943,10 +7023,8 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D11KHR(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7960,8 +7038,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromD3D11BufferKHR )
+    if( pIntercept && pIntercept->dispatch().clCreateFromD3D11BufferKHR )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -7986,14 +7063,8 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8008,8 +7079,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromD3D11Texture2DKHR )
+    if( pIntercept && pIntercept->dispatch().clCreateFromD3D11Texture2DKHR )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -8035,14 +7105,8 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8057,8 +7121,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromD3D11Texture3DKHR )
+    if( pIntercept && pIntercept->dispatch().clCreateFromD3D11Texture3DKHR )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -8084,14 +7147,8 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8107,8 +7164,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueAcquireD3D11ObjectsKHR )
+    if( pIntercept && pIntercept->dispatch().clEnqueueAcquireD3D11ObjectsKHR )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -8141,10 +7197,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8160,8 +7214,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueReleaseD3D11ObjectsKHR )
+    if( pIntercept && pIntercept->dispatch().clEnqueueReleaseD3D11ObjectsKHR )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -8196,10 +7249,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8217,8 +7268,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetDeviceIDsFromDX9MediaAdapterKHR )
+    if( pIntercept && pIntercept->dispatch().clGetDeviceIDsFromDX9MediaAdapterKHR )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -8239,10 +7289,8 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8258,8 +7306,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromDX9MediaSurfaceKHR )
+    if( pIntercept && pIntercept->dispatch().clCreateFromDX9MediaSurfaceKHR )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -8286,14 +7333,8 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8309,8 +7350,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueAcquireDX9MediaSurfacesKHR )
+    if( pIntercept && pIntercept->dispatch().clEnqueueAcquireDX9MediaSurfacesKHR )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -8343,10 +7383,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8362,8 +7400,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueReleaseDX9MediaSurfacesKHR )
+    if( pIntercept && pIntercept->dispatch().clEnqueueReleaseDX9MediaSurfacesKHR )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -8398,10 +7435,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 #endif
 
@@ -8420,8 +7455,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9INTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetDeviceIDsFromDX9INTEL )
+    if( pIntercept && pIntercept->dispatch().clGetDeviceIDsFromDX9INTEL )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -8441,10 +7475,8 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9INTEL(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8460,8 +7492,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromDX9MediaSurfaceINTEL )
+    if( pIntercept && pIntercept->dispatch().clCreateFromDX9MediaSurfaceINTEL )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -8488,14 +7519,8 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8511,8 +7536,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueAcquireDX9ObjectsINTEL )
+    if( pIntercept && pIntercept->dispatch().clEnqueueAcquireDX9ObjectsINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -8545,10 +7569,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8564,8 +7586,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueReleaseDX9ObjectsINTEL )
+    if( pIntercept && pIntercept->dispatch().clEnqueueReleaseDX9ObjectsINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -8600,10 +7621,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 #endif
 
@@ -8619,8 +7638,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreatePerfCountersCommandQueueINTEL )
+    if( pIntercept && pIntercept->dispatch().clCreatePerfCountersCommandQueueINTEL )
     {
         // We don't have to do this, since profiling must be enabled
         // for a perf counters command queue, but it doesn't hurt to
@@ -8655,14 +7673,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8676,8 +7688,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clSetPerformanceConfigurationINTEL )
+    if( pIntercept && pIntercept->dispatch().clSetPerformanceConfigurationINTEL )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -8694,14 +7705,8 @@ CL_API_ENTRY cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
 
         return retVal;
     }
-    else
-    {
-        return dummyDispatch.clSetPerformanceConfigurationINTEL(
-            device,
-            count,
-            offsets,
-            values );
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8716,8 +7721,7 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateAcceleratorINTEL )
+    if( pIntercept && pIntercept->dispatch().clCreateAcceleratorINTEL )
     {
         if( ( accelerator_type == CL_ACCELERATOR_TYPE_MOTION_ESTIMATION_INTEL ) &&
             ( descriptor_size >= sizeof( cl_motion_estimation_desc_intel ) ) )
@@ -8754,14 +7758,8 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8776,7 +7774,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetAcceleratorInfoINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clGetAcceleratorInfoINTEL )
     {
         CALL_LOGGING_ENTER( "param_name = %s (%X)",
             pIntercept->enumName().name( param_name ).c_str(),
@@ -8796,10 +7794,8 @@ CL_API_ENTRY cl_int CL_API_CALL clGetAcceleratorInfoINTEL(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8810,7 +7806,7 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainAcceleratorINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clRetainAcceleratorINTEL )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -8847,10 +7843,8 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainAcceleratorINTEL(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8861,7 +7855,7 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseAcceleratorINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    if( pIntercept && pIntercept->dispatch().clReleaseAcceleratorINTEL )
     {
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -8894,10 +7888,8 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseAcceleratorINTEL(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8914,8 +7906,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromVA_APIMediaAdapterINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetDeviceIDsFromVA_APIMediaAdapterINTEL )
+    if( pIntercept && pIntercept->dispatch().clGetDeviceIDsFromVA_APIMediaAdapterINTEL )
     {
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
@@ -8935,10 +7926,8 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromVA_APIMediaAdapterINTEL(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8953,8 +7942,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromVA_APIMediaSurfaceINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clCreateFromVA_APIMediaSurfaceINTEL )
+    if( pIntercept && pIntercept->dispatch().clCreateFromVA_APIMediaSurfaceINTEL )
     {
         CALL_LOGGING_ENTER(
             "context = %p, "
@@ -8980,14 +7968,8 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromVA_APIMediaSurfaceINTEL(
 
         return retVal;
     }
-    else
-    {
-        if( errcode_ret )
-        {
-            errcode_ret[0] = CL_INVALID_OPERATION;
-        }
-        return NULL;
-    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9003,8 +7985,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireVA_APIMediaSurfacesINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueAcquireVA_APIMediaSurfacesINTEL )
+    if( pIntercept && pIntercept->dispatch().clEnqueueAcquireVA_APIMediaSurfacesINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9037,10 +8018,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireVA_APIMediaSurfacesINTEL(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9056,8 +8035,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueReleaseVA_APIMediaSurfacesINTEL )
+    if( pIntercept && pIntercept->dispatch().clEnqueueReleaseVA_APIMediaSurfacesINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9092,10 +8070,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 
         return retVal;
     }
-    else
-    {
-        return CL_INVALID_OPERATION;
-    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9110,8 +8086,7 @@ CL_API_ENTRY void* CL_API_CALL clHostMemAllocINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clHostMemAllocINTEL )
+    if( pIntercept && pIntercept->dispatch().clHostMemAllocINTEL )
     {
         // TODO: Make properties string.
         CALL_LOGGING_ENTER( "context = %p, properties = %p, size = %d, alignment = %d",
@@ -9152,8 +8127,7 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clDeviceMemAllocINTEL )
+    if( pIntercept && pIntercept->dispatch().clDeviceMemAllocINTEL )
     {
         std::string deviceInfo;
         if( pIntercept->config().CallLogging )
@@ -9204,8 +8178,7 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clSharedMemAllocINTEL )
+    if( pIntercept && pIntercept->dispatch().clSharedMemAllocINTEL )
     {
         std::string deviceInfo;
         if( pIntercept->config().CallLogging )
@@ -9240,7 +8213,7 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
         return retVal;
     }
 
-    return NULL;
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9252,8 +8225,7 @@ CL_API_ENTRY cl_int CL_API_CALL clMemFreeINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clMemFreeINTEL )
+    if( pIntercept && pIntercept->dispatch().clMemFreeINTEL )
     {
         CALL_LOGGING_ENTER( "context = %p, ptr = %p",
             context,
@@ -9271,7 +8243,7 @@ CL_API_ENTRY cl_int CL_API_CALL clMemFreeINTEL(
         return retVal;
     }
 
-    return CL_INVALID_OPERATION;
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9284,8 +8256,7 @@ clMemBlockingFreeINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clMemBlockingFreeINTEL )
+    if( pIntercept && pIntercept->dispatch().clMemBlockingFreeINTEL )
     {
         CALL_LOGGING_ENTER( "context = %p, ptr = %p",
             context,
@@ -9303,7 +8274,7 @@ clMemBlockingFreeINTEL(
         return retVal;
     }
 
-    return CL_INVALID_OPERATION;
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9319,8 +8290,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetMemAllocInfoINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clGetMemAllocInfoINTEL )
+    if( pIntercept && pIntercept->dispatch().clGetMemAllocInfoINTEL )
     {
         CALL_LOGGING_ENTER( "context = %p, ptr = %p, param_name = %s (%08X)",
             context,
@@ -9344,7 +8314,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetMemAllocInfoINTEL(
         return retVal;
     }
 
-    return CL_INVALID_OPERATION;
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9357,8 +8327,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clSetKernelArgMemPointerINTEL )
+    if( pIntercept && pIntercept->dispatch().clSetKernelArgMemPointerINTEL )
     {
         CALL_LOGGING_ENTER_KERNEL(
             kernel,
@@ -9381,7 +8350,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
         return retVal;
     }
 
-    return CL_INVALID_OPERATION;
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9398,8 +8367,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueMemsetINTEL )
+    if( pIntercept && pIntercept->dispatch().clEnqueueMemsetINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9438,7 +8406,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
         return retVal;
     }
 
-    return CL_INVALID_OPERATION;
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9456,8 +8424,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueMemFillINTEL )
+    if( pIntercept && pIntercept->dispatch().clEnqueueMemFillINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9497,7 +8464,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
         return retVal;
     }
 
-    return CL_INVALID_OPERATION;
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9515,8 +8482,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueMemcpyINTEL )
+    if( pIntercept && pIntercept->dispatch().clEnqueueMemcpyINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9557,7 +8523,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
         return retVal;
     }
 
-    return CL_INVALID_OPERATION;
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9574,8 +8540,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueMigrateMemINTEL )
+    if( pIntercept && pIntercept->dispatch().clEnqueueMigrateMemINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9615,7 +8580,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
         return retVal;
     }
 
-    return CL_INVALID_OPERATION;
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9632,8 +8597,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept &&
-        pIntercept->dispatch().clEnqueueMemAdviseINTEL )
+    if( pIntercept && pIntercept->dispatch().clEnqueueMemAdviseINTEL )
     {
         cl_int  retVal = CL_SUCCESS;
 
@@ -9673,7 +8637,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
         return retVal;
     }
 
-    return CL_INVALID_OPERATION;
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
 #if defined(__APPLE__)

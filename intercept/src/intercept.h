@@ -2569,3 +2569,15 @@ inline CLIntercept* GetIntercept()
 {
     return g_pIntercept;
 }
+
+#define NULL_FUNCTION_POINTER_RETURN_ERROR()                                \
+    CLI_ASSERT(0);                                                          \
+    return CL_INVALID_OPERATION;
+
+#define NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(pErrorCode)             \
+    CLI_ASSERT(0);                                                          \
+    if( pErrorCode )                                                        \
+    {                                                                       \
+        pErrorCode[0] = CL_INVALID_OPERATION;                               \
+    }                                                                       \
+    return NULL;
