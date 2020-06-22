@@ -4504,16 +4504,6 @@ void CLIntercept::createCommandQueueOverrideInit(
                 numProperties += 2;
             }
         }
-        if( addCommandQueuePropertiesEnum )
-        {
-            cl_command_queue_properties props = 0;
-
-            modifyCommandQueueProperties( props );
-
-            pLocalQueueProperties[ numProperties ] = CL_QUEUE_PROPERTIES;
-            pLocalQueueProperties[ numProperties + 1 ] = props;
-            numProperties += 2;
-        }
         if( addPriorityHintEnum )
         {
             CLI_ASSERT( config().DefaultQueuePriorityHint != 0 );
@@ -4528,7 +4518,18 @@ void CLIntercept::createCommandQueueOverrideInit(
             pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueueThrottleHint;
             numProperties += 2;
         }
+        // this setting is added last in the list, in order to better behave with runtimes
+        // truncating it when a property has a value of 0, which may be the case below.
+        if( addCommandQueuePropertiesEnum )
+        {
+          cl_command_queue_properties props = 0;
 
+          modifyCommandQueueProperties(props);
+
+          pLocalQueueProperties[numProperties] = CL_QUEUE_PROPERTIES;
+          pLocalQueueProperties[numProperties + 1] = props;
+          numProperties += 2;
+        }
         // Add the terminating zero.
         pLocalQueueProperties[ numProperties ] = 0;
     }
@@ -4582,14 +4583,7 @@ void CLIntercept::createCommandQueuePropertiesInit(
     if( pLocalQueueProperties )
     {
         numProperties = 0;
-        if( addCommandQueuePropertiesEnum )
-        {
-            modifyCommandQueueProperties( props );
 
-            pLocalQueueProperties[ numProperties ] = CL_QUEUE_PROPERTIES;
-            pLocalQueueProperties[ numProperties + 1 ] = props;
-            numProperties += 2;
-        }
         if( addPriorityHintEnum )
         {
             CLI_ASSERT( config().DefaultQueuePriorityHint != 0 );
@@ -4603,6 +4597,17 @@ void CLIntercept::createCommandQueuePropertiesInit(
             pLocalQueueProperties[ numProperties] = CL_QUEUE_THROTTLE_KHR;
             pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueueThrottleHint;
             numProperties += 2;
+        }
+
+        // this setting is added last in the list, in order to better behave with runtimes
+        // truncating it when a property has a value of 0, which may be the case below.
+        if( addCommandQueuePropertiesEnum )
+        {
+          modifyCommandQueueProperties(props);
+
+          pLocalQueueProperties[numProperties] = CL_QUEUE_PROPERTIES;
+          pLocalQueueProperties[numProperties + 1] = props;
+          numProperties += 2;
         }
 
         // Add the terminating zero.
