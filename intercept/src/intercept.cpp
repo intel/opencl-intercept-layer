@@ -120,7 +120,7 @@ void CLIntercept::Delete( CLIntercept*& pIntercept )
 CLIntercept::CLIntercept( void* pGlobalData )
     : m_OS( pGlobalData )
 {
-    m_Dispatch = dummyDispatch;
+    m_Dispatch = {0};
 
     m_OpenCLLibraryHandle = NULL;
 
@@ -177,7 +177,7 @@ CLIntercept::~CLIntercept()
     // OpenCL functions get called.  Note that this means we do potentially
     // leave some events, kernels, or programs un-released, but since
     // the process is terminating, that's probably OK.
-    m_Dispatch = dummyDispatch;
+    m_Dispatch = {0};
 
 #if defined(USE_MDAPI)
     if( m_pMDHelper )
