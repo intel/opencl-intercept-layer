@@ -162,7 +162,7 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
         platform,
         "clCreatePerfCountersCommandQueueINTEL" );
 
-    if( dispatch().clCreatePerfCountersCommandQueueINTEL && m_pMDHelper )
+    if( dispatchX().clCreatePerfCountersCommandQueueINTEL && m_pMDHelper )
     {
         std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -170,7 +170,7 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
         {
             cl_uint configuration = m_pMDHelper->GetMetricsConfiguration();
 
-            retVal = dispatch().clCreatePerfCountersCommandQueueINTEL(
+            retVal = dispatchX().clCreatePerfCountersCommandQueueINTEL(
                 context,
                 device,
                 properties,

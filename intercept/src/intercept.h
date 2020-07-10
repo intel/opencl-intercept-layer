@@ -641,6 +641,7 @@ public:
 
     const OS::Services& OS() const;
     const CLdispatch&   dispatch() const;
+    const CLdispatchX&  dispatchX() const;
     const CEnumNameMap& enumName() const;
 
     const Config&   config() const;
@@ -791,6 +792,7 @@ private:
 
     OS::Services    m_OS;
     CLdispatch      m_Dispatch;
+    CLdispatchX     m_DispatchX;
     CEnumNameMap    m_EnumNameMap;
     CObjectTracker  m_ObjectTracker;
 
@@ -1139,6 +1141,13 @@ private:
 inline const CLdispatch& CLIntercept::dispatch() const
 {
     return m_Dispatch;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+inline const CLdispatchX& CLIntercept::dispatchX() const
+{
+    return m_DispatchX;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -121,6 +121,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
     : m_OS( pGlobalData )
 {
     m_Dispatch = {0};
+    m_DispatchX = {0};
 
     m_OpenCLLibraryHandle = NULL;
 
@@ -178,6 +179,7 @@ CLIntercept::~CLIntercept()
     // leave some events, kernels, or programs un-released, but since
     // the process is terminating, that's probably OK.
     m_Dispatch = {0};
+    m_DispatchX = {0};
 
 #if defined(USE_MDAPI)
     if( m_pMDHelper )
@@ -4711,7 +4713,7 @@ void CLIntercept::addTimingEvent(
                 if( maxsgs == 0 &&
                     deviceInfo.Supports_cl_khr_subgroups )
                 {
-                    if( dispatch().clGetKernelSubGroupInfoKHR == NULL )
+                    if( dispatchX().clGetKernelSubGroupInfoKHR == NULL )
                     {
                         cl_platform_id  platform = NULL;
                         dispatch().clGetDeviceInfo(
@@ -4724,9 +4726,9 @@ void CLIntercept::addTimingEvent(
                             platform,
                             "clGetKernelSubGroupInfoKHR" );
                     }
-                    if( dispatch().clGetKernelSubGroupInfoKHR )
+                    if( dispatchX().clGetKernelSubGroupInfoKHR )
                     {
-                        dispatch().clGetKernelSubGroupInfoKHR(
+                        dispatchX().clGetKernelSubGroupInfoKHR(
                             kernel,
                             device,
                             CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR,
@@ -5165,7 +5167,7 @@ cl_command_queue CLIntercept::createCommandQueueWithProperties(
     if( retVal == NULL &&
         deviceInfo.Supports_cl_khr_create_command_queue )
     {
-        if( dispatch().clCreateCommandQueueWithPropertiesKHR == NULL )
+        if( dispatchX().clCreateCommandQueueWithPropertiesKHR == NULL )
         {
             cl_platform_id  platform = NULL;
             dispatch().clGetDeviceInfo(
@@ -5178,9 +5180,9 @@ cl_command_queue CLIntercept::createCommandQueueWithProperties(
                 platform,
                 "clCreateCommandQueueWithPropertiesKHR" );
         }
-        if( dispatch().clCreateCommandQueueWithPropertiesKHR )
+        if( dispatchX().clCreateCommandQueueWithPropertiesKHR )
         {
-            retVal = dispatch().clCreateCommandQueueWithPropertiesKHR(
+            retVal = dispatchX().clCreateCommandQueueWithPropertiesKHR(
                 context,
                 device,
                 properties,
@@ -6219,7 +6221,7 @@ void CLIntercept::checkKernelArgUSMPointer(
     // get one.  It's possible that the function pointer exists but
     // the application hasn't queried for it yet, in which case it won't
     // be installed into the dispatch table.
-    if( dispatch().clGetMemAllocInfoINTEL == NULL )
+    if( dispatchX().clGetMemAllocInfoINTEL == NULL )
     {
         cl_program  program = NULL;
         if( errorCode == CL_SUCCESS )
@@ -6263,7 +6265,7 @@ void CLIntercept::checkKernelArgUSMPointer(
         delete [] deviceList;
     }
 
-    if( dispatch().clGetMemAllocInfoINTEL == NULL )
+    if( dispatchX().clGetMemAllocInfoINTEL == NULL )
     {
         logf( "function pointer for clGetMemAllocInfoINTEL is NULL\n" );
     }
@@ -6289,14 +6291,14 @@ void CLIntercept::checkKernelArgUSMPointer(
             cl_unified_shared_memory_type_intel memType = CL_MEM_TYPE_UNKNOWN_INTEL;
             cl_device_id associatedDevice = NULL;
 
-            dispatch().clGetMemAllocInfoINTEL(
+            dispatchX().clGetMemAllocInfoINTEL(
                 context,
                 arg,
                 CL_MEM_ALLOC_TYPE_INTEL,
                 sizeof(memType),
                 &memType,
                 NULL );
-            dispatch().clGetMemAllocInfoINTEL(
+            dispatchX().clGetMemAllocInfoINTEL(
                 context,
                 arg,
                 CL_MEM_ALLOC_DEVICE_INTEL,
@@ -10684,7 +10686,7 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
 {                                                                           \
     if( func_name == #funcname )                                            \
     {                                                                       \
-        if( dispatch() . funcname == NULL )                                 \
+        if( dispatchX() . funcname == NULL )                                \
         {                                                                   \
             void *func = NULL;                                              \
             if( platform &&                                                 \
@@ -10697,10 +10699,10 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
             {                                                               \
                 func = dispatch().clGetExtensionFunctionAddress(#funcname); \
             }                                                               \
-            void** pfunc = (void**)( &m_Dispatch . funcname );              \
+            void** pfunc = (void**)( &m_DispatchX . funcname );             \
             *pfunc = func;                                                  \
         }                                                                   \
-        if( dispatch() . funcname )                                         \
+        if( dispatchX() . funcname )                                        \
         {                                                                   \
             return (void*)( funcname );                                     \
         }                                                                   \
@@ -10711,13 +10713,13 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
 {                                                                           \
     if( func_name == #funcname )                                            \
     {                                                                       \
-        if( dispatch() . funcname == NULL )                                 \
+        if( dispatchX() . funcname == NULL )                                \
         {                                                                   \
             void *func = (void*)funcname##_EMU;                             \
-            void** pfunc = (void**)( &m_Dispatch . funcname );              \
+            void** pfunc = (void**)( &m_DispatchX . funcname );             \
             *pfunc = func;                                                  \
         }                                                                   \
-        if( dispatch() . funcname )                                         \
+        if( dispatchX() . funcname )                                        \
         {                                                                   \
             return (void*)( funcname );                                     \
         }                                                                   \
@@ -11131,38 +11133,39 @@ bool CLIntercept::initDispatch( const std::string& libName )
 
         bool    savedSuccess = success;
 
-        // Optional features?
         INIT_EXPORTED_FUNC(clGetExtensionFunctionAddress);
-        INIT_EXPORTED_FUNC(clGetExtensionFunctionAddressForPlatform);
 
         // OpenCL 1.1 Entry Points (optional)
+        INIT_EXPORTED_FUNC(clSetEventCallback);
         INIT_EXPORTED_FUNC(clCreateSubBuffer);
         INIT_EXPORTED_FUNC(clSetMemObjectDestructorCallback);
         INIT_EXPORTED_FUNC(clCreateUserEvent);
         INIT_EXPORTED_FUNC(clSetUserEventStatus);
-        INIT_EXPORTED_FUNC(clSetEventCallback);
         INIT_EXPORTED_FUNC(clEnqueueReadBufferRect);
         INIT_EXPORTED_FUNC(clEnqueueWriteBufferRect);
         INIT_EXPORTED_FUNC(clEnqueueCopyBufferRect);
 
         // OpenCL 1.2 Entry Points (optional)
-        INIT_EXPORTED_FUNC(clCompileProgram);
-        INIT_EXPORTED_FUNC(clCreateFromGLTexture);
+        INIT_EXPORTED_FUNC(clCreateSubDevices);
+        INIT_EXPORTED_FUNC(clRetainDevice);
+        INIT_EXPORTED_FUNC(clReleaseDevice);
         INIT_EXPORTED_FUNC(clCreateImage);
         INIT_EXPORTED_FUNC(clCreateProgramWithBuiltInKernels);
-        INIT_EXPORTED_FUNC(clCreateSubDevices);
-        INIT_EXPORTED_FUNC(clEnqueueBarrierWithWaitList);
+        INIT_EXPORTED_FUNC(clCompileProgram);
+        INIT_EXPORTED_FUNC(clLinkProgram);
+        INIT_EXPORTED_FUNC(clUnloadPlatformCompiler);
+        INIT_EXPORTED_FUNC(clGetKernelArgInfo);
         INIT_EXPORTED_FUNC(clEnqueueFillBuffer);
         INIT_EXPORTED_FUNC(clEnqueueFillImage);
-        INIT_EXPORTED_FUNC(clEnqueueMarkerWithWaitList);
         INIT_EXPORTED_FUNC(clEnqueueMigrateMemObjects);
-        INIT_EXPORTED_FUNC(clGetKernelArgInfo);
-        INIT_EXPORTED_FUNC(clLinkProgram);
-        INIT_EXPORTED_FUNC(clReleaseDevice);
-        INIT_EXPORTED_FUNC(clRetainDevice);
-        INIT_EXPORTED_FUNC(clUnloadPlatformCompiler);
+        INIT_EXPORTED_FUNC(clEnqueueMarkerWithWaitList);
+        INIT_EXPORTED_FUNC(clEnqueueBarrierWithWaitList);
+        INIT_EXPORTED_FUNC(clGetExtensionFunctionAddressForPlatform);
 
         // OpenCL 2.0 Entry Points (optional)
+        INIT_EXPORTED_FUNC(clCreateCommandQueueWithProperties);
+        INIT_EXPORTED_FUNC(clCreatePipe);
+        INIT_EXPORTED_FUNC(clGetPipeInfo);
         INIT_EXPORTED_FUNC(clSVMAlloc);
         INIT_EXPORTED_FUNC(clSVMFree);
         INIT_EXPORTED_FUNC(clEnqueueSVMFree);
@@ -11170,21 +11173,18 @@ bool CLIntercept::initDispatch( const std::string& libName )
         INIT_EXPORTED_FUNC(clEnqueueSVMMemFill);
         INIT_EXPORTED_FUNC(clEnqueueSVMMap);
         INIT_EXPORTED_FUNC(clEnqueueSVMUnmap);
+        INIT_EXPORTED_FUNC(clCreateSamplerWithProperties);
         INIT_EXPORTED_FUNC(clSetKernelArgSVMPointer);
         INIT_EXPORTED_FUNC(clSetKernelExecInfo);
-        INIT_EXPORTED_FUNC(clCreatePipe);
-        INIT_EXPORTED_FUNC(clGetPipeInfo);
-        INIT_EXPORTED_FUNC(clCreateCommandQueueWithProperties);
-        INIT_EXPORTED_FUNC(clCreateSamplerWithProperties);
 
         // OpenCL 2.1 Entry Points (optional)
-        INIT_EXPORTED_FUNC(clSetDefaultDeviceCommandQueue);
+        INIT_EXPORTED_FUNC(clCloneKernel);
+        INIT_EXPORTED_FUNC(clCreateProgramWithIL);
+        INIT_EXPORTED_FUNC(clEnqueueSVMMigrateMem);
         INIT_EXPORTED_FUNC(clGetDeviceAndHostTimer);
         INIT_EXPORTED_FUNC(clGetHostTimer);
-        INIT_EXPORTED_FUNC(clCreateProgramWithIL);
-        INIT_EXPORTED_FUNC(clCloneKernel);
         INIT_EXPORTED_FUNC(clGetKernelSubGroupInfo);
-        INIT_EXPORTED_FUNC(clEnqueueSVMMigrateMem);
+        INIT_EXPORTED_FUNC(clSetDefaultDeviceCommandQueue);
 
         // OpenCL 2.2 Entry Points (optional)
         INIT_EXPORTED_FUNC(clSetProgramReleaseCallback);
@@ -11193,20 +11193,6 @@ bool CLIntercept::initDispatch( const std::string& libName )
         // OpenCL 3.0 Entry Points (optional)
         INIT_EXPORTED_FUNC(clCreateBufferWithProperties);
         INIT_EXPORTED_FUNC(clCreateImageWithProperties);
-
-        // CL-GL Entry Points (optional)
-        INIT_EXPORTED_FUNC(clCreateFromGLBuffer);
-        INIT_EXPORTED_FUNC(clCreateFromGLTexture);
-        INIT_EXPORTED_FUNC(clCreateFromGLTexture2D);
-        INIT_EXPORTED_FUNC(clCreateFromGLTexture3D);
-        INIT_EXPORTED_FUNC(clCreateFromGLRenderbuffer);
-        INIT_EXPORTED_FUNC(clGetGLObjectInfo);
-        INIT_EXPORTED_FUNC(clGetGLTextureInfo );
-        INIT_EXPORTED_FUNC(clEnqueueAcquireGLObjects);
-        INIT_EXPORTED_FUNC(clEnqueueReleaseGLObjects);
-
-        // Extensions (optional)
-        // Extensions get loaded into the dispatch table on the fly.
 
         success = savedSuccess;
     }
