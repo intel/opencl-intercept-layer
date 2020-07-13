@@ -482,6 +482,20 @@ struct CLdispatch
     void*   (CLI_API_CALL *clGetExtensionFunctionAddress) (
                 const char* func_name );
 
+    // clGetGLContextInfoKHR is a special-case.
+    // It's an extension function and is part of cl_khr_gl_sharing, but it
+    // doesn't necessarily pass a dispatchable object as its first argument,
+    // and is implemented in the ICD loader and called into via the core API
+    // dispatch table.  This means that we can install it into our core API
+    // dispatch table as well, and don't need to look it up per-platform.
+
+    cl_int  (CLI_API_CALL *clGetGLContextInfoKHR) (
+                const cl_context_properties *properties,
+                cl_gl_context_info param_name,
+                size_t param_value_size,
+                void* param_value,
+                size_t* param_value_size_ret);
+
     // OpenCL 1.1
 
     cl_int  (CLI_API_CALL *clSetEventCallback) (
@@ -930,14 +944,6 @@ struct CLdispatchX
                 cl_uint num_events_in_wait_list,
                 const cl_event* event_wait_list,
                 cl_event* event);
-
-    // cl_khr_gl_sharing
-    cl_int  (CLI_API_CALL *clGetGLContextInfoKHR) (
-                const cl_context_properties *properties,
-                cl_gl_context_info param_name,
-                size_t param_value_size,
-                void* param_value,
-                size_t* param_value_size_ret);
 
 #if defined(_WIN32)
     // cl_khr_d3d10_sharing

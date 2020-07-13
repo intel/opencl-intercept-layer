@@ -151,18 +151,17 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
     // devices then we will need a different mechanism to get a
     // device-specific function pointer.
 
-    cl_platform_id  platform = NULL;
-    dispatch().clGetDeviceInfo(
-        device,
-        CL_DEVICE_PLATFORM,
-        sizeof(platform),
-        &platform,
-        NULL );
-    getExtensionFunctionAddress(
-        platform,
-        "clCreatePerfCountersCommandQueueINTEL" );
+    cl_platform_id  platform = getPlatform(device);
+    auto dispatchX = this->dispatchX(platform);
 
-    if( dispatchX().clCreatePerfCountersCommandQueueINTEL && m_pMDHelper )
+    if( dispatchX.clCreatePerfCountersCommandQueueINTEL == NULL )
+    {
+        getExtensionFunctionAddress(
+            platform,
+            "clCreatePerfCountersCommandQueueINTEL" );
+    }
+
+    if( dispatchX.clCreatePerfCountersCommandQueueINTEL && m_pMDHelper )
     {
         std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -170,7 +169,7 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
         {
             cl_uint configuration = m_pMDHelper->GetMetricsConfiguration();
 
-            retVal = dispatchX().clCreatePerfCountersCommandQueueINTEL(
+            retVal = dispatchX.clCreatePerfCountersCommandQueueINTEL(
                 context,
                 device,
                 properties,

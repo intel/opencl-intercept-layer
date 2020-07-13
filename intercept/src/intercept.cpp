@@ -121,7 +121,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
     : m_OS( pGlobalData )
 {
     m_Dispatch = {0};
-    m_DispatchX = {0};
+    m_DispatchX[NULL] = {0};
 
     m_OpenCLLibraryHandle = NULL;
 
@@ -179,7 +179,6 @@ CLIntercept::~CLIntercept()
     // leave some events, kernels, or programs un-released, but since
     // the process is terminating, that's probably OK.
     m_Dispatch = {0};
-    m_DispatchX = {0};
 
 #if defined(USE_MDAPI)
     if( m_pMDHelper )
@@ -4713,22 +4712,19 @@ void CLIntercept::addTimingEvent(
                 if( maxsgs == 0 &&
                     deviceInfo.Supports_cl_khr_subgroups )
                 {
-                    if( dispatchX().clGetKernelSubGroupInfoKHR == NULL )
+                    cl_platform_id  platform = getPlatform(device);
+                    auto dispatchX = this->dispatchX(platform);
+
+                    if( dispatchX.clGetKernelSubGroupInfoKHR == NULL )
                     {
-                        cl_platform_id  platform = NULL;
-                        dispatch().clGetDeviceInfo(
-                            device,
-                            CL_DEVICE_PLATFORM,
-                            sizeof(platform),
-                            &platform,
-                            NULL );
                         getExtensionFunctionAddress(
                             platform,
                             "clGetKernelSubGroupInfoKHR" );
                     }
-                    if( dispatchX().clGetKernelSubGroupInfoKHR )
+
+                    if( dispatchX.clGetKernelSubGroupInfoKHR )
                     {
-                        dispatchX().clGetKernelSubGroupInfoKHR(
+                        dispatchX.clGetKernelSubGroupInfoKHR(
                             kernel,
                             device,
                             CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR,
@@ -5167,22 +5163,19 @@ cl_command_queue CLIntercept::createCommandQueueWithProperties(
     if( retVal == NULL &&
         deviceInfo.Supports_cl_khr_create_command_queue )
     {
-        if( dispatchX().clCreateCommandQueueWithPropertiesKHR == NULL )
+        cl_platform_id  platform = getPlatform(device);
+        auto dispatchX = this->dispatchX(platform);
+
+        if( dispatchX.clCreateCommandQueueWithPropertiesKHR == NULL )
         {
-            cl_platform_id  platform = NULL;
-            dispatch().clGetDeviceInfo(
-                device,
-                CL_DEVICE_PLATFORM,
-                sizeof(platform),
-                &platform,
-                NULL );
             getExtensionFunctionAddress(
                 platform,
                 "clCreateCommandQueueWithPropertiesKHR" );
         }
-        if( dispatchX().clCreateCommandQueueWithPropertiesKHR )
+
+        if( dispatchX.clCreateCommandQueueWithPropertiesKHR )
         {
-            retVal = dispatchX().clCreateCommandQueueWithPropertiesKHR(
+            retVal = dispatchX.clCreateCommandQueueWithPropertiesKHR(
                 context,
                 device,
                 properties,
@@ -6217,55 +6210,21 @@ void CLIntercept::checkKernelArgUSMPointer(
 
     cl_int errorCode = CL_SUCCESS;
 
+    cl_platform_id  platform = getPlatform(kernel);
+    auto dispatchX = this->dispatchX(platform);
+
     // If we don't have a function pointer for clGetMemAllocINFO, try to
     // get one.  It's possible that the function pointer exists but
     // the application hasn't queried for it yet, in which case it won't
     // be installed into the dispatch table.
-    if( dispatchX().clGetMemAllocInfoINTEL == NULL )
+    if( dispatchX.clGetMemAllocInfoINTEL == NULL )
     {
-        cl_program  program = NULL;
-        if( errorCode == CL_SUCCESS )
-        {
-            errorCode = dispatch().clGetKernelInfo(
-                kernel,
-                CL_KERNEL_PROGRAM,
-                sizeof(program),
-                &program,
-                NULL );
-        }
-
-        cl_uint         numDevices = 0;
-        cl_device_id*   deviceList = NULL;
-        if( errorCode == CL_SUCCESS )
-        {
-            errorCode = allocateAndGetProgramDeviceList(
-                program,
-                numDevices,
-                deviceList );
-        }
-
-        cl_platform_id  platform = NULL;
-        if( errorCode == CL_SUCCESS && numDevices > 0 )
-        {
-            errorCode = dispatch().clGetDeviceInfo(
-                deviceList[0],
-                CL_DEVICE_PLATFORM,
-                sizeof(platform),
-                &platform,
-                NULL );
-        }
-
-        if( errorCode == CL_SUCCESS )
-        {
-            getExtensionFunctionAddress(
-                platform,
-                "clGetMemAllocInfoINTEL" );
-        }
-
-        delete [] deviceList;
+        getExtensionFunctionAddress(
+            platform,
+            "clGetMemAllocInfoINTEL" );
     }
 
-    if( dispatchX().clGetMemAllocInfoINTEL == NULL )
+    if( dispatchX.clGetMemAllocInfoINTEL == NULL )
     {
         logf( "function pointer for clGetMemAllocInfoINTEL is NULL\n" );
     }
@@ -6291,14 +6250,14 @@ void CLIntercept::checkKernelArgUSMPointer(
             cl_unified_shared_memory_type_intel memType = CL_MEM_TYPE_UNKNOWN_INTEL;
             cl_device_id associatedDevice = NULL;
 
-            dispatchX().clGetMemAllocInfoINTEL(
+            dispatchX.clGetMemAllocInfoINTEL(
                 context,
                 arg,
                 CL_MEM_ALLOC_TYPE_INTEL,
                 sizeof(memType),
                 &memType,
                 NULL );
-            dispatchX().clGetMemAllocInfoINTEL(
+            dispatchX.clGetMemAllocInfoINTEL(
                 context,
                 arg,
                 CL_MEM_ALLOC_DEVICE_INTEL,
@@ -10682,11 +10641,11 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-#define CHECK_RETURN_EXTENSION_FUNCTION(funcname)                           \
+#define CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION(funcname)                \
 {                                                                           \
     if( func_name == #funcname )                                            \
     {                                                                       \
-        if( dispatchX() . funcname == NULL )                                \
+        if( dispatch() . funcname == NULL )                                 \
         {                                                                   \
             void *func = NULL;                                              \
             if( platform &&                                                 \
@@ -10699,10 +10658,37 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
             {                                                               \
                 func = dispatch().clGetExtensionFunctionAddress(#funcname); \
             }                                                               \
-            void** pfunc = (void**)( &m_DispatchX . funcname );             \
+            void** pfunc = (void**)( &m_Dispatch . funcname );              \
             *pfunc = func;                                                  \
         }                                                                   \
-        if( dispatchX() . funcname )                                        \
+        if( dispatch() . funcname )                                         \
+        {                                                                   \
+            return (void*)( funcname );                                     \
+        }                                                                   \
+    }                                                                       \
+}
+
+#define CHECK_RETURN_EXTENSION_FUNCTION(funcname)                           \
+{                                                                           \
+    if( func_name == #funcname )                                            \
+    {                                                                       \
+        if( dispatchX(platform) . funcname == NULL )                        \
+        {                                                                   \
+            void *func = NULL;                                              \
+            if( platform &&                                                 \
+                dispatch().clGetExtensionFunctionAddressForPlatform )       \
+            {                                                               \
+                func = dispatch().clGetExtensionFunctionAddressForPlatform( \
+                    platform,                                               \
+                    #funcname );                                            \
+            } else if( dispatch().clGetExtensionFunctionAddress )           \
+            {                                                               \
+                func = dispatch().clGetExtensionFunctionAddress(#funcname); \
+            }                                                               \
+            void** pfunc = (void**)( &m_DispatchX[platform] . funcname );   \
+            *pfunc = func;                                                  \
+        }                                                                   \
+        if( dispatchX(platform) . funcname )                                \
         {                                                                   \
             return (void*)( funcname );                                     \
         }                                                                   \
@@ -10713,13 +10699,13 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
 {                                                                           \
     if( func_name == #funcname )                                            \
     {                                                                       \
-        if( dispatchX() . funcname == NULL )                                \
+        if( dispatchX(platform) . funcname == NULL )                        \
         {                                                                   \
             void *func = (void*)funcname##_EMU;                             \
-            void** pfunc = (void**)( &m_DispatchX . funcname );             \
+            void** pfunc = (void**)( &m_DispatchX[platform] . funcname );   \
             *pfunc = func;                                                  \
         }                                                                   \
-        if( dispatchX() . funcname )                                        \
+        if( dispatchX(platform) . funcname )                                \
         {                                                                   \
             return (void*)( funcname );                                     \
         }                                                                   \
@@ -10731,16 +10717,23 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
 //
 void* CLIntercept::getExtensionFunctionAddress(
     cl_platform_id platform,
-    const std::string& func_name ) const
+    const std::string& func_name )
 {
     // KHR Extensions
 
+    // clGetGLContextInfoKHR is a special-case.
+    // It's an extension function and is part of cl_khr_gl_sharing, but it
+    // doesn't necessarily pass a dispatchable object as its first argument,
+    // and is implemented in the ICD loader and called into via the core API
+    // dispatch table.  This means that we can install it into our core API
+    // dispatch table as well, and don't need to look it up per-platform.
+    CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clGetGLContextInfoKHR );
+
+    // A few of the following extension functions are also implemented in the
+    // ICD loader, but because they pass a dispatchable object we can treat
+    // them the same as any other extension function.
+
     // cl_khr_gl_sharing
-    // Even though all of these functions except for clGetGLContextInfoKHR()
-    // are exported from the ICD DLL, still call CHECK_RETURN_EXTENSION_FUNCTION
-    // to handle the case where an intercepted DLL supports the extension but
-    // does not export the entry point.  This will probably never happen in
-    // practice, but better safe than sorry.
 #if defined(_WIN32) || defined(__linux__)
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromGLBuffer );
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromGLTexture );
@@ -10752,7 +10745,6 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireGLObjects );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseGLObjects );
 #endif
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetGLContextInfoKHR );
     // cl_khr_gl_event
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateEventFromGLsyncKHR );
 #if defined(_WIN32)

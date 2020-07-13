@@ -96,7 +96,7 @@ public:
                 ... );
 
     void    cacheDeviceInfo(
-                cl_device_id device  );
+                cl_device_id device );
     cl_int  getDeviceMajorMinorVersion(
                 cl_device_id device,
                 size_t& majorVersion,
@@ -622,7 +622,7 @@ public:
 
     void*   getExtensionFunctionAddress(
                 cl_platform_id platform,
-                const std::string& func_name ) const;
+                const std::string& func_name );
 
 #if defined(USE_MDAPI)
     void    initCustomPerfCounters();
@@ -639,9 +639,24 @@ public:
                 cl_int* errcode_ret );
 #endif
 
-    const OS::Services& OS() const;
     const CLdispatch&   dispatch() const;
-    const CLdispatchX&  dispatchX() const;
+
+    const CLdispatchX&  dispatchX( cl_accelerator_intel accelerator ) const;
+    const CLdispatchX&  dispatchX( cl_command_queue queue ) const;
+    const CLdispatchX&  dispatchX( cl_context context ) const;
+    const CLdispatchX&  dispatchX( cl_device_id device ) const;
+    const CLdispatchX&  dispatchX( cl_kernel kernel ) const;
+    const CLdispatchX&  dispatchX( cl_mem memobj ) const;
+    const CLdispatchX&  dispatchX( cl_platform_id platform ) const;
+
+    cl_platform_id  getPlatform( cl_command_queue queue ) const;
+    cl_platform_id  getPlatform( cl_context context ) const;
+    cl_platform_id  getPlatform( cl_device_id device ) const;
+    cl_platform_id  getPlatform( cl_kernel kernel ) const;
+    cl_platform_id  getPlatform( cl_mem memobj ) const;
+
+    const OS::Services& OS() const;
+
     const CEnumNameMap& enumName() const;
 
     const Config&   config() const;
@@ -790,9 +805,11 @@ private:
 
     std::mutex      m_Mutex;
 
+    typedef std::map< cl_platform_id, CLdispatchX > CLdispatchXMap;
+
     OS::Services    m_OS;
     CLdispatch      m_Dispatch;
-    CLdispatchX     m_DispatchX;
+    CLdispatchXMap  m_DispatchX;
     CEnumNameMap    m_EnumNameMap;
     CObjectTracker  m_ObjectTracker;
 
@@ -1138,6 +1155,8 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+///////////////////////////////////////////////////////////////////////////////
+//
 inline const CLdispatch& CLIntercept::dispatch() const
 {
     return m_Dispatch;
@@ -1145,9 +1164,138 @@ inline const CLdispatch& CLIntercept::dispatch() const
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-inline const CLdispatchX& CLIntercept::dispatchX() const
+inline const CLdispatchX& CLIntercept::dispatchX( cl_accelerator_intel accelerator ) const
 {
-    return m_DispatchX;
+    return m_DispatchX.at(NULL);
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_command_queue queue ) const
+{
+    cl_platform_id  platform = getPlatform(queue);
+    return dispatchX(platform);
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_context context ) const
+{
+    cl_platform_id  platform = getPlatform(context);
+    return dispatchX(platform);
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_device_id device ) const
+{
+    cl_platform_id  platform = getPlatform(device);
+    return dispatchX(platform);
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_kernel kernel ) const
+{
+    cl_platform_id  platform = getPlatform(kernel);
+    return dispatchX(platform);
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_mem memobj ) const
+{
+    cl_platform_id  platform = getPlatform(memobj);
+    return dispatchX(platform);
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_platform_id platform ) const
+{
+    CLdispatchXMap::const_iterator iter = m_DispatchX.find(platform);
+    if( iter != m_DispatchX.end() )
+    {
+        return iter->second;
+    }
+    else
+    {
+        return m_DispatchX.at(NULL);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+inline cl_platform_id CLIntercept::getPlatform( cl_command_queue queue ) const
+{
+    cl_device_id device = NULL;
+    dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_DEVICE,
+        sizeof(device),
+        &device,
+        NULL );
+    return getPlatform(device);
+}
+
+inline cl_platform_id CLIntercept::getPlatform( cl_context context ) const
+{
+    cl_uint numDevices = 0;
+    dispatch().clGetContextInfo(
+        context,
+        CL_CONTEXT_NUM_DEVICES,
+        sizeof(numDevices),
+        &numDevices,
+        NULL );
+
+    if( numDevices == 1 )   // fast path, no dynamic allocation
+    {
+        cl_device_id    device = NULL;
+        dispatch().clGetContextInfo(
+            context,
+            CL_CONTEXT_DEVICES,
+            sizeof(cl_device_id),
+            &device,
+            NULL );
+        return getPlatform(device);
+    }
+    else if( numDevices )   // slower path, dynamic allocation
+    {
+        std::vector<cl_device_id>   devices(numDevices);
+        dispatch().clGetContextInfo(
+            context,
+            CL_CONTEXT_DEVICES,
+            numDevices * sizeof(cl_device_id),
+            devices.data(),
+            NULL );
+        return getPlatform(devices[0]);
+    }
+
+    return NULL;
+}
+
+inline cl_platform_id CLIntercept::getPlatform( cl_device_id device ) const
+{
+    cl_platform_id platform = NULL;
+    dispatch().clGetDeviceInfo(
+        device,
+        CL_DEVICE_PLATFORM,
+        sizeof(platform),
+        &platform,
+        NULL );
+    return platform;
+}
+
+inline cl_platform_id CLIntercept::getPlatform( cl_kernel kernel ) const
+{
+    cl_context context = NULL;
+    dispatch().clGetKernelInfo(
+        kernel,
+        CL_KERNEL_CONTEXT,
+        sizeof(context),
+        &context,
+        NULL);
+    return getPlatform(context);
+}
+
+inline cl_platform_id CLIntercept::getPlatform( cl_mem memobj ) const
+{
+    cl_context context = NULL;
+    dispatch().clGetMemObjectInfo(
+        memobj,
+        CL_MEM_CONTEXT,
+        sizeof(context),
+        &context,
+        NULL);
+    return getPlatform(context);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
