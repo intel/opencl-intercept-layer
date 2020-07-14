@@ -11340,7 +11340,6 @@ bool CLIntercept::initDispatch( void )
     INIT_CL_FUNC(clGetKernelArgInfo);
     INIT_CL_FUNC(clEnqueueFillBuffer);
     INIT_CL_FUNC(clEnqueueFillImage);
-    INIT_CL_FUNC(clCreateFromGLTexture);
     INIT_CL_FUNC(clEnqueueMigrateMemObjects);
     INIT_CL_FUNC(clEnqueueMarkerWithWaitList);
     INIT_CL_FUNC(clEnqueueBarrierWithWaitList);
