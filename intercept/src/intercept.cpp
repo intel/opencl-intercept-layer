@@ -11316,51 +11316,35 @@ bool CLIntercept::initDispatch( void )
     INIT_CL_FUNC(clEnqueueMarker);
     INIT_CL_FUNC(clEnqueueWaitForEvents);
     INIT_CL_FUNC(clEnqueueBarrier);
-
-    // Optional features?
     INIT_CL_FUNC(clGetExtensionFunctionAddress);
-    INIT_CL_FUNC(clGetExtensionFunctionAddressForPlatform);
 
-    // OpenCL 1.1 Entry Points (optional)
+    // OpenCL 1.1 Entry Points
+    INIT_CL_FUNC(clSetEventCallback);
     INIT_CL_FUNC(clCreateSubBuffer);
     INIT_CL_FUNC(clSetMemObjectDestructorCallback);
     INIT_CL_FUNC(clCreateUserEvent);
     INIT_CL_FUNC(clSetUserEventStatus);
-    INIT_CL_FUNC(clSetEventCallback);
     INIT_CL_FUNC(clEnqueueReadBufferRect);
     INIT_CL_FUNC(clEnqueueWriteBufferRect);
     INIT_CL_FUNC(clEnqueueCopyBufferRect);
 
-    // OpenCL 1.2 Entry Points (optional)
-    INIT_CL_FUNC(clCompileProgram);
-    INIT_CL_FUNC(clCreateFromGLTexture);
+    // OpenCL 1.2 Entry Points
+    INIT_CL_FUNC(clCreateSubDevices);
+    INIT_CL_FUNC(clRetainDevice);
+    INIT_CL_FUNC(clReleaseDevice);
     INIT_CL_FUNC(clCreateImage);
     INIT_CL_FUNC(clCreateProgramWithBuiltInKernels);
-    INIT_CL_FUNC(clCreateSubDevices);
-    INIT_CL_FUNC(clEnqueueBarrierWithWaitList);
+    INIT_CL_FUNC(clCompileProgram);
+    INIT_CL_FUNC(clLinkProgram);
+    INIT_CL_FUNC(clUnloadPlatformCompiler);
+    INIT_CL_FUNC(clGetKernelArgInfo);
     INIT_CL_FUNC(clEnqueueFillBuffer);
     INIT_CL_FUNC(clEnqueueFillImage);
-    INIT_CL_FUNC(clEnqueueMarkerWithWaitList);
+    INIT_CL_FUNC(clCreateFromGLTexture);
     INIT_CL_FUNC(clEnqueueMigrateMemObjects);
-    INIT_CL_FUNC(clGetKernelArgInfo);
-    INIT_CL_FUNC(clLinkProgram);
-    INIT_CL_FUNC(clReleaseDevice);
-    INIT_CL_FUNC(clRetainDevice);
-    INIT_CL_FUNC(clUnloadPlatformCompiler);
-
-    // CL-GL Entry Points (optional)
-    INIT_CL_FUNC(clCreateFromGLBuffer);
-    INIT_CL_FUNC(clCreateFromGLTexture);   // OpenCL 1.2
-    INIT_CL_FUNC(clCreateFromGLTexture2D);
-    INIT_CL_FUNC(clCreateFromGLTexture3D);
-    INIT_CL_FUNC(clCreateFromGLRenderbuffer);
-    INIT_CL_FUNC(clGetGLObjectInfo);
-    INIT_CL_FUNC(clGetGLTextureInfo);
-    INIT_CL_FUNC(clEnqueueAcquireGLObjects);
-    INIT_CL_FUNC(clEnqueueReleaseGLObjects);
-
-    // Extensions (optional)
-    // Extensions get loaded into the dispatch table on the fly.
+    INIT_CL_FUNC(clEnqueueMarkerWithWaitList);
+    INIT_CL_FUNC(clEnqueueBarrierWithWaitList);
+    INIT_CL_FUNC(clGetExtensionFunctionAddressForPlatform);
 
     return true;
 }
