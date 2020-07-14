@@ -5331,7 +5331,7 @@ void CLIntercept::addAcceleratorInfo(
     {
         std::lock_guard<std::mutex> lock(m_Mutex);
 
-        m_AcceleratorInfoMap[accelerator] = NULL;
+        m_AcceleratorInfoMap[accelerator] = getPlatform(context);
     }
 }
 
