@@ -377,29 +377,34 @@ public:
                 const cl_kernel kernel,
                 const cl_program program,
                 const std::string& kernelName );
-
     void    addKernelInfo(
                 const cl_kernel* kernels,
                 const cl_program program,
                 cl_uint numKernels );
-
-    void    removeKernel(
+    void    checkRemoveKernelInfo(
                 const cl_kernel kernel );
 
-    void    addBuffer(
-                cl_mem buffer );
-    void    addSampler(
+    void    addAcceleratorInfo(
+                cl_accelerator_intel accelerator,
+                cl_context context );
+    void    checkRemoveAcceleratorInfo(
+                cl_accelerator_intel accelerator );
+
+    void    addSamplerString(
                 cl_sampler sampler,
                 const std::string& str );
-    void    removeSampler(
+    void    checkRemoveSamplerString(
                 cl_sampler sampler );
-    bool    getSampler(
+    bool    checkGetSamplerString(
                 size_t size,
                 const void *arg_value,
                 std::string& str ) const;
+
+    void    addBuffer(
+                cl_mem buffer );
     void    addImage(
                 cl_mem image );
-    void    removeMemObj(
+    void    checkRemoveMemObj(
                 cl_mem memobj );
     void    addSVMAllocation(
                 void* svmPtr,
@@ -422,6 +427,12 @@ public:
                 const std::string& name,
                 cl_kernel kernel,
                 cl_command_queue command_queue );
+
+    void    dumpArgument(
+                cl_kernel kernel,
+                cl_int arg_index,
+                size_t size,
+                const void *pBuffer );
     void    dumpBuffer(
                 const std::string& name,
                 cl_mem memobj,
@@ -429,11 +440,6 @@ public:
                 void* ptr,
                 size_t offset,
                 size_t size );
-    void    dumpArgument(
-                cl_kernel kernel,
-                cl_int arg_index,
-                size_t size,
-                const void *pBuffer );
 
     void    checkEventList(
                 const std::string& functionName,
@@ -649,6 +655,7 @@ public:
     const CLdispatchX&  dispatchX( cl_mem memobj ) const;
     const CLdispatchX&  dispatchX( cl_platform_id platform ) const;
 
+    cl_platform_id  getPlatform( cl_accelerator_intel accelerator ) const;
     cl_platform_id  getPlatform( cl_command_queue queue ) const;
     cl_platform_id  getPlatform( cl_context context ) const;
     cl_platform_id  getPlatform( cl_device_id device ) const;
@@ -1060,6 +1067,9 @@ private:
     typedef std::map< const cl_kernel, SSIMDSurveyKernel* > CSIMDSurveyKernelMap;
     CSIMDSurveyKernelMap    m_SIMDSurveyKernelMap;
 
+    typedef std::map< const cl_accelerator_intel, cl_platform_id>   CAcceleratorInfoMap;
+    CAcceleratorInfoMap     m_AcceleratorInfoMap;
+
     struct Config
     {
 #define CLI_CONTROL( _type, _name, _init, _desc )   _type _name;
@@ -1166,37 +1176,38 @@ inline const CLdispatch& CLIntercept::dispatch() const
 //
 inline const CLdispatchX& CLIntercept::dispatchX( cl_accelerator_intel accelerator ) const
 {
-    return m_DispatchX.at(NULL);
+    cl_platform_id  platform = getPlatform( accelerator );
+    return dispatchX( platform );
 }
 
 inline const CLdispatchX& CLIntercept::dispatchX( cl_command_queue queue ) const
 {
     cl_platform_id  platform = getPlatform(queue);
-    return dispatchX(platform);
+    return dispatchX( platform );
 }
 
 inline const CLdispatchX& CLIntercept::dispatchX( cl_context context ) const
 {
     cl_platform_id  platform = getPlatform(context);
-    return dispatchX(platform);
+    return dispatchX( platform );
 }
 
 inline const CLdispatchX& CLIntercept::dispatchX( cl_device_id device ) const
 {
     cl_platform_id  platform = getPlatform(device);
-    return dispatchX(platform);
+    return dispatchX( platform );
 }
 
 inline const CLdispatchX& CLIntercept::dispatchX( cl_kernel kernel ) const
 {
     cl_platform_id  platform = getPlatform(kernel);
-    return dispatchX(platform);
+    return dispatchX( platform );
 }
 
 inline const CLdispatchX& CLIntercept::dispatchX( cl_mem memobj ) const
 {
     cl_platform_id  platform = getPlatform(memobj);
-    return dispatchX(platform);
+    return dispatchX( platform );
 }
 
 inline const CLdispatchX& CLIntercept::dispatchX( cl_platform_id platform ) const
@@ -1214,6 +1225,19 @@ inline const CLdispatchX& CLIntercept::dispatchX( cl_platform_id platform ) cons
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+inline cl_platform_id CLIntercept::getPlatform( cl_accelerator_intel accelerator ) const
+{
+    CAcceleratorInfoMap::const_iterator iter = m_AcceleratorInfoMap.find(accelerator);
+    if( iter != m_AcceleratorInfoMap.end() )
+    {
+        return iter->second;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
 inline cl_platform_id CLIntercept::getPlatform( cl_command_queue queue ) const
 {
     cl_device_id device = NULL;
@@ -1615,21 +1639,21 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits() const
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
           pIntercept->config().DumpImagesAfterEnqueue ) )                   \
     {                                                                       \
-        pIntercept->removeMemObj( memobj );                                 \
+        pIntercept->checkRemoveMemObj( memobj );                            \
     }
 
 #define ADD_SAMPLER( sampler, str )                                         \
     if( sampler &&                                                          \
         pIntercept->config().CallLogging )                                  \
     {                                                                       \
-        pIntercept->addSampler( sampler, str );                             \
+        pIntercept->addSamplerString( sampler, str );                       \
     }
 
 #define REMOVE_SAMPLER( sampler )                                           \
     if( sampler &&                                                          \
         pIntercept->config().CallLogging )                                  \
     {                                                                       \
-        pIntercept->removeSampler( sampler );                               \
+        pIntercept->checkRemoveSamplerString( sampler );                    \
     }
 
 #define ADD_SVM_ALLOCATION( svmPtr, size )                                  \
@@ -1692,7 +1716,6 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits() const
         delete [] zeroData;                                                 \
         zeroData = NULL;                                                    \
     }
-
 
 #define DUMP_BUFFER_AFTER_CREATE( memobj, flags, ptr, size )                \
     if( memobj &&                                                           \

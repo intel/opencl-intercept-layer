@@ -1594,7 +1594,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
 
     if( pIntercept && pIntercept->dispatch().clCreateSampler )
     {
-        std::string samplerProperties;
+        std::string propsStr;
         if( pIntercept->callLogging() )
         {
             cl_sampler_properties sampler_properties[] = {
@@ -1605,12 +1605,12 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
             };
             pIntercept->getSamplerPropertiesString(
                 sampler_properties,
-                samplerProperties );
+                propsStr );
         }
 
         CALL_LOGGING_ENTER( "context = %p, properties = [ %s ]",
             context,
-            samplerProperties.c_str() );
+            propsStr.c_str() );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -1625,7 +1625,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
-        ADD_SAMPLER(retVal, samplerProperties);
+        ADD_SAMPLER( retVal, propsStr );
 
         return retVal;
     }
@@ -1691,6 +1691,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseSampler)(
 
     if( pIntercept && pIntercept->dispatch().clReleaseSampler )
     {
+        REMOVE_SAMPLER( sampler );
+
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
         {
@@ -1708,11 +1710,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseSampler)(
 
         cl_int  retVal = pIntercept->dispatch().clReleaseSampler(
             sampler );
-
-        if ( --ref_count == 0 )
-        {
-            pIntercept->removeSampler( sampler );
-        }
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
@@ -2601,7 +2598,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseKernel)(
 
     if( pIntercept && pIntercept->dispatch().clReleaseKernel )
     {
-        pIntercept->removeKernel( kernel );
+        pIntercept->checkRemoveKernelInfo( kernel );
 
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
@@ -6317,16 +6314,16 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
 
     if( pIntercept && pIntercept->dispatch().clCreateSamplerWithProperties )
     {
-        std::string samplerProperties;
+        std::string propsStr;
         if( pIntercept->callLogging() )
         {
             pIntercept->getSamplerPropertiesString(
                 sampler_properties,
-                samplerProperties );
+                propsStr );
         }
         CALL_LOGGING_ENTER( "context = %p, properties = [ %s ]",
             context,
-            samplerProperties.c_str() );
+            propsStr.c_str() );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -6339,7 +6336,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
-        ADD_SAMPLER( retVal, samplerProperties );
+        ADD_SAMPLER( retVal, propsStr );
 
         return retVal;
     }
@@ -7906,6 +7903,13 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
             //ADD_OBJECT_ALLOCATION( retVal );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
+            if( retVal != NULL )
+            {
+                pIntercept->addAcceleratorInfo(
+                    retVal,
+                    context );
+            }
+
             return retVal;
         }
     }
@@ -8019,6 +8023,8 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseAcceleratorINTEL(
         auto dispatchX = pIntercept->dispatchX(accelerator);
         if( dispatchX.clReleaseAcceleratorINTEL )
         {
+            pIntercept->checkRemoveAcceleratorInfo( accelerator );
+
             cl_uint ref_count = 0;
             if( pIntercept->callLogging() )
             {

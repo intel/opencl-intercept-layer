@@ -2028,7 +2028,7 @@ void CLIntercept::getKernelArgString(
     const void* arg_value,
     std::string& str ) const
 {
-    if( getSampler(
+    if( checkGetSamplerString(
             arg_size,
             arg_value,
             str ) )
@@ -5270,13 +5270,12 @@ void CLIntercept::addKernelInfo(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::removeKernel(
-    cl_kernel kernel )
+void CLIntercept::checkRemoveKernelInfo( cl_kernel kernel )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_uint     refCount = 0;
-    cl_int      errorCode = CL_SUCCESS;
+    cl_uint refCount = 0;
+    cl_int  errorCode = CL_SUCCESS;
 
     errorCode = dispatch().clGetKernelInfo(
         kernel,
@@ -5284,45 +5283,144 @@ void CLIntercept::removeKernel(
         sizeof( refCount ),
         &refCount,
         NULL );
-    if( errorCode == CL_SUCCESS )
+    if( errorCode == CL_SUCCESS && refCount == 1 )
     {
-        if( refCount == 1 )
-        {
 #if 0
-            // We shouldn't remove the kernel name from the local kernel name map
-            // here since the mapping may be included in the device performance
-            // time report.
-            m_LongKernelNameMap.erase( m_KernelInfoMap[ kernel ].KernelName );
+        // We shouldn't remove the kernel name from the local kernel name map
+        // here since the mapping may be included in the device performance
+        // time report.
+        m_LongKernelNameMap.erase( m_KernelInfoMap[ kernel ].KernelName );
 #endif
 
-            m_KernelInfoMap.erase( kernel );
+        m_KernelInfoMap.erase( kernel );
 
-            SSIMDSurveyKernel*  pSIMDSurveyKernel =
-                m_SIMDSurveyKernelMap[ kernel ];
-            if( pSIMDSurveyKernel )
-            {
-                errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD8Kernel );
-                errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD16Kernel );
-                errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD32Kernel );
+        SSIMDSurveyKernel*  pSIMDSurveyKernel =
+            m_SIMDSurveyKernelMap[ kernel ];
+        if( pSIMDSurveyKernel )
+        {
+            errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD8Kernel );
+            errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD16Kernel );
+            errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD32Kernel );
 
-                // Remove the parent kernel and each of the child kernels from the map.
-                m_SIMDSurveyKernelMap.erase( kernel );
+            // Remove the parent kernel and each of the child kernels from the map.
+            m_SIMDSurveyKernelMap.erase( kernel );
 
-                m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD8Kernel );
-                m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD16Kernel );
-                m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD32Kernel );
+            m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD8Kernel );
+            m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD16Kernel );
+            m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD32Kernel );
 
-                // Also clean up the kernel name map.
-                m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD8Kernel );
-                m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD16Kernel );
-                m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD32Kernel );
+            // Also clean up the kernel name map.
+            m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD8Kernel );
+            m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD16Kernel );
+            m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD32Kernel );
 
-                // Done!
-                delete pSIMDSurveyKernel;
-                pSIMDSurveyKernel = NULL;
-            }
+            // Done!
+            delete pSIMDSurveyKernel;
+            pSIMDSurveyKernel = NULL;
         }
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::addAcceleratorInfo(
+    cl_accelerator_intel accelerator,
+    cl_context context )
+{
+    if( accelerator )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        m_AcceleratorInfoMap[accelerator] = NULL;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::checkRemoveAcceleratorInfo(
+    cl_accelerator_intel accelerator )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    CAcceleratorInfoMap::iterator iter = m_AcceleratorInfoMap.find( accelerator );
+    if( iter != m_AcceleratorInfoMap.end() )
+    {
+        cl_platform_id  platform = iter->second;
+        auto dispatchX = this->dispatchX(platform);
+
+        cl_uint refCount = 0;
+        cl_int  errorCode = CL_SUCCESS;
+
+        errorCode = dispatchX.clGetAcceleratorInfoINTEL(
+            accelerator,
+            CL_ACCELERATOR_REFERENCE_COUNT_INTEL,
+            sizeof( refCount ),
+            &refCount,
+            NULL );
+        if( errorCode == CL_SUCCESS && refCount == 1 )
+        {
+            m_AcceleratorInfoMap.erase( iter );
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::addSamplerString(
+    cl_sampler sampler,
+    const std::string& str )
+{
+    if( sampler )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_SamplerDataMap[sampler] = str;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::checkRemoveSamplerString(
+    cl_sampler sampler )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_uint refCount = 0;
+    cl_int  errorCode = CL_SUCCESS;
+
+    errorCode = dispatch().clGetSamplerInfo(
+        sampler,
+        CL_SAMPLER_REFERENCE_COUNT,
+        sizeof( refCount ),
+        &refCount,
+        NULL );
+    if( errorCode == CL_SUCCESS && refCount == 1 )
+    {
+        m_SamplerDataMap.erase( sampler );
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+bool CLIntercept::checkGetSamplerString(
+    size_t size,
+    const void *arg_value,
+    std::string& str ) const
+{
+    bool found = false;
+
+    if( ( arg_value != NULL ) && ( size == sizeof( cl_sampler ) ) )
+    {
+        const cl_sampler sampler = *(const cl_sampler *)arg_value;
+
+        CSamplerDataMap::const_iterator iter = m_SamplerDataMap.find( sampler );
+        if( iter != m_SamplerDataMap.end() )
+        {
+            str = iter->second;
+            found = true;
+        }
+    }
+
+    return found;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5353,139 +5451,6 @@ void CLIntercept::addBuffer(
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::addSampler(
-    cl_sampler sampler,
-    const std::string& str )
-{
-    if( sampler )
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-        m_SamplerDataMap[sampler] = str;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::removeSampler(
-    cl_sampler sampler )
-{
-    if( sampler )
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-
-        CSamplerDataMap::iterator iter = m_SamplerDataMap.find( sampler );
-        if( iter != m_SamplerDataMap.end() )
-        {
-            m_SamplerDataMap.erase( iter );
-        }
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-bool CLIntercept::getSampler(
-    size_t size,
-    const void *arg_value,
-    std::string& str ) const
-{
-    bool found = false;
-
-    if( ( arg_value != NULL ) && ( size == sizeof( cl_sampler ) ) )
-    {
-        const cl_sampler sampler = *(const cl_sampler *)arg_value;
-
-        CSamplerDataMap::const_iterator iter = m_SamplerDataMap.find( sampler );
-        if( iter != m_SamplerDataMap.end() )
-        {
-            str = iter->second;
-            found = true;
-        }
-    }
-
-    return found;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::dumpArgument(
-    cl_kernel kernel,
-    cl_int arg_index,
-    size_t size,
-    const void *pBuffer )
-{
-    if( kernel )
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-
-        std::string fileName = "";
-
-        // Get the dump directory name.
-        {
-            OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
-            fileName += "/SetKernelArg/";
-        }
-
-        // Now make directories as appropriate.
-        {
-            OS().MakeDumpDirectories( fileName );
-        }
-
-        // Add the enqueue count to file name
-        {
-            char    enqueueCount[ MAX_PATH ];
-
-            CLI_SPRINTF( enqueueCount, MAX_PATH, "%04u",
-                (unsigned int)m_EnqueueCounter );
-            fileName += "SetKernelArg_";
-            fileName += enqueueCount;
-        }
-
-        // Add the kernel name to the filename
-        {
-            fileName += "_Kernel_";
-            fileName += getShortKernelName(kernel);
-        }
-
-        // Add the arg number to the file name
-        {
-            char    argName[ MAX_PATH ];
-
-            CLI_SPRINTF( argName, MAX_PATH, "%d", arg_index );
-
-            fileName += "_Arg_";
-            fileName += argName;
-        }
-
-        // Add extension to file name
-        {
-            fileName += ".bin";
-        }
-
-        // Dump the buffer contents to the file.
-        {
-            if( pBuffer != NULL)
-            {
-                std::ofstream os;
-                os.open(
-                    fileName.c_str(),
-                    std::ios_base::out | std::ios_base::binary );
-
-                if( os.good() )
-                {
-                    os.write( (const char *)pBuffer, size );
-                    os.close();
-                }
-                else
-                {
-                    logf( "Failed to open program arg dump file for writing: %s\n",
-                        fileName.c_str() );
-                }
-            }
-        }
-    }
-}
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::addImage(
@@ -5543,7 +5508,7 @@ void CLIntercept::addImage(
             {
                 if( arraySize == 0 )
                 {
-                    imageInfo.Region[1] = 1;            // 1D iamge
+                    imageInfo.Region[1] = 1;            // 1D image
                 }
                 else
                 {
@@ -5582,7 +5547,7 @@ void CLIntercept::addImage(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::removeMemObj(
+void CLIntercept::checkRemoveMemObj(
     cl_mem memobj )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
@@ -5596,14 +5561,11 @@ void CLIntercept::removeMemObj(
         sizeof( refCount ),
         &refCount,
         NULL );
-    if( errorCode == CL_SUCCESS )
+    if( errorCode == CL_SUCCESS && refCount == 1 )
     {
-        if( refCount == 1 )
-        {
-            m_MemAllocNumberMap.erase( memobj );
-            m_BufferInfoMap.erase( memobj );
-            m_ImageInfoMap.erase( memobj );
-        }
+        m_MemAllocNumberMap.erase( memobj );
+        m_BufferInfoMap.erase( memobj );
+        m_ImageInfoMap.erase( memobj );
     }
 }
 
@@ -5995,6 +5957,86 @@ void CLIntercept::dumpImagesForKernel(
                     }
 
                     delete [] readImageData;
+                }
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::dumpArgument(
+    cl_kernel kernel,
+    cl_int arg_index,
+    size_t size,
+    const void *pBuffer )
+{
+    if( kernel )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        std::string fileName = "";
+
+        // Get the dump directory name.
+        {
+            OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+            fileName += "/SetKernelArg/";
+        }
+
+        // Now make directories as appropriate.
+        {
+            OS().MakeDumpDirectories( fileName );
+        }
+
+        // Add the enqueue count to file name
+        {
+            char    enqueueCount[ MAX_PATH ];
+
+            CLI_SPRINTF( enqueueCount, MAX_PATH, "%04u",
+                (unsigned int)m_EnqueueCounter );
+            fileName += "SetKernelArg_";
+            fileName += enqueueCount;
+        }
+
+        // Add the kernel name to the filename
+        {
+            fileName += "_Kernel_";
+            fileName += getShortKernelName(kernel);
+        }
+
+        // Add the arg number to the file name
+        {
+            char    argName[ MAX_PATH ];
+
+            CLI_SPRINTF( argName, MAX_PATH, "%d", arg_index );
+
+            fileName += "_Arg_";
+            fileName += argName;
+        }
+
+        // Add extension to file name
+        {
+            fileName += ".bin";
+        }
+
+        // Dump the buffer contents to the file.
+        {
+            if( pBuffer != NULL)
+            {
+                std::ofstream os;
+                os.open(
+                    fileName.c_str(),
+                    std::ios_base::out | std::ios_base::binary );
+
+                if( os.good() )
+                {
+                    os.write( (const char *)pBuffer, size );
+                    os.close();
+                }
+                else
+                {
+                    logf( "Failed to open program arg dump file for writing: %s\n",
+                        fileName.c_str() );
                 }
             }
         }
