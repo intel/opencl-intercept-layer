@@ -407,7 +407,7 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump
 
 ##### `DumpKernelISABinaries` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump kernel ISA binaries for every kernel, if supported.  An ISA binaries can decoded into ISA text with a disassembler.  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>\_\<Kernel Name\>.isabin".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump kernel ISA binaries for every kernel, if supported.  Currently, kernel ISA binaries are only supported for Intel GPU devices.  An ISA binaries can decoded into ISA text with a disassembler.  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>\_\<Kernel Name\>.isabin".
 
 ### Controls for Emulating Features
 
