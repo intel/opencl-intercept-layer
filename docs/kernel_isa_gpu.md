@@ -27,6 +27,10 @@ kernel in the program.
 How does this work?  Drivers for Intel GPU OpenCL devices support a kernel
 query for the kernel ISA binary.
 
+NOTE: The control to dump kernel ISA binaries to disassemble for Intel GPU
+devices is `DumpKernelISABinaries`, which is different than the control to
+dump program binaries to disassemble for Intel CPU devices!
+
 ### Building an Intel GPU ISA Disassembler
 
 This section describes how to build an Intel GPU ISA disassembler, which can
