@@ -310,7 +310,7 @@ static bool parseArguments(int argc, char *argv[])
             "  --leak-checking [-l]         Track and Report OpenCL Leaks\n"
             "  --verbose [-v]               Verbose Output (No Log Suppression)\n"
             "\n"
-            "For more information, please visit the Intercept Layer for OpenCL Applications github page:\n"
+            "For more information, please visit the Intercept Layer for OpenCL Applications page:\n"
             "    %s\n"
             "\n",
             g_scGitDescribe,

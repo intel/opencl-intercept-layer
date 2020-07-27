@@ -23,6 +23,10 @@ Layer for OpenCL Applications, set `DumpProgramBinaries`, and execute your
 application.  Then, every time our application calls `clBuildProgram`, the
 Intercept Layer for OpenCL Applications will dump the program binary.
 
+NOTE: The control to dump program binaries to disassemble for Intel CPU devices
+is `DumpProgramBinaries`, which is different than the control to dump kernel
+ISA binaries to disassemble for Intel GPU devices!
+
 ### Disassembling Program Binaries
 
 For the Intel CPU device, the program binary is an ELF file.  ELF files consist
