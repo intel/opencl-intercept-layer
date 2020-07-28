@@ -108,6 +108,7 @@ public:
     GENERATE_MAP_AND_BITFIELD_FUNC( name_command_queue_properties,   cl_command_queue_properties     );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_device_affinity_domain,     cl_device_affinity_domain       );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_device_atomic_capabilities, cl_device_atomic_capabilities   );
+    GENERATE_MAP_AND_BITFIELD_FUNC( name_device_device_enqueue_capabilities, cl_device_device_enqueue_capabilities );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_device_exec_capabilities,   cl_device_exec_capabilities     );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_device_fp_config,           cl_device_fp_config             );
     GENERATE_MAP_AND_FUNC(          name_device_local_mem_type,      cl_device_local_mem_type        );

@@ -110,6 +110,7 @@ DWORD cliprof_init( void* dummy )
                     REPLACE_FUNCTION( name, clCloneKernel );
                     REPLACE_FUNCTION( name, clCompileProgram );
                     REPLACE_FUNCTION( name, clCreateBuffer );
+                    REPLACE_FUNCTION( name, clCreateBufferWithProperties );
                     REPLACE_FUNCTION( name, clCreateCommandQueue );
                     REPLACE_FUNCTION( name, clCreateCommandQueueWithProperties );
                     REPLACE_FUNCTION( name, clCreateContext );
@@ -120,6 +121,7 @@ DWORD cliprof_init( void* dummy )
                     REPLACE_FUNCTION( name, clCreateFromGLTexture2D );
                     REPLACE_FUNCTION( name, clCreateFromGLTexture3D );
                     REPLACE_FUNCTION( name, clCreateImage );
+                    REPLACE_FUNCTION( name, clCreateImageWithProperties );
                     REPLACE_FUNCTION( name, clCreateImage2D );
                     REPLACE_FUNCTION( name, clCreateImage3D );
                     REPLACE_FUNCTION( name, clCreateKernel );
@@ -212,6 +214,7 @@ DWORD cliprof_init( void* dummy )
                     REPLACE_FUNCTION( name, clRetainProgram );
                     REPLACE_FUNCTION( name, clRetainSampler );
                     REPLACE_FUNCTION( name, clSetCommandQueueProperty );
+                    REPLACE_FUNCTION( name, clSetContextDestructorCallback );
                     REPLACE_FUNCTION( name, clSetDefaultDeviceCommandQueue );
                     REPLACE_FUNCTION( name, clSetEventCallback );
                     REPLACE_FUNCTION( name, clSetKernelArg );

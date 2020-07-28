@@ -24,6 +24,7 @@ EXPORTS
     clCloneKernel
     clCompileProgram
     clCreateBuffer
+    clCreateBufferWithProperties
     clCreateCommandQueue
     clCreateCommandQueueWithProperties
     clCreateContext
@@ -34,6 +35,7 @@ EXPORTS
     clCreateFromGLTexture2D
     clCreateFromGLTexture3D
     clCreateImage
+    clCreateImageWithProperties
     clCreateImage2D
     clCreateImage3D
     clCreateKernel
@@ -126,6 +128,7 @@ EXPORTS
     clRetainProgram
     clRetainSampler
     clSetCommandQueueProperty
+    clSetContextDestructorCallback
     clSetDefaultDeviceCommandQueue
     clSetEventCallback
     clSetKernelArg

@@ -173,3 +173,10 @@ OPENCL_2.2 {
         clSetProgramReleaseCallback;
         clSetProgramSpecializationConstant;
 } OPENCL_2.1;
+
+OPENCL_3.0 {
+    global:
+        clCreateBufferWithProperties;
+        clCreateImageWithProperties;
+        clSetContextDestructorCallback;
+} OPENCL_2.2;

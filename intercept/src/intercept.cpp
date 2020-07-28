@@ -11227,6 +11227,7 @@ bool CLIntercept::initDispatch( const std::string& libName )
         // OpenCL 3.0 Entry Points (optional)
         INIT_EXPORTED_FUNC(clCreateBufferWithProperties);
         INIT_EXPORTED_FUNC(clCreateImageWithProperties);
+        INIT_EXPORTED_FUNC(clSetContextDestructorCallback);
 
         success = savedSuccess;
     }

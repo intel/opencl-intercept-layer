@@ -857,6 +857,11 @@ struct CLdispatch
                 const cl_image_desc* image_desc,
                 void* host_ptr,
                 cl_int* errcode_ret);
+
+    cl_int (CL_API_CALL *clSetContextDestructorCallback) (
+                cl_context context,
+                void (CL_CALLBACK* pfn_notify)(cl_context context, void* user_data),
+                void* user_data);
 };
 
 // Dispatch table for extension APIs:
@@ -874,7 +879,7 @@ struct CLdispatchX
                 cl_context context,
                 cl_mem_flags flags,
                 cl_GLuint bufobj,
-                int* errcode_ret);  // Not cl_int*?
+                cl_int* errcode_ret);
 
     // cl_khr_gl_sharing
     // deprecated OpenCL 1.1

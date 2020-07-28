@@ -241,8 +241,9 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_WORK_GROUP_COLLECTIVE_FUNCTIONS_SUPPORT );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GENERIC_ADDRESS_SPACE_SUPPORT );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_OPENCL_C_FEATURES );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_DEVICE_ENQUEUE_SUPPORT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_DEVICE_ENQUEUE_CAPABILITIES );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PIPE_SUPPORT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LATEST_CONFORMANCE_VERSION_PASSED );
 
     /* cl_device_fp_config - bitfield */
     ADD_ENUM_NAME( m_cl_device_fp_config, CL_FP_DENORM );
@@ -587,6 +588,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_svm_mem_flags, CL_MEM_SVM_FINE_GRAIN_BUFFER );
     ADD_ENUM_NAME( m_cl_svm_mem_flags, CL_MEM_SVM_ATOMICS );
 
+    /* cl_device_atomic_capabilities */
     ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_ORDER_RELAXED );
     ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_ORDER_ACQ_REL );
     ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_ORDER_SEQ_CST );
@@ -594,6 +596,10 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_SCOPE_WORK_GROUP );
     ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_SCOPE_DEVICE );
     ADD_ENUM_NAME( m_cl_device_atomic_capabilities, CL_DEVICE_ATOMIC_SCOPE_ALL_DEVICES );
+
+    /* cl_device_device_enqueue_capabilities */
+    ADD_ENUM_NAME( m_cl_device_device_enqueue_capabilities, CL_DEVICE_QUEUE_SUPPORTED );
+    ADD_ENUM_NAME( m_cl_device_device_enqueue_capabilities, CL_DEVICE_QUEUE_REPLACEABLE_DEFAULT );
 
     // Intel Extensions
 
