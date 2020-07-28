@@ -121,6 +121,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
     : m_OS( pGlobalData )
 {
     m_Dispatch = {0};
+    m_DispatchX[NULL] = {0};
 
     m_OpenCLLibraryHandle = NULL;
 
@@ -2027,7 +2028,7 @@ void CLIntercept::getKernelArgString(
     const void* arg_value,
     std::string& str ) const
 {
-    if( getSampler(
+    if( checkGetSamplerString(
             arg_size,
             arg_value,
             str ) )
@@ -4711,22 +4712,19 @@ void CLIntercept::addTimingEvent(
                 if( maxsgs == 0 &&
                     deviceInfo.Supports_cl_khr_subgroups )
                 {
-                    if( dispatch().clGetKernelSubGroupInfoKHR == NULL )
+                    cl_platform_id  platform = getPlatform(device);
+                    auto dispatchX = this->dispatchX(platform);
+
+                    if( dispatchX.clGetKernelSubGroupInfoKHR == NULL )
                     {
-                        cl_platform_id  platform = NULL;
-                        dispatch().clGetDeviceInfo(
-                            device,
-                            CL_DEVICE_PLATFORM,
-                            sizeof(platform),
-                            &platform,
-                            NULL );
                         getExtensionFunctionAddress(
                             platform,
                             "clGetKernelSubGroupInfoKHR" );
                     }
-                    if( dispatch().clGetKernelSubGroupInfoKHR )
+
+                    if( dispatchX.clGetKernelSubGroupInfoKHR )
                     {
-                        dispatch().clGetKernelSubGroupInfoKHR(
+                        dispatchX.clGetKernelSubGroupInfoKHR(
                             kernel,
                             device,
                             CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR,
@@ -5165,22 +5163,19 @@ cl_command_queue CLIntercept::createCommandQueueWithProperties(
     if( retVal == NULL &&
         deviceInfo.Supports_cl_khr_create_command_queue )
     {
-        if( dispatch().clCreateCommandQueueWithPropertiesKHR == NULL )
+        cl_platform_id  platform = getPlatform(device);
+        auto dispatchX = this->dispatchX(platform);
+
+        if( dispatchX.clCreateCommandQueueWithPropertiesKHR == NULL )
         {
-            cl_platform_id  platform = NULL;
-            dispatch().clGetDeviceInfo(
-                device,
-                CL_DEVICE_PLATFORM,
-                sizeof(platform),
-                &platform,
-                NULL );
             getExtensionFunctionAddress(
                 platform,
                 "clCreateCommandQueueWithPropertiesKHR" );
         }
-        if( dispatch().clCreateCommandQueueWithPropertiesKHR )
+
+        if( dispatchX.clCreateCommandQueueWithPropertiesKHR )
         {
-            retVal = dispatch().clCreateCommandQueueWithPropertiesKHR(
+            retVal = dispatchX.clCreateCommandQueueWithPropertiesKHR(
                 context,
                 device,
                 properties,
@@ -5275,13 +5270,12 @@ void CLIntercept::addKernelInfo(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::removeKernel(
-    cl_kernel kernel )
+void CLIntercept::checkRemoveKernelInfo( cl_kernel kernel )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_uint     refCount = 0;
-    cl_int      errorCode = CL_SUCCESS;
+    cl_uint refCount = 0;
+    cl_int  errorCode = CL_SUCCESS;
 
     errorCode = dispatch().clGetKernelInfo(
         kernel,
@@ -5289,45 +5283,144 @@ void CLIntercept::removeKernel(
         sizeof( refCount ),
         &refCount,
         NULL );
-    if( errorCode == CL_SUCCESS )
+    if( errorCode == CL_SUCCESS && refCount == 1 )
     {
-        if( refCount == 1 )
-        {
 #if 0
-            // We shouldn't remove the kernel name from the local kernel name map
-            // here since the mapping may be included in the device performance
-            // time report.
-            m_LongKernelNameMap.erase( m_KernelInfoMap[ kernel ].KernelName );
+        // We shouldn't remove the kernel name from the local kernel name map
+        // here since the mapping may be included in the device performance
+        // time report.
+        m_LongKernelNameMap.erase( m_KernelInfoMap[ kernel ].KernelName );
 #endif
 
-            m_KernelInfoMap.erase( kernel );
+        m_KernelInfoMap.erase( kernel );
 
-            SSIMDSurveyKernel*  pSIMDSurveyKernel =
-                m_SIMDSurveyKernelMap[ kernel ];
-            if( pSIMDSurveyKernel )
-            {
-                errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD8Kernel );
-                errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD16Kernel );
-                errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD32Kernel );
+        SSIMDSurveyKernel*  pSIMDSurveyKernel =
+            m_SIMDSurveyKernelMap[ kernel ];
+        if( pSIMDSurveyKernel )
+        {
+            errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD8Kernel );
+            errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD16Kernel );
+            errorCode = dispatch().clReleaseKernel( pSIMDSurveyKernel->SIMD32Kernel );
 
-                // Remove the parent kernel and each of the child kernels from the map.
-                m_SIMDSurveyKernelMap.erase( kernel );
+            // Remove the parent kernel and each of the child kernels from the map.
+            m_SIMDSurveyKernelMap.erase( kernel );
 
-                m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD8Kernel );
-                m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD16Kernel );
-                m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD32Kernel );
+            m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD8Kernel );
+            m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD16Kernel );
+            m_SIMDSurveyKernelMap.erase( pSIMDSurveyKernel->SIMD32Kernel );
 
-                // Also clean up the kernel name map.
-                m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD8Kernel );
-                m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD16Kernel );
-                m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD32Kernel );
+            // Also clean up the kernel name map.
+            m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD8Kernel );
+            m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD16Kernel );
+            m_KernelInfoMap.erase( pSIMDSurveyKernel->SIMD32Kernel );
 
-                // Done!
-                delete pSIMDSurveyKernel;
-                pSIMDSurveyKernel = NULL;
-            }
+            // Done!
+            delete pSIMDSurveyKernel;
+            pSIMDSurveyKernel = NULL;
         }
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::addAcceleratorInfo(
+    cl_accelerator_intel accelerator,
+    cl_context context )
+{
+    if( accelerator )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        m_AcceleratorInfoMap[accelerator] = getPlatform(context);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::checkRemoveAcceleratorInfo(
+    cl_accelerator_intel accelerator )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    CAcceleratorInfoMap::iterator iter = m_AcceleratorInfoMap.find( accelerator );
+    if( iter != m_AcceleratorInfoMap.end() )
+    {
+        cl_platform_id  platform = iter->second;
+        auto dispatchX = this->dispatchX(platform);
+
+        cl_uint refCount = 0;
+        cl_int  errorCode = CL_SUCCESS;
+
+        errorCode = dispatchX.clGetAcceleratorInfoINTEL(
+            accelerator,
+            CL_ACCELERATOR_REFERENCE_COUNT_INTEL,
+            sizeof( refCount ),
+            &refCount,
+            NULL );
+        if( errorCode == CL_SUCCESS && refCount == 1 )
+        {
+            m_AcceleratorInfoMap.erase( iter );
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::addSamplerString(
+    cl_sampler sampler,
+    const std::string& str )
+{
+    if( sampler )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_SamplerDataMap[sampler] = str;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::checkRemoveSamplerString(
+    cl_sampler sampler )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_uint refCount = 0;
+    cl_int  errorCode = CL_SUCCESS;
+
+    errorCode = dispatch().clGetSamplerInfo(
+        sampler,
+        CL_SAMPLER_REFERENCE_COUNT,
+        sizeof( refCount ),
+        &refCount,
+        NULL );
+    if( errorCode == CL_SUCCESS && refCount == 1 )
+    {
+        m_SamplerDataMap.erase( sampler );
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+bool CLIntercept::checkGetSamplerString(
+    size_t size,
+    const void *arg_value,
+    std::string& str ) const
+{
+    bool found = false;
+
+    if( ( arg_value != NULL ) && ( size == sizeof( cl_sampler ) ) )
+    {
+        const cl_sampler sampler = *(const cl_sampler *)arg_value;
+
+        CSamplerDataMap::const_iterator iter = m_SamplerDataMap.find( sampler );
+        if( iter != m_SamplerDataMap.end() )
+        {
+            str = iter->second;
+            found = true;
+        }
+    }
+
+    return found;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5358,139 +5451,6 @@ void CLIntercept::addBuffer(
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::addSampler(
-    cl_sampler sampler,
-    const std::string& str )
-{
-    if( sampler )
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-        m_SamplerDataMap[sampler] = str;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::removeSampler(
-    cl_sampler sampler )
-{
-    if( sampler )
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-
-        CSamplerDataMap::iterator iter = m_SamplerDataMap.find( sampler );
-        if( iter != m_SamplerDataMap.end() )
-        {
-            m_SamplerDataMap.erase( iter );
-        }
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-bool CLIntercept::getSampler(
-    size_t size,
-    const void *arg_value,
-    std::string& str ) const
-{
-    bool found = false;
-
-    if( ( arg_value != NULL ) && ( size == sizeof( cl_sampler ) ) )
-    {
-        const cl_sampler sampler = *(const cl_sampler *)arg_value;
-
-        CSamplerDataMap::const_iterator iter = m_SamplerDataMap.find( sampler );
-        if( iter != m_SamplerDataMap.end() )
-        {
-            str = iter->second;
-            found = true;
-        }
-    }
-
-    return found;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::dumpArgument(
-    cl_kernel kernel,
-    cl_int arg_index,
-    size_t size,
-    const void *pBuffer )
-{
-    if( kernel )
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-
-        std::string fileName = "";
-
-        // Get the dump directory name.
-        {
-            OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
-            fileName += "/SetKernelArg/";
-        }
-
-        // Now make directories as appropriate.
-        {
-            OS().MakeDumpDirectories( fileName );
-        }
-
-        // Add the enqueue count to file name
-        {
-            char    enqueueCount[ MAX_PATH ];
-
-            CLI_SPRINTF( enqueueCount, MAX_PATH, "%04u",
-                (unsigned int)m_EnqueueCounter );
-            fileName += "SetKernelArg_";
-            fileName += enqueueCount;
-        }
-
-        // Add the kernel name to the filename
-        {
-            fileName += "_Kernel_";
-            fileName += getShortKernelName(kernel);
-        }
-
-        // Add the arg number to the file name
-        {
-            char    argName[ MAX_PATH ];
-
-            CLI_SPRINTF( argName, MAX_PATH, "%d", arg_index );
-
-            fileName += "_Arg_";
-            fileName += argName;
-        }
-
-        // Add extension to file name
-        {
-            fileName += ".bin";
-        }
-
-        // Dump the buffer contents to the file.
-        {
-            if( pBuffer != NULL)
-            {
-                std::ofstream os;
-                os.open(
-                    fileName.c_str(),
-                    std::ios_base::out | std::ios_base::binary );
-
-                if( os.good() )
-                {
-                    os.write( (const char *)pBuffer, size );
-                    os.close();
-                }
-                else
-                {
-                    logf( "Failed to open program arg dump file for writing: %s\n",
-                        fileName.c_str() );
-                }
-            }
-        }
-    }
-}
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::addImage(
@@ -5548,7 +5508,7 @@ void CLIntercept::addImage(
             {
                 if( arraySize == 0 )
                 {
-                    imageInfo.Region[1] = 1;            // 1D iamge
+                    imageInfo.Region[1] = 1;            // 1D image
                 }
                 else
                 {
@@ -5587,7 +5547,7 @@ void CLIntercept::addImage(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::removeMemObj(
+void CLIntercept::checkRemoveMemObj(
     cl_mem memobj )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
@@ -5601,14 +5561,11 @@ void CLIntercept::removeMemObj(
         sizeof( refCount ),
         &refCount,
         NULL );
-    if( errorCode == CL_SUCCESS )
+    if( errorCode == CL_SUCCESS && refCount == 1 )
     {
-        if( refCount == 1 )
-        {
-            m_MemAllocNumberMap.erase( memobj );
-            m_BufferInfoMap.erase( memobj );
-            m_ImageInfoMap.erase( memobj );
-        }
+        m_MemAllocNumberMap.erase( memobj );
+        m_BufferInfoMap.erase( memobj );
+        m_ImageInfoMap.erase( memobj );
     }
 }
 
@@ -6008,6 +5965,86 @@ void CLIntercept::dumpImagesForKernel(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::dumpArgument(
+    cl_kernel kernel,
+    cl_int arg_index,
+    size_t size,
+    const void *pBuffer )
+{
+    if( kernel )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        std::string fileName = "";
+
+        // Get the dump directory name.
+        {
+            OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+            fileName += "/SetKernelArg/";
+        }
+
+        // Now make directories as appropriate.
+        {
+            OS().MakeDumpDirectories( fileName );
+        }
+
+        // Add the enqueue count to file name
+        {
+            char    enqueueCount[ MAX_PATH ];
+
+            CLI_SPRINTF( enqueueCount, MAX_PATH, "%04u",
+                (unsigned int)m_EnqueueCounter );
+            fileName += "SetKernelArg_";
+            fileName += enqueueCount;
+        }
+
+        // Add the kernel name to the filename
+        {
+            fileName += "_Kernel_";
+            fileName += getShortKernelName(kernel);
+        }
+
+        // Add the arg number to the file name
+        {
+            char    argName[ MAX_PATH ];
+
+            CLI_SPRINTF( argName, MAX_PATH, "%d", arg_index );
+
+            fileName += "_Arg_";
+            fileName += argName;
+        }
+
+        // Add extension to file name
+        {
+            fileName += ".bin";
+        }
+
+        // Dump the buffer contents to the file.
+        {
+            if( pBuffer != NULL)
+            {
+                std::ofstream os;
+                os.open(
+                    fileName.c_str(),
+                    std::ios_base::out | std::ios_base::binary );
+
+                if( os.good() )
+                {
+                    os.write( (const char *)pBuffer, size );
+                    os.close();
+                }
+                else
+                {
+                    logf( "Failed to open program arg dump file for writing: %s\n",
+                        fileName.c_str() );
+                }
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::dumpBuffer(
     const std::string& name,
     cl_mem memobj,
@@ -6215,55 +6252,21 @@ void CLIntercept::checkKernelArgUSMPointer(
 
     cl_int errorCode = CL_SUCCESS;
 
+    cl_platform_id  platform = getPlatform(kernel);
+    auto dispatchX = this->dispatchX(platform);
+
     // If we don't have a function pointer for clGetMemAllocINFO, try to
     // get one.  It's possible that the function pointer exists but
     // the application hasn't queried for it yet, in which case it won't
     // be installed into the dispatch table.
-    if( dispatch().clGetMemAllocInfoINTEL == NULL )
+    if( dispatchX.clGetMemAllocInfoINTEL == NULL )
     {
-        cl_program  program = NULL;
-        if( errorCode == CL_SUCCESS )
-        {
-            errorCode = dispatch().clGetKernelInfo(
-                kernel,
-                CL_KERNEL_PROGRAM,
-                sizeof(program),
-                &program,
-                NULL );
-        }
-
-        cl_uint         numDevices = 0;
-        cl_device_id*   deviceList = NULL;
-        if( errorCode == CL_SUCCESS )
-        {
-            errorCode = allocateAndGetProgramDeviceList(
-                program,
-                numDevices,
-                deviceList );
-        }
-
-        cl_platform_id  platform = NULL;
-        if( errorCode == CL_SUCCESS && numDevices > 0 )
-        {
-            errorCode = dispatch().clGetDeviceInfo(
-                deviceList[0],
-                CL_DEVICE_PLATFORM,
-                sizeof(platform),
-                &platform,
-                NULL );
-        }
-
-        if( errorCode == CL_SUCCESS )
-        {
-            getExtensionFunctionAddress(
-                platform,
-                "clGetMemAllocInfoINTEL" );
-        }
-
-        delete [] deviceList;
+        getExtensionFunctionAddress(
+            platform,
+            "clGetMemAllocInfoINTEL" );
     }
 
-    if( dispatch().clGetMemAllocInfoINTEL == NULL )
+    if( dispatchX.clGetMemAllocInfoINTEL == NULL )
     {
         logf( "function pointer for clGetMemAllocInfoINTEL is NULL\n" );
     }
@@ -6289,14 +6292,14 @@ void CLIntercept::checkKernelArgUSMPointer(
             cl_unified_shared_memory_type_intel memType = CL_MEM_TYPE_UNKNOWN_INTEL;
             cl_device_id associatedDevice = NULL;
 
-            dispatch().clGetMemAllocInfoINTEL(
+            dispatchX.clGetMemAllocInfoINTEL(
                 context,
                 arg,
                 CL_MEM_ALLOC_TYPE_INTEL,
                 sizeof(memType),
                 &memType,
                 NULL );
-            dispatch().clGetMemAllocInfoINTEL(
+            dispatchX.clGetMemAllocInfoINTEL(
                 context,
                 arg,
                 CL_MEM_ALLOC_DEVICE_INTEL,
@@ -10680,7 +10683,7 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-#define CHECK_RETURN_EXTENSION_FUNCTION(funcname)                           \
+#define CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION(funcname)                \
 {                                                                           \
     if( func_name == #funcname )                                            \
     {                                                                       \
@@ -10707,17 +10710,44 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
     }                                                                       \
 }
 
+#define CHECK_RETURN_EXTENSION_FUNCTION(funcname)                           \
+{                                                                           \
+    if( func_name == #funcname )                                            \
+    {                                                                       \
+        if( dispatchX(platform) . funcname == NULL )                        \
+        {                                                                   \
+            void *func = NULL;                                              \
+            if( platform &&                                                 \
+                dispatch().clGetExtensionFunctionAddressForPlatform )       \
+            {                                                               \
+                func = dispatch().clGetExtensionFunctionAddressForPlatform( \
+                    platform,                                               \
+                    #funcname );                                            \
+            } else if( dispatch().clGetExtensionFunctionAddress )           \
+            {                                                               \
+                func = dispatch().clGetExtensionFunctionAddress(#funcname); \
+            }                                                               \
+            void** pfunc = (void**)( &m_DispatchX[platform] . funcname );   \
+            *pfunc = func;                                                  \
+        }                                                                   \
+        if( dispatchX(platform) . funcname )                                \
+        {                                                                   \
+            return (void*)( funcname );                                     \
+        }                                                                   \
+    }                                                                       \
+}
+
 #define CHECK_RETURN_EXTENSION_FUNCTION_EMU(funcname)                       \
 {                                                                           \
     if( func_name == #funcname )                                            \
     {                                                                       \
-        if( dispatch() . funcname == NULL )                                 \
+        if( dispatchX(platform) . funcname == NULL )                        \
         {                                                                   \
             void *func = (void*)funcname##_EMU;                             \
-            void** pfunc = (void**)( &m_Dispatch . funcname );              \
+            void** pfunc = (void**)( &m_DispatchX[platform] . funcname );   \
             *pfunc = func;                                                  \
         }                                                                   \
-        if( dispatch() . funcname )                                         \
+        if( dispatchX(platform) . funcname )                                \
         {                                                                   \
             return (void*)( funcname );                                     \
         }                                                                   \
@@ -10729,16 +10759,23 @@ void CLIntercept::SIMDSurveyNDRangeKernel(
 //
 void* CLIntercept::getExtensionFunctionAddress(
     cl_platform_id platform,
-    const std::string& func_name ) const
+    const std::string& func_name )
 {
     // KHR Extensions
 
+    // clGetGLContextInfoKHR is a special-case.
+    // It's an extension function and is part of cl_khr_gl_sharing, but it
+    // doesn't necessarily pass a dispatchable object as its first argument,
+    // and is implemented in the ICD loader and called into via the core API
+    // dispatch table.  This means that we can install it into our core API
+    // dispatch table as well, and don't need to look it up per-platform.
+    CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clGetGLContextInfoKHR );
+
+    // A few of the following extension functions are also implemented in the
+    // ICD loader, but because they pass a dispatchable object we can treat
+    // them the same as any other extension function.
+
     // cl_khr_gl_sharing
-    // Even though all of these functions except for clGetGLContextInfoKHR()
-    // are exported from the ICD DLL, still call CHECK_RETURN_EXTENSION_FUNCTION
-    // to handle the case where an intercepted DLL supports the extension but
-    // does not export the entry point.  This will probably never happen in
-    // practice, but better safe than sorry.
 #if defined(_WIN32) || defined(__linux__)
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromGLBuffer );
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromGLTexture );
@@ -10750,7 +10787,6 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireGLObjects );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseGLObjects );
 #endif
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetGLContextInfoKHR );
     // cl_khr_gl_event
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateEventFromGLsyncKHR );
 #if defined(_WIN32)
@@ -11131,38 +11167,39 @@ bool CLIntercept::initDispatch( const std::string& libName )
 
         bool    savedSuccess = success;
 
-        // Optional features?
         INIT_EXPORTED_FUNC(clGetExtensionFunctionAddress);
-        INIT_EXPORTED_FUNC(clGetExtensionFunctionAddressForPlatform);
 
         // OpenCL 1.1 Entry Points (optional)
+        INIT_EXPORTED_FUNC(clSetEventCallback);
         INIT_EXPORTED_FUNC(clCreateSubBuffer);
         INIT_EXPORTED_FUNC(clSetMemObjectDestructorCallback);
         INIT_EXPORTED_FUNC(clCreateUserEvent);
         INIT_EXPORTED_FUNC(clSetUserEventStatus);
-        INIT_EXPORTED_FUNC(clSetEventCallback);
         INIT_EXPORTED_FUNC(clEnqueueReadBufferRect);
         INIT_EXPORTED_FUNC(clEnqueueWriteBufferRect);
         INIT_EXPORTED_FUNC(clEnqueueCopyBufferRect);
 
         // OpenCL 1.2 Entry Points (optional)
-        INIT_EXPORTED_FUNC(clCompileProgram);
-        INIT_EXPORTED_FUNC(clCreateFromGLTexture);
+        INIT_EXPORTED_FUNC(clCreateSubDevices);
+        INIT_EXPORTED_FUNC(clRetainDevice);
+        INIT_EXPORTED_FUNC(clReleaseDevice);
         INIT_EXPORTED_FUNC(clCreateImage);
         INIT_EXPORTED_FUNC(clCreateProgramWithBuiltInKernels);
-        INIT_EXPORTED_FUNC(clCreateSubDevices);
-        INIT_EXPORTED_FUNC(clEnqueueBarrierWithWaitList);
+        INIT_EXPORTED_FUNC(clCompileProgram);
+        INIT_EXPORTED_FUNC(clLinkProgram);
+        INIT_EXPORTED_FUNC(clUnloadPlatformCompiler);
+        INIT_EXPORTED_FUNC(clGetKernelArgInfo);
         INIT_EXPORTED_FUNC(clEnqueueFillBuffer);
         INIT_EXPORTED_FUNC(clEnqueueFillImage);
-        INIT_EXPORTED_FUNC(clEnqueueMarkerWithWaitList);
         INIT_EXPORTED_FUNC(clEnqueueMigrateMemObjects);
-        INIT_EXPORTED_FUNC(clGetKernelArgInfo);
-        INIT_EXPORTED_FUNC(clLinkProgram);
-        INIT_EXPORTED_FUNC(clReleaseDevice);
-        INIT_EXPORTED_FUNC(clRetainDevice);
-        INIT_EXPORTED_FUNC(clUnloadPlatformCompiler);
+        INIT_EXPORTED_FUNC(clEnqueueMarkerWithWaitList);
+        INIT_EXPORTED_FUNC(clEnqueueBarrierWithWaitList);
+        INIT_EXPORTED_FUNC(clGetExtensionFunctionAddressForPlatform);
 
         // OpenCL 2.0 Entry Points (optional)
+        INIT_EXPORTED_FUNC(clCreateCommandQueueWithProperties);
+        INIT_EXPORTED_FUNC(clCreatePipe);
+        INIT_EXPORTED_FUNC(clGetPipeInfo);
         INIT_EXPORTED_FUNC(clSVMAlloc);
         INIT_EXPORTED_FUNC(clSVMFree);
         INIT_EXPORTED_FUNC(clEnqueueSVMFree);
@@ -11170,21 +11207,18 @@ bool CLIntercept::initDispatch( const std::string& libName )
         INIT_EXPORTED_FUNC(clEnqueueSVMMemFill);
         INIT_EXPORTED_FUNC(clEnqueueSVMMap);
         INIT_EXPORTED_FUNC(clEnqueueSVMUnmap);
+        INIT_EXPORTED_FUNC(clCreateSamplerWithProperties);
         INIT_EXPORTED_FUNC(clSetKernelArgSVMPointer);
         INIT_EXPORTED_FUNC(clSetKernelExecInfo);
-        INIT_EXPORTED_FUNC(clCreatePipe);
-        INIT_EXPORTED_FUNC(clGetPipeInfo);
-        INIT_EXPORTED_FUNC(clCreateCommandQueueWithProperties);
-        INIT_EXPORTED_FUNC(clCreateSamplerWithProperties);
 
         // OpenCL 2.1 Entry Points (optional)
-        INIT_EXPORTED_FUNC(clSetDefaultDeviceCommandQueue);
+        INIT_EXPORTED_FUNC(clCloneKernel);
+        INIT_EXPORTED_FUNC(clCreateProgramWithIL);
+        INIT_EXPORTED_FUNC(clEnqueueSVMMigrateMem);
         INIT_EXPORTED_FUNC(clGetDeviceAndHostTimer);
         INIT_EXPORTED_FUNC(clGetHostTimer);
-        INIT_EXPORTED_FUNC(clCreateProgramWithIL);
-        INIT_EXPORTED_FUNC(clCloneKernel);
         INIT_EXPORTED_FUNC(clGetKernelSubGroupInfo);
-        INIT_EXPORTED_FUNC(clEnqueueSVMMigrateMem);
+        INIT_EXPORTED_FUNC(clSetDefaultDeviceCommandQueue);
 
         // OpenCL 2.2 Entry Points (optional)
         INIT_EXPORTED_FUNC(clSetProgramReleaseCallback);
@@ -11193,20 +11227,6 @@ bool CLIntercept::initDispatch( const std::string& libName )
         // OpenCL 3.0 Entry Points (optional)
         INIT_EXPORTED_FUNC(clCreateBufferWithProperties);
         INIT_EXPORTED_FUNC(clCreateImageWithProperties);
-
-        // CL-GL Entry Points (optional)
-        INIT_EXPORTED_FUNC(clCreateFromGLBuffer);
-        INIT_EXPORTED_FUNC(clCreateFromGLTexture);
-        INIT_EXPORTED_FUNC(clCreateFromGLTexture2D);
-        INIT_EXPORTED_FUNC(clCreateFromGLTexture3D);
-        INIT_EXPORTED_FUNC(clCreateFromGLRenderbuffer);
-        INIT_EXPORTED_FUNC(clGetGLObjectInfo);
-        INIT_EXPORTED_FUNC(clGetGLTextureInfo );
-        INIT_EXPORTED_FUNC(clEnqueueAcquireGLObjects);
-        INIT_EXPORTED_FUNC(clEnqueueReleaseGLObjects);
-
-        // Extensions (optional)
-        // Extensions get loaded into the dispatch table on the fly.
 
         success = savedSuccess;
     }
@@ -11296,51 +11316,34 @@ bool CLIntercept::initDispatch( void )
     INIT_CL_FUNC(clEnqueueMarker);
     INIT_CL_FUNC(clEnqueueWaitForEvents);
     INIT_CL_FUNC(clEnqueueBarrier);
-
-    // Optional features?
     INIT_CL_FUNC(clGetExtensionFunctionAddress);
-    INIT_CL_FUNC(clGetExtensionFunctionAddressForPlatform);
 
-    // OpenCL 1.1 Entry Points (optional)
+    // OpenCL 1.1 Entry Points
+    INIT_CL_FUNC(clSetEventCallback);
     INIT_CL_FUNC(clCreateSubBuffer);
     INIT_CL_FUNC(clSetMemObjectDestructorCallback);
     INIT_CL_FUNC(clCreateUserEvent);
     INIT_CL_FUNC(clSetUserEventStatus);
-    INIT_CL_FUNC(clSetEventCallback);
     INIT_CL_FUNC(clEnqueueReadBufferRect);
     INIT_CL_FUNC(clEnqueueWriteBufferRect);
     INIT_CL_FUNC(clEnqueueCopyBufferRect);
 
-    // OpenCL 1.2 Entry Points (optional)
-    INIT_CL_FUNC(clCompileProgram);
-    INIT_CL_FUNC(clCreateFromGLTexture);
+    // OpenCL 1.2 Entry Points
+    INIT_CL_FUNC(clCreateSubDevices);
+    INIT_CL_FUNC(clRetainDevice);
+    INIT_CL_FUNC(clReleaseDevice);
     INIT_CL_FUNC(clCreateImage);
     INIT_CL_FUNC(clCreateProgramWithBuiltInKernels);
-    INIT_CL_FUNC(clCreateSubDevices);
-    INIT_CL_FUNC(clEnqueueBarrierWithWaitList);
+    INIT_CL_FUNC(clCompileProgram);
+    INIT_CL_FUNC(clLinkProgram);
+    INIT_CL_FUNC(clUnloadPlatformCompiler);
+    INIT_CL_FUNC(clGetKernelArgInfo);
     INIT_CL_FUNC(clEnqueueFillBuffer);
     INIT_CL_FUNC(clEnqueueFillImage);
-    INIT_CL_FUNC(clEnqueueMarkerWithWaitList);
     INIT_CL_FUNC(clEnqueueMigrateMemObjects);
-    INIT_CL_FUNC(clGetKernelArgInfo);
-    INIT_CL_FUNC(clLinkProgram);
-    INIT_CL_FUNC(clReleaseDevice);
-    INIT_CL_FUNC(clRetainDevice);
-    INIT_CL_FUNC(clUnloadPlatformCompiler);
-
-    // CL-GL Entry Points (optional)
-    INIT_CL_FUNC(clCreateFromGLBuffer);
-    INIT_CL_FUNC(clCreateFromGLTexture);   // OpenCL 1.2
-    INIT_CL_FUNC(clCreateFromGLTexture2D);
-    INIT_CL_FUNC(clCreateFromGLTexture3D);
-    INIT_CL_FUNC(clCreateFromGLRenderbuffer);
-    INIT_CL_FUNC(clGetGLObjectInfo);
-    INIT_CL_FUNC(clGetGLTextureInfo);
-    INIT_CL_FUNC(clEnqueueAcquireGLObjects);
-    INIT_CL_FUNC(clEnqueueReleaseGLObjects);
-
-    // Extensions (optional)
-    // Extensions get loaded into the dispatch table on the fly.
+    INIT_CL_FUNC(clEnqueueMarkerWithWaitList);
+    INIT_CL_FUNC(clEnqueueBarrierWithWaitList);
+    INIT_CL_FUNC(clGetExtensionFunctionAddressForPlatform);
 
     return true;
 }

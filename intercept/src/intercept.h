@@ -96,7 +96,7 @@ public:
                 ... );
 
     void    cacheDeviceInfo(
-                cl_device_id device  );
+                cl_device_id device );
     cl_int  getDeviceMajorMinorVersion(
                 cl_device_id device,
                 size_t& majorVersion,
@@ -377,29 +377,34 @@ public:
                 const cl_kernel kernel,
                 const cl_program program,
                 const std::string& kernelName );
-
     void    addKernelInfo(
                 const cl_kernel* kernels,
                 const cl_program program,
                 cl_uint numKernels );
-
-    void    removeKernel(
+    void    checkRemoveKernelInfo(
                 const cl_kernel kernel );
 
-    void    addBuffer(
-                cl_mem buffer );
-    void    addSampler(
+    void    addAcceleratorInfo(
+                cl_accelerator_intel accelerator,
+                cl_context context );
+    void    checkRemoveAcceleratorInfo(
+                cl_accelerator_intel accelerator );
+
+    void    addSamplerString(
                 cl_sampler sampler,
                 const std::string& str );
-    void    removeSampler(
+    void    checkRemoveSamplerString(
                 cl_sampler sampler );
-    bool    getSampler(
+    bool    checkGetSamplerString(
                 size_t size,
                 const void *arg_value,
                 std::string& str ) const;
+
+    void    addBuffer(
+                cl_mem buffer );
     void    addImage(
                 cl_mem image );
-    void    removeMemObj(
+    void    checkRemoveMemObj(
                 cl_mem memobj );
     void    addSVMAllocation(
                 void* svmPtr,
@@ -422,6 +427,12 @@ public:
                 const std::string& name,
                 cl_kernel kernel,
                 cl_command_queue command_queue );
+
+    void    dumpArgument(
+                cl_kernel kernel,
+                cl_int arg_index,
+                size_t size,
+                const void *pBuffer );
     void    dumpBuffer(
                 const std::string& name,
                 cl_mem memobj,
@@ -429,11 +440,6 @@ public:
                 void* ptr,
                 size_t offset,
                 size_t size );
-    void    dumpArgument(
-                cl_kernel kernel,
-                cl_int arg_index,
-                size_t size,
-                const void *pBuffer );
 
     void    checkEventList(
                 const std::string& functionName,
@@ -622,7 +628,7 @@ public:
 
     void*   getExtensionFunctionAddress(
                 cl_platform_id platform,
-                const std::string& func_name ) const;
+                const std::string& func_name );
 
 #if defined(USE_MDAPI)
     void    initCustomPerfCounters();
@@ -639,8 +645,25 @@ public:
                 cl_int* errcode_ret );
 #endif
 
-    const OS::Services& OS() const;
     const CLdispatch&   dispatch() const;
+
+    const CLdispatchX&  dispatchX( cl_accelerator_intel accelerator ) const;
+    const CLdispatchX&  dispatchX( cl_command_queue queue ) const;
+    const CLdispatchX&  dispatchX( cl_context context ) const;
+    const CLdispatchX&  dispatchX( cl_device_id device ) const;
+    const CLdispatchX&  dispatchX( cl_kernel kernel ) const;
+    const CLdispatchX&  dispatchX( cl_mem memobj ) const;
+    const CLdispatchX&  dispatchX( cl_platform_id platform ) const;
+
+    cl_platform_id  getPlatform( cl_accelerator_intel accelerator ) const;
+    cl_platform_id  getPlatform( cl_command_queue queue ) const;
+    cl_platform_id  getPlatform( cl_context context ) const;
+    cl_platform_id  getPlatform( cl_device_id device ) const;
+    cl_platform_id  getPlatform( cl_kernel kernel ) const;
+    cl_platform_id  getPlatform( cl_mem memobj ) const;
+
+    const OS::Services& OS() const;
+
     const CEnumNameMap& enumName() const;
 
     const Config&   config() const;
@@ -789,8 +812,11 @@ private:
 
     std::mutex      m_Mutex;
 
+    typedef std::map< cl_platform_id, CLdispatchX > CLdispatchXMap;
+
     OS::Services    m_OS;
     CLdispatch      m_Dispatch;
+    CLdispatchXMap  m_DispatchX;
     CEnumNameMap    m_EnumNameMap;
     CObjectTracker  m_ObjectTracker;
 
@@ -1041,6 +1067,9 @@ private:
     typedef std::map< const cl_kernel, SSIMDSurveyKernel* > CSIMDSurveyKernelMap;
     CSIMDSurveyKernelMap    m_SIMDSurveyKernelMap;
 
+    typedef std::map< const cl_accelerator_intel, cl_platform_id>   CAcceleratorInfoMap;
+    CAcceleratorInfoMap     m_AcceleratorInfoMap;
+
     struct Config
     {
 #define CLI_CONTROL( _type, _name, _init, _desc )   _type _name;
@@ -1136,9 +1165,161 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+///////////////////////////////////////////////////////////////////////////////
+//
 inline const CLdispatch& CLIntercept::dispatch() const
 {
     return m_Dispatch;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+inline const CLdispatchX& CLIntercept::dispatchX( cl_accelerator_intel accelerator ) const
+{
+    cl_platform_id  platform = getPlatform( accelerator );
+    return dispatchX( platform );
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_command_queue queue ) const
+{
+    cl_platform_id  platform = getPlatform(queue);
+    return dispatchX( platform );
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_context context ) const
+{
+    cl_platform_id  platform = getPlatform(context);
+    return dispatchX( platform );
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_device_id device ) const
+{
+    cl_platform_id  platform = getPlatform(device);
+    return dispatchX( platform );
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_kernel kernel ) const
+{
+    cl_platform_id  platform = getPlatform(kernel);
+    return dispatchX( platform );
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_mem memobj ) const
+{
+    cl_platform_id  platform = getPlatform(memobj);
+    return dispatchX( platform );
+}
+
+inline const CLdispatchX& CLIntercept::dispatchX( cl_platform_id platform ) const
+{
+    CLdispatchXMap::const_iterator iter = m_DispatchX.find(platform);
+    if( iter != m_DispatchX.end() )
+    {
+        return iter->second;
+    }
+    else
+    {
+        return m_DispatchX.at(NULL);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+inline cl_platform_id CLIntercept::getPlatform( cl_accelerator_intel accelerator ) const
+{
+    CAcceleratorInfoMap::const_iterator iter = m_AcceleratorInfoMap.find(accelerator);
+    if( iter != m_AcceleratorInfoMap.end() )
+    {
+        return iter->second;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+inline cl_platform_id CLIntercept::getPlatform( cl_command_queue queue ) const
+{
+    cl_device_id device = NULL;
+    dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_DEVICE,
+        sizeof(device),
+        &device,
+        NULL );
+    return getPlatform(device);
+}
+
+inline cl_platform_id CLIntercept::getPlatform( cl_context context ) const
+{
+    cl_uint numDevices = 0;
+    dispatch().clGetContextInfo(
+        context,
+        CL_CONTEXT_NUM_DEVICES,
+        sizeof(numDevices),
+        &numDevices,
+        NULL );
+
+    if( numDevices == 1 )   // fast path, no dynamic allocation
+    {
+        cl_device_id    device = NULL;
+        dispatch().clGetContextInfo(
+            context,
+            CL_CONTEXT_DEVICES,
+            sizeof(cl_device_id),
+            &device,
+            NULL );
+        return getPlatform(device);
+    }
+    else if( numDevices )   // slower path, dynamic allocation
+    {
+        std::vector<cl_device_id>   devices(numDevices);
+        dispatch().clGetContextInfo(
+            context,
+            CL_CONTEXT_DEVICES,
+            numDevices * sizeof(cl_device_id),
+            devices.data(),
+            NULL );
+        return getPlatform(devices[0]);
+    }
+
+    return NULL;
+}
+
+inline cl_platform_id CLIntercept::getPlatform( cl_device_id device ) const
+{
+    cl_platform_id platform = NULL;
+    dispatch().clGetDeviceInfo(
+        device,
+        CL_DEVICE_PLATFORM,
+        sizeof(platform),
+        &platform,
+        NULL );
+    return platform;
+}
+
+inline cl_platform_id CLIntercept::getPlatform( cl_kernel kernel ) const
+{
+    cl_context context = NULL;
+    dispatch().clGetKernelInfo(
+        kernel,
+        CL_KERNEL_CONTEXT,
+        sizeof(context),
+        &context,
+        NULL);
+    return getPlatform(context);
+}
+
+inline cl_platform_id CLIntercept::getPlatform( cl_mem memobj ) const
+{
+    cl_context context = NULL;
+    dispatch().clGetMemObjectInfo(
+        memobj,
+        CL_MEM_CONTEXT,
+        sizeof(context),
+        &context,
+        NULL);
+    return getPlatform(context);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1458,21 +1639,21 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits() const
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
           pIntercept->config().DumpImagesAfterEnqueue ) )                   \
     {                                                                       \
-        pIntercept->removeMemObj( memobj );                                 \
+        pIntercept->checkRemoveMemObj( memobj );                            \
     }
 
 #define ADD_SAMPLER( sampler, str )                                         \
     if( sampler &&                                                          \
         pIntercept->config().CallLogging )                                  \
     {                                                                       \
-        pIntercept->addSampler( sampler, str );                             \
+        pIntercept->addSamplerString( sampler, str );                       \
     }
 
 #define REMOVE_SAMPLER( sampler )                                           \
     if( sampler &&                                                          \
         pIntercept->config().CallLogging )                                  \
     {                                                                       \
-        pIntercept->removeSampler( sampler );                               \
+        pIntercept->checkRemoveSamplerString( sampler );                    \
     }
 
 #define ADD_SVM_ALLOCATION( svmPtr, size )                                  \
@@ -1535,7 +1716,6 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits() const
         delete [] zeroData;                                                 \
         zeroData = NULL;                                                    \
     }
-
 
 #define DUMP_BUFFER_AFTER_CREATE( memobj, flags, ptr, size )                \
     if( memobj &&                                                           \
