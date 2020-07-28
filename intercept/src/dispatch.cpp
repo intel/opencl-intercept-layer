@@ -655,6 +655,36 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetContextInfo)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// OpenCL 3.0
+CL_API_ENTRY cl_int CL_API_CALL clSetContextDestructorCallback(
+    cl_context context,
+    void (CL_CALLBACK *pfn_notify)( cl_context, void* ),
+    void *user_data )
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept && pIntercept->dispatch().clSetContextDestructorCallback )
+    {
+        CALL_LOGGING_ENTER();
+        CPU_PERFORMANCE_TIMING_START();
+
+        cl_int  retVal = pIntercept->dispatch().clSetContextDestructorCallback(
+            context,
+            pfn_notify,
+            user_data );
+
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
+
+        return retVal;
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
     cl_context context,
     cl_device_id device,
@@ -5180,7 +5210,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
     cl_context context,
     cl_mem_flags flags,
     cl_GLuint bufobj,
-    int* errcode_ret)   // Not cl_int*?
+    cl_int* errcode_ret)
 {
     CLIntercept*    pIntercept = GetIntercept();
 
