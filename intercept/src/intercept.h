@@ -152,6 +152,9 @@ public:
     void    getCommandQueuePropertiesString(
                 const cl_queue_properties* properties,
                 std::string& str ) const;
+    void    getMemPropertiesString(
+                const cl_mem_properties* properties,
+                std::string& str ) const;
     void    getCreateKernelsInProgramRetString(
                 cl_int retVal,
                 cl_kernel* kernels,

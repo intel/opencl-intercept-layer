@@ -1888,17 +1888,6 @@ void CLIntercept::getSamplerPropertiesString(
             case CL_SAMPLER_LOD_MIN:
             case CL_SAMPLER_LOD_MAX:
                 {
-#if 0
-                    if( property == CL_SAMPLER_LOD_MAX )
-                    {
-                        cl_float*   pFixup = (cl_float*)( properties + 1);
-                        if( pFixup[0] < 0.5f )
-                        {
-                            pFixup[0] = 100.0f;
-                        }
-                    }
-#endif
-
                     const cl_float* pf = (const cl_float*)( properties + 1 );
 
                     cl_float    value = pf[0];
@@ -1987,6 +1976,47 @@ void CLIntercept::getCommandQueuePropertiesString(
                 str += ", ";
             }
         }
+    }
+    else
+    {
+        str = "NULL";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::getMemPropertiesString(
+    const cl_mem_properties* properties,
+    std::string& str ) const
+{
+    str = "";
+
+    if( properties )
+    {
+        while( properties[0] != 0 )
+        {
+            cl_int  property = (cl_int)properties[0];
+            str += enumName().name( property ) + " = ";
+
+            // There are no mem properties (yet).
+
+            //switch( property )
+            //{
+            //default:
+                str += "<Unexpected!>";
+            //    break;
+            //}
+
+            properties += 2;
+            if( properties[0] != 0 )
+            {
+                str += ", ";
+            }
+        }
+    }
+    else
+    {
+        str = "NULL";
     }
 }
 
