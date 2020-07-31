@@ -981,7 +981,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
 // OpenCL 3.0
 CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
     cl_context context,
-    const cl_mem_properties * properties,
+    const cl_mem_properties* properties,
     cl_mem_flags flags,
     size_t size,
     void* host_ptr,
@@ -991,9 +991,16 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
 
     if( pIntercept && pIntercept->dispatch().clCreateBufferWithProperties )
     {
-        CALL_LOGGING_ENTER( "context = %p, properties = %p, flags = %s (%llX), size = %d, host_ptr = %p",
+        std::string propsStr;
+        if( pIntercept->callLogging() )
+        {
+            pIntercept->getMemPropertiesString(
+                properties,
+                propsStr );
+        }
+        CALL_LOGGING_ENTER( "context = %p, properties = [ %s ], flags = %s (%llX), size = %d, host_ptr = %p",
             context,
-            properties,
+            propsStr.c_str(),
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags,
             size,
@@ -1169,9 +1176,16 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImageWithProperties)(
     {
         if( image_desc && image_format )
         {
+            std::string propsStr;
+            if( pIntercept->callLogging() )
+            {
+                pIntercept->getMemPropertiesString(
+                    properties,
+                    propsStr );
+            }
             CALL_LOGGING_ENTER(
                 "context = %p, "
-                "properties = %p, "
+                "properties = [ %s ], "
                 "flags = %s (%llX), "
                 "format->channel_order = %s, "
                 "format->channel_data_type = %s, "
@@ -1187,7 +1201,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImageWithProperties)(
                 "desc->mem_object = %p, "
                 "host_ptr = %p ",
                 context,
-                properties,
+                propsStr.c_str(),
                 pIntercept->enumName().name_mem_flags( flags ).c_str(),
                 flags,
                 pIntercept->enumName().name( image_format->image_channel_order ).c_str(),
@@ -6170,7 +6184,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
         cl_command_queue    retVal = NULL;
 
         std::string deviceInfo;
-        std::string commandQueueProperties;
+        std::string propsStr;
         if( pIntercept->callLogging() )
         {
             pIntercept->getDeviceInfoString(
@@ -6179,12 +6193,12 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
                 deviceInfo );
             pIntercept->getCommandQueuePropertiesString(
                 properties,
-                commandQueueProperties );
+                propsStr );
         }
         CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = [ %s ]",
             context,
             deviceInfo.c_str(),
-            commandQueueProperties.c_str() );
+            propsStr.c_str() );
         CREATE_COMMAND_QUEUE_OVERRIDE_INIT( device, properties, newProperties );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
@@ -6261,7 +6275,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
             cl_command_queue    retVal = NULL;
 
             std::string deviceInfo;
-            std::string commandQueueProperties;
+            std::string propsStr;
             if( pIntercept->callLogging() )
             {
                 pIntercept->getDeviceInfoString(
@@ -6270,12 +6284,12 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
                     deviceInfo );
                 pIntercept->getCommandQueuePropertiesString(
                     properties,
-                    commandQueueProperties );
+                    propsStr );
             }
             CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = [ %s ]",
                 context,
                 deviceInfo.c_str(),
-                commandQueueProperties.c_str() );
+                propsStr.c_str() );
             CREATE_COMMAND_QUEUE_OVERRIDE_INIT( device, properties, newProperties );
             CHECK_ERROR_INIT( errcode_ret );
             CPU_PERFORMANCE_TIMING_START();
