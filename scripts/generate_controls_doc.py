@@ -132,6 +132,7 @@ For Linux:
 - `./real_libOpenCL.so`
 - `/usr/lib/x86_64-linux-gnu/libOpenCL.so`
 - `/opt/intel/opencl/lib64/libOpenCL.so`
+- `/glob/development-tools/oneapi/inteloneapi/compiler/latest/linux/lib/libOpenCL.so`
 
 For Android:
 
