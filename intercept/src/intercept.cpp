@@ -3621,6 +3621,18 @@ bool CLIntercept::injectProgramOptions(
 
                 is.read( newOptions, filesize );
 
+                // Replace any newline characters with spaces.
+                // Some editors insert newline characters, especially at the
+                // end of the file, which can cause build options to become
+                // invalid.
+                for( size_t i = 0; i < filesize; i++ )
+                {
+                    if( newOptions[i] == '\n' )
+                    {
+                        newOptions[i] = ' ';
+                    }
+                }
+
                 options = newOptions;
 
                 injected = true;
