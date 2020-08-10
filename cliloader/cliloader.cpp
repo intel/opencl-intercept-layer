@@ -150,6 +150,9 @@ static bool getEnvVars(
 
 #define SETENV( _name, _value ) setenv( _name, _value, 1 );
 
+bool set_LD_LIBRARY_PATH = true;
+bool set_LD_PRELOAD = true;
+
 #endif
 
 bool debug = false;
@@ -243,6 +246,16 @@ static bool parseArguments(int argc, char *argv[])
         {
             debug = true;
         }
+#if !defined(_WIN32)
+        else if( !strcmp(argv[i], "--no-LD_PRELOAD") )
+        {
+            set_LD_PRELOAD = false;
+        }
+        else if( !strcmp(argv[i], "--no-LD_LIBRARY_PATH") )
+        {
+            set_LD_LIBRARY_PATH = false;
+        }
+#endif
         else if( !strcmp(argv[i], "-q") || !strcmp(argv[i], "--quiet") )
         {
             SETENV("CLI_SuppressLogging", "1");
@@ -350,6 +363,11 @@ static bool parseArguments(int argc, char *argv[])
             "\n"
             "Options:\n"
             "  --debug                          Enable cliloader Debug Messages\n"
+#if !defined(_WIN32)
+            "  --no-LD_PRELOAD                  Do not set LD_PRELOAD\n"
+            "  --no-LD_LIBRARY_PATH             Do not set LD_LIBRARY_PATH\n"
+#endif
+            "\n"
             "  --quiet [-q]                     Disable Logging\n"
             "  --call-logging [-c]              Trace Host API Calls\n"
             "  --dump-source [-dsrc]            Dump Input Program Source\n"
@@ -562,42 +580,51 @@ int main(int argc, char *argv[])
 
 #else // not Windows
 
-    std::string ld_preload;
-    std::string ld_library_path;
+    if( set_LD_PRELOAD || set_LD_LIBRARY_PATH )
+    {
+        std::string ld_preload;
+        std::string ld_library_path;
 
-    // Look for the CLIntercept shared library.
-    // First, check the current directory.
-    bool found = getEnvVars( path, ld_preload, ld_library_path );
-    if( found == false )
-    {
-        // Next, check the parent directory.
-        std::string libPath = path + "/..";
-        found = getEnvVars( libPath, ld_preload, ld_library_path );
-    }
-    if( found == false )
-    {
-        // Next, check a lib directory.
-        std::string libPath = path + "/../" + CLILOADER_LIB_DIR;
-        found = getEnvVars( libPath, ld_preload, ld_library_path );
-    }
-    if( found == false )
-    {
-        // Next, check for an intercept directory.
-        // This is for running cliloader straight from a CMake directory.
-        std::string libPath = path + "/../intercept";
-        found = getEnvVars( libPath, ld_preload, ld_library_path );
-    }
-    if( found )
-    {
-        DEBUG("New %s is %s\n", LD_PRELOAD_ENV, ld_preload.c_str());
-        DEBUG("New %s is %s\n", LD_LIBRARY_PATH_ENV, ld_library_path.c_str());
+        // Look for the CLIntercept shared library.
+        // First, check the current directory.
+        bool found = getEnvVars( path, ld_preload, ld_library_path );
+        if( found == false )
+        {
+            // Next, check the parent directory.
+            std::string libPath = path + "/..";
+            found = getEnvVars( libPath, ld_preload, ld_library_path );
+        }
+        if( found == false )
+        {
+            // Next, check a lib directory.
+            std::string libPath = path + "/../" + CLILOADER_LIB_DIR;
+            found = getEnvVars( libPath, ld_preload, ld_library_path );
+        }
+        if( found == false )
+        {
+            // Next, check for an intercept directory.
+            // This is for running cliloader straight from a CMake directory.
+            std::string libPath = path + "/../intercept";
+            found = getEnvVars( libPath, ld_preload, ld_library_path );
+        }
+        if( found )
+        {
+            if( set_LD_PRELOAD )
+            {
+                DEBUG("New %s is %s\n", LD_PRELOAD_ENV, ld_preload.c_str());
+                SETENV(LD_PRELOAD_ENV, ld_preload.c_str());
+            }
 
-        SETENV(LD_PRELOAD_ENV, ld_preload.c_str());
-        SETENV(LD_LIBRARY_PATH_ENV, ld_library_path.c_str());
-    }
-    else
-    {
-        DEBUG("Couldn't find CLIntercept shared library!\n");
+            if( set_LD_LIBRARY_PATH )
+            {
+                DEBUG("New %s is %s\n", LD_LIBRARY_PATH_ENV, ld_library_path.c_str());
+                SETENV(LD_LIBRARY_PATH_ENV, ld_library_path.c_str());
+            }
+        }
+        else
+        {
+            DEBUG("Couldn't find CLIntercept shared library!\n");
+        }
     }
 
 #ifdef __APPLE__
