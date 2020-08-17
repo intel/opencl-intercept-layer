@@ -22,6 +22,10 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // cl_khr_fp16
 #define CL_DEVICE_HALF_FP_CONFIG                         0x1033
 
@@ -1046,3 +1050,7 @@ clCreateBufferNV(
 #define CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_ARM            0x41E5
 #define CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_MODIFIER_ARM   0x41E6
 #define CL_QUEUE_KERNEL_BATCHING_ARM                            0x41E7
+
+#ifdef __cplusplus
+}
+#endif
