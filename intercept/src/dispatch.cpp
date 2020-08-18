@@ -5220,6 +5220,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_gl_sharing
 CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
     cl_context context,
     cl_mem_flags flags,
@@ -5228,34 +5229,37 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
+
+    if( pIntercept && pIntercept->dispatch().clCreateFromGLBuffer )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
-        if( dispatchX.clCreateFromGLBuffer )
-        {
-            CALL_LOGGING_ENTER(
-                "context = %p, "
-                "flags = %s (%llX)",
-                context,
-                pIntercept->enumName().name_mem_flags( flags ).c_str(),
-                flags );
-            CHECK_ERROR_INIT( errcode_ret );
-            CPU_PERFORMANCE_TIMING_START();
+        CALL_LOGGING_ENTER(
+            "context = %p, "
+            "flags = %s (%llX)",
+            context,
+            pIntercept->enumName().name_mem_flags( flags ).c_str(),
+            flags );
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
 
-            cl_mem  retVal = dispatchX.clCreateFromGLBuffer(
-                context,
-                flags,
-                bufobj,
-                errcode_ret);
+        cl_mem  retVal = pIntercept->dispatch().clCreateFromGLBuffer(
+            context,
+            flags,
+            bufobj,
+            errcode_ret);
 
-            CPU_PERFORMANCE_TIMING_END();
-            ADD_BUFFER( retVal );
-            CHECK_ERROR( errcode_ret[0] );
-            ADD_OBJECT_ALLOCATION( retVal );
-            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+        CPU_PERFORMANCE_TIMING_END();
+        ADD_BUFFER( retVal );
+        CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
-            return retVal;
-        }
+        return retVal;
     }
 
     NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
@@ -5263,7 +5267,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// OpenCL 1.2
+// cl_khr_gl_sharing - OpenCL 1.2
 CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
     cl_context context,
     cl_mem_flags flags,
@@ -5274,47 +5278,50 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
+
+    if( pIntercept && pIntercept->dispatch().clCreateFromGLTexture )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
-        if( dispatchX.clCreateFromGLTexture )
-        {
-            CALL_LOGGING_ENTER(
-                "context = %p, "
-                "flags = %s (%llX), "
-                "texture_target = %s (%d), "
-                "miplevel = %d, "
-                "texture = %d",
-                context,
-                pIntercept->enumName().name_mem_flags( flags ).c_str(),
-                flags,
-                pIntercept->enumName().name_gl( target ).c_str(),
-                target,
-                miplevel,
-                texture );
+        CALL_LOGGING_ENTER(
+            "context = %p, "
+            "flags = %s (%llX), "
+            "texture_target = %s (%d), "
+            "miplevel = %d, "
+            "texture = %d",
+            context,
+            pIntercept->enumName().name_mem_flags( flags ).c_str(),
+            flags,
+            pIntercept->enumName().name_gl( target ).c_str(),
+            target,
+            miplevel,
+            texture );
 
-            CHECK_ERROR_INIT( errcode_ret );
-            CPU_PERFORMANCE_TIMING_START();
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
 
-            cl_mem  retVal = dispatchX.clCreateFromGLTexture(
-                context,
-                flags,
-                target,
-                miplevel,
-                texture,
-                errcode_ret);
+        cl_mem  retVal = pIntercept->dispatch().clCreateFromGLTexture(
+            context,
+            flags,
+            target,
+            miplevel,
+            texture,
+            errcode_ret);
 
-            CPU_PERFORMANCE_TIMING_END();
-            ADD_IMAGE( retVal );
-            CHECK_ERROR( errcode_ret[0] );
-            ADD_OBJECT_ALLOCATION( retVal );
+        CPU_PERFORMANCE_TIMING_END();
+        ADD_IMAGE( retVal );
+        CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
 
-            pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
+        pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
-            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
-            return retVal;
-        }
+        return retVal;
     }
 
     NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
@@ -5322,6 +5329,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_gl_sharing
 CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture2D)(
     cl_context context,
     cl_mem_flags flags,
@@ -5332,47 +5340,50 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture2D)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
+
+    if( pIntercept && pIntercept->dispatch().clCreateFromGLTexture2D )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
-        if( dispatchX.clCreateFromGLTexture2D )
-        {
-            CALL_LOGGING_ENTER(
-                "context = %p, "
-                "flags = %s (%llX), "
-                "texture_target = %s (%d), "
-                "miplevel = %d, "
-                "texture = %d",
-                context,
-                pIntercept->enumName().name_mem_flags( flags ).c_str(),
-                flags,
-                pIntercept->enumName().name_gl( target ).c_str(),
-                target,
-                miplevel,
-                texture );
+        CALL_LOGGING_ENTER(
+            "context = %p, "
+            "flags = %s (%llX), "
+            "texture_target = %s (%d), "
+            "miplevel = %d, "
+            "texture = %d",
+            context,
+            pIntercept->enumName().name_mem_flags( flags ).c_str(),
+            flags,
+            pIntercept->enumName().name_gl( target ).c_str(),
+            target,
+            miplevel,
+            texture );
 
-            CHECK_ERROR_INIT( errcode_ret );
-            CPU_PERFORMANCE_TIMING_START();
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
 
-            cl_mem  retVal = dispatchX.clCreateFromGLTexture2D(
-                context,
-                flags,
-                target,
-                miplevel,
-                texture,
-                errcode_ret);
+        cl_mem  retVal = pIntercept->dispatch().clCreateFromGLTexture2D(
+            context,
+            flags,
+            target,
+            miplevel,
+            texture,
+            errcode_ret);
 
-            CPU_PERFORMANCE_TIMING_END();
-            ADD_IMAGE( retVal );
-            CHECK_ERROR( errcode_ret[0] );
-            ADD_OBJECT_ALLOCATION( retVal );
+        CPU_PERFORMANCE_TIMING_END();
+        ADD_IMAGE( retVal );
+        CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
 
-            pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
+        pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
-            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
-            return retVal;
-        }
+        return retVal;
     }
 
     NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
@@ -5380,6 +5391,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture2D)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_gl_sharing
 CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture3D)(
     cl_context context,
     cl_mem_flags flags,
@@ -5390,47 +5402,50 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture3D)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
+
+    if( pIntercept && pIntercept->dispatch().clCreateFromGLTexture3D )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
-        if( dispatchX.clCreateFromGLTexture3D )
-        {
-            CALL_LOGGING_ENTER(
-                "context = %p, "
-                "flags = %s (%llX), "
-                "texture_target = %s (%d), "
-                "miplevel = %d, "
-                "texture = %d",
-                context,
-                pIntercept->enumName().name_mem_flags( flags ).c_str(),
-                flags,
-                pIntercept->enumName().name_gl( target ).c_str(),
-                target,
-                miplevel,
-                texture );
+        CALL_LOGGING_ENTER(
+            "context = %p, "
+            "flags = %s (%llX), "
+            "texture_target = %s (%d), "
+            "miplevel = %d, "
+            "texture = %d",
+            context,
+            pIntercept->enumName().name_mem_flags( flags ).c_str(),
+            flags,
+            pIntercept->enumName().name_gl( target ).c_str(),
+            target,
+            miplevel,
+            texture );
 
-            CHECK_ERROR_INIT( errcode_ret );
-            CPU_PERFORMANCE_TIMING_START();
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
 
-            cl_mem  retVal = dispatchX.clCreateFromGLTexture3D(
-                context,
-                flags,
-                target,
-                miplevel,
-                texture,
-                errcode_ret);
+        cl_mem  retVal = pIntercept->dispatch().clCreateFromGLTexture3D(
+            context,
+            flags,
+            target,
+            miplevel,
+            texture,
+            errcode_ret);
 
-            CPU_PERFORMANCE_TIMING_END();
-            ADD_IMAGE( retVal );
-            CHECK_ERROR( errcode_ret[0] );
-            ADD_OBJECT_ALLOCATION( retVal );
+        CPU_PERFORMANCE_TIMING_END();
+        ADD_IMAGE( retVal );
+        CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
 
-            pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
+        pIntercept->logCL_GLTextureDetails( retVal, target, miplevel, texture );
 
-            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
-            return retVal;
-        }
+        return retVal;
     }
 
     NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
@@ -5438,6 +5453,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture3D)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_gl_sharing
 CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLRenderbuffer)(
     cl_context context,
     cl_mem_flags flags,
@@ -5446,34 +5462,37 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLRenderbuffer)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
+
+    if( pIntercept && pIntercept->dispatch().clCreateFromGLRenderbuffer )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
-        if( dispatchX.clCreateFromGLRenderbuffer )
-        {
-            CALL_LOGGING_ENTER(
-                "context = %p, "
-                "flags = %s (%llX)",
-                context,
-                pIntercept->enumName().name_mem_flags( flags ).c_str(),
-                flags );
-            CHECK_ERROR_INIT( errcode_ret );
-            CPU_PERFORMANCE_TIMING_START();
+        CALL_LOGGING_ENTER(
+            "context = %p, "
+            "flags = %s (%llX)",
+            context,
+            pIntercept->enumName().name_mem_flags( flags ).c_str(),
+            flags );
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
 
-            cl_mem  retVal = dispatchX.clCreateFromGLRenderbuffer(
-                context,
-                flags,
-                renderbuffer,
-                errcode_ret);
+        cl_mem  retVal = pIntercept->dispatch().clCreateFromGLRenderbuffer(
+            context,
+            flags,
+            renderbuffer,
+            errcode_ret);
 
-            CPU_PERFORMANCE_TIMING_END();
-            ADD_IMAGE( retVal );
-            CHECK_ERROR( errcode_ret[0] );
-            ADD_OBJECT_ALLOCATION( retVal );
-            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+        CPU_PERFORMANCE_TIMING_END();
+        ADD_IMAGE( retVal );
+        CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
-            return retVal;
-        }
+        return retVal;
     }
 
     NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
@@ -5481,6 +5500,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLRenderbuffer)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_gl_sharing
 CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLObjectInfo)(
     cl_mem memobj,
     cl_gl_object_type* gl_object_type,
@@ -5488,25 +5508,28 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLObjectInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
+
+    if( pIntercept && pIntercept->dispatch().clGetGLObjectInfo )
     {
-        auto dispatchX = pIntercept->dispatchX(memobj);
-        if( dispatchX.clGetGLObjectInfo )
-        {
-            CALL_LOGGING_ENTER();
-            CPU_PERFORMANCE_TIMING_START();
+        CALL_LOGGING_ENTER();
+        CPU_PERFORMANCE_TIMING_START();
 
-            cl_int  retVal = dispatchX.clGetGLObjectInfo(
-                memobj,
-                gl_object_type,
-                gl_object_name);
+        cl_int  retVal = pIntercept->dispatch().clGetGLObjectInfo(
+            memobj,
+            gl_object_type,
+            gl_object_name);
 
-            CPU_PERFORMANCE_TIMING_END();
-            CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
 
-            return retVal;
-        }
+        return retVal;
     }
 
     NULL_FUNCTION_POINTER_RETURN_ERROR();
@@ -5514,6 +5537,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLObjectInfo)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_gl_sharing
 CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLTextureInfo)(
     cl_mem memobj,
     cl_gl_texture_info param_name,
@@ -5523,27 +5547,30 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLTextureInfo)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
+
+    if( pIntercept && pIntercept->dispatch().clGetGLTextureInfo )
     {
-        auto dispatchX = pIntercept->dispatchX(memobj);
-        if( dispatchX.clGetGLTextureInfo )
-        {
-            CALL_LOGGING_ENTER();
-            CPU_PERFORMANCE_TIMING_START();
+        CALL_LOGGING_ENTER();
+        CPU_PERFORMANCE_TIMING_START();
 
-            cl_int  retVal = dispatchX.clGetGLTextureInfo(
-                memobj,
-                param_name,
-                param_value_size,
-                param_value,
-                param_value_size_ret);
+        cl_int  retVal = pIntercept->dispatch().clGetGLTextureInfo(
+            memobj,
+            param_name,
+            param_value_size,
+            param_value,
+            param_value_size_ret);
 
-            CPU_PERFORMANCE_TIMING_END();
-            CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
 
-            return retVal;
-        }
+        return retVal;
     }
 
     NULL_FUNCTION_POINTER_RETURN_ERROR();
@@ -5551,6 +5578,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLTextureInfo)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_gl_sharing
 CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueAcquireGLObjects)(
     cl_command_queue command_queue,
     cl_uint num_objects,
@@ -5561,43 +5589,46 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueAcquireGLObjects)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
+
+    if( pIntercept && pIntercept->dispatch().clEnqueueAcquireGLObjects )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
-        if( dispatchX.clEnqueueAcquireGLObjects )
+        cl_int  retVal = CL_SUCCESS;
+
+        CHECK_AUBCAPTURE_START( command_queue );
+
+        if( pIntercept->nullEnqueue() == false )
         {
-            cl_int  retVal = CL_SUCCESS;
+            CALL_LOGGING_ENTER( "queue = %p",
+                command_queue );
+            CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+            DEVICE_PERFORMANCE_TIMING_START( event );
+            CPU_PERFORMANCE_TIMING_START();
 
-            CHECK_AUBCAPTURE_START( command_queue );
+            retVal = pIntercept->dispatch().clEnqueueAcquireGLObjects(
+                command_queue,
+                num_objects,
+                mem_objects,
+                num_events_in_wait_list,
+                event_wait_list,
+                event);
 
-            if( pIntercept->nullEnqueue() == false )
-            {
-                CALL_LOGGING_ENTER( "queue = %p",
-                    command_queue );
-                CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
-                DEVICE_PERFORMANCE_TIMING_START( event );
-                CPU_PERFORMANCE_TIMING_START();
-
-                retVal = dispatchX.clEnqueueAcquireGLObjects(
-                    command_queue,
-                    num_objects,
-                    mem_objects,
-                    num_events_in_wait_list,
-                    event_wait_list,
-                    event);
-
-                CPU_PERFORMANCE_TIMING_END();
-                DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
-                CHECK_ERROR( retVal );
-                ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-                CALL_LOGGING_EXIT_EVENT( retVal, event );
-            }
-
-            FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
-            CHECK_AUBCAPTURE_STOP( command_queue );
-
-            return retVal;
+            CPU_PERFORMANCE_TIMING_END();
+            DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
+            CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
+
+        FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
+        CHECK_AUBCAPTURE_STOP( command_queue );
+
+        return retVal;
     }
 
     NULL_FUNCTION_POINTER_RETURN_ERROR();
@@ -5605,6 +5636,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueAcquireGLObjects)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_gl_sharing
 CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
     cl_command_queue command_queue,
     cl_uint num_objects,
@@ -5615,45 +5647,48 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    if( pIntercept )
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
+
+    if( pIntercept && pIntercept->dispatch().clEnqueueReleaseGLObjects )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
-        if( dispatchX.clEnqueueReleaseGLObjects )
+        cl_int  retVal = CL_SUCCESS;
+
+        CHECK_AUBCAPTURE_START( command_queue );
+
+        if( pIntercept->nullEnqueue() == false )
         {
-            cl_int  retVal = CL_SUCCESS;
+            CALL_LOGGING_ENTER( "queue = %p",
+                command_queue );
+            CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+            DEVICE_PERFORMANCE_TIMING_START( event );
+            CPU_PERFORMANCE_TIMING_START();
 
-            CHECK_AUBCAPTURE_START( command_queue );
+            retVal = pIntercept->dispatch().clEnqueueReleaseGLObjects(
+                command_queue,
+                num_objects,
+                mem_objects,
+                num_events_in_wait_list,
+                event_wait_list,
+                event);
 
-            if( pIntercept->nullEnqueue() == false )
-            {
-                CALL_LOGGING_ENTER( "queue = %p",
-                    command_queue );
-                CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
-                DEVICE_PERFORMANCE_TIMING_START( event );
-                CPU_PERFORMANCE_TIMING_START();
-
-                retVal = dispatchX.clEnqueueReleaseGLObjects(
-                    command_queue,
-                    num_objects,
-                    mem_objects,
-                    num_events_in_wait_list,
-                    event_wait_list,
-                    event);
-
-                CPU_PERFORMANCE_TIMING_END();
-                DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
-                CHECK_ERROR( retVal );
-                ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-                CALL_LOGGING_EXIT_EVENT( retVal, event );
-            }
-
-            FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
-            CHECK_AUBCAPTURE_STOP( command_queue );
-
-            DEVICE_PERFORMANCE_TIMING_CHECK();
-
-            return retVal;
+            CPU_PERFORMANCE_TIMING_END();
+            DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
+            CHECK_ERROR( retVal );
+            ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+            CALL_LOGGING_EXIT_EVENT( retVal, event );
         }
+
+        FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
+        CHECK_AUBCAPTURE_STOP( command_queue );
+
+        DEVICE_PERFORMANCE_TIMING_CHECK();
+
+        return retVal;
     }
 
     NULL_FUNCTION_POINTER_RETURN_ERROR();
@@ -6757,12 +6792,12 @@ CL_API_ENTRY cl_int CL_API_CALL clGetGLContextInfoKHR(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    // clGetGLContextInfoKHR is a special-case.
-    // It's an extension function and is part of cl_khr_gl_sharing, but it
-    // doesn't necessarily pass a dispatchable object as its first argument,
-    // and is implemented in the ICD loader and called into via the core API
-    // dispatch table.  This means that we can install it into our core API
-    // dispatch table as well, and don't need to look it up per-platform.
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
 
     if( pIntercept && pIntercept->dispatch().clGetGLContextInfoKHR )
     {

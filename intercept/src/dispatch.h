@@ -482,19 +482,96 @@ struct CLdispatch
     void*   (CLI_API_CALL *clGetExtensionFunctionAddress) (
                 const char* func_name );
 
-    // clGetGLContextInfoKHR is a special-case.
-    // It's an extension function and is part of cl_khr_gl_sharing, but it
-    // doesn't necessarily pass a dispatchable object as its first argument,
-    // and is implemented in the ICD loader and called into via the core API
-    // dispatch table.  This means that we can install it into our core API
-    // dispatch table as well, and don't need to look it up per-platform.
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
 
+    // cl_khr_gl_sharing
     cl_int  (CLI_API_CALL *clGetGLContextInfoKHR) (
                 const cl_context_properties *properties,
                 cl_gl_context_info param_name,
                 size_t param_value_size,
                 void* param_value,
                 size_t* param_value_size_ret);
+
+    // cl_khr_gl_sharing
+    cl_mem  (CLI_API_CALL *clCreateFromGLBuffer) (
+                cl_context context,
+                cl_mem_flags flags,
+                cl_GLuint bufobj,
+                cl_int* errcode_ret);
+
+    // cl_khr_gl_sharing
+    // deprecated OpenCL 1.1
+    cl_mem  (CLI_API_CALL *clCreateFromGLTexture2D) (
+                cl_context context,
+                cl_mem_flags flags,
+                cl_GLenum target,
+                cl_GLint miplevel,
+                cl_GLuint texture,
+                cl_int* errcode_ret);
+
+    // cl_khr_gl_sharing
+    // deprecated OpenCL 1.1
+    cl_mem  (CLI_API_CALL *clCreateFromGLTexture3D) (
+                cl_context context,
+                cl_mem_flags flags,
+                cl_GLenum target,
+                cl_GLint miplevel,
+                cl_GLuint texture,
+                cl_int* errcode_ret);
+
+    // cl_khr_gl_sharing
+    // OpenCL 1.2
+    cl_mem  (CLI_API_CALL *clCreateFromGLTexture) (
+                cl_context context,
+                cl_mem_flags flags,
+                cl_GLenum target,
+                cl_GLint miplevel,
+                cl_GLuint texture,
+                cl_int* errcode_ret );
+
+    // cl_khr_gl_sharing
+    cl_mem  (CLI_API_CALL *clCreateFromGLRenderbuffer) (
+                cl_context context,
+                cl_mem_flags flags,
+                cl_GLuint renderbuffer,
+                cl_int* errcode_ret);
+
+    // cl_khr_gl_sharing
+    cl_int  (CLI_API_CALL *clGetGLObjectInfo) (
+                cl_mem memobj,
+                cl_gl_object_type* gl_object_type,
+                cl_GLuint* gl_object_name);
+
+    // cl_khr_gl_sharing
+    cl_int  (CLI_API_CALL *clGetGLTextureInfo) (
+                cl_mem memobj,
+                cl_gl_texture_info param_name,
+                size_t param_value_size,
+                void* param_value,
+                size_t* param_value_size_ret);
+
+    // cl_khr_gl_sharing
+    cl_int  (CLI_API_CALL *clEnqueueAcquireGLObjects) (
+                cl_command_queue command_queue,
+                cl_uint num_objects,
+                const cl_mem* mem_objects,
+                cl_uint num_events_in_wait_list,
+                const cl_event* event_wait_list,
+                cl_event* event);
+
+    // cl_khr_gl_sharing
+    cl_int  (CLI_API_CALL *clEnqueueReleaseGLObjects) (
+                cl_command_queue command_queue,
+                cl_uint num_objects,
+                const cl_mem* mem_objects,
+                cl_uint num_events_in_wait_list,
+                const cl_event* event_wait_list,
+                cl_event* event);
 
     // OpenCL 1.1
 
@@ -873,82 +950,6 @@ struct CLdispatchX
                 cl_context context,
                 cl_GLsync sync,
                 cl_int* errcode_ret);
-
-    // cl_khr_gl_sharing
-    cl_mem  (CLI_API_CALL *clCreateFromGLBuffer) (
-                cl_context context,
-                cl_mem_flags flags,
-                cl_GLuint bufobj,
-                cl_int* errcode_ret);
-
-    // cl_khr_gl_sharing
-    // deprecated OpenCL 1.1
-    cl_mem  (CLI_API_CALL *clCreateFromGLTexture2D) (
-                cl_context context,
-                cl_mem_flags flags,
-                cl_GLenum target,
-                cl_GLint miplevel,
-                cl_GLuint texture,
-                cl_int* errcode_ret);
-
-    // cl_khr_gl_sharing
-    // deprecated OpenCL 1.1
-    cl_mem  (CLI_API_CALL *clCreateFromGLTexture3D) (
-                cl_context context,
-                cl_mem_flags flags,
-                cl_GLenum target,
-                cl_GLint miplevel,
-                cl_GLuint texture,
-                cl_int* errcode_ret);
-
-    // cl_khr_gl_sharing
-    // OpenCL 1.2
-    cl_mem  (CLI_API_CALL *clCreateFromGLTexture) (
-                cl_context context,
-                cl_mem_flags flags,
-                cl_GLenum target,
-                cl_GLint miplevel,
-                cl_GLuint texture,
-                cl_int* errcode_ret );
-
-    // cl_khr_gl_sharing
-    cl_mem  (CLI_API_CALL *clCreateFromGLRenderbuffer) (
-                cl_context context,
-                cl_mem_flags flags,
-                cl_GLuint renderbuffer,
-                cl_int* errcode_ret);
-
-    // cl_khr_gl_sharing
-    cl_int  (CLI_API_CALL *clGetGLObjectInfo) (
-                cl_mem memobj,
-                cl_gl_object_type* gl_object_type,
-                cl_GLuint* gl_object_name);
-
-    // cl_khr_gl_sharing
-    cl_int  (CLI_API_CALL *clGetGLTextureInfo) (
-                cl_mem memobj,
-                cl_gl_texture_info param_name,
-                size_t param_value_size,
-                void* param_value,
-                size_t* param_value_size_ret);
-
-    // cl_khr_gl_sharing
-    cl_int  (CLI_API_CALL *clEnqueueAcquireGLObjects) (
-                cl_command_queue command_queue,
-                cl_uint num_objects,
-                const cl_mem* mem_objects,
-                cl_uint num_events_in_wait_list,
-                const cl_event* event_wait_list,
-                cl_event* event);
-
-    // cl_khr_gl_sharing
-    cl_int  (CLI_API_CALL *clEnqueueReleaseGLObjects) (
-                cl_command_queue command_queue,
-                cl_uint num_objects,
-                const cl_mem* mem_objects,
-                cl_uint num_events_in_wait_list,
-                const cl_event* event_wait_list,
-                cl_event* event);
 
 #if defined(_WIN32)
     // cl_khr_d3d10_sharing

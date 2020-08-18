@@ -1821,6 +1821,13 @@ void CLIntercept::getContextPropertiesString(
             case CL_GLX_DISPLAY_KHR:
             case CL_WGL_HDC_KHR:
             case CL_CGL_SHAREGROUP_KHR:
+#if defined(_WIN32)
+            case CL_CONTEXT_D3D10_DEVICE_KHR:
+            case CL_CONTEXT_D3D11_DEVICE_KHR:
+            case CL_CONTEXT_ADAPTER_D3D9_KHR:
+            case CL_CONTEXT_ADAPTER_D3D9EX_KHR:
+            case CL_CONTEXT_ADAPTER_DXVA_KHR:
+#endif
                 {
                     const void** pp = (const void**)( properties + 1 );
                     const void*  value = pp[0];
@@ -1829,12 +1836,16 @@ void CLIntercept::getContextPropertiesString(
                 }
                 break;
             case CL_CONTEXT_INTEROP_USER_SYNC:
+            case CL_CONTEXT_TERMINATE_KHR:
                 {
                     const cl_bool*  pb = (const cl_bool*)( properties + 1);
                     cl_bool value = pb[0];
                     str += enumName().name_bool( value );
                 }
                 break;
+            case CL_CONTEXT_MEMORY_INITIALIZE_KHR:
+                // TODO: this is a cl_context_memory_initialize_khr bitfield.
+                // Fall through for now.
             default:
                 str += "<Unknown!>";
                 break;
@@ -10806,32 +10817,28 @@ void* CLIntercept::getExtensionFunctionAddress(
 {
     // KHR Extensions
 
-    // clGetGLContextInfoKHR is a special-case.
-    // It's an extension function and is part of cl_khr_gl_sharing, but it
-    // doesn't necessarily pass a dispatchable object as its first argument,
-    // and is implemented in the ICD loader and called into via the core API
-    // dispatch table.  This means that we can install it into our core API
-    // dispatch table as well, and don't need to look it up per-platform.
+    // cl_khr_gl_sharing
+
+    // The cl_khr_gl_sharing APIs and especially clGetGLContextInfoKHR are a
+    // special-case: they are extension functions but do not necessarily pass
+    // a dispatchable object as their first argument and are implemented in
+    // the ICD loader and called into via the ICD dispatch table.  This means
+    // that we can install it into our core API dispatch table as well and
+    // don't need to look it up per-platform.
     CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clGetGLContextInfoKHR );
 
-    // A few of the following extension functions are also implemented in the
-    // ICD loader, but because they pass a dispatchable object we can treat
-    // them the same as any other extension function.
-
-    // cl_khr_gl_sharing
 #if defined(_WIN32) || defined(__linux__)
-    CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromGLBuffer );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromGLTexture );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromGLTexture2D );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromGLTexture3D );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromGLRenderbuffer );
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetGLObjectInfo );
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetGLTextureInfo );
-    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireGLObjects );
-    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseGLObjects );
+    CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clCreateFromGLBuffer );
+    CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clCreateFromGLTexture );
+    CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clCreateFromGLTexture2D );
+    CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clCreateFromGLTexture3D );
+    CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clCreateFromGLRenderbuffer );
+    CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clGetGLObjectInfo );
+    CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clGetGLTextureInfo );
+    CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clEnqueueAcquireGLObjects );
+    CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clEnqueueReleaseGLObjects );
 #endif
-    // cl_khr_gl_event
-    CHECK_RETURN_EXTENSION_FUNCTION( clCreateEventFromGLsyncKHR );
+
 #if defined(_WIN32)
     // cl_khr_d3d10_sharing
     CHECK_RETURN_EXTENSION_FUNCTION( clGetDeviceIDsFromD3D10KHR );
@@ -10853,6 +10860,10 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireDX9MediaSurfacesKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseDX9MediaSurfacesKHR );
 #endif
+
+    // cl_khr_gl_event
+    CHECK_RETURN_EXTENSION_FUNCTION( clCreateEventFromGLsyncKHR );
+
     // cl_khr_il_program
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateProgramWithILKHR );
     // cl_khr_subgroups
@@ -11211,6 +11222,22 @@ bool CLIntercept::initDispatch( const std::string& libName )
         bool    savedSuccess = success;
 
         INIT_EXPORTED_FUNC(clGetExtensionFunctionAddress);
+
+        // cl_khr_gl_sharing (optional)
+        // The entry points for this extension are exported from the ICD
+        // loader even though they are extension APIs.
+        INIT_EXPORTED_FUNC( clGetGLContextInfoKHR );
+#if defined(_WIN32) || defined(__linux__)
+        INIT_EXPORTED_FUNC( clCreateFromGLBuffer );
+        INIT_EXPORTED_FUNC( clCreateFromGLTexture );
+        INIT_EXPORTED_FUNC( clCreateFromGLTexture2D );
+        INIT_EXPORTED_FUNC( clCreateFromGLTexture3D );
+        INIT_EXPORTED_FUNC( clCreateFromGLRenderbuffer );
+        INIT_EXPORTED_FUNC( clGetGLObjectInfo );
+        INIT_EXPORTED_FUNC( clGetGLTextureInfo );   // OpenCL 1.2
+        INIT_EXPORTED_FUNC( clEnqueueAcquireGLObjects );
+        INIT_EXPORTED_FUNC( clEnqueueReleaseGLObjects );
+#endif
 
         // OpenCL 1.1 Entry Points (optional)
         INIT_EXPORTED_FUNC(clSetEventCallback);
