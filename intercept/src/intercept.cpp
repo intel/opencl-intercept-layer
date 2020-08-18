@@ -1821,11 +1821,13 @@ void CLIntercept::getContextPropertiesString(
             case CL_GLX_DISPLAY_KHR:
             case CL_WGL_HDC_KHR:
             case CL_CGL_SHAREGROUP_KHR:
+#if defined(_WIN32)
             case CL_CONTEXT_D3D10_DEVICE_KHR:
             case CL_CONTEXT_D3D11_DEVICE_KHR:
             case CL_CONTEXT_ADAPTER_D3D9_KHR:
             case CL_CONTEXT_ADAPTER_D3D9EX_KHR:
             case CL_CONTEXT_ADAPTER_DXVA_KHR:
+#endif
                 {
                     const void** pp = (const void**)( properties + 1 );
                     const void*  value = pp[0];
