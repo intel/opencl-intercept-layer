@@ -75,7 +75,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformInfo)(
                 platform,
                 platformInfo );
         }
-        CALL_LOGGING_ENTER( "platform = [ %s ], param_name = %s (%08X)",
+        CALL_LOGGING_ENTER( "platform = %s, param_name = %s (%08X)",
             platformInfo.c_str(),
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -129,7 +129,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceIDs)(
                 platform,
                 platformInfo );
         }
-        CALL_LOGGING_ENTER( "platform = [ %s ], device_type = %s (%llX)",
+        CALL_LOGGING_ENTER( "platform = %s, device_type = %s (%llX)",
             platformInfo.c_str(),
             pIntercept->enumName().name_device_type( device_type ).c_str(),
             device_type );
@@ -177,7 +177,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceInfo)(
                 &device,
                 deviceInfo );
         }
-        CALL_LOGGING_ENTER( "device = [ %s ], param_name = %s (%08X)",
+        CALL_LOGGING_ENTER( "device = %s, param_name = %s (%08X)",
             deviceInfo.c_str(),
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -706,7 +706,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
                 &device,
                 deviceInfo );
         }
-        CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = %s (%llX)",
+        CALL_LOGGING_ENTER( "context = %p, device = %s, properties = %s (%llX)",
             context,
             deviceInfo.c_str(),
             pIntercept->enumName().name_command_queue_properties( properties ).c_str(),
@@ -5180,7 +5180,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
                 platform,
                 platformInfo );
         }
-        CALL_LOGGING_ENTER( "platform = [ %s ], func_name = %s",
+        CALL_LOGGING_ENTER( "platform = %s, func_name = %s",
             platformInfo.c_str(),
             func_name ? func_name : "(NULL)" );
         CPU_PERFORMANCE_TIMING_START();
@@ -6230,7 +6230,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
                 properties,
                 propsStr );
         }
-        CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = [ %s ]",
+        CALL_LOGGING_ENTER( "context = %p, device = %s, properties = [ %s ]",
             context,
             deviceInfo.c_str(),
             propsStr.c_str() );
@@ -6321,7 +6321,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
                     properties,
                     propsStr );
             }
-            CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = [ %s ]",
+            CALL_LOGGING_ENTER( "context = %p, device = %s, properties = [ %s ]",
                 context,
                 deviceInfo.c_str(),
                 propsStr.c_str() );
@@ -8409,7 +8409,7 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
                     deviceInfo );
             }
             // TODO: Make properties string.
-            CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = %p, size = %d, alignment = %d",
+            CALL_LOGGING_ENTER( "context = %p, device = %s, properties = %p, size = %d, alignment = %d",
                 context,
                 deviceInfo.c_str(),
                 properties,
@@ -8464,7 +8464,7 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
                     deviceInfo );
             }
             // TODO: Make properties string.
-            CALL_LOGGING_ENTER( "context = %p, device = [ %s ], properties = %p, size = %d, alignment = %d",
+            CALL_LOGGING_ENTER( "context = %p, device = %s, properties = %p, size = %d, alignment = %d",
                 context,
                 deviceInfo.c_str(),
                 properties,
