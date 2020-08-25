@@ -1699,7 +1699,16 @@ void CLIntercept::getPlatformInfoString(
     }
     else
     {
-        str += platformName;
+        if( platformName )
+        {
+            str += platformName;
+        }
+        {
+            char    s[256];
+            CLI_SPRINTF( s, 256, " (%p)",
+                platform );
+            str += s;
+        }
     }
 
     delete [] platformName;
@@ -1742,16 +1751,20 @@ void CLIntercept::getDeviceInfoString(
         {
             if( i != 0 )
             {
-                str += " | ";
+                str += ", ";
             }
 
             if( deviceName )
             {
                 str += deviceName;
             }
-            str += " (";
-            str += enumName().name_device_type( deviceType );
-            str += ")";
+            {
+                char    s[256];
+                CLI_SPRINTF( s, 256, " (%s) (%p)",
+                    enumName().name_device_type( deviceType ).c_str(),
+                    devices[i] );
+                str += s;
+            }
         }
 
         delete [] deviceName;
@@ -1782,8 +1795,9 @@ void CLIntercept::getEventListString(
                 str += ", ";
             }
             {
-                CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%p", eventList[i] );
-                str += m_StringBuffer;
+                char    s[256];
+                CLI_SPRINTF( s, 256, "%p", eventList[i] );
+                str += s;
             }
         }
     }
@@ -1800,6 +1814,8 @@ void CLIntercept::getContextPropertiesString(
 
     if( properties )
     {
+        char    s[256];
+
         while( properties[0] != 0 )
         {
             cl_int  property = (cl_int)properties[0];
@@ -1831,8 +1847,8 @@ void CLIntercept::getContextPropertiesString(
                 {
                     const void** pp = (const void**)( properties + 1 );
                     const void*  value = pp[0];
-                    CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%p", value );
-                    str += m_StringBuffer;
+                    CLI_SPRINTF( s, 256, "%p", value );
+                    str += s;
                 }
                 break;
             case CL_CONTEXT_INTEROP_USER_SYNC:
@@ -1847,7 +1863,10 @@ void CLIntercept::getContextPropertiesString(
                 // TODO: this is a cl_context_memory_initialize_khr bitfield.
                 // Fall through for now.
             default:
-                str += "<Unknown!>";
+                {
+                    CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
+                    str += s;
+                }
                 break;
             }
 
@@ -1874,6 +1893,8 @@ void CLIntercept::getSamplerPropertiesString(
 
     if( properties )
     {
+        char    s[256];
+
         while( properties[0] != 0 )
         {
             cl_int  property = (cl_int)properties[0];
@@ -1904,12 +1925,15 @@ void CLIntercept::getSamplerPropertiesString(
 
                     cl_float    value = pf[0];
 
-                    CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%.2f", value );
-                    str += m_StringBuffer;
+                    CLI_SPRINTF( s, 256, "%.2f", value );
+                    str += s;
                 }
                 break;
             default:
-                str += "<Unexpected!>";
+                {
+                    CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
+                    str += s;
+                }
                 break;
             }
 
@@ -1936,6 +1960,8 @@ void CLIntercept::getCommandQueuePropertiesString(
 
     if( properties )
     {
+        char    s[256];
+
         while( properties[0] != 0 )
         {
             cl_int  property = (cl_int)properties[0];
@@ -1978,7 +2004,10 @@ void CLIntercept::getCommandQueuePropertiesString(
                 }
                 break;
             default:
-                str += "<Unexpected!>";
+                {
+                    CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
+                    str += s;
+                }
                 break;
             }
 
@@ -2005,6 +2034,8 @@ void CLIntercept::getMemPropertiesString(
 
     if( properties )
     {
+        char    s[256];
+
         while( properties[0] != 0 )
         {
             cl_int  property = (cl_int)properties[0];
@@ -2015,7 +2046,10 @@ void CLIntercept::getMemPropertiesString(
             //switch( property )
             //{
             //default:
-                str += "<Unexpected!>";
+                {
+                    CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
+                    str += s;
+                }
             //    break;
             //}
 
@@ -2044,12 +2078,13 @@ void CLIntercept::getCreateKernelsInProgramRetString(
         num_kernels_ret &&
         ( num_kernels_ret[0] != 0 ) )
     {
+        char    s[256];
+
         cl_uint numKernels = num_kernels_ret[0];
 
         str += "kernels = [ ";
         for( cl_uint i = 0; i < numKernels; i++ )
         {
-            char    s[256];
             CLI_SPRINTF( s, 256, "%p", kernels[i] );
             str += s;
 
@@ -2070,12 +2105,14 @@ void CLIntercept::getKernelArgString(
     const void* arg_value,
     std::string& str ) const
 {
+    char    s[256];
+
     if( checkGetSamplerString(
             arg_size,
             arg_value,
             str ) )
     {
-        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d, value = %s\n",
+        CLI_SPRINTF( s, 256, "index = %d, size = %d, value = %s\n",
             arg_index,
             (unsigned int)arg_size,
             str.c_str() );
@@ -2084,7 +2121,7 @@ void CLIntercept::getKernelArgString(
              ( arg_size == sizeof(cl_mem) ) )
     {
         cl_mem* pMem = (cl_mem*)arg_value;
-        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d, value = %p",
+        CLI_SPRINTF( s, 256, "index = %d, size = %d, value = %p",
             arg_index,
             (unsigned int)arg_size,
             pMem[0] );
@@ -2093,7 +2130,7 @@ void CLIntercept::getKernelArgString(
              ( arg_size == sizeof(cl_uint) ) )
     {
         cl_uint*    pData = (cl_uint*)arg_value;
-        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d, value = 0x%x",
+        CLI_SPRINTF( s, 256, "index = %d, size = %d, value = 0x%x",
             arg_index,
             (unsigned int)arg_size,
             pData[0] );
@@ -2102,7 +2139,7 @@ void CLIntercept::getKernelArgString(
              ( arg_size == sizeof(cl_ulong) ) )
     {
         cl_ulong*   pData = (cl_ulong*)arg_value;
-        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d, value = 0x%jx",
+        CLI_SPRINTF( s, 256, "index = %d, size = %d, value = 0x%jx",
             arg_index,
             (unsigned int)arg_size,
             pData[0] );
@@ -2111,7 +2148,7 @@ void CLIntercept::getKernelArgString(
              ( arg_size == sizeof(cl_int4) ) )
     {
         cl_int4*   pData = (cl_int4*)arg_value;
-        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d, valueX = 0x%0x, valueY = 0x%0x, valueZ = 0x%0x, valueW = 0x%0x",
+        CLI_SPRINTF( s, 256, "index = %d, size = %d, valueX = 0x%0x, valueY = 0x%0x, valueZ = 0x%0x, valueW = 0x%0x",
             arg_index,
             (unsigned int)arg_size,
             pData->s[0],
@@ -2121,12 +2158,12 @@ void CLIntercept::getKernelArgString(
     }
     else
     {
-        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "index = %d, size = %d",
+        CLI_SPRINTF( s, 256, "index = %d, size = %d",
             arg_index,
             (unsigned int)arg_size );
     }
 
-    str = m_StringBuffer;
+    str = s;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
