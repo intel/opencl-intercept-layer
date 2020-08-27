@@ -1979,7 +1979,8 @@ void CLIntercept::getCommandQueuePropertiesString(
             case CL_QUEUE_SIZE:
                 {
                     const cl_uint*  pu = (const cl_uint*)( properties + 1);
-                    str += pu[0];
+                    CLI_SPRINTF( s, 256, "%u", pu[0] );
+                    str += s;
                 }
                 break;
             case CL_QUEUE_PRIORITY_KHR:
