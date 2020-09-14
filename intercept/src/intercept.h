@@ -2172,6 +2172,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits() const
         pIntercept->config().SIMDSurvey ||                                  \
         pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
         pIntercept->config().InOrderQueue ||                                \
+        pIntercept->config().NoProfilingQueue ||                            \
         pIntercept->config().DefaultQueuePriorityHint ||                    \
         pIntercept->config().DefaultQueueThrottleHint )                     \
     {                                                                       \
@@ -2188,6 +2189,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits() const
         pIntercept->config().SIMDSurvey ||                                  \
         pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
         pIntercept->config().InOrderQueue ||                                \
+        pIntercept->config().NoProfilingQueue ||                            \
         pIntercept->config().DefaultQueuePriorityHint ||                    \
         pIntercept->config().DefaultQueueThrottleHint )                     \
     {                                                                       \
