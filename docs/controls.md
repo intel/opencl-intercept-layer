@@ -584,6 +584,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications inserts a
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will force all queues to be created in-order.  This can be used for performance analysis, but may lead to deadlocks in some cases.
 
+##### `NoProfilingQueue` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will force all queues to be created without event profiling support.  This can be used for performance analysis, but may lead to errors if the application requires event profiling.
+
 ##### `NullEnqueue` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will silently ignore any enqueue.  This can be used for performance analysis, but will likely cause errors if the application relies on any sort of information from OpenCL events and should be used carefully.

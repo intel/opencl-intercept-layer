@@ -4495,6 +4495,14 @@ void CLIntercept::updateHostTimingStats(
 void CLIntercept::modifyCommandQueueProperties(
     cl_command_queue_properties& props ) const
 {
+    if( config().InOrderQueue )
+    {
+        props &= ~(cl_command_queue_properties)CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE;
+    }
+    if( config().NoProfilingQueue )
+    {
+        props &= ~(cl_command_queue_properties)CL_QUEUE_PROFILING_ENABLE;
+    }
     if( config().DevicePerformanceTiming ||
         config().ITTPerformanceTiming ||
         config().ChromePerformanceTiming ||
@@ -4502,10 +4510,6 @@ void CLIntercept::modifyCommandQueueProperties(
         config().DevicePerfCounterEventBasedSampling )
     {
         props |= (cl_command_queue_properties)CL_QUEUE_PROFILING_ENABLE;
-    }
-    if( config().InOrderQueue )
-    {
-        props &= ~(cl_command_queue_properties)CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE;
     }
 }
 
