@@ -907,6 +907,9 @@ clEnqueueMemAdviseINTEL(
             const cl_event* event_wait_list,
             cl_event* event);
 
+// cl_intel_mem_force_host_memory
+#define CL_MEM_FORCE_HOST_MEMORY_INTEL              (1 << 20)
+
 // Altera Extensions:
 
 // cl_altera_device_temperature
@@ -1009,6 +1012,22 @@ clEnqueueMemAdviseINTEL(
 // cl_qcom_ion_host_ptr
 #define CL_MEM_ION_HOST_PTR_QCOM                    0x40A8
 
-// cl_arm_printf extension
+// cl_arm_printf
 #define CL_PRINTF_CALLBACK_ARM                      0x40B0
 #define CL_PRINTF_BUFFERSIZE_ARM                    0x40B1
+
+// cl_arm_get_core_id
+#define CL_DEVICE_COMPUTE_UNITS_BITFIELD_ARM        0x40BF
+
+// cl_arm_job_slot_selection
+#define CL_DEVICE_JOB_SLOTS_ARM                     0x41E0
+#define CL_QUEUE_JOB_SLOT_ARM                       0x41E1
+
+// cl_arm_scheduling_controls
+#define CL_DEVICE_SCHEDULING_CONTROLS_CAPABILITIES_ARM          0x41E4
+#define CL_DEVICE_SCHEDULING_KERNEL_BATCHING_ARM                (1 << 0)
+#define CL_DEVICE_SCHEDULING_WORKGROUP_BATCH_SIZE_ARM           (1 << 1)
+#define CL_DEVICE_SCHEDULING_WORKGROUP_BATCH_SIZE_MODIFIER_ARM  (1 << 2)
+#define CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_ARM            0x41E5
+#define CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_MODIFIER_ARM   0x41E6
+#define CL_QUEUE_KERNEL_BATCHING_ARM                            0x41E7

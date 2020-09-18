@@ -848,6 +848,9 @@ CEnumNameMap::CEnumNameMap()
 
     ADD_ENUM_NAME( m_cl_mem_alloc_flags_intel, CL_MEM_ALLOC_WRITE_COMBINED_INTEL );
 
+    // cl_intel_mem_force_host_memory
+    ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_FORCE_HOST_MEMORY_INTEL );
+
     // Altera Extensions:
 
     // cl_altera_device_temperature
@@ -949,7 +952,6 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_BUS_ID_NV );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_SLOT_ID_NV );
 
-
     // cl_ext_atomic_counters
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT );
 
@@ -1011,6 +1013,19 @@ CEnumNameMap::CEnumNameMap()
     // cl_arm_printf extension
     ADD_ENUM_NAME( m_cl_int, CL_PRINTF_CALLBACK_ARM );
     ADD_ENUM_NAME( m_cl_int, CL_PRINTF_BUFFERSIZE_ARM );
+
+    // cl_arm_get_core_id
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_UNITS_BITFIELD_ARM );
+
+    // cl_arm_job_slot_selection
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_JOB_SLOTS_ARM );
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_JOB_SLOT_ARM );
+
+    // cl_arm_scheduling_controls
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SCHEDULING_CONTROLS_CAPABILITIES_ARM );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_ARM );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_MODIFIER_ARM );
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_KERNEL_BATCHING_ARM );
 
 #if defined(_WIN32)
     // cl_khr_d3d10_sharing
