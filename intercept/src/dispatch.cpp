@@ -1034,6 +1034,58 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_nv_create_buffer
+CL_API_ENTRY cl_mem CL_API_CALL clCreateBufferNV(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_flags_NV flags_NV,
+    size_t size,
+    void* host_ptr,
+    cl_int* errcode_ret )
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clCreateBufferNV )
+        {
+            CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), flags_NV = %llX, size = %d, host_ptr = %p",
+                context,
+                pIntercept->enumName().name_mem_flags( flags ).c_str(),
+                flags,
+                flags_NV,
+                size,
+                host_ptr );
+            INITIALIZE_BUFFER_CONTENTS_INIT( flags, size, host_ptr );
+            CHECK_ERROR_INIT( errcode_ret );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_mem  retVal = dispatchX.clCreateBufferNV(
+                context,
+                flags,
+                flags_NV,
+                size,
+                host_ptr,
+                errcode_ret );
+
+            CPU_PERFORMANCE_TIMING_END();
+            ADD_BUFFER( retVal );
+            INITIALIZE_BUFFER_CONTENTS_CLEANUP( flags, host_ptr );
+            DUMP_BUFFER_AFTER_CREATE( retVal, flags, host_ptr, size );
+            CHECK_ERROR( errcode_ret[0] );
+            ADD_OBJECT_ALLOCATION( retVal );
+            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // OpenCL 1.1
 CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateSubBuffer)(
     cl_mem buffer,

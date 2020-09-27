@@ -1334,4 +1334,13 @@ struct CLdispatchX
         cl_uint num_events_in_wait_list,
         const cl_event* event_wait_list,
         cl_event* event);
+
+    // cl_nv_create_buffer
+    cl_mem (CLI_API_CALL *clCreateBufferNV) (
+        cl_context context,
+        cl_mem_flags flags,
+        cl_mem_flags_NV flags_NV,
+        size_t size,
+        void* host_ptr,
+        cl_int* errcode_ret);
 };
