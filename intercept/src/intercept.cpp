@@ -10970,6 +10970,9 @@ void* CLIntercept::getExtensionFunctionAddress(
         CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemAdviseINTEL );
     }
 
+    // cl_nv_create_buffer
+    CHECK_RETURN_EXTENSION_FUNCTION( clCreateBufferNV );
+
     return NULL;
 }
 
