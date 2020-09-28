@@ -648,7 +648,7 @@ public:
                 cl_int* errcode_ret );
 #endif
 
-    const CLdispatch&   dispatch() const;
+    const cl_icd_dispatch&  dispatch() const;
 
     const CLdispatchX&  dispatchX( cl_accelerator_intel accelerator ) const;
     const CLdispatchX&  dispatchX( cl_command_queue queue ) const;
@@ -818,7 +818,7 @@ private:
     typedef std::map< cl_platform_id, CLdispatchX > CLdispatchXMap;
 
     OS::Services    m_OS;
-    CLdispatch      m_Dispatch;
+    cl_icd_dispatch m_Dispatch;
     CLdispatchXMap  m_DispatchX;
     CEnumNameMap    m_EnumNameMap;
     CObjectTracker  m_ObjectTracker;
@@ -1170,7 +1170,7 @@ private:
 //
 ///////////////////////////////////////////////////////////////////////////////
 //
-inline const CLdispatch& CLIntercept::dispatch() const
+inline const cl_icd_dispatch& CLIntercept::dispatch() const
 {
     return m_Dispatch;
 }

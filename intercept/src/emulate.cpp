@@ -27,7 +27,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-void* CLI_API_CALL clHostMemAllocINTEL_EMU(
+void* CL_API_CALL clHostMemAllocINTEL_EMU(
     cl_context context,
     const cl_mem_properties_intel* properties,
     size_t size,
@@ -52,7 +52,7 @@ void* CLI_API_CALL clHostMemAllocINTEL_EMU(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-void* CLI_API_CALL clDeviceMemAllocINTEL_EMU(
+void* CL_API_CALL clDeviceMemAllocINTEL_EMU(
     cl_context context,
     cl_device_id device,
     const cl_mem_properties_intel* properties,
@@ -79,7 +79,7 @@ void* CLI_API_CALL clDeviceMemAllocINTEL_EMU(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-void* CLI_API_CALL clSharedMemAllocINTEL_EMU(
+void* CL_API_CALL clSharedMemAllocINTEL_EMU(
     cl_context context,
     cl_device_id device,
     const cl_mem_properties_intel* properties,
@@ -106,7 +106,7 @@ void* CLI_API_CALL clSharedMemAllocINTEL_EMU(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-cl_int CLI_API_CALL clMemFreeINTEL_EMU(
+cl_int CL_API_CALL clMemFreeINTEL_EMU(
     cl_context context,
     void* ptr)
 {
@@ -125,7 +125,7 @@ cl_int CLI_API_CALL clMemFreeINTEL_EMU(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-cl_int CLI_API_CALL clMemBlockingFreeINTEL_EMU(
+cl_int CL_API_CALL clMemBlockingFreeINTEL_EMU(
     cl_context context,
     void* ptr)
 {
@@ -145,7 +145,7 @@ cl_int CLI_API_CALL clMemBlockingFreeINTEL_EMU(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-cl_int CLI_API_CALL clGetMemAllocInfoINTEL_EMU(
+cl_int CL_API_CALL clGetMemAllocInfoINTEL_EMU(
     cl_context context,
     const void* ptr,
     cl_mem_info_intel param_name,
@@ -172,7 +172,7 @@ cl_int CLI_API_CALL clGetMemAllocInfoINTEL_EMU(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-cl_int CLI_API_CALL clSetKernelArgMemPointerINTEL_EMU(
+cl_int CL_API_CALL clSetKernelArgMemPointerINTEL_EMU(
     cl_kernel kernel,
     cl_uint arg_index,
     const void* arg_value)
@@ -194,7 +194,7 @@ cl_int CLI_API_CALL clSetKernelArgMemPointerINTEL_EMU(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-cl_int CLI_API_CALL clEnqueueMemsetINTEL_EMU(   // Deprecated
+cl_int CL_API_CALL clEnqueueMemsetINTEL_EMU(   // Deprecated
     cl_command_queue queue,
     void* dst_ptr,
     cl_int value,
@@ -226,7 +226,7 @@ cl_int CLI_API_CALL clEnqueueMemsetINTEL_EMU(   // Deprecated
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-cl_int CLI_API_CALL clEnqueueMemFillINTEL_EMU(
+cl_int CL_API_CALL clEnqueueMemFillINTEL_EMU(
     cl_command_queue queue,
     void* dst_ptr,
     const void* pattern,
@@ -258,7 +258,7 @@ cl_int CLI_API_CALL clEnqueueMemFillINTEL_EMU(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-cl_int CLI_API_CALL clEnqueueMemcpyINTEL_EMU(
+cl_int CL_API_CALL clEnqueueMemcpyINTEL_EMU(
     cl_command_queue queue,
     cl_bool blocking,
     void* dst_ptr,
@@ -290,7 +290,7 @@ cl_int CLI_API_CALL clEnqueueMemcpyINTEL_EMU(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-cl_int CLI_API_CALL clEnqueueMigrateMemINTEL_EMU(
+cl_int CL_API_CALL clEnqueueMigrateMemINTEL_EMU(
     cl_command_queue queue,
     const void* ptr,
     size_t size,
@@ -330,7 +330,7 @@ cl_int CLI_API_CALL clEnqueueMigrateMemINTEL_EMU(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_unified_shared_memory
-cl_int CLI_API_CALL clEnqueueMemAdviseINTEL_EMU(
+cl_int CL_API_CALL clEnqueueMemAdviseINTEL_EMU(
     cl_command_queue queue,
     const void* ptr,
     size_t size,

@@ -22,6 +22,10 @@
 
 #pragma once
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // cl_khr_fp16
 #define CL_DEVICE_HALF_FP_CONFIG                         0x1033
 
@@ -377,7 +381,7 @@ cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
     size_t* param_value_size_ret);
 
 // cl_khr_create_command_queue
-typedef cl_bitfield cl_queue_properties_khr;
+typedef cl_properties cl_queue_properties_khr;
 extern CL_API_ENTRY
 cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
     cl_context context,
@@ -749,7 +753,7 @@ typedef cl_bitfield cl_device_unified_shared_memory_capabilities_intel;
 #define CL_UNIFIED_SHARED_MEMORY_CONCURRENT_ACCESS_INTEL        (1 << 2)
 #define CL_UNIFIED_SHARED_MEMORY_CONCURRENT_ATOMIC_ACCESS_INTEL (1 << 3)
 
-typedef cl_bitfield cl_mem_properties_intel;
+typedef cl_properties cl_mem_properties_intel;
 
 /* cl_mem_properties_intel */
 #define CL_MEM_ALLOC_FLAGS_INTEL        0x4195
@@ -1046,3 +1050,7 @@ clCreateBufferNV(
 #define CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_ARM            0x41E5
 #define CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_MODIFIER_ARM   0x41E6
 #define CL_QUEUE_KERNEL_BATCHING_ARM                            0x41E7
+
+#ifdef __cplusplus
+}
+#endif

@@ -21,6 +21,7 @@
 set(CLINTERCEPT_CL_HEADERS
     CL/cl.h
     CL/cl_gl.h
+    CL/cl_icd.h
     CL/cl_platform.h
     CL/cl_version.h
 )
