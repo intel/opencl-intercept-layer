@@ -81,6 +81,14 @@ These controls can be enabled via `cliloader`, by specifying the `--mdapi-tbs` o
 
 * On Windows, the MDAPI library is distributed with the GPU driver.
 * On Linux, the MDAPI library should be built and installed from source.
+
+    * https://github.com/intel/metrics-discovery
+
+* Linux may also requires the "metrics library".  If required, it should also be
+  built and installed from source.
+
+    * https://github.com/intel/metrics-library
+
 * On OSX, the path to the MDAPI library should be set manually with
 `DevicePerfCounterLibName` control. The library is named `libigdmd.dylib` and
 it usually resides under `/System/Library/Extensions/AppleIntel<CPU NAME>GraphicsMTLDriver.bundle/Contents/MacOS/libigdmd.dylib`,
