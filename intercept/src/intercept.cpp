@@ -4809,15 +4809,15 @@ void CLIntercept::addTimingEvent(
                     deviceInfo.Supports_cl_khr_subgroups )
                 {
                     cl_platform_id  platform = getPlatform(device);
-                    auto dispatchX = this->dispatchX(platform);
 
-                    if( dispatchX.clGetKernelSubGroupInfoKHR == NULL )
+                    if( dispatchX(platform).clGetKernelSubGroupInfoKHR == NULL )
                     {
                         getExtensionFunctionAddress(
                             platform,
                             "clGetKernelSubGroupInfoKHR" );
                     }
 
+                    auto dispatchX = this->dispatchX(platform);
                     if( dispatchX.clGetKernelSubGroupInfoKHR )
                     {
                         dispatchX.clGetKernelSubGroupInfoKHR(
@@ -5260,15 +5260,15 @@ cl_command_queue CLIntercept::createCommandQueueWithProperties(
         deviceInfo.Supports_cl_khr_create_command_queue )
     {
         cl_platform_id  platform = getPlatform(device);
-        auto dispatchX = this->dispatchX(platform);
 
-        if( dispatchX.clCreateCommandQueueWithPropertiesKHR == NULL )
+        if( dispatchX(platform).clCreateCommandQueueWithPropertiesKHR == NULL )
         {
             getExtensionFunctionAddress(
                 platform,
                 "clCreateCommandQueueWithPropertiesKHR" );
         }
 
+        auto dispatchX = this->dispatchX(platform);
         if( dispatchX.clCreateCommandQueueWithPropertiesKHR )
         {
             retVal = dispatchX.clCreateCommandQueueWithPropertiesKHR(
@@ -6349,19 +6349,19 @@ void CLIntercept::checkKernelArgUSMPointer(
     cl_int errorCode = CL_SUCCESS;
 
     cl_platform_id  platform = getPlatform(kernel);
-    auto dispatchX = this->dispatchX(platform);
 
     // If we don't have a function pointer for clGetMemAllocINFO, try to
     // get one.  It's possible that the function pointer exists but
     // the application hasn't queried for it yet, in which case it won't
     // be installed into the dispatch table.
-    if( dispatchX.clGetMemAllocInfoINTEL == NULL )
+    if( dispatchX(platform).clGetMemAllocInfoINTEL == NULL )
     {
         getExtensionFunctionAddress(
             platform,
             "clGetMemAllocInfoINTEL" );
     }
 
+    auto dispatchX = this->dispatchX(platform);
     if( dispatchX.clGetMemAllocInfoINTEL == NULL )
     {
         logf( "function pointer for clGetMemAllocInfoINTEL is NULL\n" );

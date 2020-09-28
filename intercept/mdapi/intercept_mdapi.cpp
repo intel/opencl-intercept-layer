@@ -147,24 +147,28 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
 {
     cl_command_queue    retVal = NULL;
 
-    // Note: This works fine for one device, but if there are two
-    // devices then we will need a different mechanism to get a
-    // device-specific function pointer.
-
     cl_platform_id  platform = getPlatform(device);
-    auto dispatchX = this->dispatchX(platform);
 
-    if( dispatchX.clCreatePerfCountersCommandQueueINTEL == NULL )
+    if( dispatchX(platform).clCreatePerfCountersCommandQueueINTEL == NULL )
     {
         getExtensionFunctionAddress(
             platform,
             "clCreatePerfCountersCommandQueueINTEL" );
     }
 
-    if( dispatchX.clCreatePerfCountersCommandQueueINTEL && m_pMDHelper )
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
+    auto dispatchX = this->dispatchX(platform);
+    if( dispatchX.clCreatePerfCountersCommandQueueINTEL == NULL )
+    {
+        log( "Couldn't get pointer to clCreatePerfCountersCommandQueueINTEL!\n" );
+    }
+    else if( m_pMDHelper == NULL )
+    {
+        log( "Metrics discovery is not initialized!\n" );
+    }
+    else
+    {
         if( m_pMDHelper->ActivateMetricSet() )
         {
             cl_uint configuration = m_pMDHelper->GetMetricsConfiguration();
