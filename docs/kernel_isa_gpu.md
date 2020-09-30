@@ -81,11 +81,13 @@ GPU devices:
 
 | Processor | Code Name | Device |
 |:----------|:---------:|:------:|
-|[Broadwell](https://ark.intel.com/products/codename/38530/Broadwell) | BDW | GEN8 |
-|[Cherry Trail](https://ark.intel.com/products/codename/46629/Cherry-Trail) | CHV | GEN8LP |
-|[Skylake](https://ark.intel.com/products/codename/37572/Skylake) | SKL | GEN9 |
-|[Apollo Lake](https://ark.intel.com/products/codename/80644/Apollo-Lake) | BXT | GEN9LP |
-|[Kaby Lake](https://ark.intel.com/products/codename/82879/Kaby-Lake) | KBL | GEN9.5 |
+|[Broadwell](https://ark.intel.com/content/www/us/en/ark/products/codename/38530/broadwell.html) | BDW | GEN8 |
+|[Cherry Trail](https://ark.intel.com/content/www/us/en/ark/products/codename/46629/cherry-trail.html) | CHV | GEN8LP |
+|[Skylake](https://ark.intel.com/content/www/us/en/ark/products/codename/37572/skylake.html) | SKL | GEN9 |
+|[Apollo Lake](https://ark.intel.com/content/www/us/en/ark/products/codename/80644/apollo-lake.html) | BXT | GEN9LP |
+|[Kaby Lake](https://ark.intel.com/content/www/us/en/ark/products/codename/82879/kaby-lake.html) | KBL | GEN9.5 |
+|[Ice Lake](https://ark.intel.com/content/www/us/en/ark/products/codename/74979/ice-lake.html) | ICL | GEN11 |
+|[Tiger Lake](https://ark.intel.com/content/www/us/en/ark/products/codename/88759/tiger-lake.html) | TGL  | GEN12 |
 
 Here is a helpful link that describes the Intel GPU ISA:
 
