@@ -601,45 +601,264 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_device_device_enqueue_capabilities, CL_DEVICE_QUEUE_SUPPORTED );
     ADD_ENUM_NAME( m_cl_device_device_enqueue_capabilities, CL_DEVICE_QUEUE_REPLACEABLE_DEFAULT );
 
-    // Intel Extensions
+    // cl_gl_object_type
+    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_BUFFER );
+    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE2D );
+    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE3D );
+    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_RENDERBUFFER );
+    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE2D_ARRAY );
+    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE1D );
+    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE1D_ARRAY );
+    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE_BUFFER );
 
-    // Unofficial kernel profiling extension:
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_KERNEL_PROFILING_MODES_COUNT_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_KERNEL_PROFILING_MODE_INFO_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_IL_SYMBOLS_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_BINARY_PROGRAM_INTEL );
+    // cl_gl_texture_info
+    ADD_ENUM_NAME( m_cl_int, CL_GL_TEXTURE_TARGET );
+    ADD_ENUM_NAME( m_cl_int, CL_GL_MIPMAP_LEVEL );
+    ADD_ENUM_NAME( m_cl_int, CL_GL_NUM_SAMPLES );
 
-    // Unofficial extension (for now) for VTune Debug Info:
-    ADD_ENUM_NAME( m_cl_int, CL_PROGRAM_DEBUG_INFO_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_PROGRAM_DEBUG_INFO_SIZES_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_BINARIES_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_BINARY_SIZES_INTEL );
+    // Error Code
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR );
 
-    // VME and VA
+    // cl_gl_context_info
+    ADD_ENUM_NAME( m_cl_int, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICES_FOR_GL_CONTEXT_KHR );
 
-    // clGetDeviceInfo
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ME_VERSION_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TRANSFORM_MASK_MAX_WIDTH_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TRANSFORM_MASK_MAX_HEIGHT_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TRANSFORM_FILTER_MAX_WIDTH_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TRANSFORM_FILTER_MAX_HEIGHT_INTEL );
+    // cl_context_properties
+    ADD_ENUM_NAME( m_cl_int, CL_GL_CONTEXT_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_EGL_DISPLAY_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_GLX_DISPLAY_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_WGL_HDC_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_CGL_SHAREGROUP_KHR );
 
-    // Error Codes
+    // Extensions
+
+#if defined(_WIN32)
+    // cl_khr_d3d10_sharing
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D10_DEVICE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D10_RESOURCE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_D3D10_RESOURCE_ALREADY_ACQUIRED_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_D3D10_RESOURCE_NOT_ACQUIRED_KHR );
+
+    // cl_khr_d3d10_sharing
+    ADD_ENUM_NAME( m_cl_int, CL_D3D10_DEVICE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_D3D10_DXGI_ADAPTER_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_PREFERRED_DEVICES_FOR_D3D10_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_ALL_DEVICES_FOR_D3D10_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D10_DEVICE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D10_PREFER_SHARED_RESOURCES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_D3D10_RESOURCE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_IMAGE_D3D10_SUBRESOURCE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_D3D10_OBJECTS_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_D3D10_OBJECTS_KHR );
+#endif
+
+#if defined(_WIN32)
+    // cl_khr_d3d11_sharing
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D11_DEVICE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D11_RESOURCE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_D3D11_RESOURCE_ALREADY_ACQUIRED_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_D3D11_RESOURCE_NOT_ACQUIRED_KHR );
+
+    // cl_khr_d3d11_sharing
+    ADD_ENUM_NAME( m_cl_int, CL_D3D11_DEVICE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_D3D11_DXGI_ADAPTER_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_PREFERRED_DEVICES_FOR_D3D11_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_ALL_DEVICES_FOR_D3D11_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D11_DEVICE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D11_PREFER_SHARED_RESOURCES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_D3D11_RESOURCE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_IMAGE_D3D11_SUBRESOURCE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_D3D11_OBJECTS_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_D3D11_OBJECTS_KHR );
+#endif
+
+#if defined(_WIN32)
+    // cl_khr_dx9_media_sharing
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_DX9_MEDIA_ADAPTER_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_DX9_MEDIA_SURFACE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DX9_MEDIA_SURFACE_ALREADY_ACQUIRED_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DX9_MEDIA_SURFACE_NOT_ACQUIRED_KHR );
+
+    // cl_khr_dx9_media_sharing
+    ADD_ENUM_NAME( m_cl_int, CL_ADAPTER_D3D9_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_ADAPTER_D3D9EX_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_ADAPTER_DXVA_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_PREFERRED_DEVICES_FOR_DX9_MEDIA_ADAPTER_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_ALL_DEVICES_FOR_DX9_MEDIA_ADAPTER_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_ADAPTER_D3D9_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_ADAPTER_D3D9EX_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_ADAPTER_DXVA_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_DX9_MEDIA_ADAPTER_TYPE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_DX9_MEDIA_SURFACE_INFO_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_IMAGE_DX9_MEDIA_PLANE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_DX9_MEDIA_SURFACES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_DX9_MEDIA_SURFACES_KHR );
+#endif
+
+    // cl_khr_extended_versioning extension
+    // Most enums for this extension were added to OpenCL 3.0.
+    //CL_PLATFORM_NUMERIC_VERSION_KHR                  0x0906
+    //CL_PLATFORM_EXTENSIONS_WITH_VERSION_KHR          0x0907
+    //CL_DEVICE_NUMERIC_VERSION_KHR                    0x105E
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_OPENCL_C_NUMERIC_VERSION_KHR );
+    //CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR            0x1060
+    //CL_DEVICE_ILS_WITH_VERSION_KHR                   0x1061
+    //CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR      0x1062
+
+    // cl_khr_gl_event
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_GL_FENCE_SYNC_OBJECT_KHR );
+
+    // cl_khr_icd
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_ICD_SUFFIX_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_NOT_FOUND_KHR );
+
+    // cl_khr_il_program
+    // These enums are core in OpenCL 2.1.
+    //CL_DEVICE_IL_VERSION_KHR                        0x105B
+    //CL_PROGRAM_IL_KHR                               0x1169
+
+    // cl_khr_initalize_memory
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_MEMORY_INITIALIZE_KHR );
+
+    // cl_khr_priority_hints extension
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_PRIORITY_KHR );
+
+    // cl_khr_spir
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIR_VERSIONS );
+    ADD_ENUM_NAME( m_cl_int, CL_PROGRAM_BINARY_TYPE_INTERMEDIATE );
+
+    // cl_khr_subgroups
+    // These enums were promoted to core in OpenCL 2.1.
+    //CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR    0x2033
+    //CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE_KHR       0x2034
+
+    // cl_khr_terminate_context
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TERMINATE_CAPABILITY_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_TERMINATE_KHR );
+
+    // cl_khr_throttle_hints extension
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_THROTTLE_KHR );
+
+    // cl_ext_atomic_counters
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT );
+
+    // cl_ext_device_fission
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_EQUALLY_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_BY_COUNTS_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_BY_NAMES_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARENT_DEVICE_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_TYPES_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_AFFINITY_DOMAINS_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_REFERENCE_COUNT_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_STYLE_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_FAILED_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_PARTITION_COUNT_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_PARTITION_NAME_EXT );
+
+    // cl_altera_compiler_mode
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_COMPILER_MODE_ALTERA );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_PROGRAM_EXE_LIBRARY_ROOT_ALTERA );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_OFFLINE_DEVICE_ALTERA );
+
+    // cl_altera_device_temperature
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_CORE_TEMPERATURE_ALTERA );
+
+    // cl_amd_device_attribute_query
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_WORK_GROUP_SIZE_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_CONSTANT_BUFFER_SIZE_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCIE_ID_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PROFILING_TIMER_OFFSET_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TOPOLOGY_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_BOARD_NAME_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GLOBAL_FREE_MEMORY_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SIMD_PER_COMPUTE_UNIT_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SIMD_WIDTH_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SIMD_INSTRUCTION_WIDTH_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_WAVEFRONT_WIDTH_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GLOBAL_MEM_CHANNELS_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GLOBAL_MEM_CHANNEL_BANKS_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GLOBAL_MEM_CHANNEL_BANK_WIDTH_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LOCAL_MEM_SIZE_PER_COMPUTE_UNIT_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LOCAL_MEM_BANKS_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_THREAD_TRACE_SUPPORTED_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GFXIP_MAJOR_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GFXIP_MINOR_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_AVAILABLE_ASYNC_QUEUES_AMD );
+
+    // cl_amd_offline_devices
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_OFFLINE_DEVICES_AMD );
+
+    // cl_arm_get_core_id
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_UNITS_BITFIELD_ARM );
+
+    // cl_arm_job_slot_selection
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_JOB_SLOTS_ARM );
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_JOB_SLOT_ARM );
+
+    // cl_arm_printf extension
+    ADD_ENUM_NAME( m_cl_int, CL_PRINTF_CALLBACK_ARM );
+    ADD_ENUM_NAME( m_cl_int, CL_PRINTF_BUFFERSIZE_ARM );
+
+    // cl_arm_scheduling_controls
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SCHEDULING_CONTROLS_CAPABILITIES_ARM );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_ARM );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_MODIFIER_ARM );
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_KERNEL_BATCHING_ARM );
+
+    // cl_intel_accelerator
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_ACCELERATOR_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_ACCELERATOR_TYPE_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_ACCELERATOR_DESC_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_ACCELERATOR_TYPE_NOT_SUPPORTED_INTEL );
 
-    // cl_accelerator_type_intel
-    //CL_ACCELERATOR_TYPE_MOTION_ESTIMATION_INTEL     0x0
-
-    // cl_accelerator_info_intel
+    // cl_intel_accelerator
     ADD_ENUM_NAME( m_cl_int, CL_ACCELERATOR_DESCRIPTOR_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_ACCELERATOR_REFERENCE_COUNT_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_ACCELERATOR_CONTEXT_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_ACCELERATOR_TYPE_INTEL );
 
-    // cl_motion_detect_desc_intel flags
+    // cl_intel_advanced_motion_estimation
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ME_VERSION_INTEL );
+
+    // cl_intel_driver_diagnostics
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL );
+
+#if defined(_WIN32)
+    // cl_intel_dx9_media_sharing
+    // These error codes are shared with cl_khr_dx9_media_sharing.
+    //CL_INVALID_DX9_DEVICE_INTEL                   -1010
+    //CL_INVALID_DX9_RESOURCE_INTEL                 -1011
+    //CL_DX9_RESOURCE_ALREADY_ACQUIRED_INTEL        -1012
+    //CL_DX9_RESOURCE_NOT_ACQUIRED_INTEL            -1013
+
+    // cl_intel_dx9_media_sharing
+    ADD_ENUM_NAME( m_cl_int, CL_D3D9_DEVICE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_D3D9EX_DEVICE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_DXVA_DEVICE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_PREFERRED_DEVICES_FOR_DX9_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_ALL_DEVICES_FOR_DX9_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D9_DEVICE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D9EX_DEVICE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_DXVA_DEVICE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_DX9_RESOURCE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_DX9_SHARED_HANDLE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_IMAGE_DX9_PLANE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_DX9_OBJECTS_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_DX9_OBJECTS_INTEL );
+#endif
+
+    // cl_intel_egl_image_yuv
+    ADD_ENUM_NAME( m_cl_int, CL_EGL_YUV_PLANE_INTEL );
+
+    // cl_intel_mem_force_host_memory
+    ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_FORCE_HOST_MEMORY_INTEL );
+
+    // cl_intel_motion_estimation
+
+    //CL_ACCELERATOR_TYPE_MOTION_ESTIMATION_INTEL     0x0
+
     //CL_ME_MB_TYPE_16x16_INTEL                       0x0
     //CL_ME_MB_TYPE_8x8_INTEL                         0x1
     //CL_ME_MB_TYPE_4x4_INTEL                         0x2
@@ -671,34 +890,8 @@ CEnumNameMap::CEnumNameMap()
     //CL_ME_VERSION_LEGACY_INTEL                      0x0
     //CL_ME_VERSION_ADVANCED_VER_1_INTEL              0x1
 
-    // cl_intel_egl_image_yuv
-    ADD_ENUM_NAME( m_cl_int, CL_EGL_YUV_PLANE_INTEL );
-
-    // cl_intel_simultaneous_sharing
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SIMULTANEOUS_INTEROPS_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUM_SIMULTANEOUS_INTEROPS_INTEL );
-
-    // cl_intel_thread_local_exec
-    ADD_ENUM_NAME( m_cl_command_queue_properties, CL_QUEUE_THREAD_LOCAL_EXEC_ENABLE_INTEL );
-
-    // cl_intel_va_api_media_sharing
-
-    ADD_ENUM_NAME( m_cl_int, CL_VA_API_DISPLAY_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_PREFERRED_DEVICES_FOR_VA_API_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_ALL_DEVICES_FOR_VA_API_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_VA_API_DISPLAY_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_MEM_VA_API_SURFACE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_IMAGE_VA_API_PLANE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_VA_API_MEDIA_SURFACES_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_VA_API_MEDIA_SURFACES_INTEL );
-
-    // Error Codes
-    ADD_ENUM_NAME( m_cl_int, CL_INVALID_VA_API_MEDIA_ADAPTER_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_INVALID_VA_API_MEDIA_SURFACE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VA_API_MEDIA_SURFACE_ALREADY_ACQUIRED_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VA_API_MEDIA_SURFACE_NOT_ACQUIRED_INTEL );
-
     // cl_intel_packed_yuv
+
     ADD_ENUM_NAME( m_cl_int, CL_YUYV_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_UYVY_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_YVYU_INTEL );
@@ -719,93 +912,12 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_SPILL_MEM_SIZE_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_COMPILE_SUB_GROUP_SIZE_INTEL );
 
-    // cl_intel_driver_diagnostics
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL );
+    // cl_intel_simultaneous_sharing
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SIMULTANEOUS_INTEROPS_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUM_SIMULTANEOUS_INTEROPS_INTEL );
 
-    // cl_intelx_video_enhancement
-    // This is the base-functionality VEBox extension.
-    // Note: These are preview enum names and values!
-
-    // cl_device_info
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_VE_VERSION_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_VE_ENGINE_COUNT_INTEL );
-
-    // cl_queue_properties - TBD: is this a general purpose enum or a bit?
-    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_VE_ENABLE_INTEL );
-
-    // attribute_ids for cl_vebox_attrib_desc_intel
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_DENOISE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_DEINTERLACE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_HOT_PIXEL_CORR_INTEL );
-
-    // cl_accelerator_info_intel
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_HISTOGRAMS_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_STATISTICS_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_STMM_INPUT_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_STMM_OUTPUT_INTEL );
-
-    // cl_intelx_ve_color_pipeline
-    // Note: These are preview enum names and values!
-
-    // cl_device_info
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_VE_COLOR_PIPE_VERSION_INTEL );
-
-    // attribute_ids for cl_vebox_attrib_desc_intel
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_STD_STE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_GAMUT_COMP_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_GECC_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_ACE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_ACE_ADV_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_TCC_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_PROC_AMP_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_BACK_END_CSC_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_AOI_ALPHA_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_CCM_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_FWD_GAMMA_CORRECT_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_FRONT_END_CSC_INTEL );
-
-    // cl_intelx_ve_camera_pipeline
-    // Note, these are preview enum names and values!
-
-    // cl_device_info
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_VE_CAMERA_PIPE_VERSION_INTEL );
-
-    // attribute_ids for cl_vebox_attrib_desc_intel
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_BLACK_LEVEL_CORR_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_DEMOSAIC_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_WHITE_BALANCE_CORR_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_VE_ACCELERATOR_ATTRIB_VIGNETTE_INTEL );
-
-    // HEVC PAK
-    // Note, this extension is still in development!
-
-    // cl_device_info
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PAK_VERSION_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PAK_AVAILABLE_CODECS_INTEL );
-
-    // cl_queue_properties / cl_command_queue_info
-    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_PAK_ENABLE_INTEL );
-
-    // cl_accelerator_info_intel
-    ADD_ENUM_NAME( m_cl_int, CL_PAK_CTU_COUNT_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_PAK_CTU_WIDTH_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_PAK_CTU_HEIGHT_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_PAK_MAX_INTRA_DEPTH_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_PAK_MAX_INTER_DEPTH_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_PAK_NUM_CUS_PER_CTU_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_PAK_MV_BUFFER_SIZE_INTEL );
-
-    // Error Codes
-    // These are currently all mapped to CL_INVALID_VALUE.
-    // Need official error code assignment.
-    //ADD_ENUM_NAME( m_cl_int, CL_INVALID_PAK_CTU_SIZE_INTEL );
-    //ADD_ENUM_NAME( m_cl_int, CL_INVALID_PAK_TU_SIZE_INTEL );
-    //ADD_ENUM_NAME( m_cl_int, CL_INVALID_PAK_TU_INTRA_DEPTH_INTEL );
-    //ADD_ENUM_NAME( m_cl_int, CL_INVALID_PAK_TU_INTER_DEPTH_INTEL );
-    //ADD_ENUM_NAME( m_cl_int, CL_INVALID_PAK_BITRATE_RANGE_INTEL );
-    //ADD_ENUM_NAME( m_cl_int, CL_INVALID_PAK_INSERTION_INTEL );
-    //ADD_ENUM_NAME( m_cl_int, CL_INVALID_PAK_CTU_POSITION_INTEL );
-    //ADD_ENUM_NAME( m_cl_int, CL_INVALID_PAK_REFERENCE_IMAGE_INDEX_INTEL );
+    // cl_intel_thread_local_exec
+    ADD_ENUM_NAME( m_cl_command_queue_properties, CL_QUEUE_THREAD_LOCAL_EXEC_ENABLE_INTEL );
 
     // cl_intel_unified_shared_memory
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_HOST_MEM_CAPABILITIES_INTEL );
@@ -848,97 +960,21 @@ CEnumNameMap::CEnumNameMap()
 
     ADD_ENUM_NAME( m_cl_mem_alloc_flags_intel, CL_MEM_ALLOC_WRITE_COMBINED_INTEL );
 
-    // cl_intel_mem_force_host_memory
-    ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_FORCE_HOST_MEMORY_INTEL );
+    // cl_intel_va_api_media_sharing
 
-    // Altera Extensions:
+    ADD_ENUM_NAME( m_cl_int, CL_VA_API_DISPLAY_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_PREFERRED_DEVICES_FOR_VA_API_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_ALL_DEVICES_FOR_VA_API_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_VA_API_DISPLAY_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_VA_API_SURFACE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_IMAGE_VA_API_PLANE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_VA_API_MEDIA_SURFACES_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_VA_API_MEDIA_SURFACES_INTEL );
 
-    // cl_altera_device_temperature
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_CORE_TEMPERATURE_ALTERA );
-
-    // cl_altera_compiler_mode
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_COMPILER_MODE_ALTERA );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_PROGRAM_EXE_LIBRARY_ROOT_ALTERA );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_OFFLINE_DEVICE_ALTERA );
-
-    // These are enums from the Khronos cl_gl.h header file:
-
-    // cl_gl_object_type
-    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_BUFFER );
-    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE2D );
-    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE3D );
-    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_RENDERBUFFER );
-    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE2D_ARRAY );
-    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE1D );
-    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE1D_ARRAY );
-    ADD_ENUM_NAME( m_cl_int, CL_GL_OBJECT_TEXTURE_BUFFER );
-
-    // cl_gl_texture_info
-    ADD_ENUM_NAME( m_cl_int, CL_GL_TEXTURE_TARGET );
-    ADD_ENUM_NAME( m_cl_int, CL_GL_MIPMAP_LEVEL );
-    ADD_ENUM_NAME( m_cl_int, CL_GL_NUM_SAMPLES );
-
-    // Error Code
-    ADD_ENUM_NAME( m_cl_int, CL_INVALID_GL_SHAREGROUP_REFERENCE_KHR );
-
-    // cl_gl_context_info
-    ADD_ENUM_NAME( m_cl_int, CL_CURRENT_DEVICE_FOR_GL_CONTEXT_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICES_FOR_GL_CONTEXT_KHR );
-
-    // cl_context_properties
-    ADD_ENUM_NAME( m_cl_int, CL_GL_CONTEXT_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_EGL_DISPLAY_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_GLX_DISPLAY_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_WGL_HDC_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_CGL_SHAREGROUP_KHR );
-
-    // These enums are from the Khronos cl_gl_ext.h header file:
-
-    // cl_khr_gl_event
-    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_GL_FENCE_SYNC_OBJECT_KHR );
-
-    // These are enums from the Khronos cl_ext.h header file:
-
-    // cl_khr_il_program
-    // These enums are core in OpenCL 2.1.
-    //CL_DEVICE_IL_VERSION_KHR                        0x105B
-    //CL_PROGRAM_IL_KHR                               0x1169
-
-    // cl_khr_icd
-    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_ICD_SUFFIX_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_NOT_FOUND_KHR );
-
-    // cl_khr_initalize_memory
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_MEMORY_INITIALIZE_KHR );
-
-    // cl_khr_terminate_context
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TERMINATE_CAPABILITY_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_TERMINATE_KHR );
-
-    // cl_khr_spir
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIR_VERSIONS );
-    ADD_ENUM_NAME( m_cl_int, CL_PROGRAM_BINARY_TYPE_INTERMEDIATE );
-
-    // cl_khr_subgroups
-    // These enums were promoted to core in OpenCL 2.1.
-    //CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR    0x2033
-    //CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE_KHR       0x2034
-
-    // cl_khr_priority_hints extension
-    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_PRIORITY_KHR );
-
-    // cl_khr_throttle_hints extension
-    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_THROTTLE_KHR );
-
-    // cl_khr_extended_versioning extension
-    // Most enums for this extension were added to OpenCL 3.0.
-    //CL_PLATFORM_NUMERIC_VERSION_KHR                  0x0906
-    //CL_PLATFORM_EXTENSIONS_WITH_VERSION_KHR          0x0907
-    //CL_DEVICE_NUMERIC_VERSION_KHR                    0x105E
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_OPENCL_C_NUMERIC_VERSION_KHR );
-    //CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR            0x1060
-    //CL_DEVICE_ILS_WITH_VERSION_KHR                   0x1061
-    //CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR      0x1062
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_VA_API_MEDIA_ADAPTER_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_VA_API_MEDIA_SURFACE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_VA_API_MEDIA_SURFACE_ALREADY_ACQUIRED_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_VA_API_MEDIA_SURFACE_NOT_ACQUIRED_INTEL );
 
     // cl_nv_device_attribute_query
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV );
@@ -951,49 +987,6 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT_NV );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_BUS_ID_NV );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_SLOT_ID_NV );
-
-    // cl_ext_atomic_counters
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT );
-
-    // cl_amd_device_attribute_query
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_WORK_GROUP_SIZE_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_CONSTANT_BUFFER_SIZE_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCIE_ID_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PROFILING_TIMER_OFFSET_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TOPOLOGY_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_BOARD_NAME_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GLOBAL_FREE_MEMORY_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SIMD_PER_COMPUTE_UNIT_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SIMD_WIDTH_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SIMD_INSTRUCTION_WIDTH_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_WAVEFRONT_WIDTH_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GLOBAL_MEM_CHANNELS_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GLOBAL_MEM_CHANNEL_BANKS_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GLOBAL_MEM_CHANNEL_BANK_WIDTH_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LOCAL_MEM_SIZE_PER_COMPUTE_UNIT_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LOCAL_MEM_BANKS_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_THREAD_TRACE_SUPPORTED_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GFXIP_MAJOR_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GFXIP_MINOR_AMD );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_AVAILABLE_ASYNC_QUEUES_AMD );
-
-    // cl_amd_offline_devices
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_OFFLINE_DEVICES_AMD );
-
-    // cl_ext_device_fission extension
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_EQUALLY_EXT );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_BY_COUNTS_EXT );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_BY_NAMES_EXT );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN_EXT );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARENT_DEVICE_EXT );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_TYPES_EXT );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_AFFINITY_DOMAINS_EXT );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_REFERENCE_COUNT_EXT );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_STYLE_EXT );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_FAILED_EXT );
-    ADD_ENUM_NAME( m_cl_int, CL_INVALID_PARTITION_COUNT_EXT );
-    ADD_ENUM_NAME( m_cl_int, CL_INVALID_PARTITION_NAME_EXT );
 
     // cl_qcom_ext_host_ptr extension
     ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_EXT_HOST_PTR_QCOM );
@@ -1010,103 +1003,17 @@ CEnumNameMap::CEnumNameMap()
     // cl_qcom_ion_host_ptr extension
     ADD_ENUM_NAME( m_cl_int, CL_MEM_ION_HOST_PTR_QCOM );
 
-    // cl_arm_printf extension
-    ADD_ENUM_NAME( m_cl_int, CL_PRINTF_CALLBACK_ARM );
-    ADD_ENUM_NAME( m_cl_int, CL_PRINTF_BUFFERSIZE_ARM );
+    // Unofficial kernel profiling extension:
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_KERNEL_PROFILING_MODES_COUNT_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_KERNEL_PROFILING_MODE_INFO_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_IL_SYMBOLS_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_BINARY_PROGRAM_INTEL );
 
-    // cl_arm_get_core_id
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_UNITS_BITFIELD_ARM );
-
-    // cl_arm_job_slot_selection
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_JOB_SLOTS_ARM );
-    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_JOB_SLOT_ARM );
-
-    // cl_arm_scheduling_controls
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SCHEDULING_CONTROLS_CAPABILITIES_ARM );
-    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_ARM );
-    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_MODIFIER_ARM );
-    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_KERNEL_BATCHING_ARM );
-
-#if defined(_WIN32)
-    // cl_khr_d3d10_sharing
-    ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D10_DEVICE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D10_RESOURCE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_D3D10_RESOURCE_ALREADY_ACQUIRED_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_D3D10_RESOURCE_NOT_ACQUIRED_KHR );
-
-    // cl_khr_d3d10_sharing
-    ADD_ENUM_NAME( m_cl_int, CL_D3D10_DEVICE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_D3D10_DXGI_ADAPTER_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_PREFERRED_DEVICES_FOR_D3D10_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_ALL_DEVICES_FOR_D3D10_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D10_DEVICE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D10_PREFER_SHARED_RESOURCES_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_MEM_D3D10_RESOURCE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_IMAGE_D3D10_SUBRESOURCE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_D3D10_OBJECTS_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_D3D10_OBJECTS_KHR );
-
-    // cl_khr_d3d11_sharing
-    ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D11_DEVICE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D11_RESOURCE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_D3D11_RESOURCE_ALREADY_ACQUIRED_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_D3D11_RESOURCE_NOT_ACQUIRED_KHR );
-
-    // cl_khr_d3d11_sharing
-    ADD_ENUM_NAME( m_cl_int, CL_D3D11_DEVICE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_D3D11_DXGI_ADAPTER_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_PREFERRED_DEVICES_FOR_D3D11_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_ALL_DEVICES_FOR_D3D11_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D11_DEVICE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D11_PREFER_SHARED_RESOURCES_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_MEM_D3D11_RESOURCE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_IMAGE_D3D11_SUBRESOURCE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_D3D11_OBJECTS_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_D3D11_OBJECTS_KHR );
-
-    // cl_khr_dx9_media_sharing
-    ADD_ENUM_NAME( m_cl_int, CL_INVALID_DX9_MEDIA_ADAPTER_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_INVALID_DX9_MEDIA_SURFACE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DX9_MEDIA_SURFACE_ALREADY_ACQUIRED_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DX9_MEDIA_SURFACE_NOT_ACQUIRED_KHR );
-
-    // cl_khr_dx9_media_sharing
-    ADD_ENUM_NAME( m_cl_int, CL_ADAPTER_D3D9_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_ADAPTER_D3D9EX_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_ADAPTER_DXVA_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_PREFERRED_DEVICES_FOR_DX9_MEDIA_ADAPTER_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_ALL_DEVICES_FOR_DX9_MEDIA_ADAPTER_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_ADAPTER_D3D9_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_ADAPTER_D3D9EX_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_ADAPTER_DXVA_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_MEM_DX9_MEDIA_ADAPTER_TYPE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_MEM_DX9_MEDIA_SURFACE_INFO_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_IMAGE_DX9_MEDIA_PLANE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_DX9_MEDIA_SURFACES_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_DX9_MEDIA_SURFACES_KHR );
-
-    // cl_intel_dx9_media_sharing
-    // These error codes are shared with cl_khr_dx9_media_sharing.
-    //CL_INVALID_DX9_DEVICE_INTEL                   -1010
-    //CL_INVALID_DX9_RESOURCE_INTEL                 -1011
-    //CL_DX9_RESOURCE_ALREADY_ACQUIRED_INTEL        -1012
-    //CL_DX9_RESOURCE_NOT_ACQUIRED_INTEL            -1013
-
-    // cl_intel_dx9_media_sharing
-    ADD_ENUM_NAME( m_cl_int, CL_D3D9_DEVICE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_D3D9EX_DEVICE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_DXVA_DEVICE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_PREFERRED_DEVICES_FOR_DX9_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_ALL_DEVICES_FOR_DX9_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D9_DEVICE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_D3D9EX_DEVICE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_DXVA_DEVICE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_MEM_DX9_RESOURCE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_MEM_DX9_SHARED_HANDLE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_IMAGE_DX9_PLANE_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_DX9_OBJECTS_INTEL );
-    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_DX9_OBJECTS_INTEL );
-#endif
+    // Unofficial extension (for now) for VTune Debug Info:
+    ADD_ENUM_NAME( m_cl_int, CL_PROGRAM_DEBUG_INFO_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_PROGRAM_DEBUG_INFO_SIZES_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_BINARIES_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_BINARY_SIZES_INTEL );
 
 #if !defined(__ANDROID__) && !defined(__APPLE__)
     // gl texture targets
