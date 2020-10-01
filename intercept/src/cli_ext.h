@@ -435,6 +435,11 @@ cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
 #define CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT           0x4032
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_ext_cxx_for_opencl
+
+#define CL_DEVICE_CXX_FOR_OPENCL_NUMERIC_VERSION_EXT 0x4230
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_ext_device_fission
 
 #define CL_DEVICE_PARTITION_EQUALLY_EXT             0x4050
