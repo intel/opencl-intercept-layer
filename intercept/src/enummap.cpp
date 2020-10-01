@@ -742,6 +742,10 @@ CEnumNameMap::CEnumNameMap()
     // cl_ext_atomic_counters
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT );
 
+    // cl_ext_cxx_for_opencl
+
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_CXX_FOR_OPENCL_NUMERIC_VERSION_EXT );
+
     // cl_ext_device_fission
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_EQUALLY_EXT );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PARTITION_BY_COUNTS_EXT );
