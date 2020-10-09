@@ -139,6 +139,7 @@ private:
     OpenMetricsDeviceFromFile_fn    OpenMetricsDeviceFromFile;
 
     bool                    m_Initialized;
+    bool                    m_Activated;
     bool                    m_IncludeMaxValues;
     uint32_t                m_APIMask;
     uint32_t                m_CategoryMask;

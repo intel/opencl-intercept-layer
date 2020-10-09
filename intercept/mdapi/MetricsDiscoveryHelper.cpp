@@ -106,7 +106,8 @@ static void DebugPrint(const char* formatString, ...)
 /* MDHelper constructor                                                 */
 /************************************************************************/
 MDHelper::MDHelper(uint32_t apiMask) :
-    m_Initialized (false ),
+    m_Initialized( false ),
+    m_Activated( false ),
     m_APIMask( apiMask ),
     m_CategoryMask( GPU_RENDER | GPU_COMPUTE | GPU_MEDIA | GPU_GENERIC ),
     m_MetricsDevice( NULL ),
@@ -121,7 +122,12 @@ MDHelper::MDHelper(uint32_t apiMask) :
 /************************************************************************/
 MDHelper::~MDHelper()
 {
-    if(CloseMetricsDevice != NULL && m_MetricsDevice)
+    if( m_Activated )
+    {
+        DeactivateMetricSet();
+    }
+
+    if( CloseMetricsDevice != NULL && m_MetricsDevice )
     {
         CloseMetricsDevice( m_MetricsDevice );
         m_MetricsDevice = NULL;
@@ -371,8 +377,16 @@ bool MDHelper::ActivateMetricSet()
         return false;
     }
 
+    if( m_Activated )
+    {
+        DebugPrint("Skipping ActivateMetricSet - already active.\n");
+        return true;
+    }
+
     TCompletionCode res = m_MetricSet->Activate();
     if( res != CC_OK ) { DebugPrint("ActivateMetricSet failed!\n"); }
+
+    m_Activated = res == CC_OK;
 
     return res == CC_OK;
 }
@@ -382,7 +396,7 @@ bool MDHelper::ActivateMetricSet()
 /************************************************************************/
 void MDHelper::DeactivateMetricSet()
 {
-    if( !m_Initialized || !m_MetricSet )
+    if( !m_Initialized || !m_Activated || !m_MetricSet )
     {
         DebugPrint("Can't DeactivateMetricSet!\n");
         return;
@@ -390,6 +404,8 @@ void MDHelper::DeactivateMetricSet()
 
     TCompletionCode res = m_MetricSet->Deactivate();
     if( res != CC_OK ) { DebugPrint("DeactivateMetricSet failed!\n"); }
+
+    m_Activated = res != CC_OK;
 }
 
 /************************************************************************/
