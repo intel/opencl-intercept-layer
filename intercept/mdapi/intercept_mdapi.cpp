@@ -39,8 +39,9 @@ static bool convertPropertiesToOCL1_2(
         // Convert properties from array of pairs (OCL2.0) to bitfield (OCL1.2)
         for( int i = 0; properties[ i ] != 0; i += 2 )
         {
-            if( properties[ i ] == CL_QUEUE_PROPERTIES )
+            switch( properties[ i ] )
             {
+            case CL_QUEUE_PROPERTIES:
                 switch( properties[ i + 1 ] )
                 {
                 case 0: // no special queue properties
@@ -52,9 +53,12 @@ static bool convertPropertiesToOCL1_2(
                 default:
                     return false;
                 }
-            }
-            else
-            {
+                break;
+            case CL_QUEUE_PRIORITY_KHR:
+            case CL_QUEUE_THROTTLE_KHR:
+                // Skip / ignore these properties.
+                break;
+            default:
                 return false;
             }
         }
