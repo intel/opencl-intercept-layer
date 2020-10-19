@@ -187,8 +187,6 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
             {
                 log( "clCreatePerfCountersCommandQueueINTEL() returned NULL!\n" );
             }
-
-            m_pMDHelper->DeactivateMetricSet();
         }
         else
         {
