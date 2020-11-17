@@ -1919,12 +1919,6 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithSource)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        SIMD_SURVEY_CREATE_PROGRAM_FROM_SOURCE(
-            retVal,
-            context,
-            count,
-            strings,
-            lengths );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p, program number = %04d",
             retVal,
             pIntercept->getProgramNumber() );
@@ -2185,11 +2179,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         BUILD_LOGGING( program, num_devices, device_list );
-        SIMD_SURVEY_BUILD_PROGRAM(
-            program,
-            num_devices,
-            device_list,
-            options );
         CALL_LOGGING_EXIT( retVal );
 
         DUMP_OUTPUT_PROGRAM_BINARIES( program );
@@ -2540,7 +2529,6 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
-        SIMD_SURVEY_CREATE_KERNEL( program, retVal, kernel_name );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         if( retVal != NULL )
@@ -2776,11 +2764,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
-        SIMD_SURVEY_SET_KERNEL_ARG(
-            kernel,
-            arg_index,
-            arg_size,
-            arg_value );
         CALL_LOGGING_EXIT( retVal );
 
         return retVal;
@@ -4731,7 +4714,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
 
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
-            SIMD_SURVEY_NDRANGE_KERNEL(kernel);
             CPU_PERFORMANCE_TIMING_START();
 
 //            ITT_ADD_PARAM_AS_METADATA(command_queue);
@@ -7917,7 +7899,6 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
             if( pIntercept->config().DevicePerformanceTiming ||
                 pIntercept->config().ITTPerformanceTiming ||
                 pIntercept->config().ChromePerformanceTiming ||
-                pIntercept->config().SIMDSurvey ||
                 pIntercept->config().DevicePerfCounterEventBasedSampling )
             {
                 properties |= (cl_command_queue_properties)CL_QUEUE_PROFILING_ENABLE;
