@@ -137,6 +137,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
     m_pMDHelper = NULL;
 #endif
 
+    m_QueueNumber = 0;
     m_MemAllocNumber = 0;
 
     m_AubCaptureStarted = false;
@@ -972,18 +973,9 @@ void CLIntercept::getCallLoggingPrefix(
         }
         if( m_Config.CallLoggingThreadNumber )
         {
-            unsigned int    threadNum = 0;
-            if( m_ThreadNumberMap.find( threadId ) != m_ThreadNumberMap.end() )
-            {
-                threadNum = m_ThreadNumberMap[ threadId ];
-            }
-            else
-            {
-                threadNum = (unsigned int)m_ThreadNumberMap.size();
-                m_ThreadNumberMap[ threadId ] = threadNum;
-            }
+            unsigned int    threadNumber = getThreadNumber( threadId );
             ss << "TNum = ";
-            ss << threadNum;
+            ss << threadNumber;
             ss << " ";
         }
 
@@ -4759,6 +4751,7 @@ void CLIntercept::addTimingEvent(
     cacheDeviceInfo( device );
 
     node.Device = device;
+    node.QueueNumber = m_QueueNumberMap[ queue ];
     node.FunctionName = functionName;
     node.EnqueueCounter = m_EnqueueCounter;
     node.QueuedTime = queuedTime;
@@ -5180,6 +5173,7 @@ void CLIntercept::checkTimingEvents()
 
                     chromeTraceEvent(
                         name,
+                        node.QueueNumber,
                         node.Event,
                         node.QueuedTime );
                 }
@@ -5520,6 +5514,42 @@ bool CLIntercept::checkGetSamplerString(
     }
 
     return found;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::addQueue(
+    cl_command_queue queue )
+{
+    if( queue )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        m_QueueNumberMap[ queue ] = m_QueueNumber + 1;  // should be nonzero
+        m_QueueNumber++;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::checkRemoveQueue(
+    cl_command_queue queue )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_uint refCount = 0;
+    cl_int  errorCode = CL_SUCCESS;
+
+    errorCode = dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_REFERENCE_COUNT,
+        sizeof( refCount ),
+        &refCount,
+        NULL );
+    if( errorCode == CL_SUCCESS && refCount == 1 )
+    {
+        m_QueueNumberMap.erase( queue );
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11847,6 +11877,9 @@ void CLIntercept::chromeCallLoggingExit(
     uint64_t    threadId =
         OS().GetThreadID();
 
+    // This will name the thread if it is not named already.
+    getThreadNumber( threadId );
+
     using us = std::chrono::microseconds;
     uint64_t    usStart =
         std::chrono::duration_cast<us>(tickStart - m_StartTime).count();
@@ -11905,46 +11938,51 @@ void CLIntercept::chromeRegisterCommandQueue(
 
     if( errorCode == CL_SUCCESS )
     {
-        std::string trackName = "OpenCL";
+        unsigned int    queueNumber = m_QueueNumberMap[ queue ];
 
-        if( properties & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE )
-        {
-            trackName += " Out-Of-Order";
-        }
-        else
-        {
-            trackName += " In-Order";
-        }
+        std::string trackName;
 
         if( deviceType & CL_DEVICE_TYPE_CPU )
         {
-            trackName += " CPU";
+            trackName += "CPU";
         }
         if( deviceType & CL_DEVICE_TYPE_GPU )
         {
-            trackName += " GPU";
+            trackName += "GPU";
         }
         if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
         {
-            trackName += " ACCELERATOR";
+            trackName += "ACCELERATOR";
         }
         if( deviceType & CL_DEVICE_TYPE_CUSTOM )
         {
-            trackName += " CUSTOM";
+            trackName += "CUSTOM";
         }
 
-        trackName += " Queue";
+        if( properties & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE )
+        {
+            trackName += " OOQ";
+        }
+        else
+        {
+            trackName += " IOQ";
+        }
 
-        //{
-        //    CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, ", Handle = %p", queue );
-        //    trackName = trackName + m_StringBuffer;
-        //}
+        {
+            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " %p", queue );
+            trackName = trackName + m_StringBuffer;
+        }
 
         uint64_t    processId = OS().GetProcessID();
         m_InterceptTrace
             << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << processId
-            << ", \"tid\":-" << (uintptr_t)queue
+            << ", \"tid\":-" << queueNumber
             << ", \"args\":{\"name\":\"" << trackName
+            << "\"}},\n";
+        m_InterceptTrace
+            << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << processId
+            << ", \"tid\":-" << queueNumber
+            << ", \"args\":{\"sort_index\":\"" << queueNumber
             << "\"}},\n";
     }
 }
@@ -11953,6 +11991,7 @@ void CLIntercept::chromeRegisterCommandQueue(
 //
 void CLIntercept::chromeTraceEvent(
     const std::string& name,
+    unsigned int queueNumber,
     cl_event event,
     const clock::time_point queuedTime )
 {
@@ -12042,7 +12081,7 @@ void CLIntercept::chromeTraceEvent(
                 m_InterceptTrace
                     << "{\"name\":\"" << name << " " << suffixes[state]
                     << "\", \"ph\":\"X\", \"pid\":" << processId
-                    << ", \"tid\":" << m_EventsChromeTraced << "." << (uintptr_t)queue
+                    << ", \"tid\":" << m_EventsChromeTraced << "." << queueNumber
                     << ", \"ts\":" << usStarts[state]
                     << ", \"dur\":" << usDeltas[state]
                     << ", \"cname\":\"" << colours[state]
@@ -12058,7 +12097,7 @@ void CLIntercept::chromeTraceEvent(
 
             m_InterceptTrace
                 << "{\"ph\":\"X\", \"pid\":" << processId
-                << ", \"tid\":-" << (uintptr_t)queue
+                << ", \"tid\":-" << queueNumber
                 << ", \"name\":\"" << name
                 << "\", \"ts\":" << usStart
                 << ", \"dur\":" << usDelta

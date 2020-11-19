@@ -761,9 +761,9 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
         CREATE_COMMAND_QUEUE_PROPERTIES_CLEANUP( newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ITT_REGISTER_COMMAND_QUEUE( retVal, false );
-        CHROME_REGISTER_COMMAND_QUEUE( retVal );
         ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+        ADD_QUEUE( retVal );
 
         return retVal;
     }
@@ -829,6 +829,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseCommandQueue)(
 
     if( pIntercept && pIntercept->dispatch().clReleaseCommandQueue )
     {
+        REMOVE_QUEUE( command_queue );
+
         cl_uint ref_count = 0;
         if( pIntercept->callLogging() )
         {
@@ -6335,6 +6337,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+        ADD_QUEUE( retVal );
 
         return retVal;
     }
@@ -6426,6 +6429,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( retVal );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+            ADD_QUEUE( retVal );
 
             return retVal;
         }
@@ -7939,7 +7943,6 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( retVal );
             ITT_REGISTER_COMMAND_QUEUE( retVal, true );
-            CHROME_REGISTER_COMMAND_QUEUE( retVal );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
             return retVal;
