@@ -747,32 +747,6 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will use 
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will use its own version of the built-in OpenCL kernels that may be accessed via clCreateProgramWithBuiltInKernels(). At present, only the VME block\_motion\_estimate\_intel kernel is implemented.
 
-### SIMD Survey Controls
-
-##### `SIMDSurvey` (bool)
-
-Executes a SIMD survey state machine.  The general idea of the SIMD survey state machine is to create and manage three additional kernels for each actual OpenCL kernel, one for each SIMD size.  Then, execute and time the three kernels, and choose the fastest for subsequent executions.
-
-##### `SIMDSurveyWarmupIterations` (cl_uint)
-
-This is the number of NDRanges that the SIMD survey state machine ignores before starting to time the SIMD survey.
-
-##### `SIMDSurveySIMD8Option` (string)
-
-This is the build option that is pre-pended to the application-specified build options to create the SIMD8 kernel.
-
-##### `SIMDSurveySIMD16Option` (string)
-
-This is the build option that is pre-pended to the application-specified build options to create the SIMD16 kernel.
-
-##### `SIMDSurveySIMD32Option` (string)
-
-This is the build option that is pre-pended to the application-specified build options to create the SIMD32 kernel.
-
-##### `SIMDOracle` (bool)
-
-[Note: Not currently implemented, but the idea behind the SIMD oracle is to save the best SIMD size from run-to-run, so the full SIMD survey does not need to be re-executed.]
-
 
 ---
 

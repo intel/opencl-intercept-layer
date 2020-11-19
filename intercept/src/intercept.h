@@ -604,35 +604,6 @@ public:
                 const cl_event* event_wait_list,
                 cl_event* event );
 
-    void    SIMDSurveyCreateProgramFromSource(
-                const cl_program program,
-                cl_context context,
-                cl_uint count,
-                const char** strings,
-                const size_t* lengths );
-    // TODO?
-    // SIMDSurveyCreateProgramWithBinary
-    // SIMDSurveyCreateProgramWithIL
-    void    SIMDSurveyBuildProgram(
-                const cl_program program,
-                cl_uint numDevices,
-                const cl_device_id* deviceList,
-                const char* options );
-    void    SIMDSurveyCreateKernel(
-                const cl_program program,
-                const cl_kernel kernel,
-                const std::string& kernelName );
-    // TODO?
-    // SIMDSurveyCreateKernelsInProgram();
-    // SIMDSurveyCloneKernel();
-    void    SIMDSurveySetKernelArg(
-                cl_kernel kernel,
-                cl_uint argIndex,
-                size_t argSize,
-                const void* argValue );
-    void    SIMDSurveyNDRangeKernel(
-                cl_kernel& kernel );
-
     void*   getExtensionFunctionAddress(
                 cl_platform_id platform,
                 const std::string& func_name );
@@ -1028,9 +999,6 @@ private:
     typedef std::map< const cl_context, SContextCallbackInfo* >  CContextCallbackInfoMap;
     CContextCallbackInfoMap m_ContextCallbackInfoMap;
 
-    typedef std::map< const cl_event, SEventCallbackInfo* > CEventCallbackInfoMap;
-    CEventCallbackInfoMap   m_EventCallbackInfoMap;
-
     struct SPrecompiledKernelOverrides
     {
         cl_program  Program;
@@ -1057,31 +1025,6 @@ private:
 
     typedef std::map< const cl_context, SBuiltinKernelOverrides* >  CBuiltinKernelOverridesMap;
     CBuiltinKernelOverridesMap  m_BuiltinKernelOverridesMap;
-
-    struct SSIMDSurveyProgram
-    {
-        cl_program  SIMD8Program;
-        cl_program  SIMD16Program;
-        cl_program  SIMD32Program;
-    };
-    struct SSIMDSurveyKernel
-    {
-        cl_kernel   SIMD8Kernel;
-        cl_kernel   SIMD16Kernel;
-        cl_kernel   SIMD32Kernel;
-
-        cl_ulong    SIMD8ExecutionTimeNS;
-        cl_ulong    SIMD16ExecutionTimeNS;
-        cl_ulong    SIMD32ExecutionTimeNS;
-
-        uint32_t    ExecutionNumber;
-    };
-
-    typedef std::map< const cl_program, SSIMDSurveyProgram* >   CSIMDSurveyProgramMap;
-    CSIMDSurveyProgramMap   m_SIMDSurveyProgramMap;
-
-    typedef std::map< const cl_kernel, SSIMDSurveyKernel* > CSIMDSurveyKernelMap;
-    CSIMDSurveyKernelMap    m_SIMDSurveyKernelMap;
 
     typedef std::map< const cl_accelerator_intel, cl_platform_id>   CAcceleratorInfoMap;
     CAcceleratorInfoMap     m_AcceleratorInfoMap;
@@ -2195,7 +2138,6 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits() const
     if( pIntercept->config().DevicePerformanceTiming ||                     \
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
-        pIntercept->config().SIMDSurvey ||                                  \
         pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
         pIntercept->config().InOrderQueue ||                                \
         pIntercept->config().NoProfilingQueue ||                            \
@@ -2212,7 +2154,6 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits() const
     if( pIntercept->config().DevicePerformanceTiming ||                     \
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
-        pIntercept->config().SIMDSurvey ||                                  \
         pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
         pIntercept->config().InOrderQueue ||                                \
         pIntercept->config().NoProfilingQueue ||                            \
@@ -2248,7 +2189,6 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits() const
     if( pIntercept->config().DevicePerformanceTiming ||                     \
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
-        pIntercept->config().SIMDSurvey ||                                  \
         pIntercept->config().DevicePerfCounterEventBasedSampling )          \
     {                                                                       \
         queuedTime = CLIntercept::clock::now();                             \
@@ -2263,7 +2203,6 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits() const
     if( ( pIntercept->config().DevicePerformanceTiming ||                   \
           pIntercept->config().ITTPerformanceTiming ||                      \
           pIntercept->config().ChromePerformanceTiming ||                   \
-          pIntercept->config().SIMDSurvey ||                                \
           pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
         ( pEvent != NULL ) )                                                \
     {                                                                       \
@@ -2301,7 +2240,6 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits() const
     if( ( pIntercept->config().DevicePerformanceTiming ||                   \
           pIntercept->config().ITTPerformanceTiming ||                      \
           pIntercept->config().ChromePerformanceTiming ||                   \
-          pIntercept->config().SIMDSurvey ||                                \
           pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
         ( pEvent != NULL ) )                                                \
     {                                                                       \
@@ -2337,62 +2275,10 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits() const
     if( pIntercept->config().DevicePerformanceTiming ||                     \
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
-        pIntercept->config().SIMDSurvey ||                                  \
         pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
         pIntercept->config().DevicePerfCounterTimeBasedSampling )           \
     {                                                                       \
         pIntercept->checkTimingEvents();                                    \
-    }
-
-///////////////////////////////////////////////////////////////////////////////
-//
-#define SIMD_SURVEY_CREATE_PROGRAM_FROM_SOURCE( _program, _context, _count, _strings, _lengths )    \
-    if( pIntercept->config().SIMDSurvey &&                                  \
-        _program != NULL )                                                  \
-    {                                                                       \
-        pIntercept->SIMDSurveyCreateProgramFromSource(                      \
-            _program,                                                       \
-            _context,                                                       \
-            _count,                                                         \
-            _strings,                                                       \
-            _lengths );                                                     \
-    }
-
-#define SIMD_SURVEY_BUILD_PROGRAM( _program, _numDevices, _deviceList, _options )   \
-    if( pIntercept->config().SIMDSurvey &&                                  \
-        _program != NULL )                                                  \
-    {                                                                       \
-        pIntercept->SIMDSurveyBuildProgram(                                 \
-            _program,                                                       \
-            _numDevices,                                                    \
-            _deviceList,                                                    \
-            _options );                                                     \
-    }
-
-#define SIMD_SURVEY_CREATE_KERNEL( _program, _kernel, _name )               \
-    if( pIntercept->config().SIMDSurvey &&                                  \
-        _kernel != NULL )                                                   \
-    {                                                                       \
-        pIntercept->SIMDSurveyCreateKernel(                                 \
-            _program,                                                       \
-            _kernel,                                                        \
-            _name );                                                        \
-    }
-
-#define SIMD_SURVEY_SET_KERNEL_ARG( _kernel, _argIndex, _argSize, _argValue )   \
-    if( pIntercept->config().SIMDSurvey )                                   \
-    {                                                                       \
-        pIntercept->SIMDSurveySetKernelArg(                                 \
-            _kernel,                                                        \
-            _argIndex,                                                      \
-            _argSize,                                                       \
-            _argValue );                                                    \
-    }
-
-#define SIMD_SURVEY_NDRANGE_KERNEL( _kernel )                               \
-    if( pIntercept->config().SIMDSurvey )                                   \
-    {                                                                       \
-        pIntercept->SIMDSurveyNDRangeKernel( _kernel );                     \
     }
 
 ///////////////////////////////////////////////////////////////////////////////
