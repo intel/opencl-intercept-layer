@@ -167,9 +167,3 @@ inline void add_task_metadata_array(
 #define ITT_RELEASE_COMMAND_QUEUE(_queue)
 
 #endif
-
-#define CHROME_REGISTER_COMMAND_QUEUE(_queue)                                                   \
-    if( pIntercept->config().ChromePerformanceTiming )                                          \
-    {                                                                                           \
-        pIntercept->chromeRegisterCommandQueue( _queue );                                       \
-    }

@@ -403,6 +403,10 @@ public:
                 const void *arg_value,
                 std::string& str ) const;
 
+    void    addQueue(
+                cl_command_queue queue );
+    void    checkRemoveQueue(
+                cl_command_queue queue );
     void    addBuffer(
                 cl_mem buffer );
     void    addImage(
@@ -689,8 +693,10 @@ public:
                 const size_t* gws,
                 const size_t* lws);
 
+    unsigned int    getThreadNumber( uint64_t threadId );
+
     void    saveProgramNumber( const cl_program program );
-    unsigned int getProgramNumber() const;
+    unsigned int    getProgramNumber() const;
 
     cl_device_type filterDeviceType( cl_device_type device_type ) const;
 
@@ -724,6 +730,7 @@ public:
                 cl_command_queue queue );
     void    chromeTraceEvent(
                 const std::string& name,
+                unsigned int queueNumber,
                 cl_event event,
                 clock::time_point queuedTime );
 
@@ -953,6 +960,7 @@ private:
     struct SEventListNode
     {
         cl_device_id        Device;
+        unsigned int        QueueNumber;
         std::string         FunctionName;
         std::string         KernelName;
         uint64_t            EnqueueCounter;
@@ -977,6 +985,11 @@ private:
     void    reportMDAPICounters(
                 std::ostream& os );
 #endif
+
+    unsigned int    m_QueueNumber;
+
+    typedef std::map< cl_command_queue, unsigned int >  CQueueNumberMap;
+    CQueueNumberMap m_QueueNumberMap;
 
     unsigned int    m_MemAllocNumber;
 
@@ -1166,8 +1179,6 @@ private:
     DISALLOW_COPY_AND_ASSIGN( CLIntercept );
 };
 
-///////////////////////////////////////////////////////////////////////////////
-//
 ///////////////////////////////////////////////////////////////////////////////
 //
 inline const cl_icd_dispatch& CLIntercept::dispatch() const
@@ -1612,6 +1623,21 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits() const
     return ( m_EnqueueCounter >= m_Config.DumpImagesMinEnqueue ) &&
            ( m_EnqueueCounter <= m_Config.DumpImagesMaxEnqueue );
 }
+
+#define ADD_QUEUE( queue )                                                  \
+    if( queue &&                                                            \
+        pIntercept->config().ChromePerformanceTiming )                      \
+    {                                                                       \
+        pIntercept->addQueue( queue );                                      \
+        pIntercept->chromeRegisterCommandQueue( queue );                    \
+    }
+
+#define REMOVE_QUEUE( queue )                                               \
+    if( queue &&                                                            \
+        pIntercept->config().ChromePerformanceTiming )                      \
+    {                                                                       \
+        pIntercept->checkRemoveQueue( queue );                              \
+    }
 
 #define ADD_BUFFER( buffer )                                                \
     if( buffer &&                                                           \
@@ -2442,6 +2468,41 @@ inline std::string CLIntercept::getShortKernelNameWithHash(
     }
 
     return name;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+inline unsigned int CLIntercept::getThreadNumber( uint64_t threadId )
+{
+    CThreadNumberMap::const_iterator iter = m_ThreadNumberMap.find( threadId );
+    unsigned int    threadNumber = 0;
+
+    if( iter != m_ThreadNumberMap.end() )
+    {
+        threadNumber = iter->second;
+    }
+    else
+    {
+        threadNumber = (unsigned int)m_ThreadNumberMap.size();
+        m_ThreadNumberMap[ threadId ] = threadNumber;
+
+        if( m_Config.ChromeCallLogging )
+        {
+            uint64_t    processId = OS().GetProcessID();
+            m_InterceptTrace
+                << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << processId
+                << ", \"tid\":" << threadId
+                << ", \"args\":{\"name\":\"Host Thread " << threadId
+                << "\"}},\n";
+            m_InterceptTrace
+                << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << processId
+                << ", \"tid\":" << threadId
+                << ", \"args\":{\"sort_index\":\"" << threadNumber + 10000
+                << "\"}},\n";
+        }
+    }
+
+    return threadNumber;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
