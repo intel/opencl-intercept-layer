@@ -4957,8 +4957,48 @@ void CLIntercept::addTimingEvent(
 
         if( config().DevicePerformanceTimeLWSTracking )
         {
+            bool    useSuggestedLWS = false;
+            size_t  suggestedLWS[3] = { 0, 0, 0 };
+            size_t  emptyGWO[3] = { 0, 0, 0 };
+
+            if( lws == NULL &&
+                workDim <= 3 &&
+                config().DevicePerformanceTimeSuggestedLWSTracking )
+            {
+                cl_platform_id  platform = getPlatform(device);
+
+                if( dispatchX(platform).clGetKernelSuggestedLocalWorkSizeINTEL == NULL )
+                {
+                    getExtensionFunctionAddress(
+                        platform,
+                        "clGetKernelSuggestedLocalWorkSizeINTEL" );
+                }
+
+                auto dispatchX = this->dispatchX(platform);
+                if( dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL )
+                {
+                    cl_int testErrorCode = dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL(
+                        queue,
+                        kernel,
+                        workDim,
+                        gwo == NULL ? emptyGWO : gwo,
+                        gws,
+                        suggestedLWS );
+                    useSuggestedLWS = ( testErrorCode == CL_SUCCESS );
+                }
+            }
+
             std::ostringstream  ss;
-            ss << " LWS[ ";
+            if( useSuggestedLWS )
+            {
+                ss << " SLWS[ ";
+                lws = suggestedLWS;
+            }
+            else
+            {
+                ss << " LWS[ ";
+            }
+
             if( lws )
             {
                 if( workDim >= 1 )
@@ -10521,6 +10561,9 @@ void* CLIntercept::getExtensionFunctionAddress(
     // Unofficial MDAPI extension:
     CHECK_RETURN_EXTENSION_FUNCTION( clCreatePerfCountersCommandQueueINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clSetPerformanceConfigurationINTEL );
+
+    // Unofficial cl_get_kernel_suggested_local_work_size extension:
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeINTEL );
 
     // cl_intel_accelerator
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateAcceleratorINTEL );

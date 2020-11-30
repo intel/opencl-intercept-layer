@@ -258,6 +258,15 @@ struct CLdispatchX
         cl_uint*        offsets,
         cl_uint*        values );
 
+    // Unofficial cl_get_kernel_suggested_local_work_size extension:
+    cl_int (CL_API_CALL *clGetKernelSuggestedLocalWorkSizeINTEL)(
+        cl_command_queue commandQueue,
+        cl_kernel kernel,
+        cl_uint workDim,
+        const size_t *globalWorkOffset,
+        const size_t *globalWorkSize,
+        size_t *suggestedLocalWorkSize);
+
     // cl_intel_accelerator
     cl_accelerator_intel (CL_API_CALL *clCreateAcceleratorINTEL) (
         cl_context context,
