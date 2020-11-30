@@ -7987,7 +7987,11 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeINTEL(
         auto dispatchX = pIntercept->dispatchX(commandQueue);
         if( dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL )
         {
-            CALL_LOGGING_ENTER();
+            CALL_LOGGING_ENTER_KERNEL(
+                kernel,
+                "queue = %p, kernel = %p",
+                commandQueue,
+                kernel );
             CPU_PERFORMANCE_TIMING_START();
 
             cl_int retVal = dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL(
