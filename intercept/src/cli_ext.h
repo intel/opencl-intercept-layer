@@ -1074,6 +1074,7 @@ cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 // Unofficial cl_get_kernel_suggested_local_work_size extension:
+
 extern CL_API_ENTRY
 cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeINTEL(
     cl_command_queue commandQueue,

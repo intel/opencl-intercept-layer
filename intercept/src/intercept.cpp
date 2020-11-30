@@ -4737,8 +4737,6 @@ void CLIntercept::addTimingEvent(
 
     SEventListNode& node = m_EventList.back();
 
-    cl_int  errorCode = CL_SUCCESS;
-
     cl_device_id device = NULL;
     dispatch().clGetCommandQueueInfo(
         queue,
@@ -4967,33 +4965,26 @@ void CLIntercept::addTimingEvent(
                 workDim <= 3 &&
                 config().DevicePerformanceTimeSuggestedLWSTracking )
             {
-                // Try to get a function pointer for
-                // clGetKernelSuggestedLocalWorkSizeINTEL.
-                // It's possible this won't exist.
-                if( dispatch().clGetKernelSuggestedLocalWorkSizeINTEL == NULL )
+                cl_platform_id  platform = getPlatform(device);
+
+                if( dispatchX(platform).clGetKernelSuggestedLocalWorkSizeINTEL == NULL )
                 {
-                    cl_platform_id  platform = NULL;
-                    dispatch().clGetDeviceInfo(
-                        device,
-                        CL_DEVICE_PLATFORM,
-                        sizeof(platform),
-                        &platform,
-                        NULL );
                     getExtensionFunctionAddress(
                         platform,
                         "clGetKernelSuggestedLocalWorkSizeINTEL" );
                 }
 
-                if( dispatch().clGetKernelSuggestedLocalWorkSizeINTEL )
+                auto dispatchX = this->dispatchX(platform);
+                if( dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL )
                 {
-                    errorCode = dispatch().clGetKernelSuggestedLocalWorkSizeINTEL(
+                    cl_int testErrorCode = dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL(
                         queue,
                         kernel,
                         workDim,
                         gwo == NULL ? emptyGWO : gwo,
                         gws,
                         suggestedLWS );
-                    useSuggestedLWS = ( errorCode == CL_SUCCESS );
+                    useSuggestedLWS = ( testErrorCode == CL_SUCCESS );
                 }
             }
 
