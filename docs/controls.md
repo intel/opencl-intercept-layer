@@ -507,6 +507,28 @@ The Intercept Layer for OpenCL Applications will only dump images when the enque
 
 The Intercept Layer for OpenCL Applications will only dump images when the enqueue counter is less than this value, inclusive.
 
+### Device Partitioning Controls
+
+##### `AutoPartitionAllDevices` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically partition parent devices and return all parent devices and all sub-devices.
+
+##### `AutoPartitionAllSubDevices` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically partition parent devices and return all sub-devices, but no parent devices.
+
+##### `AutoPartitionSingleSubDevice` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically partition parent devices and return a single sub-device, but no other sub-devices or parent devices or other sub-devices.
+
+##### `AutoPartitionByAffinityDomain` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices by the next partitionable affinity domain, if supported.
+
+##### `AutoPartitionEqually` (cl_uint)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices into sub-devices with the specified number of compute units, if supported.
+
 ### AubCapture Controls
 
 ##### `AubCapture` (bool)

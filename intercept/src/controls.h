@@ -134,6 +134,13 @@ CLI_CONTROL( cl_uint,       DumpBuffersMaxEnqueue,                  UINT_MAX, "T
 CLI_CONTROL( cl_uint,       DumpImagesMinEnqueue,                   0,     "The Intercept Layer for OpenCL Applications will only dump images when the enqueue counter is greater than this value, inclusive." )
 CLI_CONTROL( cl_uint,       DumpImagesMaxEnqueue,                   UINT_MAX, "The Intercept Layer for OpenCL Applications will only dump images when the enqueue counter is less than this value, inclusive." )
 
+CLI_CONTROL_SEPARATOR( Device Partitioning Controls: )
+CLI_CONTROL( bool,          AutoPartitionAllDevices,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically partition parent devices and return all parent devices and all sub-devices." )
+CLI_CONTROL( bool,          AutoPartitionAllSubDevices,             false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically partition parent devices and return all sub-devices, but no parent devices." )
+CLI_CONTROL( bool,          AutoPartitionSingleSubDevice,           false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically partition parent devices and return a single sub-device, but no other sub-devices or parent devices or other sub-devices." )
+CLI_CONTROL( bool,          AutoPartitionByAffinityDomain,          true,  "If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices by the next partitionable affinity domain, if supported." )
+CLI_CONTROL( cl_uint,       AutoPartitionEqually,                   1,     "If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices into sub-devices with the specified number of compute units, if supported." )
+
 CLI_CONTROL_SEPARATOR( AubCapture Controls: )
 CLI_CONTROL( bool,          AubCapture,                             false, "This is the master control for aub capture.  The Intercept Layer for OpenCL Applications doesn't implement aub capture itself, but can be used to selectively enable and disable aub capture via other methods." )
 CLI_CONTROL( bool,          AubCaptureKDC,                          false, "If set, the Intercept Layer for OpenCL Applications will use the older kdc.exe method of aub capture.  By default, the newer NEO method of aub capture will be used.  This control is ignored for all non-Windows operating systems." )

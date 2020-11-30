@@ -135,16 +135,31 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceIDs)(
             device_type );
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_int retVal = CL_SUCCESS;
+        cl_int retVal = CL_INVALID_OPERATION;
 
         device_type = pIntercept->filterDeviceType( device_type );
 
-        retVal = pIntercept->dispatch().clGetDeviceIDs(
-            platform,
-            device_type,
-            num_entries,
-            devices,
-            num_devices );
+        if( pIntercept->config().AutoPartitionAllDevices ||
+            pIntercept->config().AutoPartitionAllSubDevices ||
+            pIntercept->config().AutoPartitionSingleSubDevice )
+        {
+            retVal = pIntercept->autoPartitionGetDeviceIDs(
+                platform,
+                device_type,
+                num_entries,
+                devices,
+                num_devices );
+        }
+
+        if (retVal != CL_SUCCESS )
+        {
+            retVal = pIntercept->dispatch().clGetDeviceIDs(
+                platform,
+                device_type,
+                num_entries,
+                devices,
+                num_devices );
+        }
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );

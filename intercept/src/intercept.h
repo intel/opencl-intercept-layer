@@ -198,6 +198,13 @@ public:
 
     void    logCL_GLTextureDetails( cl_mem image, cl_GLenum target, cl_GLint miplevel, cl_GLuint texture );
 
+    cl_int  autoPartitionGetDeviceIDs(
+        cl_platform_id platform,
+        cl_device_type device_type,
+        cl_uint num_entries,
+        cl_device_id* devices,
+        cl_uint* num_devices );
+
     struct SContextCallbackInfo
     {
         CLIntercept*        pIntercept;

@@ -2726,6 +2726,170 @@ void CLIntercept::logKernelInfo(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+cl_int CLIntercept::autoPartitionGetDeviceIDs(
+    cl_platform_id platform,
+    cl_device_type device_type,
+    cl_uint num_entries,
+    cl_device_id* devices,
+    cl_uint* num_devices )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    CLI_ASSERT( config().AutoPartitionAllDevices ||
+                config().AutoPartitionAllSubDevices ||
+                config().AutoPartitionSingleSubDevice );
+
+    cl_int  errorCode = CL_SUCCESS;
+    std::vector<cl_device_id>   parentDevices;
+    std::vector<cl_device_id>   returnedDevices;
+
+    cl_uint numDevices = 0;
+    errorCode = dispatch().clGetDeviceIDs(
+        platform,
+        device_type,
+        0,
+        NULL,
+        &numDevices );
+    if( errorCode == CL_SUCCESS && numDevices != 0 )
+    {
+        parentDevices.resize(numDevices);
+        errorCode = dispatch().clGetDeviceIDs(
+            platform,
+            device_type,
+            numDevices,
+            parentDevices.data(),
+            NULL );
+    }
+
+    for( auto parent : parentDevices )
+    {
+        std::vector<cl_device_id>   subDevices;
+
+        std::string deviceInfo;
+        getDeviceInfoString(
+            1,
+            &parent,
+            deviceInfo );
+
+        if( subDevices.size() == 0 &&
+            config().AutoPartitionByAffinityDomain )
+        {
+            const cl_device_partition_property props[] = {
+                CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN,
+                CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE,
+                0
+            };
+
+            cl_uint numSubDevices = 0;
+            dispatch().clCreateSubDevices(
+                parent,
+                props,
+                0,
+                NULL,
+                &numSubDevices );
+            if( numSubDevices > 1 )
+            {
+                logf("Partitioned device %s by affinity domain into %u sub-devices.\n",
+                    deviceInfo.c_str(),
+                    numSubDevices );
+
+                subDevices.resize(numSubDevices);
+                dispatch().clCreateSubDevices(
+                    parent,
+                    props,
+                    numSubDevices,
+                    subDevices.data(),
+                    NULL );
+            }
+        }
+
+        if( subDevices.size() == 0 &&
+            config().AutoPartitionEqually )
+        {
+            const cl_device_partition_property props[] = {
+                CL_DEVICE_PARTITION_EQUALLY,
+                config().AutoPartitionEqually,
+                0
+            };
+
+            cl_uint numSubDevices = 0;
+            dispatch().clCreateSubDevices(
+                parent,
+                props,
+                0,
+                NULL,
+                &numSubDevices );
+            if( numSubDevices > 1 )
+            {
+                logf("Partitioned device %s equally into %u sub-devices with %u compute unit%s.\n",
+                    deviceInfo.c_str(),
+                    numSubDevices,
+                    config().AutoPartitionEqually,
+                    config().AutoPartitionEqually > 1 ? "s" : "" );
+
+                subDevices.resize(numSubDevices);
+                dispatch().clCreateSubDevices(
+                    parent,
+                    props,
+                    numSubDevices,
+                    subDevices.data(),
+                    NULL );
+            }
+        }
+
+        if( subDevices.size() == 0 )
+        {
+            logf("Couldn't partition device %s.\n",
+                deviceInfo.c_str() );
+            returnedDevices.push_back(parent);
+        }
+        else
+        {
+            if( config().AutoPartitionAllDevices )
+            {
+                returnedDevices.push_back(parent);
+            }
+            if( config().AutoPartitionAllDevices ||
+                config().AutoPartitionAllSubDevices )
+            {
+                returnedDevices.insert(
+                    returnedDevices.end(),
+                    subDevices.begin(),
+                    subDevices.end() );
+            }
+            else if( config().AutoPartitionSingleSubDevice )
+            {
+                returnedDevices.push_back( subDevices.front() );
+            }
+            else
+            {
+                CLI_ASSERT( 0 );
+                returnedDevices.push_back( parent );
+            }
+        }
+    }
+
+    if( errorCode == CL_SUCCESS )
+    {
+        for( cl_uint d = 0; d < returnedDevices.size(); d++ )
+        {
+            if( d < num_entries )
+            {
+                devices[d] = returnedDevices[d];
+            }
+        }
+
+        if( num_devices )
+        {
+            num_devices[0] = (cl_uint)returnedDevices.size();
+        }
+    }
+
+    return errorCode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::contextCallbackCaller(
     const char* errinfo,
     const void* private_info,
