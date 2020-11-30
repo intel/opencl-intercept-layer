@@ -2808,7 +2808,7 @@ cl_int CLIntercept::autoPartitionGetDeviceIDs(
         {
             const cl_device_partition_property props[] = {
                 CL_DEVICE_PARTITION_EQUALLY,
-                config().AutoPartitionEqually,
+                (cl_device_partition_property)config().AutoPartitionEqually,
                 0
             };
 
