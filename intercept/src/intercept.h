@@ -824,6 +824,9 @@ private:
     typedef std::map< uint64_t, unsigned int>   CThreadNumberMap;
     CThreadNumberMap    m_ThreadNumberMap;
 
+    typedef std::map< cl_device_id, std::vector<cl_device_id> > CSubDeviceCacheMap;
+    CSubDeviceCacheMap  m_SubDeviceCacheMap;
+
     unsigned int    m_EventsChromeTraced;
 
     unsigned int    m_ProgramNumber;

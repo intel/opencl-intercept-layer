@@ -2763,84 +2763,91 @@ cl_int CLIntercept::autoPartitionGetDeviceIDs(
 
     for( auto parent : parentDevices )
     {
-        std::vector<cl_device_id>   subDevices;
+        std::vector<cl_device_id>&  subDevices = m_SubDeviceCacheMap[parent];
 
-        std::string deviceInfo;
-        getDeviceInfoString(
-            1,
-            &parent,
-            deviceInfo );
-
-        if( subDevices.size() == 0 &&
-            config().AutoPartitionByAffinityDomain )
+        if( subDevices.empty() )
         {
-            const cl_device_partition_property props[] = {
-                CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN,
-                CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE,
-                0
-            };
+            std::string deviceInfo;
+            getDeviceInfoString(
+                1,
+                &parent,
+                deviceInfo );
 
-            cl_uint numSubDevices = 0;
-            dispatch().clCreateSubDevices(
-                parent,
-                props,
-                0,
-                NULL,
-                &numSubDevices );
-            if( numSubDevices > 1 )
+            if( subDevices.size() == 0 &&
+                config().AutoPartitionByAffinityDomain )
             {
-                logf("Partitioned device %s by affinity domain into %u sub-devices.\n",
-                    deviceInfo.c_str(),
-                    numSubDevices );
+                const cl_device_partition_property props[] = {
+                    CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN,
+                    CL_DEVICE_AFFINITY_DOMAIN_NEXT_PARTITIONABLE,
+                    0
+                };
 
-                subDevices.resize(numSubDevices);
+                cl_uint numSubDevices = 0;
                 dispatch().clCreateSubDevices(
                     parent,
                     props,
-                    numSubDevices,
-                    subDevices.data(),
-                    NULL );
+                    0,
+                    NULL,
+                    &numSubDevices );
+                if( numSubDevices > 1 )
+                {
+                    logf("Partitioned device %s by affinity domain into %u sub-devices.\n",
+                        deviceInfo.c_str(),
+                        numSubDevices );
+
+                    subDevices.resize(numSubDevices);
+                    dispatch().clCreateSubDevices(
+                        parent,
+                        props,
+                        numSubDevices,
+                        subDevices.data(),
+                        NULL );
+                }
             }
-        }
 
-        if( subDevices.size() == 0 &&
-            config().AutoPartitionEqually )
-        {
-            const cl_device_partition_property props[] = {
-                CL_DEVICE_PARTITION_EQUALLY,
-                (cl_device_partition_property)config().AutoPartitionEqually,
-                0
-            };
-
-            cl_uint numSubDevices = 0;
-            dispatch().clCreateSubDevices(
-                parent,
-                props,
-                0,
-                NULL,
-                &numSubDevices );
-            if( numSubDevices > 1 )
+            if( subDevices.size() == 0 &&
+                config().AutoPartitionEqually )
             {
-                logf("Partitioned device %s equally into %u sub-devices with %u compute unit%s.\n",
-                    deviceInfo.c_str(),
-                    numSubDevices,
-                    config().AutoPartitionEqually,
-                    config().AutoPartitionEqually > 1 ? "s" : "" );
+                const cl_device_partition_property props[] = {
+                    CL_DEVICE_PARTITION_EQUALLY,
+                    (cl_device_partition_property)config().AutoPartitionEqually,
+                    0
+                };
 
-                subDevices.resize(numSubDevices);
+                cl_uint numSubDevices = 0;
                 dispatch().clCreateSubDevices(
                     parent,
                     props,
-                    numSubDevices,
-                    subDevices.data(),
-                    NULL );
+                    0,
+                    NULL,
+                    &numSubDevices );
+                if( numSubDevices > 1 )
+                {
+                    logf("Partitioned device %s equally into %u sub-devices with %u compute unit%s.\n",
+                        deviceInfo.c_str(),
+                        numSubDevices,
+                        config().AutoPartitionEqually,
+                        config().AutoPartitionEqually > 1 ? "s" : "" );
+
+                    subDevices.resize(numSubDevices);
+                    dispatch().clCreateSubDevices(
+                        parent,
+                        props,
+                        numSubDevices,
+                        subDevices.data(),
+                        NULL );
+                }
+            }
+
+            if( subDevices.size() == 0 )
+            {
+                logf("Couldn't partition device %s.\n",
+                    deviceInfo.c_str() );
             }
         }
 
         if( subDevices.size() == 0 )
         {
-            logf("Couldn't partition device %s.\n",
-                deviceInfo.c_str() );
             returnedDevices.push_back(parent);
         }
         else
