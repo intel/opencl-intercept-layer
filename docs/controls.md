@@ -523,11 +523,11 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will auto
 
 ##### `AutoPartitionByAffinityDomain` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices by the next partitionable affinity domain, if supported.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices by the next partitionable affinity domain.
 
 ##### `AutoPartitionEqually` (cl_uint)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices into sub-devices with the specified number of compute units, if supported.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices into sub-devices with the specified number of compute units.
 
 ### AubCapture Controls
 

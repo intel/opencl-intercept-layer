@@ -151,7 +151,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceIDs)(
                 num_devices );
         }
 
-        if (retVal != CL_SUCCESS )
+        if( retVal != CL_SUCCESS )
         {
             retVal = pIntercept->dispatch().clGetDeviceIDs(
                 platform,
