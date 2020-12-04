@@ -8,13 +8,9 @@ That's it!
 
 ## How to Build cliloader
 
-`cliloader` is currently not built by default.
-To build `cliloader`, set `ENABLE_CLILOADER` when generating build files using CMake.
-For example:
+`cliloader` is built by default.
 
-````
-> cmake -DENABLE_CLILOADER=1 ..
-````
+To not build `cliloader`, pass `-DENABLE_CLILOADER=FALSE` to `cmake`.
 
 Some operating systems require additional code in the Intercept Layer for OpenCL Applications DLL / shared library to function correctly with the `cliloader` loader utility.
 When needed, this additional code is included when build files are generated when `ENABLE_CLILOADER` is set.

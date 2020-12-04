@@ -50,7 +50,7 @@ elseif(UNIX)
     endif()
 endif()
 
-option(ENABLE_CLILOADER "Enable cliloader Support and Build the Executable")
+option(ENABLE_CLILOADER "Enable cliloader Support and Build the Executable" ON)
 option(ENABLE_CLIPROF "Enable cliprof Support and Build the Executable")
 option(ENABLE_ITT "Enable ITT (Instrumentation Tracing Technology) API Support")
 option(ENABLE_MDAPI "Enable MDAPI Support" ON)
