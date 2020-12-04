@@ -122,7 +122,7 @@ See your CMake documentation for more details.
 |:---------|:-----|:------------|
 | CMAKE\_BUILD\_TYPE | STRING | Build type.  Does not affect multi-configuration generators, such as Visual Studio solution files.  Default: `Release`.  Other options: `Debug`
 | CMAKE\_INSTALL\_PREFIX | PATH | Install directory prefix.
-| ENABLE_CLILOADER | BOOL | Enables building the cliloader utilty (cliloader is intended to replace the old cliprof utility).  Additionally, when required, enables code in the Intercept Layer for OpenCL Applications itself to enable cliloader functionality.  Default: `FALSE`
+| ENABLE_CLILOADER | BOOL | Enables building the cliloader utilty (cliloader is intended to replace the old cliprof utility).  Additionally, when required, enables code in the Intercept Layer for OpenCL Applications itself to enable cliloader functionality.  Default: `TRUE`
 | ENABLE_CLIPROF | BOOL | Enables building the old cliprof loader utility.  Additionally, when required, enables code in the Intercept Layer for OpenCL Applications itself to enable cliprof functionality.  Default: `FALSE`
 | ENABLE_ITT | BOOL | Enables support for Instrumentation and Tracing Techology APIs, which can be used to display OpenCL events on Intel(R) VTune(tm) timegraphs.  Default: `FALSE`
 | ENABLE_KERNEL_OVERRIDES | BOOL | Enables embedding kernel strings to override precompiled kernels and built-in kernels.  Supported for Linux and Android builds only, since Windows builds always embeds kernel strings, and embedding kernel strings is not support for OSX (yet!).  Default: `TRUE`
