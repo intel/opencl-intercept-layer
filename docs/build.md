@@ -120,7 +120,7 @@ See your CMake documentation for more details.
 
 | Variable | Type | Description |
 |:---------|:-----|:------------|
-| CMAKE\_BUILD\_TYPE | STRING | Build type.  Does not affect multi-configuration generators, such as Visual Studio solution files.  Default: `Release`.  Other options: `Debug`, `RelWithDebInfo`
+| CMAKE\_BUILD\_TYPE | STRING | Build type.  Does not affect multi-configuration generators, such as Visual Studio solution files.  Default: `RelWithDebInfo`.  Other options: `Debug`, `Release`
 | CMAKE\_INSTALL\_PREFIX | PATH | Install directory prefix.
 | ENABLE_CLILOADER | BOOL | Enables building the cliloader utility (cliloader is a replacement for the old cliprof utility).  Additionally, when required, enables code in the Intercept Layer for OpenCL Applications itself to enable cliloader functionality.  Default: `TRUE`
 | ENABLE_CLIPROF | BOOL | Enables building the old cliprof loader utility.  Additionally, when required, enables code in the Intercept Layer for OpenCL Applications itself to enable cliprof functionality.  Default: `FALSE`
