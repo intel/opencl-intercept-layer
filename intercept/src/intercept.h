@@ -62,7 +62,11 @@ class CLIntercept
     struct Config;
 
 public:
+#if defined(CLINTERCEPT_HIGH_RESOLUTON_CLOCK)
+    using clock = std::chrono::high_resolution_clock;
+#else
     using clock = std::chrono::steady_clock;
+#endif
 
     static bool Create( void* pGlobalData, CLIntercept*& pIntercept );
     static void Delete( CLIntercept*& pIntercept );

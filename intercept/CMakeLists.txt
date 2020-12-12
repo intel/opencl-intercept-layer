@@ -121,6 +121,10 @@ if(ENABLE_CLILOADER)
     target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_CLILOADER)
 endif()
 
+if(ENABLE_HIGH_RESOLUTION_CLOCK)
+    target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_HIGH_RESOLUTON_CLOCK)
+endif()
+
 target_include_directories(OpenCL PRIVATE
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}

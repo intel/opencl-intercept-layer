@@ -463,6 +463,11 @@ bool CLIntercept::init()
 #else
         "    MDAPI(NOT supported)\n"
 #endif
+#if defined(CLINTERCEPT_HIGH_RESOLUTON_CLOCK)
+        "    clock(high_resolution_clock)\n"
+#else
+        "    clock(steady_clock)\n"
+#endif
     );
 #if defined(_WIN32)
     log( "CLIntercept environment variable prefix: " + std::string( OS::Services_Common::ENV_PREFIX ) + "\n"  );
