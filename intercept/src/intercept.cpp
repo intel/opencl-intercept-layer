@@ -432,12 +432,12 @@ bool CLIntercept::init()
 
     log( "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n" );
     log( "CLIntercept (" + bits + ") is loading...\n" );
-    log( "CLintercept file location: " + name + "\n" );
+    log( "CLIntercept file location: " + name + "\n" );
     log( "CLIntercept URL: " + std::string(sc_URL) + "\n" );
 #if defined(CLINTERCEPT_CMAKE)
     log( "CLIntercept git description: " + std::string(sc_GitDescribe) + "\n" );
     log( "CLIntercept git refspec: " + std::string(sc_GitRefSpec) + "\n" );
-    log( "CLInterecpt git hash: " + std::string(sc_GitHash) + "\n" );
+    log( "CLIntercept git hash: " + std::string(sc_GitHash) + "\n" );
 #endif
     log( "CLIntercept optional features:\n"
 // extra code only needed for Windows
