@@ -1411,6 +1411,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage3D)(
                 "format->channel_data_type = %s, "
                 "image_width = %zu, "
                 "image_height = %zu, "
+                "image_depth = %zu, "
                 "image_row_pitch = %zu, "
                 "image_slice_pitch = %zu, "
                 "host_ptr = %p ",
@@ -9012,7 +9013,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
 
             if( pIntercept->nullEnqueue() == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %zu, advice = %s (%llX)",
+                CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %zu, advice = %s (%u)",
                     queue,
                     ptr,
                     size,
