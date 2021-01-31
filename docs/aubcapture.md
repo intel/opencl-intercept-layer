@@ -72,4 +72,4 @@ If the first 10 enqueues do not include any kernel enqueues, increase the
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018-2020, Intel(R) Corporation
+Copyright (c) 2018-2021, Intel(R) Corporation
