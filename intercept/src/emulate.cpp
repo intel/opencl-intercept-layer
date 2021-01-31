@@ -133,7 +133,8 @@ cl_int CL_API_CALL clMemBlockingFreeINTEL_EMU(
 
     if( pIntercept && pIntercept->config().Emulate_cl_intel_unified_shared_memory )
     {
-        // TODO: Track queues and block all.
+        pIntercept->finishAll( context );
+
         return pIntercept->emulatedMemFree(
             context,
             ptr );

@@ -778,7 +778,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
         ITT_REGISTER_COMMAND_QUEUE( retVal, false );
         ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
-        ADD_QUEUE( retVal );
+        ADD_QUEUE( context, retVal );
 
         return retVal;
     }
@@ -6335,7 +6335,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
-        ADD_QUEUE( retVal );
+        ADD_QUEUE( context, retVal );
 
         return retVal;
     }
@@ -6427,7 +6427,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( retVal );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
-            ADD_QUEUE( retVal );
+            ADD_QUEUE( context, retVal );
 
             return retVal;
         }
