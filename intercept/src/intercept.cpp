@@ -2113,45 +2113,45 @@ void CLIntercept::getKernelArgString(
             arg_value,
             str ) )
     {
-        CLI_SPRINTF( s, 256, "index = %d, size = %d, value = %s\n",
+        CLI_SPRINTF( s, 256, "index = %u, size = %zu, value = %s\n",
             arg_index,
-            (unsigned int)arg_size,
+            arg_size,
             str.c_str() );
     }
     else if( ( arg_value != NULL ) &&
              ( arg_size == sizeof(cl_mem) ) )
     {
         cl_mem* pMem = (cl_mem*)arg_value;
-        CLI_SPRINTF( s, 256, "index = %d, size = %d, value = %p",
+        CLI_SPRINTF( s, 256, "index = %u, size = %zu, value = %p",
             arg_index,
-            (unsigned int)arg_size,
+            arg_size,
             pMem[0] );
     }
     else if( ( arg_value != NULL ) &&
              ( arg_size == sizeof(cl_uint) ) )
     {
         cl_uint*    pData = (cl_uint*)arg_value;
-        CLI_SPRINTF( s, 256, "index = %d, size = %d, value = 0x%x",
+        CLI_SPRINTF( s, 256, "index = %u, size = %zu, value = 0x%x",
             arg_index,
-            (unsigned int)arg_size,
+            arg_size,
             pData[0] );
     }
     else if( ( arg_value != NULL ) &&
              ( arg_size == sizeof(cl_ulong) ) )
     {
         cl_ulong*   pData = (cl_ulong*)arg_value;
-        CLI_SPRINTF( s, 256, "index = %d, size = %d, value = 0x%jx",
+        CLI_SPRINTF( s, 256, "index = %u, size = %zu, value = 0x%jx",
             arg_index,
-            (unsigned int)arg_size,
+            arg_size,
             pData[0] );
     }
     else if( ( arg_value != NULL ) &&
              ( arg_size == sizeof(cl_int4) ) )
     {
         cl_int4*   pData = (cl_int4*)arg_value;
-        CLI_SPRINTF( s, 256, "index = %d, size = %d, valueX = 0x%0x, valueY = 0x%0x, valueZ = 0x%0x, valueW = 0x%0x",
+        CLI_SPRINTF( s, 256, "index = %u, size = %zu, valueX = 0x%0x, valueY = 0x%0x, valueZ = 0x%0x, valueW = 0x%0x",
             arg_index,
-            (unsigned int)arg_size,
+            arg_size,
             pData->s[0],
             pData->s[1],
             pData->s[2],
@@ -2159,9 +2159,9 @@ void CLIntercept::getKernelArgString(
     }
     else
     {
-        CLI_SPRINTF( s, 256, "index = %d, size = %d",
+        CLI_SPRINTF( s, 256, "index = %u, size = %zu",
             arg_index,
-            (unsigned int)arg_size );
+            arg_size );
     }
 
     str = s;
@@ -2464,8 +2464,7 @@ void CLIntercept::logBuild(
 
                     char    str[256] = "";
 
-                    CLI_SPRINTF( str, 256, "Build Status for device %u = ",
-                        (unsigned int)i );
+                    CLI_SPRINTF( str, 256, "Build Status for device %u = ", i );
 
                     std::string message = str;
 
@@ -2699,11 +2698,11 @@ void CLIntercept::logKernelInfo(
                     if( config().KernelInfoLogging ||
                         config().PreferredWorkGroupSizeMultipleLogging )
                     {
-                        logf( "        Preferred Work Group Size Multiple: %u\n", (cl_uint)pwgsm);
+                        logf( "        Preferred Work Group Size Multiple: %zu\n", pwgsm);
                     }
                     if( config().KernelInfoLogging )
                     {
-                        logf( "        Work Group Size: %u\n", (cl_uint)wgs);
+                        logf( "        Work Group Size: %zu\n", wgs);
                         logf( "        Private Mem Size: %u\n", (cl_uint)pms);
                         logf( "        Local Mem Size: %u\n", (cl_uint)lms);
                         if( errorCode_sms == CL_SUCCESS )
@@ -2933,9 +2932,9 @@ void CLIntercept::contextCallback(
     size_t cb )
 {
     char    str[256] = "";
-    CLI_SPRINTF( str, 256, "=======> Context Callback (private_info = %p, cb = %u):\n",
+    CLI_SPRINTF( str, 256, "=======> Context Callback (private_info = %p, cb = %zu):\n",
         private_info,
-        (unsigned int)cb );
+        cb );
 
     std::lock_guard<std::mutex> lock(m_Mutex);
     log( str + errinfo + "\n" + "<======= End of Context Callback\n" );
@@ -3139,9 +3138,9 @@ void CLIntercept::overrideNullLocalWorkSize(
                 else
                 {
                     std::lock_guard<std::mutex> lock(m_Mutex);
-                    logf( "Couldn't override NULL local work size: < %u > %% < %u > != 0!\n",
-                        (unsigned int)global_work_size[0],
-                        (unsigned int)m_Config.NullLocalWorkSizeX );
+                    logf( "Couldn't override NULL local work size: < %zu > %% < %zu > != 0!\n",
+                        global_work_size[0],
+                        m_Config.NullLocalWorkSizeX );
                 }
             }
             break;
@@ -3157,11 +3156,11 @@ void CLIntercept::overrideNullLocalWorkSize(
                 else
                 {
                     std::lock_guard<std::mutex> lock(m_Mutex);
-                    logf( "Couldn't override NULL local work size: < %u x %u > %% < %u x %u > != 0!\n",
-                        (unsigned int)global_work_size[0],
-                        (unsigned int)global_work_size[1],
-                        (unsigned int)m_Config.NullLocalWorkSizeX,
-                        (unsigned int)m_Config.NullLocalWorkSizeY );
+                    logf( "Couldn't override NULL local work size: < %zu x %zu > %% < %zu x %zu > != 0!\n",
+                        global_work_size[0],
+                        global_work_size[1],
+                        m_Config.NullLocalWorkSizeX,
+                        m_Config.NullLocalWorkSizeY );
                 }
             }
             break;
@@ -3179,13 +3178,13 @@ void CLIntercept::overrideNullLocalWorkSize(
                 else
                 {
                     std::lock_guard<std::mutex> lock(m_Mutex);
-                    logf( "Couldn't override NULL local work size: < %u x %u x %u > %% < %u x %u x %u > != 0!\n",
-                        (unsigned int)global_work_size[0],
-                        (unsigned int)global_work_size[1],
-                        (unsigned int)global_work_size[2],
-                        (unsigned int)m_Config.NullLocalWorkSizeX,
-                        (unsigned int)m_Config.NullLocalWorkSizeY,
-                        (unsigned int)m_Config.NullLocalWorkSizeZ );
+                    logf( "Couldn't override NULL local work size: < %zu x %zu x %zu > %% < %zu x %zu x %zu > != 0!\n",
+                        global_work_size[0],
+                        global_work_size[1],
+                        global_work_size[2],
+                        m_Config.NullLocalWorkSizeX,
+                        m_Config.NullLocalWorkSizeY,
+                        m_Config.NullLocalWorkSizeZ );
                 }
             }
             break;
@@ -5036,7 +5035,7 @@ void CLIntercept::addTimingEvent(
 
                 if( simd )
                 {
-                    ss << " SIMD" << (unsigned int)simd;
+                    ss << " SIMD" << simd;
                 }
             }
             {
@@ -5050,7 +5049,7 @@ void CLIntercept::addTimingEvent(
                     NULL );
                 if( slm )
                 {
-                    ss << " SLM=" << (unsigned int)slm;
+                    ss << " SLM=" << slm;
                 }
             }
             {
@@ -5064,7 +5063,7 @@ void CLIntercept::addTimingEvent(
                     NULL );
                 if( tpm )
                 {
-                    ss << " TPM=" << (unsigned int)tpm;
+                    ss << " TPM=" << tpm;
                 }
             }
             {
@@ -5078,7 +5077,7 @@ void CLIntercept::addTimingEvent(
                     NULL );
                 if( spill )
                 {
-                    ss << " SPILL=" << (unsigned int)spill;
+                    ss << " SPILL=" << spill;
                 }
             }
             node.KernelName += ss.str();
@@ -6169,11 +6168,11 @@ void CLIntercept::dumpImagesForKernel(
 
             // Add the image dimensions to the file name
             {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "_%ux%ux%u_%ubpp",
-                    (unsigned int)info.Region[0],
-                    (unsigned int)info.Region[1],
-                    (unsigned int)info.Region[2],
-                    (unsigned int)info.ElementSize * 8 );
+                CLI_SPRINTF( tmpStr, MAX_PATH, "_%zux%zux%zu_%zubpp",
+                    info.Region[0],
+                    info.Region[1],
+                    info.Region[2],
+                    info.ElementSize * 8 );
 
                 fileName += tmpStr;
             }
@@ -6359,8 +6358,8 @@ void CLIntercept::dumpBuffer(
         {
             char    offsetName[ MAX_PATH ];
 
-            CLI_SPRINTF( offsetName, MAX_PATH, "%04u",
-                (unsigned int)offset );
+            CLI_SPRINTF( offsetName, MAX_PATH, "%04zu",
+                offset );
 
             fileName += "_Offset_";
             fileName += offsetName;
@@ -6468,7 +6467,7 @@ void CLIntercept::checkEventList(
     if( numEvents != 0 && eventList == NULL )
     {
         std::lock_guard<std::mutex> lock(m_Mutex);
-        logf( "Check Events for %s: Num Events is %d, but Event List is NULL!\n",
+        logf( "Check Events for %s: Num Events is %u, but Event List is NULL!\n",
             functionName.c_str(),
             numEvents );
     }
@@ -12606,9 +12605,9 @@ cl_int CLIntercept::setUSMKernelExecInfo(
             {
                 size_t  count = usmContextInfo.HostAllocVector.size();
 
-                logf("Indirect USM Allocs for kernel %s: Fast path for %u host allocs\n",
+                logf("Indirect USM Allocs for kernel %s: Fast path for %zu host allocs\n",
                     getShortKernelName(kernel).c_str(),
-                    (cl_uint)count );
+                    count );
 
                 errorCode = dispatch().clSetKernelExecInfo(
                     kernel,
@@ -12620,9 +12619,9 @@ cl_int CLIntercept::setUSMKernelExecInfo(
             {
                 size_t  count = usmContextInfo.DeviceAllocVector.size();
 
-                logf("Indirect USM Allocs for kernel %s: Fast path for %u device allocs\n",
+                logf("Indirect USM Allocs for kernel %s: Fast path for %zu device allocs\n",
                     getShortKernelName(kernel).c_str(),
-                    (cl_uint)count );
+                    count );
 
                 errorCode = dispatch().clSetKernelExecInfo(
                     kernel,
@@ -12634,9 +12633,9 @@ cl_int CLIntercept::setUSMKernelExecInfo(
             {
                 size_t  count = usmContextInfo.SharedAllocVector.size();
 
-                logf("Indirect USM Allocs for kernel %s: Fast path for %u shared allocs\n",
+                logf("Indirect USM Allocs for kernel %s: Fast path for %zu shared allocs\n",
                     getShortKernelName(kernel).c_str(),
-                    (cl_uint)count );
+                    count );
 
                 errorCode = dispatch().clSetKernelExecInfo(
                     kernel,
@@ -12647,13 +12646,13 @@ cl_int CLIntercept::setUSMKernelExecInfo(
         }
         else
         {
-            logf("Indirect USM allocs for kernel %s: %u svm ptrs, %u usm ptrs, %u host allocs, %u device allocs, %u shared allocs\n",
+            logf("Indirect USM allocs for kernel %s: %zu svm ptrs, %zu usm ptrs, %zu host allocs, %zu device allocs, %zu shared allocs\n",
                 getShortKernelName(kernel).c_str(),
-                (cl_uint)usmKernelInfo.SVMPtrs.size(),
-                (cl_uint)usmKernelInfo.USMPtrs.size(),
-                setHostAllocs ? (cl_uint)usmContextInfo.HostAllocVector.size() : 0,
-                setDeviceAllocs ? (cl_uint)usmContextInfo.DeviceAllocVector.size() : 0,
-                setSharedAllocs ? (cl_uint)usmContextInfo.SharedAllocVector.size() : 0 );
+                usmKernelInfo.SVMPtrs.size(),
+                usmKernelInfo.USMPtrs.size(),
+                setHostAllocs ? usmContextInfo.HostAllocVector.size() : 0,
+                setDeviceAllocs ? usmContextInfo.DeviceAllocVector.size() : 0,
+                setSharedAllocs ? usmContextInfo.SharedAllocVector.size() : 0 );
 
             size_t  count =
                 usmKernelInfo.SVMPtrs.size() +

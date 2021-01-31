@@ -2535,11 +2535,11 @@ inline void CLIntercept::logCL_GLTextureDetails( cl_mem image, cl_GLenum target,
     CALL_LOGGING_INFO(
         "CL Channel Order = %s, "
         "CL Channel Data Type = %s, "
-        "CL Row Pitch = %d, "
-        "CL Slice Pitch = %d, "
-        "CL Width = %d, "
-        "CL Height = %d, "
-        "CL Depth = %d, ",
+        "CL Row Pitch = %zu, "
+        "CL Slice Pitch = %zu, "
+        "CL Width = %zu, "
+        "CL Height = %zu, "
+        "CL Depth = %zu, ",
         enumName().name( cl_format.image_channel_order ).c_str(),
         enumName().name( cl_format.image_channel_data_type ).c_str(),
         cl_rowPitch,

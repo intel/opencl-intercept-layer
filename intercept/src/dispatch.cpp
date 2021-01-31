@@ -400,7 +400,7 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContext)(
                 devices,
                 deviceInfo );
         }
-        CALL_LOGGING_ENTER( "properties = [ %s ], num_devices = %d, devices = [ %s ]",
+        CALL_LOGGING_ENTER( "properties = [ %s ], num_devices = %u, devices = [ %s ]",
             contextProperties.c_str(),
             num_devices,
             deviceInfo.c_str() );
@@ -963,7 +963,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
 
     if( pIntercept && pIntercept->dispatch().clCreateBuffer )
     {
-        CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), size = %d, host_ptr = %p",
+        CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), size = %zu, host_ptr = %p",
             context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags,
@@ -1016,7 +1016,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
                 properties,
                 propsStr );
         }
-        CALL_LOGGING_ENTER( "context = %p, properties = [ %s ], flags = %s (%llX), size = %d, host_ptr = %p",
+        CALL_LOGGING_ENTER( "context = %p, properties = [ %s ], flags = %s (%llX), size = %zu, host_ptr = %p",
             context,
             propsStr.c_str(),
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
@@ -1067,7 +1067,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateBufferNV(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateBufferNV )
         {
-            CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), flags_NV = %llX, size = %d, host_ptr = %p",
+            CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), flags_NV = %llX, size = %zu, host_ptr = %p",
                 context,
                 pIntercept->enumName().name_mem_flags( flags ).c_str(),
                 flags,
@@ -1173,14 +1173,14 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
                 "format->channel_order = %s, "
                 "format->channel_data_type = %s, "
                 "desc->type = %s, "
-                "desc->width = %d, "
-                "desc->height = %d, "
-                "desc->depth = %d, "
-                "desc->array_size = %d, "
-                "desc->row_pitch = %d, "
-                "desc->slice_pitch = %d, "
-                "desc->num_mip_levels = %d, "
-                "desc->num_samples = %d, "
+                "desc->width = %zu, "
+                "desc->height = %zu, "
+                "desc->depth = %zu, "
+                "desc->array_size = %zu, "
+                "desc->row_pitch = %zu, "
+                "desc->slice_pitch = %zu, "
+                "desc->num_mip_levels = %u, "
+                "desc->num_samples = %u, "
                 "desc->mem_object = %p, "
                 "host_ptr = %p ",
                 context,
@@ -1260,14 +1260,14 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImageWithProperties)(
                 "format->channel_order = %s, "
                 "format->channel_data_type = %s, "
                 "desc->type = %s, "
-                "desc->width = %d, "
-                "desc->height = %d, "
-                "desc->depth = %d, "
-                "desc->array_size = %d, "
-                "desc->row_pitch = %d, "
-                "desc->slice_pitch = %d, "
-                "desc->num_mip_levels = %d, "
-                "desc->num_samples = %d, "
+                "desc->width = %zu, "
+                "desc->height = %zu, "
+                "desc->depth = %zu, "
+                "desc->array_size = %zu, "
+                "desc->row_pitch = %zu, "
+                "desc->slice_pitch = %zu, "
+                "desc->num_mip_levels = %u, "
+                "desc->num_samples = %u, "
                 "desc->mem_object = %p, "
                 "host_ptr = %p ",
                 context,
@@ -1340,9 +1340,9 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage2D)(
                 "flags = %s (%llX), "
                 "format->channel_order = %s, "
                 "format->channel_data_type = %s, "
-                "image_width = %d, "
-                "image_height = %d, "
-                "image_row_pitch = %d, "
+                "image_width = %zu, "
+                "image_height = %zu, "
+                "image_row_pitch = %zu, "
                 "host_ptr = %p ",
                 context,
                 pIntercept->enumName().name_mem_flags( flags ).c_str(),
@@ -1409,10 +1409,11 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage3D)(
                 "flags = %s (%llX), "
                 "format->channel_order = %s, "
                 "format->channel_data_type = %s, "
-                "image_width = %d, "
-                "image_height = %d, "
-                "image_row_pitch = %d, "
-                "image_slice_pitch = %d, "
+                "image_width = %zu, "
+                "image_height = %zu, "
+                "image_depth = %zu, "
+                "image_row_pitch = %zu, "
+                "image_slice_pitch = %zu, "
                 "host_ptr = %p ",
                 context,
                 pIntercept->enumName().name_mem_flags( flags ).c_str(),
@@ -1897,7 +1898,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithSource)(
         INJECT_PROGRAM_SOURCE( count, strings, lengths, singleString, hash );
         PREPEND_PROGRAM_SOURCE( count, strings, lengths, singleString, hash );
 
-        CALL_LOGGING_ENTER( "context = %p, count = %d",
+        CALL_LOGGING_ENTER( "context = %p, count = %u",
             context,
             count );
         CHECK_ERROR_INIT( errcode_ret );
@@ -1969,7 +1970,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBinary)(
 
         COMPUTE_BINARY_HASH( num_devices, lengths, binaries, hash );
 
-        CALL_LOGGING_ENTER( "context = %p, num_devices = %d",
+        CALL_LOGGING_ENTER( "context = %p, num_devices = %u",
             context,
             num_devices );
         CHECK_ERROR_INIT( errcode_ret );
@@ -2030,7 +2031,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBuiltInKernels)(
 
     if( pIntercept && pIntercept->dispatch().clCreateProgramWithBuiltInKernels )
     {
-        CALL_LOGGING_ENTER( "context = %p, num_devices = %d, kernel_names = [ %s ]",
+        CALL_LOGGING_ENTER( "context = %p, num_devices = %u, kernel_names = [ %s ]",
             context,
             num_devices,
             kernel_names );
@@ -2363,10 +2364,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramSpecializationConstant)(
 
     if( pIntercept && pIntercept->dispatch().clSetProgramSpecializationConstant )
     {
-        CALL_LOGGING_ENTER( "program = %p, spec_id = %u, spec_size = %u",
+        CALL_LOGGING_ENTER( "program = %p, spec_id = %u, spec_size = %zu",
             program,
             spec_id,
-            (cl_uint)spec_size );
+            spec_size );
         CPU_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = pIntercept->dispatch().clSetProgramSpecializationConstant(
@@ -3300,7 +3301,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
         if( pIntercept->nullEnqueue() == false )
         {
             CALL_LOGGING_ENTER(
-                "queue = %p, buffer = %p, %s, offset = %d, cb = %d, ptr = %p",
+                "queue = %p, buffer = %p, %s, offset = %zu, cb = %zu, ptr = %p",
                 command_queue,
                 buffer,
                 blocking_read ? "blocking" : "non-blocking",
@@ -3395,7 +3396,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
                 ( region != NULL ) )
             {
                 CALL_LOGGING_ENTER(
-                    "queue = %p, buffer = %p, %s, buffer_origin = < %d, %d, %d >, host_origin = < %d, %d, %d >, region = < %d, %d, %d >, ptr = %p",
+                    "queue = %p, buffer = %p, %s, buffer_origin = < %zu, %zu, %zu >, host_origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >, ptr = %p",
                     command_queue,
                     buffer,
                     blocking_read ? "blocking" : "non-blocking",
@@ -3480,7 +3481,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
         if( pIntercept->nullEnqueue() == false )
         {
             CALL_LOGGING_ENTER(
-                "queue = %p, buffer = %p, %s, offset = %d, cb = %d, ptr = %p",
+                "queue = %p, buffer = %p, %s, offset = %zu, cb = %zu, ptr = %p",
                 command_queue,
                 buffer,
                 blocking_write ? "blocking" : "non-blocking",
@@ -3575,7 +3576,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
                 ( region != NULL ) )
             {
                 CALL_LOGGING_ENTER(
-                    "queue = %p, buffer = %p, %s, buffer_origin = < %d, %d, %d >, host_origin = < %d, %d, %d >, region = < %d, %d, %d >, ptr = %p",
+                    "queue = %p, buffer = %p, %s, buffer_origin = < %zu, %zu, %zu >, host_origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >, ptr = %p",
                     command_queue,
                     buffer,
                     blocking_write ? "blocking" : "non-blocking",
@@ -3660,12 +3661,12 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillBuffer)(
 
         if( pIntercept->nullEnqueue() == false )
         {
-            CALL_LOGGING_ENTER( "queue = %p, buffer = %p, pattern_size = %u, offset = %u, size = %u",
+            CALL_LOGGING_ENTER( "queue = %p, buffer = %p, pattern_size = %zu, offset = %zu, size = %zu",
                 command_queue,
                 buffer,
-                (cl_uint)pattern_size,
-                (cl_uint)offset,
-                (cl_uint)size );
+                pattern_size,
+                offset,
+                size );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -3720,13 +3721,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBuffer)(
 
         if( pIntercept->nullEnqueue() == false )
         {
-            CALL_LOGGING_ENTER("queue = %p, src_buffer = %p, dst_buffer = %p, src_offset = %u, dst_offset = %u, cb = %u",
+            CALL_LOGGING_ENTER("queue = %p, src_buffer = %p, dst_buffer = %p, src_offset = %zu, dst_offset = %zu, cb = %zu",
                 command_queue,
                 src_buffer,
                 dst_buffer,
-                (cl_uint)src_offset,
-                (cl_uint)dst_offset,
-                (cl_uint)cb );
+                src_offset,
+                dst_offset,
+                cb );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -3807,7 +3808,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferRect)(
                 ( region != NULL ) )
             {
                 CALL_LOGGING_ENTER(
-                    "queue = %p, src_buffer = %p, dst_buffer = %p, src_origin = < %d, %d, %d >, dst_origin = < %d, %d, %d >, region = < %d, %d, %d >",
+                    "queue = %p, src_buffer = %p, dst_buffer = %p, src_origin = < %zu, %zu, %zu >, dst_origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >",
                     command_queue,
                     src_buffer,
                     dst_buffer,
@@ -3887,7 +3888,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
                 ( region != NULL ) )
             {
                 CALL_LOGGING_ENTER(
-                    "queue = %p, image = %p, %s, origin = < %d, %d, %d >, region = < %d, %d, %d >, ptr = %p",
+                    "queue = %p, image = %p, %s, origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >, ptr = %p",
                     command_queue,
                     image,
                     blocking_read ? "blocking" : "non-blocking",
@@ -4344,7 +4345,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                 }
             }
             CALL_LOGGING_ENTER(
-                "[ map count = %d ] queue = %p, buffer = %p, %s, map_flags = %s (%llX), offset = %d, cb = %d%s",
+                "[ map count = %d ] queue = %p, buffer = %p, %s, map_flags = %s (%llX), offset = %zu, cb = %zu%s",
                 map_count,
                 command_queue,
                 buffer,
@@ -4448,7 +4449,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                 ( region != NULL ) )
             {
                 CALL_LOGGING_ENTER(
-                    "[ map count = %d ] queue = %p, image = %p, %s, map_flags = %s (%llX), origin = < %d, %d, %d >, region = < %d, %d, %d >",
+                    "[ map count = %d ] queue = %p, image = %p, %s, map_flags = %s (%llX), origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >",
                     map_count,
                     command_queue,
                     image,
@@ -5759,7 +5760,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clSVMAlloc) (
 
     if( pIntercept && pIntercept->dispatch().clSVMAlloc )
     {
-        CALL_LOGGING_ENTER( "flags = %s (%llX), size = %d, alignment = %d",
+        CALL_LOGGING_ENTER( "flags = %s (%llX), size = %zu, alignment = %u",
             pIntercept->enumName().name_svm_mem_flags( flags ).c_str(),
             flags,
             size,
@@ -5951,11 +5952,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemFill) (
 
         if( pIntercept->nullEnqueue() == false )
         {
-            CALL_LOGGING_ENTER( "queue = %p, svm_ptr = %p, pattern_size = %u, size = %u",
+            CALL_LOGGING_ENTER( "queue = %p, svm_ptr = %p, pattern_size = %zu, size = %zu",
                 command_queue,
                 svm_ptr,
-                (cl_uint)pattern_size,
-                (cl_uint)size );
+                pattern_size,
+                size );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -6104,7 +6105,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArgSVMPointer) (
     {
         CALL_LOGGING_ENTER_KERNEL(
             kernel,
-            "kernel = %p, index = %d, value = %p",
+            "kernel = %p, index = %u, value = %p",
             kernel,
             arg_index,
             arg_value );
@@ -6584,9 +6585,9 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithIL) (
         COMPUTE_SPIRV_HASH( length, il, hash );
         INJECT_PROGRAM_SPIRV( length, il, injectedSPIRV, hash );
 
-        CALL_LOGGING_ENTER( "context = %p, length = %u",
+        CALL_LOGGING_ENTER( "context = %p, length = %zu",
             context,
-            (cl_uint)length );
+            length );
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -6634,7 +6635,7 @@ CL_API_ENTRY cl_program CL_API_CALL clCreateProgramWithILKHR(
             COMPUTE_SPIRV_HASH( length, il, hash );
             INJECT_PROGRAM_SPIRV( length, il, injectedSPIRV, hash );
 
-            CALL_LOGGING_ENTER( "context = %p, length = %u",
+            CALL_LOGGING_ENTER( "context = %p, length = %zu",
                 context,
                 length );
             CHECK_ERROR_INIT( errcode_ret );
@@ -8050,7 +8051,7 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
             {
                 cl_motion_estimation_desc_intel* desc =
                     (cl_motion_estimation_desc_intel*)descriptor;
-                CALL_LOGGING_ENTER( "context = %p, motion_estimation_desc[ mb_block_type = %d, subpixel_mode = %d, sad_adjust_mode = %d, search_path_type = %d ]",
+                CALL_LOGGING_ENTER( "context = %p, motion_estimation_desc[ mb_block_type = %u, subpixel_mode = %u, sad_adjust_mode = %u, search_path_type = %u ]",
                     context,
                     desc->mb_block_type,
                     desc->subpixel_mode,
@@ -8061,7 +8062,7 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
             {
                 CALL_LOGGING_ENTER( "context = %p, accelerator_type = %u",
                     context,
-                    (cl_uint)accelerator_type );
+                    accelerator_type );
             }
             CHECK_ERROR_INIT( errcode_ret );
             CPU_PERFORMANCE_TIMING_START();
@@ -8452,7 +8453,7 @@ CL_API_ENTRY void* CL_API_CALL clHostMemAllocINTEL(
         if( dispatchX.clHostMemAllocINTEL )
         {
             // TODO: Make properties string.
-            CALL_LOGGING_ENTER( "context = %p, properties = %p, size = %d, alignment = %d",
+            CALL_LOGGING_ENTER( "context = %p, properties = %p, size = %zu, alignment = %u",
                 context,
                 properties,
                 size,
@@ -8505,7 +8506,7 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
                     deviceInfo );
             }
             // TODO: Make properties string.
-            CALL_LOGGING_ENTER( "context = %p, device = %s, properties = %p, size = %d, alignment = %d",
+            CALL_LOGGING_ENTER( "context = %p, device = %s, properties = %p, size = %zu, alignment = %u",
                 context,
                 deviceInfo.c_str(),
                 properties,
@@ -8560,7 +8561,7 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
                     deviceInfo );
             }
             // TODO: Make properties string.
-            CALL_LOGGING_ENTER( "context = %p, device = %s, properties = %p, size = %d, alignment = %d",
+            CALL_LOGGING_ENTER( "context = %p, device = %s, properties = %p, size = %zu, alignment = %u",
                 context,
                 deviceInfo.c_str(),
                 properties,
@@ -8718,7 +8719,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
         {
             CALL_LOGGING_ENTER_KERNEL(
                 kernel,
-                "kernel = %p, index = %d, value = %p",
+                "kernel = %p, index = %u, value = %p",
                 kernel,
                 arg_index,
                 arg_value );
@@ -8766,11 +8767,11 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
 
             if( pIntercept->nullEnqueue() == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, dst_ptr = %p, value = %d, size = %u",
+                CALL_LOGGING_ENTER( "queue = %p, dst_ptr = %p, value = %d, size = %zu",
                     queue,
                     dst_ptr,
                     value,
-                    (cl_uint)size );
+                    size );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 CPU_PERFORMANCE_TIMING_START();
@@ -8827,11 +8828,11 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
 
             if( pIntercept->nullEnqueue() == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, dst_ptr = %p, pattern_size = %u, size = %u",
+                CALL_LOGGING_ENTER( "queue = %p, dst_ptr = %p, pattern_size = %zu, size = %zu",
                     queue,
                     dst_ptr,
-                    (cl_uint)pattern_size,
-                    (cl_uint)size );
+                    pattern_size,
+                    size );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 CPU_PERFORMANCE_TIMING_START();
@@ -8889,12 +8890,12 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
 
             if( pIntercept->nullEnqueue() == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, %s, dst_ptr = %p, src_ptr = %p, size = %u",
+                CALL_LOGGING_ENTER( "queue = %p, %s, dst_ptr = %p, src_ptr = %p, size = %zu",
                     queue,
                     blocking ? "blocking" : "non-blocking",
                     dst_ptr,
                     src_ptr,
-                    (cl_uint)size );
+                    size );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 CPU_PERFORMANCE_TIMING_START();
@@ -8951,10 +8952,10 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
 
             if( pIntercept->nullEnqueue() == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %u, flags = %s (%llX)",
+                CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %zu, flags = %s (%llX)",
                     queue,
                     ptr,
-                    (cl_uint)size,
+                    size,
                     pIntercept->enumName().name_mem_migration_flags( flags ).c_str(),
                     flags );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
@@ -9012,10 +9013,10 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
 
             if( pIntercept->nullEnqueue() == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %u, advice = %s (%llX)",
+                CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %zu, advice = %s (%u)",
                     queue,
                     ptr,
-                    (cl_uint)size,
+                    size,
                     pIntercept->enumName().name(advice).c_str(),
                     advice );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
