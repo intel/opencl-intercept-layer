@@ -5660,6 +5660,7 @@ bool CLIntercept::checkGetSamplerString(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::addQueue(
+    cl_context context,
     cl_command_queue queue )
 {
     if( queue )
@@ -5668,6 +5669,8 @@ void CLIntercept::addQueue(
 
         m_QueueNumberMap[ queue ] = m_QueueNumber + 1;  // should be nonzero
         m_QueueNumber++;
+
+        m_ContextQueuesMap[context].push_back(queue);
     }
 }
 
@@ -5690,6 +5693,25 @@ void CLIntercept::checkRemoveQueue(
     if( errorCode == CL_SUCCESS && refCount == 1 )
     {
         m_QueueNumberMap.erase( queue );
+
+        cl_context  context = NULL;
+
+        errorCode = dispatch().clGetCommandQueueInfo(
+            queue,
+            CL_QUEUE_CONTEXT,
+            sizeof(context),
+            &context,
+            NULL );
+        if( errorCode == CL_SUCCESS && context )
+        {
+            CQueueList& queues = m_ContextQueuesMap[context];
+
+            queues.erase(
+                std::find(
+                    queues.begin(),
+                    queues.end(),
+                    queue ) );
+        }
     }
 }
 
@@ -12133,6 +12155,8 @@ void* CLIntercept::emulatedHostMemAlloc(
     cl_uint alignment,
     cl_int* errcode_ret)
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     if( !validateUSMMemProperties(properties) )
     {
         if( errcode_ret )
@@ -12198,6 +12222,8 @@ void* CLIntercept::emulatedDeviceMemAlloc(
     cl_uint alignment,
     cl_int* errcode_ret)
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     if( !validateUSMMemProperties(properties) )
     {
         if( errcode_ret )
@@ -12252,6 +12278,8 @@ void* CLIntercept::emulatedSharedMemAlloc(
     cl_uint alignment,
     cl_int* errcode_ret)
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     if( !validateUSMMemProperties(properties) )
     {
         if( errcode_ret )
@@ -12314,6 +12342,8 @@ cl_int CLIntercept::emulatedMemFree(
     cl_context context,
     const void* ptr )
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
 
     CUSMAllocMap::iterator iter = usmContextInfo.AllocMap.find( ptr );
@@ -12705,6 +12735,33 @@ cl_int CLIntercept::setUSMKernelExecInfo(
             logf("clSetKernelExecInfo to set indirect USM allocations returned %s (%d)!\n",
                 enumName().name(errorCode).c_str(),
                 errorCode );
+        }
+    }
+
+    return errorCode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+cl_int CLIntercept::finishAll(
+    cl_context context )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    const CQueueList& queues = m_ContextQueuesMap[context];
+
+    cl_int  errorCode = CL_SUCCESS;
+
+    for( auto queue : queues )
+    {
+        cl_int  tempErrorCode = dispatch().clFinish( queue );
+        if( tempErrorCode != CL_SUCCESS )
+        {
+            logf("clFinish on queue %p returned %s (%d)!\n",
+                queue,
+                enumName().name(errorCode).c_str(),
+                errorCode );
+            errorCode = tempErrorCode;
         }
     }
 

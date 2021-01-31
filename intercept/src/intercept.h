@@ -415,6 +415,7 @@ public:
                 std::string& str ) const;
 
     void    addQueue(
+                cl_context context,
                 cl_command_queue queue );
     void    checkRemoveQueue(
                 cl_command_queue queue );
@@ -757,6 +758,9 @@ public:
                 cl_command_queue queue,
                 cl_kernel kernel );
 
+    cl_int  finishAll(
+                cl_context conetxt );
+
 private:
     static const char* sc_URL;
     static const char* sc_DumpDirectoryName;
@@ -975,6 +979,10 @@ private:
 
     typedef std::map< cl_command_queue, unsigned int >  CQueueNumberMap;
     CQueueNumberMap m_QueueNumberMap;
+
+    typedef std::list< cl_command_queue >   CQueueList;
+    typedef std::map< cl_context, CQueueList >  CContextQueuesMap;
+    CContextQueuesMap   m_ContextQueuesMap;
 
     unsigned int    m_MemAllocNumber;
 
@@ -1581,17 +1589,24 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits() const
            ( m_EnqueueCounter <= m_Config.DumpImagesMaxEnqueue );
 }
 
-#define ADD_QUEUE( queue )                                                  \
+#define ADD_QUEUE( context, queue )                                         \
     if( queue &&                                                            \
-        pIntercept->config().ChromePerformanceTiming )                      \
+        ( pIntercept->config().ChromePerformanceTiming ||                   \
+          pIntercept->config().Emulate_cl_intel_unified_shared_memory ) )   \
     {                                                                       \
-        pIntercept->addQueue( queue );                                      \
-        pIntercept->chromeRegisterCommandQueue( queue );                    \
+        pIntercept->addQueue(                                               \
+            context,                                                        \
+            queue );                                                        \
+        if( pIntercept->config().ChromePerformanceTiming )                  \
+        {                                                                   \
+            pIntercept->chromeRegisterCommandQueue( queue );                \
+        }                                                                   \
     }
 
 #define REMOVE_QUEUE( queue )                                               \
     if( queue &&                                                            \
-        pIntercept->config().ChromePerformanceTiming )                      \
+        ( pIntercept->config().ChromePerformanceTiming ||                   \
+          pIntercept->config().Emulate_cl_intel_unified_shared_memory ) )   \
     {                                                                       \
         pIntercept->checkRemoveQueue( queue );                              \
     }
