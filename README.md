@@ -90,7 +90,7 @@ OpenCL and the OpenCL logo are trademarks of Apple Inc. used by permission by Kh
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018-2020, Intel(R) Corporation
+Copyright (c) 2018-2021, Intel(R) Corporation
 
 [khronos_cl_license]: https://github.com/KhronosGroup/OpenCL-Headers/blob/master/LICENSE
 [boost_license]: http://www.boost.org/LICENSE_1_0.txt
