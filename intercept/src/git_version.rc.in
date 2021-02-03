@@ -48,7 +48,7 @@ BEGIN
             VALUE "FileDescription", "Intercept Layer for OpenCL(tm) Applications"
             VALUE "FileVersion", "@GIT_DESCRIBE@"
             VALUE "InternalName", "CLIntercept"
-            VALUE "LegalCopyright", "Copyright (c) Intel Corporation 2018-2020"
+            VALUE "LegalCopyright", "Copyright (c) Intel Corporation 2018-2021"
             VALUE "OriginalFilename", "OpenCL.dll"
             VALUE "ProductName", "Intercept Layer for OpenCL(tm) Applications"
             VALUE "ProductVersion", "@GIT_DESCRIBE@"
