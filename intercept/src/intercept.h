@@ -1659,6 +1659,10 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits() const
     }
 
 #define SET_KERNEL_ARG( kernel, arg_index, arg_size, arg_value )            \
+    if ( pIntercept->config().DumpArgumentsOnSet )                          \
+    {                                                                       \
+        pIntercept->dumpArgument( kernel, arg_index, arg_size, arg_value ); \
+    }                                                                       \
     if( ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \

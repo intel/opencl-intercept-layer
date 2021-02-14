@@ -2766,11 +2766,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
             kernel,
             argsString.c_str() );
 
-        if ( pIntercept->config().DumpArgumentsOnSet )
-        {
-            pIntercept->dumpArgument( kernel, arg_index, arg_size, arg_value );
-        }
-
         SET_KERNEL_ARG( kernel, arg_index, arg_size, arg_value );
         CPU_PERFORMANCE_TIMING_START();
 
