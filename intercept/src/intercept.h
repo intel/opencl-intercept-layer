@@ -660,10 +660,6 @@ public:
 
     CObjectTracker& objectTracker();
 
-    bool    callLogging() const;
-
-    bool    nullEnqueue() const;
-
     bool    dumpBufferForKernel( const cl_kernel kernel );
     bool    dumpImagesForKernel( const cl_kernel kernel );
     bool    checkDumpBufferEnqueueLimits() const;
@@ -1376,11 +1372,6 @@ inline CObjectTracker& CLIntercept::objectTracker()
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-inline bool CLIntercept::callLogging() const
-{
-    return m_Config.CallLogging;
-}
-
 #define CALL_LOGGING_ENTER(...)                                             \
     if( pIntercept->config().CallLogging )                                  \
     {                                                                       \
@@ -1551,13 +1542,6 @@ inline bool CLIntercept::callLogging() const
         /*    __FUNCTION__,                           */                    \
         /*    e );                                    */                    \
     }
-
-///////////////////////////////////////////////////////////////////////////////
-//
-inline bool CLIntercept::nullEnqueue() const
-{
-    return m_Config.NullEnqueue;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
