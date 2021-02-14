@@ -4200,7 +4200,7 @@ void CLIntercept::dumpInputProgramBinaries(
         }
         if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
         {
-            outputFileName += "_ACCELERATOR";
+            outputFileName += "_ACC";
         }
         if( deviceType & CL_DEVICE_TYPE_CUSTOM )
         {
@@ -4592,7 +4592,7 @@ void CLIntercept::dumpProgramBuildLog(
     }
     if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
     {
-        fileName += "_ACCELERATOR";
+        fileName += "_ACC";
     }
     if( deviceType & CL_DEVICE_TYPE_CUSTOM )
     {
@@ -5339,6 +5339,7 @@ void CLIntercept::checkTimingEvents()
 
                     chromeTraceEvent(
                         name,
+                        node.EnqueueCounter,
                         node.QueueNumber,
                         node.Event,
                         node.QueuedTime );
@@ -7456,7 +7457,7 @@ cl_program CLIntercept::createProgramWithInjectionBinaries(
                 }
                 if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
                 {
-                    suffix += "_ACCELERATOR";
+                    suffix += "_ACC";
                 }
                 if( deviceType & CL_DEVICE_TYPE_CUSTOM )
                 {
@@ -7725,7 +7726,7 @@ void CLIntercept::dumpProgramBinary(
                 }
                 if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
                 {
-                    outputFileName += "_ACCELERATOR";
+                    outputFileName += "_ACC";
                 }
                 if( deviceType & CL_DEVICE_TYPE_CUSTOM )
                 {
@@ -7921,7 +7922,7 @@ void CLIntercept::dumpKernelISABinaries(
                     }
                     if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
                     {
-                        fileName += "ACCELERATOR_";
+                        fileName += "ACC_";
                     }
                     if( deviceType & CL_DEVICE_TYPE_CUSTOM )
                     {
@@ -11437,7 +11438,7 @@ void CLIntercept::ittRegisterCommandQueue(
         }
         if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
         {
-            trackName += " ACCELERATOR";
+            trackName += " ACC";
         }
         if( deviceType & CL_DEVICE_TYPE_CUSTOM )
         {
@@ -11694,7 +11695,8 @@ void CLIntercept::chromeCallLoggingExit(
         << ", \"name\":\"" << str
         << "\", \"ts\":" << usStart
         << ", \"dur\":" << usDelta
-        << "},\n";
+        << ", \"args\":{\"id\":" << m_EnqueueCounter
+        << "}},\n";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11754,7 +11756,7 @@ void CLIntercept::chromeRegisterCommandQueue(
         }
         if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
         {
-            trackName += "ACCELERATOR";
+            trackName += "ACC";
         }
         if( deviceType & CL_DEVICE_TYPE_CUSTOM )
         {
@@ -11793,6 +11795,7 @@ void CLIntercept::chromeRegisterCommandQueue(
 //
 void CLIntercept::chromeTraceEvent(
     const std::string& name,
+    uint64_t enqueueCounter,
     unsigned int queueNumber,
     cl_event event,
     const clock::time_point queuedTime )
@@ -11887,7 +11890,8 @@ void CLIntercept::chromeTraceEvent(
                     << ", \"ts\":" << usStarts[state]
                     << ", \"dur\":" << usDeltas[state]
                     << ", \"cname\":\"" << colours[state]
-                    << "\"},\n";
+                    << "\", \"args\":{\"id\":" << enqueueCounter
+                    << "}},\n";
             }
             m_EventsChromeTraced++;
         }
@@ -11903,7 +11907,8 @@ void CLIntercept::chromeTraceEvent(
                 << ", \"name\":\"" << name
                 << "\", \"ts\":" << usStart
                 << ", \"dur\":" << usDelta
-                << "},\n";
+                << ", \"args\":{\"id\":" << enqueueCounter
+                << "}},\n";
         }
     }
     else

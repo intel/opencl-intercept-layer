@@ -709,6 +709,7 @@ public:
                 cl_command_queue queue );
     void    chromeTraceEvent(
                 const std::string& name,
+                uint64_t enqueueCounter,
                 unsigned int queueNumber,
                 cl_event event,
                 clock::time_point queuedTime );
