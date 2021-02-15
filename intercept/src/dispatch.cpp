@@ -289,17 +289,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainDevice)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetDeviceInfo(
-                device,
-                CL_DEVICE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( device ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] device = %p",
             ref_count,
             device );
@@ -311,16 +303,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainDevice)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( device );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetDeviceInfo(
-                device,
-                CL_DEVICE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( device ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -341,17 +326,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetDeviceInfo(
-                device,
-                CL_DEVICE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( device ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] device = %p",
             ref_count,
             device );
@@ -363,13 +340,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( device );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -552,17 +523,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainContext)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetContextInfo(
-                context,
-                CL_CONTEXT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( context ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] context = %p",
             ref_count,
             context );
@@ -574,16 +537,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainContext)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( context );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetContextInfo(
-                context,
-                CL_CONTEXT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( context ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -603,17 +559,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetContextInfo(
-                context,
-                CL_CONTEXT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( context ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] context = %p",
             ref_count,
             context );
@@ -625,13 +573,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( context );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
 #if 0
         pIntercept->report();
@@ -821,17 +763,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainCommandQueue)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetCommandQueueInfo(
-                command_queue,
-                CL_QUEUE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( command_queue ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] command_queue = %p",
             ref_count,
             command_queue );
@@ -843,16 +777,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainCommandQueue)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( command_queue );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetCommandQueueInfo(
-                command_queue,
-                CL_QUEUE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( command_queue ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -873,17 +800,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseCommandQueue)(
         GET_ENQUEUE_COUNTER();
         REMOVE_QUEUE( command_queue );
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetCommandQueueInfo(
-                command_queue,
-                CL_QUEUE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( command_queue ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] command_queue = %p",
             ref_count,
             command_queue );
@@ -896,13 +815,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseCommandQueue)(
         CHECK_ERROR( retVal );
         ITT_RELEASE_COMMAND_QUEUE( command_queue );
         ADD_OBJECT_RELEASE( command_queue );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -1513,17 +1426,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainMemObject)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetMemObjectInfo(
-                memobj,
-                CL_MEM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( memobj ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] mem = %p",
             ref_count,
             memobj );
@@ -1535,16 +1440,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainMemObject)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( memobj );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetMemObjectInfo(
-                memobj,
-                CL_MEM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( memobj ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -1565,17 +1463,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseMemObject)(
         GET_ENQUEUE_COUNTER();
         REMOVE_MEMOBJ( memobj );
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetMemObjectInfo(
-                memobj,
-                CL_MEM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( memobj ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] mem = %p",
             ref_count,
             memobj );
@@ -1587,13 +1477,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseMemObject)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( memobj );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -1811,17 +1695,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainSampler)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetSamplerInfo(
-                sampler,
-                CL_SAMPLER_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( sampler ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] sampler = %p",
             ref_count,
             sampler );
@@ -1833,16 +1709,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainSampler)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( sampler );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetSamplerInfo(
-                sampler,
-                CL_SAMPLER_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( sampler ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -1863,16 +1732,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseSampler)(
         GET_ENQUEUE_COUNTER();
         REMOVE_SAMPLER( sampler );
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            pIntercept->dispatch().clGetSamplerInfo(
-                sampler,
-                CL_SAMPLER_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( sampler ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] sampler = %p",
             ref_count,
             sampler );
@@ -1884,13 +1746,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseSampler)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( sampler );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -2139,17 +1995,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainProgram)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetProgramInfo(
-                program,
-                CL_PROGRAM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( program ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] program = %p",
             ref_count,
             program );
@@ -2161,16 +2009,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainProgram)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( program );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetProgramInfo(
-                program,
-                CL_PROGRAM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( program ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -2190,17 +2031,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseProgram)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetProgramInfo(
-                program,
-                CL_PROGRAM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( program ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] program = %p",
             ref_count,
             program );
@@ -2212,13 +2045,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseProgram)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( program );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -2732,17 +2559,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainKernel)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetKernelInfo(
-                kernel,
-                CL_KERNEL_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( kernel ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] kernel = %p",
             ref_count,
             kernel );
@@ -2754,16 +2573,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainKernel)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( kernel );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetKernelInfo(
-                kernel,
-                CL_KERNEL_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( kernel ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -2785,17 +2597,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseKernel)(
 
         pIntercept->checkRemoveKernelInfo( kernel );
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetKernelInfo(
-                kernel,
-                CL_KERNEL_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( kernel ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] kernel = %p",
             ref_count,
             kernel );
@@ -2807,13 +2611,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseKernel)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( kernel );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -2994,33 +2792,28 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_int  retVal = CL_SUCCESS;
-
-        if( pIntercept->config().NullEnqueue == false )
+        std::string eventList;
+        if( pIntercept->config().CallLogging )
         {
-            std::string eventList;
-            if( pIntercept->config().CallLogging )
-            {
-                pIntercept->getEventListString(
-                    num_events,
-                    event_list,
-                    eventList );
-            }
-            CALL_LOGGING_ENTER( "event_list = %s",
-                eventList.c_str() );
-            CHECK_EVENT_LIST( num_events, event_list, NULL );
-            CPU_PERFORMANCE_TIMING_START();
-
-            retVal = pIntercept->dispatch().clWaitForEvents(
+            pIntercept->getEventListString(
                 num_events,
-                event_list );
-
-            CPU_PERFORMANCE_TIMING_END();
-            CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
-
-            DEVICE_PERFORMANCE_TIMING_CHECK();
+                event_list,
+                eventList );
         }
+        CALL_LOGGING_ENTER( "event_list = %s",
+            eventList.c_str() );
+        CHECK_EVENT_LIST( num_events, event_list, NULL );
+        CPU_PERFORMANCE_TIMING_START();
+
+        cl_int  retVal = pIntercept->dispatch().clWaitForEvents(
+            num_events,
+            event_list );
+
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
+
+        DEVICE_PERFORMANCE_TIMING_CHECK();
 
         return retVal;
     }
@@ -3042,28 +2835,22 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventInfo)(
     if( pIntercept && pIntercept->dispatch().clGetEventInfo )
     {
         GET_ENQUEUE_COUNTER();
+        CALL_LOGGING_ENTER( "event = %p, param_name = %s (%08X)",
+            event,
+            pIntercept->enumName().name( param_name ).c_str(),
+            param_name );
+        CPU_PERFORMANCE_TIMING_START();
 
-        cl_int  retVal = CL_SUCCESS;
+        cl_int  retVal = pIntercept->dispatch().clGetEventInfo(
+            event,
+            param_name,
+            param_value_size,
+            param_value,
+            param_value_size_ret );
 
-        if( pIntercept->config().NullEnqueue == false )
-        {
-            CALL_LOGGING_ENTER( "event = %p, param_name = %s (%08X)",
-                event,
-                pIntercept->enumName().name( param_name ).c_str(),
-                param_name );
-            CPU_PERFORMANCE_TIMING_START();
-
-            retVal = pIntercept->dispatch().clGetEventInfo(
-                event,
-                param_name,
-                param_value_size,
-                param_value,
-                param_value_size_ret );
-
-            CPU_PERFORMANCE_TIMING_END();
-            CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
-        }
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -3083,25 +2870,19 @@ CL_API_ENTRY cl_event CL_API_CALL CLIRN(clCreateUserEvent)(
     if( pIntercept && pIntercept->dispatch().clCreateUserEvent )
     {
         GET_ENQUEUE_COUNTER();
+        CALL_LOGGING_ENTER( "context = %p",
+            context );
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
 
-        cl_event    retVal = NULL;
+        cl_event    retVal = pIntercept->dispatch().clCreateUserEvent(
+            context,
+            errcode_ret );
 
-        if( pIntercept->config().NullEnqueue == false )
-        {
-            CALL_LOGGING_ENTER( "context = %p",
-                context );
-            CHECK_ERROR_INIT( errcode_ret );
-            CPU_PERFORMANCE_TIMING_START();
-
-            retVal = pIntercept->dispatch().clCreateUserEvent(
-                context,
-                errcode_ret );
-
-            CPU_PERFORMANCE_TIMING_END();
-            CHECK_ERROR( errcode_ret[0] );
-            ADD_OBJECT_ALLOCATION( retVal );
-            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
-        }
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -3120,17 +2901,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainEvent)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetEventInfo(
-                event,
-                CL_EVENT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( event ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] event = %p",
             ref_count,
             event );
@@ -3142,16 +2915,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainEvent)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( event );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetEventInfo(
-                event,
-                CL_EVENT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( event ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -3171,17 +2937,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseEvent)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetEventInfo(
-                event,
-                CL_EVENT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( event ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] event = %p",
             ref_count,
             event );
@@ -3193,13 +2951,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseEvent)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( event );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -3291,27 +3043,21 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventProfilingInfo)(
     if( pIntercept && pIntercept->dispatch().clGetEventProfilingInfo )
     {
         GET_ENQUEUE_COUNTER();
+        CALL_LOGGING_ENTER( "param_name = %s (%08X)",
+            pIntercept->enumName().name( param_name ).c_str(),
+            param_name );
+        CPU_PERFORMANCE_TIMING_START();
 
-        cl_int  retVal = CL_SUCCESS;
+        cl_int  retVal = pIntercept->dispatch().clGetEventProfilingInfo(
+            event,
+            param_name,
+            param_value_size,
+            param_value,
+            param_value_size_ret );
 
-        if( pIntercept->config().NullEnqueue == false )
-        {
-            CALL_LOGGING_ENTER( "param_name = %s (%08X)",
-                pIntercept->enumName().name( param_name ).c_str(),
-                param_name );
-            CPU_PERFORMANCE_TIMING_START();
-
-            retVal = pIntercept->dispatch().clGetEventProfilingInfo(
-                event,
-                param_name,
-                param_value_size,
-                param_value,
-                param_value_size_ret );
-
-            CPU_PERFORMANCE_TIMING_END();
-            CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
-        }
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -8414,13 +8160,7 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseAcceleratorINTEL(
 
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            if( pIntercept->config().CallLogging && ref_count != 0 )
-            {
-                // This isn't strictly correct, but it's pretty close, and it
-                // avoids crashes in some cases for bad implementations.
-                --ref_count;
-            }
-            CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+            CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
             return retVal;
         }

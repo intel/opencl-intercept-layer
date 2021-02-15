@@ -660,6 +660,15 @@ public:
     cl_platform_id  getPlatform( cl_kernel kernel ) const;
     cl_platform_id  getPlatform( cl_mem memobj ) const;
 
+    cl_uint getRefCount( cl_command_queue queue ) const;
+    cl_uint getRefCount( cl_context conest ) const;
+    cl_uint getRefCount( cl_device_id device ) const;
+    cl_uint getRefCount( cl_event event ) const;
+    cl_uint getRefCount( cl_program program ) const;
+    cl_uint getRefCount( cl_kernel kernel ) const;
+    cl_uint getRefCount( cl_mem memobj ) const;
+    cl_uint getRefCount( cl_sampler sampler ) const;
+
     const OS::Services& OS() const;
 
     const CEnumNameMap& enumName() const;
@@ -1308,6 +1317,104 @@ inline cl_platform_id CLIntercept::getPlatform( cl_mem memobj ) const
         &context,
         NULL);
     return getPlatform(context);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+inline cl_uint CLIntercept::getRefCount( cl_command_queue queue ) const
+{
+    cl_uint refCount = 0;
+    dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_REFERENCE_COUNT,
+        sizeof(refCount),
+        &refCount,
+        NULL);
+    return refCount;
+}
+
+inline cl_uint CLIntercept::getRefCount( cl_context context ) const
+{
+    cl_uint refCount = 0;
+    dispatch().clGetContextInfo(
+        context,
+        CL_CONTEXT_REFERENCE_COUNT,
+        sizeof(refCount),
+        &refCount,
+        NULL);
+    return refCount;
+}
+
+inline cl_uint CLIntercept::getRefCount( cl_device_id device ) const
+{
+    cl_uint refCount = 0;
+    dispatch().clGetDeviceInfo(
+        device,
+        CL_DEVICE_REFERENCE_COUNT,
+        sizeof(refCount),
+        &refCount,
+        NULL);
+    return refCount;
+}
+
+inline cl_uint CLIntercept::getRefCount( cl_event event ) const
+{
+    cl_uint refCount = 0;
+    dispatch().clGetEventInfo(
+        event,
+        CL_EVENT_REFERENCE_COUNT,
+        sizeof(refCount),
+        &refCount,
+        NULL);
+    return refCount;
+}
+
+inline cl_uint CLIntercept::getRefCount( cl_program program ) const
+{
+    cl_uint refCount = 0;
+    dispatch().clGetProgramInfo(
+        program,
+        CL_PROGRAM_REFERENCE_COUNT,
+        sizeof(refCount),
+        &refCount,
+        NULL);
+    return refCount;
+}
+
+inline cl_uint CLIntercept::getRefCount( cl_kernel kernel ) const
+{
+    cl_uint refCount = 0;
+    dispatch().clGetKernelInfo(
+        kernel,
+        CL_KERNEL_REFERENCE_COUNT,
+        sizeof(refCount),
+        &refCount,
+        NULL);
+    return refCount;
+}
+
+inline cl_uint CLIntercept::getRefCount( cl_mem memobj ) const
+{
+    cl_uint refCount = 0;
+    dispatch().clGetMemObjectInfo(
+        memobj,
+        CL_MEM_REFERENCE_COUNT,
+        sizeof(refCount),
+        &refCount,
+        NULL);
+    return refCount;
+}
+
+inline cl_uint CLIntercept::getRefCount( cl_sampler sampler ) const
+{
+    cl_uint refCount = 0;
+    dispatch().clGetSamplerInfo(
+        sampler,
+        CL_SAMPLER_REFERENCE_COUNT,
+        sizeof(refCount),
+        &refCount,
+        NULL);
+    return refCount;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

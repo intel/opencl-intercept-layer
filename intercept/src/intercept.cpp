@@ -5526,16 +5526,8 @@ void CLIntercept::checkRemoveKernelInfo( cl_kernel kernel )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_uint refCount = 0;
-    cl_int  errorCode = CL_SUCCESS;
-
-    errorCode = dispatch().clGetKernelInfo(
-        kernel,
-        CL_KERNEL_REFERENCE_COUNT,
-        sizeof( refCount ),
-        &refCount,
-        NULL );
-    if( errorCode == CL_SUCCESS && refCount == 1 )
+    cl_uint refCount = getRefCount( kernel );
+    if( refCount == 1 )
     {
 #if 0
         // We shouldn't remove the kernel name from the local kernel name map
@@ -5611,16 +5603,8 @@ void CLIntercept::checkRemoveSamplerString(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_uint refCount = 0;
-    cl_int  errorCode = CL_SUCCESS;
-
-    errorCode = dispatch().clGetSamplerInfo(
-        sampler,
-        CL_SAMPLER_REFERENCE_COUNT,
-        sizeof( refCount ),
-        &refCount,
-        NULL );
-    if( errorCode == CL_SUCCESS && refCount == 1 )
+    cl_uint refCount = getRefCount( sampler );
+    if( refCount == 1 )
     {
         m_SamplerDataMap.erase( sampler );
     }
@@ -5674,22 +5658,14 @@ void CLIntercept::checkRemoveQueue(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_uint refCount = 0;
-    cl_int  errorCode = CL_SUCCESS;
-
-    errorCode = dispatch().clGetCommandQueueInfo(
-        queue,
-        CL_QUEUE_REFERENCE_COUNT,
-        sizeof( refCount ),
-        &refCount,
-        NULL );
-    if( errorCode == CL_SUCCESS && refCount == 1 )
+    cl_uint refCount = getRefCount( queue );
+    if( refCount == 1 )
     {
         m_QueueNumberMap.erase( queue );
 
         cl_context  context = NULL;
 
-        errorCode = dispatch().clGetCommandQueueInfo(
+        cl_int errorCode = dispatch().clGetCommandQueueInfo(
             queue,
             CL_QUEUE_CONTEXT,
             sizeof(context),
@@ -5837,16 +5813,8 @@ void CLIntercept::checkRemoveMemObj(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_uint refCount = 0;
-    cl_int  errorCode = CL_SUCCESS;
-
-    errorCode = dispatch().clGetMemObjectInfo(
-        memobj,
-        CL_MEM_REFERENCE_COUNT,
-        sizeof( refCount ),
-        &refCount,
-        NULL );
-    if( errorCode == CL_SUCCESS && refCount == 1 )
+    cl_uint refCount = getRefCount( memobj );
+    if( refCount == 1 )
     {
         m_MemAllocNumberMap.erase( memobj );
         m_BufferInfoMap.erase( memobj );
@@ -11478,20 +11446,10 @@ void CLIntercept::ittReleaseCommandQueue(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_int  errorCode = CL_SUCCESS;
-    cl_uint refCount = 0;
-
     if( m_ITTQueueInfoMap.find(queue) != m_ITTQueueInfoMap.end() )
     {
-        errorCode = dispatch().clGetCommandQueueInfo(
-            queue,
-            CL_QUEUE_REFERENCE_COUNT,
-            sizeof( refCount ),
-            &refCount,
-            NULL );
-
-        if( ( errorCode == CL_SUCCESS ) &&
-            ( refCount == 1 ) )
+        cl_uint refCount = getRefCount( queue );
+        if( refCount == 1 )
         {
             dispatch().clReleaseCommandQueue( queue );
             m_ITTQueueInfoMap.erase( queue );
