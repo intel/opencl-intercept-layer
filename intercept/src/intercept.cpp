@@ -127,7 +127,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
 
     m_LoggedCLInfo = false;
 
-    m_EnqueueCounter = 1;
+    m_EnqueueCounter = 0;
 
     m_EventsChromeTraced = 0;
     m_ProgramNumber = 0;
@@ -766,11 +766,7 @@ void CLIntercept::writeReport(
         os << "*** WARNING *** NullEnqueue Enabled!" << std::endl << std::endl;
     }
 
-    uint64_t    numEnqueues = m_EnqueueCounter - 1;
-    if( numEnqueues > 0 )
-    {
-        os << "Total Enqueues: " << numEnqueues << std::endl << std::endl;
-    }
+    os << "Total Enqueues: " << m_EnqueueCounter << std::endl << std::endl;
 
     if( config().LeakChecking )
     {
@@ -992,6 +988,7 @@ void CLIntercept::getCallLoggingPrefix(
 //
 void CLIntercept::callLoggingEnter(
     const std::string& functionName,
+    const uint64_t enqueueCounter,
     const cl_kernel kernel )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
@@ -1013,7 +1010,7 @@ void CLIntercept::callLoggingEnter(
     {
         std::ostringstream  ss;
         ss << "; EnqueueCounter: ";
-        ss << m_EnqueueCounter;
+        ss << enqueueCounter;
         str += ss.str();
     }
 
@@ -1021,6 +1018,7 @@ void CLIntercept::callLoggingEnter(
 }
 void CLIntercept::callLoggingEnter(
     const std::string& functionName,
+    const uint64_t enqueueCounter,
     const cl_kernel kernel,
     const char* formatStr,
     ... )
@@ -1050,7 +1048,7 @@ void CLIntercept::callLoggingEnter(
     {
         str += ": too long";
     }
-    callLoggingEnter( str, NULL );
+    callLoggingEnter( str, enqueueCounter, NULL );
 
     va_end( args );
 }
@@ -3078,6 +3076,7 @@ void CLIntercept::eventCallbackCaller(
 
     CLIntercept*    pIntercept = pEventCallbackInfo->pIntercept;
 
+    GET_ENQUEUE_COUNTER();
     CALL_LOGGING_ENTER( "event = %p, status = %s (%d)",
         event,
         pIntercept->enumName().name_command_exec_status( status ).c_str(),
@@ -3107,14 +3106,6 @@ void CLIntercept::eventCallback(
 {
     // TODO: Since we call log the eventCallbackCaller, do we need to do
     //       anything here?
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::incrementEnqueueCounter()
-{
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    m_EnqueueCounter++;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4200,7 +4191,7 @@ void CLIntercept::dumpInputProgramBinaries(
         }
         if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
         {
-            outputFileName += "_ACCELERATOR";
+            outputFileName += "_ACC";
         }
         if( deviceType & CL_DEVICE_TYPE_CUSTOM )
         {
@@ -4592,7 +4583,7 @@ void CLIntercept::dumpProgramBuildLog(
     }
     if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
     {
-        fileName += "_ACCELERATOR";
+        fileName += "_ACC";
     }
     if( deviceType & CL_DEVICE_TYPE_CUSTOM )
     {
@@ -4897,6 +4888,7 @@ void CLIntercept::createCommandQueuePropertiesCleanup(
 //
 void CLIntercept::addTimingEvent(
     const std::string& functionName,
+    const uint64_t enqueueCounter,
     const clock::time_point queuedTime,
     const cl_kernel kernel,
     const cl_uint workDim,
@@ -4927,7 +4919,7 @@ void CLIntercept::addTimingEvent(
     node.Device = device;
     node.QueueNumber = m_QueueNumberMap[ queue ];
     node.FunctionName = functionName;
-    node.EnqueueCounter = m_EnqueueCounter;
+    node.EnqueueCounter = enqueueCounter;
     node.QueuedTime = queuedTime;
     node.Kernel = kernel; // Note: no retain, so cannot count on this value...
     node.Event = event;
@@ -5339,6 +5331,7 @@ void CLIntercept::checkTimingEvents()
 
                     chromeTraceEvent(
                         name,
+                        node.EnqueueCounter,
                         node.QueueNumber,
                         node.Event,
                         node.QueuedTime );
@@ -5533,16 +5526,8 @@ void CLIntercept::checkRemoveKernelInfo( cl_kernel kernel )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_uint refCount = 0;
-    cl_int  errorCode = CL_SUCCESS;
-
-    errorCode = dispatch().clGetKernelInfo(
-        kernel,
-        CL_KERNEL_REFERENCE_COUNT,
-        sizeof( refCount ),
-        &refCount,
-        NULL );
-    if( errorCode == CL_SUCCESS && refCount == 1 )
+    cl_uint refCount = getRefCount( kernel );
+    if( refCount == 1 )
     {
 #if 0
         // We shouldn't remove the kernel name from the local kernel name map
@@ -5618,16 +5603,8 @@ void CLIntercept::checkRemoveSamplerString(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_uint refCount = 0;
-    cl_int  errorCode = CL_SUCCESS;
-
-    errorCode = dispatch().clGetSamplerInfo(
-        sampler,
-        CL_SAMPLER_REFERENCE_COUNT,
-        sizeof( refCount ),
-        &refCount,
-        NULL );
-    if( errorCode == CL_SUCCESS && refCount == 1 )
+    cl_uint refCount = getRefCount( sampler );
+    if( refCount == 1 )
     {
         m_SamplerDataMap.erase( sampler );
     }
@@ -5681,22 +5658,14 @@ void CLIntercept::checkRemoveQueue(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_uint refCount = 0;
-    cl_int  errorCode = CL_SUCCESS;
-
-    errorCode = dispatch().clGetCommandQueueInfo(
-        queue,
-        CL_QUEUE_REFERENCE_COUNT,
-        sizeof( refCount ),
-        &refCount,
-        NULL );
-    if( errorCode == CL_SUCCESS && refCount == 1 )
+    cl_uint refCount = getRefCount( queue );
+    if( refCount == 1 )
     {
         m_QueueNumberMap.erase( queue );
 
         cl_context  context = NULL;
 
-        errorCode = dispatch().clGetCommandQueueInfo(
+        cl_int errorCode = dispatch().clGetCommandQueueInfo(
             queue,
             CL_QUEUE_CONTEXT,
             sizeof(context),
@@ -5844,16 +5813,8 @@ void CLIntercept::checkRemoveMemObj(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_uint refCount = 0;
-    cl_int  errorCode = CL_SUCCESS;
-
-    errorCode = dispatch().clGetMemObjectInfo(
-        memobj,
-        CL_MEM_REFERENCE_COUNT,
-        sizeof( refCount ),
-        &refCount,
-        NULL );
-    if( errorCode == CL_SUCCESS && refCount == 1 )
+    cl_uint refCount = getRefCount( memobj );
+    if( refCount == 1 )
     {
         m_MemAllocNumberMap.erase( memobj );
         m_BufferInfoMap.erase( memobj );
@@ -5953,6 +5914,7 @@ void CLIntercept::setKernelArgSVMPointer(
 //
 void CLIntercept::dumpBuffersForKernel(
     const std::string& name,
+    const uint64_t enqueueCounter,
     cl_kernel kernel,
     cl_command_queue command_queue )
 {
@@ -5993,7 +5955,7 @@ void CLIntercept::dumpBuffersForKernel(
             // Add the enqueue count to file name
             {
                 CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
-                    (unsigned int)m_EnqueueCounter );
+                    (unsigned int)enqueueCounter );
 
                 fileName += "Enqueue_";
                 fileName += tmpStr;
@@ -6117,6 +6079,7 @@ void CLIntercept::dumpBuffersForKernel(
 //
 void CLIntercept::dumpImagesForKernel(
     const std::string& name,
+    const uint64_t enqueueCounter,
     cl_kernel kernel,
     cl_command_queue command_queue )
 {
@@ -6160,7 +6123,7 @@ void CLIntercept::dumpImagesForKernel(
             // Add the enqueue count to file name
             {
                 CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
-                    (unsigned int)m_EnqueueCounter );
+                    (unsigned int)enqueueCounter );
 
                 fileName += "Enqueue_";
                 fileName += tmpStr;
@@ -6258,6 +6221,7 @@ void CLIntercept::dumpImagesForKernel(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::dumpArgument(
+    const uint64_t enqueueCounter,
     cl_kernel kernel,
     cl_int arg_index,
     size_t size,
@@ -6285,7 +6249,7 @@ void CLIntercept::dumpArgument(
             char    enqueueCount[ MAX_PATH ];
 
             CLI_SPRINTF( enqueueCount, MAX_PATH, "%04u",
-                (unsigned int)m_EnqueueCounter );
+                (unsigned int)enqueueCounter );
             fileName += "SetKernelArg_";
             fileName += enqueueCount;
         }
@@ -6339,6 +6303,7 @@ void CLIntercept::dumpArgument(
 //
 void CLIntercept::dumpBuffer(
     const std::string& name,
+    const uint64_t enqueueCounter,
     cl_mem memobj,
     cl_command_queue command_queue,
     void* ptr,
@@ -6392,7 +6357,7 @@ void CLIntercept::dumpBuffer(
             char    enqueueCount[ MAX_PATH ];
 
             CLI_SPRINTF( enqueueCount, MAX_PATH, "%04u",
-                (unsigned int)m_EnqueueCounter );
+                (unsigned int)enqueueCounter );
 
             fileName += "_Enqueue_";
             fileName += enqueueCount;
@@ -6741,6 +6706,7 @@ void CLIntercept::checkKernelArgUSMPointer(
 //
 void CLIntercept::startAubCapture(
     const std::string& functionName,
+    const uint64_t enqueueCounter,
     const cl_kernel kernel,
     const cl_uint workDim,
     const size_t* gws,
@@ -6805,7 +6771,7 @@ void CLIntercept::startAubCapture(
                 {
                     fileName += "_Enqueue_";
 
-                    CLI_SPRINTF( charBuf, MAX_PATH, "%08u", (cl_uint)m_EnqueueCounter );
+                    CLI_SPRINTF( charBuf, MAX_PATH, "%08u", (cl_uint)enqueueCounter );
 
                     fileName += charBuf;
                     fileName += "_";
@@ -7456,7 +7422,7 @@ cl_program CLIntercept::createProgramWithInjectionBinaries(
                 }
                 if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
                 {
-                    suffix += "_ACCELERATOR";
+                    suffix += "_ACC";
                 }
                 if( deviceType & CL_DEVICE_TYPE_CUSTOM )
                 {
@@ -7725,7 +7691,7 @@ void CLIntercept::dumpProgramBinary(
                 }
                 if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
                 {
-                    outputFileName += "_ACCELERATOR";
+                    outputFileName += "_ACC";
                 }
                 if( deviceType & CL_DEVICE_TYPE_CUSTOM )
                 {
@@ -7921,7 +7887,7 @@ void CLIntercept::dumpKernelISABinaries(
                     }
                     if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
                     {
-                        fileName += "ACCELERATOR_";
+                        fileName += "ACC_";
                     }
                     if( deviceType & CL_DEVICE_TYPE_CUSTOM )
                     {
@@ -11437,7 +11403,7 @@ void CLIntercept::ittRegisterCommandQueue(
         }
         if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
         {
-            trackName += " ACCELERATOR";
+            trackName += " ACC";
         }
         if( deviceType & CL_DEVICE_TYPE_CUSTOM )
         {
@@ -11480,20 +11446,10 @@ void CLIntercept::ittReleaseCommandQueue(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    cl_int  errorCode = CL_SUCCESS;
-    cl_uint refCount = 0;
-
     if( m_ITTQueueInfoMap.find(queue) != m_ITTQueueInfoMap.end() )
     {
-        errorCode = dispatch().clGetCommandQueueInfo(
-            queue,
-            CL_QUEUE_REFERENCE_COUNT,
-            sizeof( refCount ),
-            &refCount,
-            NULL );
-
-        if( ( errorCode == CL_SUCCESS ) &&
-            ( refCount == 1 ) )
+        cl_uint refCount = getRefCount( queue );
+        if( refCount == 1 )
         {
             dispatch().clReleaseCommandQueue( queue );
             m_ITTQueueInfoMap.erase( queue );
@@ -11657,6 +11613,7 @@ void CLIntercept::ittTraceEvent(
 //
 void CLIntercept::chromeCallLoggingExit(
     const std::string& functionName,
+    const uint64_t enqueueCounter,
     const cl_kernel kernel,
     clock::time_point tickStart,
     clock::time_point tickEnd )
@@ -11694,7 +11651,8 @@ void CLIntercept::chromeCallLoggingExit(
         << ", \"name\":\"" << str
         << "\", \"ts\":" << usStart
         << ", \"dur\":" << usDelta
-        << "},\n";
+        << ", \"args\":{\"id\":" << enqueueCounter
+        << "}},\n";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11754,7 +11712,7 @@ void CLIntercept::chromeRegisterCommandQueue(
         }
         if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
         {
-            trackName += "ACCELERATOR";
+            trackName += "ACC";
         }
         if( deviceType & CL_DEVICE_TYPE_CUSTOM )
         {
@@ -11793,6 +11751,7 @@ void CLIntercept::chromeRegisterCommandQueue(
 //
 void CLIntercept::chromeTraceEvent(
     const std::string& name,
+    uint64_t enqueueCounter,
     unsigned int queueNumber,
     cl_event event,
     const clock::time_point queuedTime )
@@ -11887,7 +11846,8 @@ void CLIntercept::chromeTraceEvent(
                     << ", \"ts\":" << usStarts[state]
                     << ", \"dur\":" << usDeltas[state]
                     << ", \"cname\":\"" << colours[state]
-                    << "\"},\n";
+                    << "\", \"args\":{\"id\":" << enqueueCounter
+                    << "}},\n";
             }
             m_EventsChromeTraced++;
         }
@@ -11903,7 +11863,8 @@ void CLIntercept::chromeTraceEvent(
                 << ", \"name\":\"" << name
                 << "\", \"ts\":" << usStart
                 << ", \"dur\":" << usDelta
-                << "},\n";
+                << ", \"args\":{\"id\":" << enqueueCounter
+                << "}},\n";
         }
     }
     else

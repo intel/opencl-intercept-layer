@@ -37,6 +37,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformIDs)(
     {
         LOG_CLINFO();
 
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -68,6 +69,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetPlatformInfo )
     {
+        GET_ENQUEUE_COUNTER();
+
         std::string platformInfo;
         if( pIntercept->config().CallLogging )
         {
@@ -122,6 +125,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceIDs)(
 
     if( pIntercept && pIntercept->dispatch().clGetDeviceIDs )
     {
+        GET_ENQUEUE_COUNTER();
+
         std::string platformInfo;
         if( pIntercept->config().CallLogging )
         {
@@ -184,6 +189,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetDeviceInfo )
     {
+        GET_ENQUEUE_COUNTER();
+
         std::string deviceInfo;
         if( pIntercept->config().CallLogging )
         {
@@ -240,6 +247,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateSubDevices)(
 
     if( pIntercept && pIntercept->dispatch().clCreateSubDevices )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -279,17 +287,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainDevice)(
 
     if( pIntercept && pIntercept->dispatch().clRetainDevice )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetDeviceInfo(
-                device,
-                CL_DEVICE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( device ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] device = %p",
             ref_count,
             device );
@@ -301,16 +303,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainDevice)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( device );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetDeviceInfo(
-                device,
-                CL_DEVICE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( device ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -329,17 +324,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
 
     if( pIntercept && pIntercept->dispatch().clReleaseDevice )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetDeviceInfo(
-                device,
-                CL_DEVICE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( device ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] device = %p",
             ref_count,
             device );
@@ -351,13 +340,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( device );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -385,6 +368,8 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContext)(
 
     if( pIntercept && pIntercept->dispatch().clCreateContext )
     {
+        GET_ENQUEUE_COUNTER();
+
         cl_context_properties*  newProperties = NULL;
         cl_context  retVal = NULL;
 
@@ -464,6 +449,8 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContextFromType)(
 
     if( pIntercept && pIntercept->dispatch().clCreateContextFromType )
     {
+        GET_ENQUEUE_COUNTER();
+
         cl_context_properties*  newProperties = NULL;
         cl_context  retVal = NULL;
 
@@ -534,17 +521,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainContext)(
 
     if( pIntercept && pIntercept->dispatch().clRetainContext )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetContextInfo(
-                context,
-                CL_CONTEXT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( context ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] context = %p",
             ref_count,
             context );
@@ -556,16 +537,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainContext)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( context );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetContextInfo(
-                context,
-                CL_CONTEXT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( context ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -583,17 +557,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
 
     if( pIntercept && pIntercept->dispatch().clReleaseContext )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetContextInfo(
-                context,
-                CL_CONTEXT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( context ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] context = %p",
             ref_count,
             context );
@@ -605,13 +573,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( context );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
 #if 0
         pIntercept->report();
@@ -646,6 +608,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetContextInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetContextInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "param_name = %s (%08X)",
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -680,6 +643,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetContextDestructorCallback(
 
     if( pIntercept && pIntercept->dispatch().clSetContextDestructorCallback )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -710,6 +674,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
 
     if( pIntercept && pIntercept->dispatch().clCreateCommandQueue )
     {
+        GET_ENQUEUE_COUNTER();
+
         cl_queue_properties*    newProperties = NULL;
         cl_command_queue    retVal = NULL;
 
@@ -795,17 +761,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainCommandQueue)(
 
     if( pIntercept && pIntercept->dispatch().clRetainCommandQueue )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetCommandQueueInfo(
-                command_queue,
-                CL_QUEUE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( command_queue ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] command_queue = %p",
             ref_count,
             command_queue );
@@ -817,16 +777,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainCommandQueue)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( command_queue );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetCommandQueueInfo(
-                command_queue,
-                CL_QUEUE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( command_queue ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -844,19 +797,12 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseCommandQueue)(
 
     if( pIntercept && pIntercept->dispatch().clReleaseCommandQueue )
     {
+        GET_ENQUEUE_COUNTER();
         REMOVE_QUEUE( command_queue );
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetCommandQueueInfo(
-                command_queue,
-                CL_QUEUE_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( command_queue ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] command_queue = %p",
             ref_count,
             command_queue );
@@ -869,13 +815,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseCommandQueue)(
         CHECK_ERROR( retVal );
         ITT_RELEASE_COMMAND_QUEUE( command_queue );
         ADD_OBJECT_RELEASE( command_queue );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -896,6 +836,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetCommandQueueInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetCommandQueueInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "command_queue = %p, param_name = %s (%08X)",
             command_queue,
             pIntercept->enumName().name( param_name ).c_str(),
@@ -931,6 +872,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetCommandQueueProperty)(
 
     if( pIntercept && pIntercept->dispatch().clSetCommandQueueProperty )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -963,6 +905,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
 
     if( pIntercept && pIntercept->dispatch().clCreateBuffer )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), size = %zu, host_ptr = %p",
             context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
@@ -1009,6 +952,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
 
     if( pIntercept && pIntercept->dispatch().clCreateBufferWithProperties )
     {
+        GET_ENQUEUE_COUNTER();
+
         std::string propsStr;
         if( pIntercept->config().CallLogging )
         {
@@ -1067,6 +1012,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateBufferNV(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateBufferNV )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), flags_NV = %llX, size = %zu, host_ptr = %p",
                 context,
                 pIntercept->enumName().name_mem_flags( flags ).c_str(),
@@ -1115,6 +1061,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateSubBuffer)(
 
     if( pIntercept && pIntercept->dispatch().clCreateSubBuffer )
     {
+        GET_ENQUEUE_COUNTER();
+
         std::string argsString;
         if( pIntercept->config().CallLogging )
         {
@@ -1165,6 +1113,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
 
     if( pIntercept && pIntercept->dispatch().clCreateImage )
     {
+        GET_ENQUEUE_COUNTER();
+
         if( image_desc && image_format )
         {
             CALL_LOGGING_ENTER(
@@ -1244,6 +1194,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImageWithProperties)(
 
     if( pIntercept && pIntercept->dispatch().clCreateImageWithProperties )
     {
+        GET_ENQUEUE_COUNTER();
+
         if( image_desc && image_format )
         {
             std::string propsStr;
@@ -1333,6 +1285,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage2D)(
 
     if( pIntercept && pIntercept->dispatch().clCreateImage2D )
     {
+        GET_ENQUEUE_COUNTER();
+
         if( image_format )
         {
             CALL_LOGGING_ENTER(
@@ -1402,6 +1356,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage3D)(
 
     if( pIntercept && pIntercept->dispatch().clCreateImage3D )
     {
+        GET_ENQUEUE_COUNTER();
+
         if( image_format )
         {
             CALL_LOGGING_ENTER(
@@ -1468,17 +1424,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainMemObject)(
 
     if( pIntercept && pIntercept->dispatch().clRetainMemObject )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetMemObjectInfo(
-                memobj,
-                CL_MEM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( memobj ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] mem = %p",
             ref_count,
             memobj );
@@ -1490,16 +1440,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainMemObject)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( memobj );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetMemObjectInfo(
-                memobj,
-                CL_MEM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( memobj ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -1517,19 +1460,12 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseMemObject)(
 
     if( pIntercept && pIntercept->dispatch().clReleaseMemObject )
     {
+        GET_ENQUEUE_COUNTER();
         REMOVE_MEMOBJ( memobj );
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetMemObjectInfo(
-                memobj,
-                CL_MEM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( memobj ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] mem = %p",
             ref_count,
             memobj );
@@ -1541,13 +1477,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseMemObject)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( memobj );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -1569,6 +1499,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetSupportedImageFormats)(
 
     if( pIntercept && pIntercept->dispatch().clGetSupportedImageFormats )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "flags = %s (%llX), image_type = %s (%X)",
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags,
@@ -1607,6 +1538,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetMemObjectInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetMemObjectInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "mem = %p, param_name = %s (%08X)",
             memobj,
             pIntercept->enumName().name( param_name ).c_str(),
@@ -1643,6 +1575,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetImageInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetImageInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "mem = %p, param_name = %s (%08X)",
             image,
             pIntercept->enumName().name( param_name ).c_str(),
@@ -1678,6 +1611,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetMemObjectDestructorCallback)(
 
     if( pIntercept && pIntercept->dispatch().clSetMemObjectDestructorCallback )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -1709,6 +1643,8 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
 
     if( pIntercept && pIntercept->dispatch().clCreateSampler )
     {
+        GET_ENQUEUE_COUNTER();
+
         std::string propsStr;
         if( pIntercept->config().CallLogging )
         {
@@ -1757,17 +1693,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainSampler)(
 
     if( pIntercept && pIntercept->dispatch().clRetainSampler )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetSamplerInfo(
-                sampler,
-                CL_SAMPLER_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( sampler ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] sampler = %p",
             ref_count,
             sampler );
@@ -1779,16 +1709,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainSampler)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( sampler );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetSamplerInfo(
-                sampler,
-                CL_SAMPLER_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( sampler ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -1806,18 +1729,12 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseSampler)(
 
     if( pIntercept && pIntercept->dispatch().clReleaseSampler )
     {
+        GET_ENQUEUE_COUNTER();
         REMOVE_SAMPLER( sampler );
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            pIntercept->dispatch().clGetSamplerInfo(
-                sampler,
-                CL_SAMPLER_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( sampler ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] sampler = %p",
             ref_count,
             sampler );
@@ -1829,13 +1746,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseSampler)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( sampler );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -1856,6 +1767,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetSamplerInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetSamplerInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "param_name = %s (%08X)",
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -1891,6 +1803,8 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithSource)(
 
     if( pIntercept && pIntercept->dispatch().clCreateProgramWithSource )
     {
+        GET_ENQUEUE_COUNTER();
+
         char*       singleString = NULL;
         uint64_t    hash = 0;
 
@@ -1966,8 +1880,9 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBinary)(
 
     if( pIntercept && pIntercept->dispatch().clCreateProgramWithBinary )
     {
-        uint64_t    hash = 0;
+        GET_ENQUEUE_COUNTER();
 
+        uint64_t    hash = 0;
         COMPUTE_BINARY_HASH( num_devices, lengths, binaries, hash );
 
         CALL_LOGGING_ENTER( "context = %p, num_devices = %u",
@@ -2031,6 +1946,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBuiltInKernels)(
 
     if( pIntercept && pIntercept->dispatch().clCreateProgramWithBuiltInKernels )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "context = %p, num_devices = %u, kernel_names = [ %s ]",
             context,
             num_devices,
@@ -2077,17 +1993,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainProgram)(
 
     if( pIntercept && pIntercept->dispatch().clRetainProgram )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetProgramInfo(
-                program,
-                CL_PROGRAM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( program ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] program = %p",
             ref_count,
             program );
@@ -2099,16 +2009,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainProgram)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( program );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetProgramInfo(
-                program,
-                CL_PROGRAM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( program ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -2126,17 +2029,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseProgram)(
 
     if( pIntercept && pIntercept->dispatch().clReleaseProgram )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetProgramInfo(
-                program,
-                CL_PROGRAM_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( program ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] program = %p",
             ref_count,
             program );
@@ -2148,13 +2045,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseProgram)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( program );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -2176,6 +2067,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
 
     if( pIntercept && pIntercept->dispatch().clBuildProgram )
     {
+        GET_ENQUEUE_COUNTER();
+
         char*   newOptions = NULL;
 
         SAVE_PROGRAM_OPTIONS_HASH( program, options );
@@ -2229,6 +2122,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
 
     if( pIntercept && pIntercept->dispatch().clCompileProgram )
     {
+        GET_ENQUEUE_COUNTER();
+
         const bool  modified = false;
 
         DUMP_PROGRAM_OPTIONS( program, options );
@@ -2279,6 +2174,8 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
 
     if( pIntercept && pIntercept->dispatch().clLinkProgram )
     {
+        GET_ENQUEUE_COUNTER();
+
         const bool  modified = false;
 
         CALL_LOGGING_ENTER( "context = %p, num_input_programs = %u, pfn_notify = %p",
@@ -2333,6 +2230,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramReleaseCallback)(
 
     if( pIntercept && pIntercept->dispatch().clSetProgramReleaseCallback )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "program = %p", program );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -2364,6 +2262,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramSpecializationConstant)(
 
     if( pIntercept && pIntercept->dispatch().clSetProgramSpecializationConstant )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "program = %p, spec_id = %u, spec_size = %zu",
             program,
             spec_id,
@@ -2396,6 +2295,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clUnloadPlatformCompiler)(
 
     if( pIntercept && pIntercept->dispatch().clUnloadPlatformCompiler )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -2420,6 +2320,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clUnloadCompiler)( void )
 
     if( pIntercept && pIntercept->dispatch().clUnloadCompiler )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -2448,6 +2349,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetProgramInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "param_name = %s (%08X)",
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -2484,6 +2386,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramBuildInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetProgramBuildInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "param_name = %s (%08X)",
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -2519,6 +2422,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
 
     if( pIntercept && pIntercept->dispatch().clCreateKernel )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "program = %p, kernel_name = %s",
             program,
             kernel_name );
@@ -2582,8 +2486,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateKernelsInProgram)(
 
     if( pIntercept && pIntercept->dispatch().clCreateKernelsInProgram )
     {
-        cl_uint local_num_kernels_ret = 0;
+        GET_ENQUEUE_COUNTER();
 
+        cl_uint local_num_kernels_ret = 0;
         if( num_kernels_ret == NULL )
         {
             num_kernels_ret = &local_num_kernels_ret;
@@ -2652,17 +2557,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainKernel)(
 
     if( pIntercept && pIntercept->dispatch().clRetainKernel )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetKernelInfo(
-                kernel,
-                CL_KERNEL_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( kernel ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] kernel = %p",
             ref_count,
             kernel );
@@ -2674,16 +2573,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainKernel)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( kernel );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetKernelInfo(
-                kernel,
-                CL_KERNEL_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( kernel ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -2701,19 +2593,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseKernel)(
 
     if( pIntercept && pIntercept->dispatch().clReleaseKernel )
     {
+        GET_ENQUEUE_COUNTER();
+
         pIntercept->checkRemoveKernelInfo( kernel );
 
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetKernelInfo(
-                kernel,
-                CL_KERNEL_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( kernel ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] kernel = %p",
             ref_count,
             kernel );
@@ -2725,13 +2611,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseKernel)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( kernel );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -2751,6 +2631,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
 
     if( pIntercept && pIntercept->dispatch().clSetKernelArg )
     {
+        GET_ENQUEUE_COUNTER();
+
         std::string argsString;
         if( pIntercept->config().CallLogging )
         {
@@ -2765,11 +2647,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
             "kernel = %p, %s",
             kernel,
             argsString.c_str() );
-
-        if ( pIntercept->config().DumpArgumentsOnSet )
-        {
-            pIntercept->dumpArgument( kernel, arg_index, arg_size, arg_value );
-        }
 
         SET_KERNEL_ARG( kernel, arg_index, arg_size, arg_value );
         CPU_PERFORMANCE_TIMING_START();
@@ -2803,6 +2680,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetKernelInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%X)",
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -2840,6 +2718,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelArgInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetKernelArgInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%X)",
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -2877,6 +2756,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelWorkGroupInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetKernelWorkGroupInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%X)",
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -2910,33 +2790,30 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
 
     if( pIntercept && pIntercept->dispatch().clWaitForEvents )
     {
-        cl_int  retVal = CL_SUCCESS;
+        GET_ENQUEUE_COUNTER();
 
-        if( pIntercept->config().NullEnqueue == false )
+        std::string eventList;
+        if( pIntercept->config().CallLogging )
         {
-            std::string eventList;
-            if( pIntercept->config().CallLogging )
-            {
-                pIntercept->getEventListString(
-                    num_events,
-                    event_list,
-                    eventList );
-            }
-            CALL_LOGGING_ENTER( "event_list = %s",
-                eventList.c_str() );
-            CHECK_EVENT_LIST( num_events, event_list, NULL );
-            CPU_PERFORMANCE_TIMING_START();
-
-            retVal = pIntercept->dispatch().clWaitForEvents(
+            pIntercept->getEventListString(
                 num_events,
-                event_list );
-
-            CPU_PERFORMANCE_TIMING_END();
-            CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
-
-            DEVICE_PERFORMANCE_TIMING_CHECK();
+                event_list,
+                eventList );
         }
+        CALL_LOGGING_ENTER( "event_list = %s",
+            eventList.c_str() );
+        CHECK_EVENT_LIST( num_events, event_list, NULL );
+        CPU_PERFORMANCE_TIMING_START();
+
+        cl_int  retVal = pIntercept->dispatch().clWaitForEvents(
+            num_events,
+            event_list );
+
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
+
+        DEVICE_PERFORMANCE_TIMING_CHECK();
 
         return retVal;
     }
@@ -2957,27 +2834,23 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetEventInfo )
     {
-        cl_int  retVal = CL_SUCCESS;
+        GET_ENQUEUE_COUNTER();
+        CALL_LOGGING_ENTER( "event = %p, param_name = %s (%08X)",
+            event,
+            pIntercept->enumName().name( param_name ).c_str(),
+            param_name );
+        CPU_PERFORMANCE_TIMING_START();
 
-        if( pIntercept->config().NullEnqueue == false )
-        {
-            CALL_LOGGING_ENTER( "event = %p, param_name = %s (%08X)",
-                event,
-                pIntercept->enumName().name( param_name ).c_str(),
-                param_name );
-            CPU_PERFORMANCE_TIMING_START();
+        cl_int  retVal = pIntercept->dispatch().clGetEventInfo(
+            event,
+            param_name,
+            param_value_size,
+            param_value,
+            param_value_size_ret );
 
-            retVal = pIntercept->dispatch().clGetEventInfo(
-                event,
-                param_name,
-                param_value_size,
-                param_value,
-                param_value_size_ret );
-
-            CPU_PERFORMANCE_TIMING_END();
-            CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
-        }
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -2996,24 +2869,20 @@ CL_API_ENTRY cl_event CL_API_CALL CLIRN(clCreateUserEvent)(
 
     if( pIntercept && pIntercept->dispatch().clCreateUserEvent )
     {
-        cl_event    retVal = NULL;
+        GET_ENQUEUE_COUNTER();
+        CALL_LOGGING_ENTER( "context = %p",
+            context );
+        CHECK_ERROR_INIT( errcode_ret );
+        CPU_PERFORMANCE_TIMING_START();
 
-        if( pIntercept->config().NullEnqueue == false )
-        {
-            CALL_LOGGING_ENTER( "context = %p",
-                context );
-            CHECK_ERROR_INIT( errcode_ret );
-            CPU_PERFORMANCE_TIMING_START();
+        cl_event    retVal = pIntercept->dispatch().clCreateUserEvent(
+            context,
+            errcode_ret );
 
-            retVal = pIntercept->dispatch().clCreateUserEvent(
-                context,
-                errcode_ret );
-
-            CPU_PERFORMANCE_TIMING_END();
-            CHECK_ERROR( errcode_ret[0] );
-            ADD_OBJECT_ALLOCATION( retVal );
-            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
-        }
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
+        CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
     }
@@ -3030,17 +2899,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainEvent)(
 
     if( pIntercept && pIntercept->dispatch().clRetainEvent )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetEventInfo(
-                event,
-                CL_EVENT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( event ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] event = %p",
             ref_count,
             event );
@@ -3052,16 +2915,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainEvent)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RETAIN( event );
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetEventInfo(
-                event,
-                CL_EVENT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( event ) : 0;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
@@ -3079,17 +2935,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseEvent)(
 
     if( pIntercept && pIntercept->dispatch().clReleaseEvent )
     {
-        cl_uint ref_count = 0;
-        if( pIntercept->config().CallLogging )
-        {
-            ref_count = 0;
-            pIntercept->dispatch().clGetEventInfo(
-                event,
-                CL_EVENT_REFERENCE_COUNT,
-                sizeof( ref_count ),
-                &ref_count,
-                NULL );
-        }
+        GET_ENQUEUE_COUNTER();
+
+        cl_uint ref_count =
+            pIntercept->config().CallLogging ?
+            pIntercept->getRefCount( event ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] event = %p",
             ref_count,
             event );
@@ -3101,13 +2951,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseEvent)(
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( event );
-        if( pIntercept->config().CallLogging && ref_count != 0 )
-        {
-            // This isn't strictly correct, but it's pretty close, and it
-            // avoids crashes in some cases for bad implementations.
-            --ref_count;
-        }
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
         return retVal;
     }
@@ -3126,6 +2970,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetUserEventStatus)(
 
     if( pIntercept && pIntercept->dispatch().clSetUserEventStatus )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "event = %p, status = %s (%d)",
             event,
             pIntercept->enumName().name_command_exec_status( execution_status ).c_str(),
@@ -3159,6 +3004,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetEventCallback)(
 
     if( pIntercept && pIntercept->dispatch().clSetEventCallback )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "event = %p, callback_type = %s (%d)",
             event,
             pIntercept->enumName().name_command_exec_status( command_exec_callback_type ).c_str(),
@@ -3196,26 +3042,22 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventProfilingInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetEventProfilingInfo )
     {
-        cl_int  retVal = CL_SUCCESS;
+        GET_ENQUEUE_COUNTER();
+        CALL_LOGGING_ENTER( "param_name = %s (%08X)",
+            pIntercept->enumName().name( param_name ).c_str(),
+            param_name );
+        CPU_PERFORMANCE_TIMING_START();
 
-        if( pIntercept->config().NullEnqueue == false )
-        {
-            CALL_LOGGING_ENTER( "param_name = %s (%08X)",
-                pIntercept->enumName().name( param_name ).c_str(),
-                param_name );
-            CPU_PERFORMANCE_TIMING_START();
+        cl_int  retVal = pIntercept->dispatch().clGetEventProfilingInfo(
+            event,
+            param_name,
+            param_value_size,
+            param_value,
+            param_value_size_ret );
 
-            retVal = pIntercept->dispatch().clGetEventProfilingInfo(
-                event,
-                param_name,
-                param_value_size,
-                param_value,
-                param_value_size_ret );
-
-            CPU_PERFORMANCE_TIMING_END();
-            CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
-        }
+        CPU_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
 
         return retVal;
     }
@@ -3232,6 +3074,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFlush)(
 
     if( pIntercept && pIntercept->dispatch().clFlush )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "queue = %p", command_queue );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -3259,6 +3102,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFinish)(
 
     if( pIntercept && pIntercept->dispatch().clFinish )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "queue = %p", command_queue );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -3296,6 +3140,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3387,6 +3232,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3476,6 +3322,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3567,6 +3414,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3657,6 +3505,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillBuffer)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3717,6 +3566,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBuffer)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3799,6 +3649,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferRect)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3880,6 +3731,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3984,6 +3836,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4071,6 +3924,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillImage)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4127,6 +3981,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImage)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4201,6 +4056,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImageToBuffer)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4259,6 +4115,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferToImage)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4318,6 +4175,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
     {
         void*   retVal = NULL;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4430,6 +4288,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
     {
         void*   retVal = NULL;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4540,6 +4399,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueUnmapMemObject)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         DUMP_BUFFER_BEFORE_UNMAP( memobj, command_queue );
         CHECK_AUBCAPTURE_START( command_queue );
 
@@ -4630,6 +4490,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMigrateMemObjects)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4683,6 +4544,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue );
         DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue );
         CHECK_AUBCAPTURE_START_KERNEL(
@@ -4821,6 +4683,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START_KERNEL( kernel, 0, NULL, NULL, command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4884,6 +4747,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNativeKernel)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4934,6 +4798,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarker)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4976,6 +4841,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWaitForEvents)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -5030,6 +4896,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrier)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -5071,6 +4938,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarkerWithWaitList)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -5129,6 +4997,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrierWithWaitList)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -5182,6 +5051,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddress)(
 
     if( pIntercept && pIntercept->dispatch().clGetExtensionFunctionAddress )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "func_name = %s", func_name ? func_name : "(NULL)" );
         CPU_PERFORMANCE_TIMING_START();
 
@@ -5226,6 +5096,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
 
     if( pIntercept && pIntercept->dispatch().clGetExtensionFunctionAddressForPlatform )
     {
+        GET_ENQUEUE_COUNTER();
+
         std::string platformInfo;
         if( pIntercept->config().CallLogging )
         {
@@ -5291,6 +5163,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
 
     if( pIntercept && pIntercept->dispatch().clCreateFromGLBuffer )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER(
             "context = %p, "
             "flags = %s (%llX)",
@@ -5340,6 +5213,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
 
     if( pIntercept && pIntercept->dispatch().clCreateFromGLTexture )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER(
             "context = %p, "
             "flags = %s (%llX), "
@@ -5402,6 +5276,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture2D)(
 
     if( pIntercept && pIntercept->dispatch().clCreateFromGLTexture2D )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER(
             "context = %p, "
             "flags = %s (%llX), "
@@ -5464,6 +5339,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture3D)(
 
     if( pIntercept && pIntercept->dispatch().clCreateFromGLTexture3D )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER(
             "context = %p, "
             "flags = %s (%llX), "
@@ -5524,6 +5400,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLRenderbuffer)(
 
     if( pIntercept && pIntercept->dispatch().clCreateFromGLRenderbuffer )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER(
             "context = %p, "
             "flags = %s (%llX)",
@@ -5570,6 +5447,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLObjectInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetGLObjectInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -5609,6 +5487,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLTextureInfo)(
 
     if( pIntercept && pIntercept->dispatch().clGetGLTextureInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -5653,6 +5532,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueAcquireGLObjects)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -5711,6 +5591,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -5760,6 +5641,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clSVMAlloc) (
 
     if( pIntercept && pIntercept->dispatch().clSVMAlloc )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "flags = %s (%llX), size = %zu, alignment = %u",
             pIntercept->enumName().name_svm_mem_flags( flags ).c_str(),
             flags,
@@ -5801,6 +5683,7 @@ CL_API_ENTRY void CL_API_CALL CLIRN(clSVMFree) (
 
     if( pIntercept && pIntercept->dispatch().clSVMFree )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "svm_pointer = %p",
             svm_pointer );
         CPU_PERFORMANCE_TIMING_START();
@@ -5838,6 +5721,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMFree) (
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -5893,6 +5777,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -5948,6 +5833,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemFill) (
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -6006,6 +5892,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -6058,6 +5945,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMUnmap) (
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -6103,6 +5991,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArgSVMPointer) (
 
     if( pIntercept && pIntercept->dispatch().clSetKernelArgSVMPointer )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER_KERNEL(
             kernel,
             "kernel = %p, index = %u, value = %p",
@@ -6140,6 +6029,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelExecInfo) (
 
     if( pIntercept && pIntercept->dispatch().clSetKernelExecInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%08X)",
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -6190,6 +6080,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreatePipe) (
 
     if( pIntercept && pIntercept->dispatch().clCreatePipe )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), pipe_packet_size = %u, pipe_max_packets = %u",
             context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
@@ -6232,6 +6123,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPipeInfo) (
 
     if( pIntercept && pIntercept->dispatch().clGetPipeInfo )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER( "mem = %p, param_name = %s (%08X)",
             pipe,
             pIntercept->enumName().name( param_name ).c_str(),
@@ -6268,6 +6160,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
 
     if( pIntercept && pIntercept->dispatch().clCreateCommandQueueWithProperties )
     {
+        GET_ENQUEUE_COUNTER();
+
         cl_queue_properties*    newProperties = NULL;
         cl_command_queue    retVal = NULL;
 
@@ -6360,6 +6254,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
         auto dispatchX = pIntercept->dispatchX(device);
         if( dispatchX.clCreateCommandQueueWithPropertiesKHR )
         {
+            GET_ENQUEUE_COUNTER();
+
             cl_queue_properties*    newProperties = NULL;
             cl_command_queue    retVal = NULL;
 
@@ -6448,6 +6344,8 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
 
     if( pIntercept && pIntercept->dispatch().clCreateSamplerWithProperties )
     {
+        GET_ENQUEUE_COUNTER();
+
         std::string propsStr;
         if( pIntercept->config().CallLogging )
         {
@@ -6490,6 +6388,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetDefaultDeviceCommandQueue) (
 
     if( pIntercept && pIntercept->dispatch().clSetDefaultDeviceCommandQueue )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -6520,6 +6419,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceAndHostTimer) (
 
     if( pIntercept && pIntercept->dispatch().clGetDeviceAndHostTimer )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -6549,6 +6449,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetHostTimer) (
 
     if( pIntercept && pIntercept->dispatch().clGetHostTimer )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -6579,6 +6480,8 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithIL) (
 
     if( pIntercept && pIntercept->dispatch().clCreateProgramWithIL )
     {
+        GET_ENQUEUE_COUNTER();
+
         char*       injectedSPIRV = NULL;
         uint64_t    hash = 0;
 
@@ -6629,6 +6532,8 @@ CL_API_ENTRY cl_program CL_API_CALL clCreateProgramWithILKHR(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateProgramWithILKHR )
         {
+            GET_ENQUEUE_COUNTER();
+
             char*       injectedSPIRV = NULL;
             uint64_t    hash = 0;
 
@@ -6674,6 +6579,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCloneKernel) (
 
     if( pIntercept && pIntercept->dispatch().clCloneKernel )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
@@ -6709,12 +6615,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelSubGroupInfo) (
 
     if( pIntercept && pIntercept->dispatch().clGetKernelSubGroupInfo )
     {
-        cl_int  retVal = CL_SUCCESS;
-
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
-        retVal = pIntercept->dispatch().clGetKernelSubGroupInfo(
+        cl_int retVal = pIntercept->dispatch().clGetKernelSubGroupInfo(
             kernel,
             device,
             param_name,
@@ -6755,12 +6660,11 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
         auto dispatchX = pIntercept->dispatchX(kernel);
         if( dispatchX.clGetKernelSubGroupInfoKHR )
         {
-            cl_int  retVal = CL_SUCCESS;
-
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER();
             CPU_PERFORMANCE_TIMING_START();
 
-            retVal = dispatchX.clGetKernelSubGroupInfoKHR(
+            cl_int retVal = dispatchX.clGetKernelSubGroupInfoKHR(
                 kernel,
                 device,
                 param_name,
@@ -6800,6 +6704,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
     {
         cl_int  retVal = CL_SUCCESS;
 
+        INCREMENT_ENQUEUE_COUNTER();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -6856,6 +6761,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetGLContextInfoKHR(
 
     if( pIntercept && pIntercept->dispatch().clGetGLContextInfoKHR )
     {
+        GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
         CPU_PERFORMANCE_TIMING_START();
 
@@ -6891,6 +6797,7 @@ CL_API_ENTRY cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateEventFromGLsyncKHR )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER( "context = %p",
                 context );
             CHECK_ERROR_INIT( errcode_ret );
@@ -6934,6 +6841,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D10KHR(
         auto dispatchX = pIntercept->dispatchX(platform);
         if( dispatchX.clGetDeviceIDsFromD3D10KHR )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER();
             CPU_PERFORMANCE_TIMING_START();
 
@@ -6973,6 +6881,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D10BufferKHR )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER(
                 "context = %p, "
                 "flags = %s (%llX)",
@@ -7018,6 +6927,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D10Texture2DKHR )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER(
                 "context = %p, "
                 "flags = %s (%llX)",
@@ -7064,6 +6974,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D10Texture3DKHR )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER(
                 "context = %p, "
                 "flags = %s (%llX)",
@@ -7113,6 +7024,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -7167,6 +7079,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -7222,6 +7135,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D11KHR(
         auto dispatchX = pIntercept->dispatchX(platform);
         if( dispatchX.clGetDeviceIDsFromD3D11KHR )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER();
             CPU_PERFORMANCE_TIMING_START();
 
@@ -7261,6 +7175,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D11BufferKHR )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER(
                 "context = %p, "
                 "flags = %s (%llX)",
@@ -7306,6 +7221,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D11Texture2DKHR )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER(
                 "context = %p, "
                 "flags = %s (%llX)",
@@ -7352,6 +7268,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D11Texture3DKHR )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER(
                 "context = %p, "
                 "flags = %s (%llX)",
@@ -7401,6 +7318,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -7455,6 +7373,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -7511,6 +7430,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
         auto dispatchX = pIntercept->dispatchX(platform);
         if( dispatchX.clGetDeviceIDsFromDX9MediaAdapterKHR )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER();
             CPU_PERFORMANCE_TIMING_START();
 
@@ -7553,6 +7473,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromDX9MediaSurfaceKHR )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER(
                 "context = %p, "
                 "flags = %s (%llX)",
@@ -7603,6 +7524,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -7657,6 +7579,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -7714,6 +7637,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9INTEL(
         auto dispatchX = pIntercept->dispatchX(platform);
         if( dispatchX.clGetDeviceIDsFromDX9INTEL )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER();
             CPU_PERFORMANCE_TIMING_START();
 
@@ -7755,6 +7679,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromDX9MediaSurfaceINTEL )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER(
                 "context = %p, "
                 "flags = %s (%llX)",
@@ -7805,6 +7730,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -7859,6 +7785,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -7913,6 +7840,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreatePerfCountersCommandQueueINTEL )
         {
+            GET_ENQUEUE_COUNTER();
+
             // We don't have to do this, since profiling must be enabled
             // for a perf counters command queue, but it doesn't hurt to
             // add it, either.
@@ -7965,6 +7894,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
         auto dispatchX = pIntercept->dispatchX(device);
         if( dispatchX.clSetPerformanceConfigurationINTEL )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER();
             CPU_PERFORMANCE_TIMING_START();
 
@@ -8003,6 +7933,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeINTEL(
         auto dispatchX = pIntercept->dispatchX(commandQueue);
         if( dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER_KERNEL(
                 kernel,
                 "queue = %p, kernel = %p",
@@ -8046,6 +7977,8 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateAcceleratorINTEL )
         {
+            GET_ENQUEUE_COUNTER();
+
             if( ( accelerator_type == CL_ACCELERATOR_TYPE_MOTION_ESTIMATION_INTEL ) &&
                 ( descriptor_size >= sizeof( cl_motion_estimation_desc_intel ) ) )
             {
@@ -8110,6 +8043,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetAcceleratorInfoINTEL(
         auto dispatchX = pIntercept->dispatchX(accelerator);
         if( dispatchX.clGetAcceleratorInfoINTEL )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER( "param_name = %s (%X)",
                 pIntercept->enumName().name( param_name ).c_str(),
                 param_name );
@@ -8146,6 +8080,8 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainAcceleratorINTEL(
         auto dispatchX = pIntercept->dispatchX(accelerator);
         if( dispatchX.clRetainAcceleratorINTEL )
         {
+            GET_ENQUEUE_COUNTER();
+
             cl_uint ref_count = 0;
             if( pIntercept->config().CallLogging )
             {
@@ -8199,6 +8135,8 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseAcceleratorINTEL(
         auto dispatchX = pIntercept->dispatchX(accelerator);
         if( dispatchX.clReleaseAcceleratorINTEL )
         {
+            GET_ENQUEUE_COUNTER();
+
             pIntercept->checkRemoveAcceleratorInfo( accelerator );
 
             cl_uint ref_count = 0;
@@ -8222,13 +8160,7 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseAcceleratorINTEL(
 
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            if( pIntercept->config().CallLogging && ref_count != 0 )
-            {
-                // This isn't strictly correct, but it's pretty close, and it
-                // avoids crashes in some cases for bad implementations.
-                --ref_count;
-            }
-            CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+            CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
 
             return retVal;
         }
@@ -8256,6 +8188,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromVA_APIMediaAdapterINTEL(
         auto dispatchX = pIntercept->dispatchX(platform);
         if( dispatchX.clGetDeviceIDsFromVA_APIMediaAdapterINTEL )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER();
             CPU_PERFORMANCE_TIMING_START();
 
@@ -8296,6 +8229,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromVA_APIMediaSurfaceINTEL(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromVA_APIMediaSurfaceINTEL )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER(
                 "context = %p, "
                 "flags = %s (%llX)",
@@ -8345,6 +8279,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireVA_APIMediaSurfacesINTEL(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -8399,6 +8334,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -8452,6 +8388,7 @@ CL_API_ENTRY void* CL_API_CALL clHostMemAllocINTEL(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clHostMemAllocINTEL )
         {
+            GET_ENQUEUE_COUNTER();
             // TODO: Make properties string.
             CALL_LOGGING_ENTER( "context = %p, properties = %p, size = %zu, alignment = %u",
                 context,
@@ -8497,6 +8434,8 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clDeviceMemAllocINTEL )
         {
+            GET_ENQUEUE_COUNTER();
+
             std::string deviceInfo;
             if( pIntercept->config().CallLogging )
             {
@@ -8552,6 +8491,8 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clSharedMemAllocINTEL )
         {
+            GET_ENQUEUE_COUNTER();
+
             std::string deviceInfo;
             if( pIntercept->config().CallLogging )
             {
@@ -8603,6 +8544,7 @@ CL_API_ENTRY cl_int CL_API_CALL clMemFreeINTEL(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clMemFreeINTEL )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER( "context = %p, ptr = %p",
                 context,
                 ptr );
@@ -8638,6 +8580,7 @@ clMemBlockingFreeINTEL(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clMemBlockingFreeINTEL )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER( "context = %p, ptr = %p",
                 context,
                 ptr );
@@ -8676,6 +8619,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetMemAllocInfoINTEL(
         auto dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clGetMemAllocInfoINTEL )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER( "context = %p, ptr = %p, param_name = %s (%08X)",
                 context,
                 ptr,
@@ -8717,6 +8661,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
         auto dispatchX = pIntercept->dispatchX(kernel);
         if( dispatchX.clSetKernelArgMemPointerINTEL )
         {
+            GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER_KERNEL(
                 kernel,
                 "kernel = %p, index = %u, value = %p",
@@ -8763,6 +8708,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -8824,6 +8770,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -8886,6 +8833,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -8948,6 +8896,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -9009,6 +8958,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
         {
             cl_int  retVal = CL_SUCCESS;
 
+            INCREMENT_ENQUEUE_COUNTER();
             CHECK_AUBCAPTURE_START( queue );
 
             if( pIntercept->config().NullEnqueue == false )
