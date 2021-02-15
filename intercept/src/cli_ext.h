@@ -523,9 +523,11 @@ cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
 #define CL_DEVICE_SCHEDULING_KERNEL_BATCHING_ARM                (1 << 0)
 #define CL_DEVICE_SCHEDULING_WORKGROUP_BATCH_SIZE_ARM           (1 << 1)
 #define CL_DEVICE_SCHEDULING_WORKGROUP_BATCH_SIZE_MODIFIER_ARM  (1 << 2)
+#define CL_DEVICE_SCHEDULING_DEFERRED_FLUSH_ARM                 (1 << 3)
 #define CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_ARM            0x41E5
 #define CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_MODIFIER_ARM   0x41E6
 #define CL_QUEUE_KERNEL_BATCHING_ARM                            0x41E7
+#define CL_QUEUE_DEFERRED_FLUSH_ARM                             0x41EC
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_intel_accelerator
@@ -578,6 +580,40 @@ cl_int CL_API_CALL clReleaseAcceleratorINTEL(
 
 #define CL_ME_VERSION_LEGACY_INTEL                      0x0
 #define CL_ME_VERSION_ADVANCED_VER_1_INTEL              0x1
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_intel_command_queue_families
+typedef cl_bitfield         cl_command_queue_capabilities_intel;
+
+#define CL_QUEUE_FAMILY_MAX_NAME_SIZE_INTEL                 64
+typedef struct _cl_queue_family_properties_intel {
+    cl_command_queue_properties properties;
+    cl_command_queue_capabilities_intel capabilities;
+    cl_uint count;
+    char name[CL_QUEUE_FAMILY_MAX_NAME_SIZE_INTEL];
+} cl_queue_family_properties_intel;
+
+#define CL_DEVICE_QUEUE_FAMILY_PROPERTIES_INTEL             0x418B
+#define CL_QUEUE_FAMILY_INTEL                               0x418C
+#define CL_QUEUE_INDEX_INTEL                                0x418D
+
+#define CL_QUEUE_DEFAULT_CAPABILITIES_INTEL                 0
+#define CL_QUEUE_CAPABILITY_CREATE_SINGLE_QUEUE_EVENTS_INTEL (1 << 0)
+#define CL_QUEUE_CAPABILITY_CREATE_CROSS_QUEUE_EVENTS_INTEL (1 << 1)
+#define CL_QUEUE_CAPABILITY_SINGLE_QUEUE_EVENT_WAIT_LIST_INTEL (1 << 2)
+#define CL_QUEUE_CAPABILITY_CROSS_QUEUE_EVENT_WAIT_LIST_INTEL (1 << 3)
+#define CL_QUEUE_CAPABILITY_TRANSFER_BUFFER_INTEL           (1 << 8)
+#define CL_QUEUE_CAPABILITY_TRANSFER_BUFFER_RECT_INTEL      (1 << 9)
+#define CL_QUEUE_CAPABILITY_MAP_BUFFER_INTEL                (1 << 10)
+#define CL_QUEUE_CAPABILITY_FILL_BUFFER_INTEL               (1 << 11)
+#define CL_QUEUE_CAPABILITY_TRANSFER_IMAGE_INTEL            (1 << 12)
+#define CL_QUEUE_CAPABILITY_MAP_IMAGE_INTEL                 (1 << 13)
+#define CL_QUEUE_CAPABILITY_FILL_IMAGE_INTEL                (1 << 14)
+#define CL_QUEUE_CAPABILITY_TRANSFER_BUFFER_IMAGE_INTEL     (1 << 15)
+#define CL_QUEUE_CAPABILITY_TRANSFER_IMAGE_BUFFER_INTEL     (1 << 16)
+#define CL_QUEUE_CAPABILITY_MARKER_INTEL                    (1 << 24)
+#define CL_QUEUE_CAPABILITY_BARRIER_INTEL                   (1 << 25)
+#define CL_QUEUE_CAPABILITY_KERNEL_INTEL                    (1 << 26)
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_intel_driver_diagnostics
@@ -664,6 +700,11 @@ cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
 // cl_intel_egl_image_yuv
 
 #define CL_EGL_YUV_PLANE_INTEL                      0x4107
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_intel_mem_channel_property
+
+#define CL_MEM_CHANNEL_INTEL                        0x4213
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_intel_mem_force_host_memory

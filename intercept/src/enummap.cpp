@@ -810,6 +810,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_ARM );
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_MODIFIER_ARM );
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_KERNEL_BATCHING_ARM );
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_DEFERRED_FLUSH_ARM );
 
     // cl_intel_accelerator
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_ACCELERATOR_INTEL );
@@ -825,6 +826,28 @@ CEnumNameMap::CEnumNameMap()
 
     // cl_intel_advanced_motion_estimation
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ME_VERSION_INTEL );
+
+    // cl_intel_command_queue_families
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_QUEUE_FAMILY_PROPERTIES_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_FAMILY_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_INDEX_INTEL );
+
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_CREATE_SINGLE_QUEUE_EVENTS_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_CREATE_CROSS_QUEUE_EVENTS_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_SINGLE_QUEUE_EVENT_WAIT_LIST_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_CROSS_QUEUE_EVENT_WAIT_LIST_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_TRANSFER_BUFFER_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_TRANSFER_BUFFER_RECT_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_MAP_BUFFER_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_FILL_BUFFER_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_TRANSFER_IMAGE_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_MAP_IMAGE_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_FILL_IMAGE_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_TRANSFER_BUFFER_IMAGE_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_TRANSFER_IMAGE_BUFFER_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_MARKER_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_BARRIER_INTEL );
+    ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_KERNEL_INTEL );
 
     // cl_intel_driver_diagnostics
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL );
@@ -855,6 +878,9 @@ CEnumNameMap::CEnumNameMap()
 
     // cl_intel_egl_image_yuv
     ADD_ENUM_NAME( m_cl_int, CL_EGL_YUV_PLANE_INTEL );
+
+    // cl_intel_mem_channel_property
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_CHANNEL_INTEL );
 
     // cl_intel_mem_force_host_memory
     ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_FORCE_HOST_MEMORY_INTEL );

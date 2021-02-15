@@ -106,6 +106,7 @@ public:
     GENERATE_MAP_AND_FUNC(          name_build_status,               cl_build_status                 );
     GENERATE_MAP_AND_FUNC(          name_command_exec_status,        cl_command_exec_status          );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_command_queue_properties,   cl_command_queue_properties     );
+    GENERATE_MAP_AND_BITFIELD_FUNC( name_command_queue_capabilities, cl_command_queue_capabilities_intel );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_device_affinity_domain,     cl_device_affinity_domain       );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_device_atomic_capabilities, cl_device_atomic_capabilities   );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_device_device_enqueue_capabilities, cl_device_device_enqueue_capabilities );
