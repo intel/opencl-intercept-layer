@@ -5642,6 +5642,34 @@ void CLIntercept::checkRemoveQueue(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::addEvent(
+    cl_event event,
+    uint64_t enqueueCounter )
+{
+    if( event )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        m_EventIdMap[ event ] = enqueueCounter;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::checkRemoveEvent(
+    cl_event event )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_uint refCount = getRefCount( event );
+    if( refCount == 1 )
+    {
+        m_EventIdMap.erase( event );
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::addBuffer(
     cl_mem buffer )
 {

@@ -418,6 +418,11 @@ public:
                 cl_command_queue queue );
     void    checkRemoveQueue(
                 cl_command_queue queue );
+    void    addEvent(
+                cl_event event,
+                uint64_t enqueueCounter );
+    void    checkRemoveEvent(
+                cl_event event );
     void    addBuffer(
                 cl_mem buffer );
     void    addImage(
@@ -1017,6 +1022,9 @@ private:
     typedef std::list< cl_command_queue >   CQueueList;
     typedef std::map< cl_context, CQueueList >  CContextQueuesMap;
     CContextQueuesMap   m_ContextQueuesMap;
+
+    typedef std::map< cl_event, uint64_t >  CEventIdMap;
+    CEventIdMap m_EventIdMap;
 
     unsigned int    m_MemAllocNumber;
 
@@ -1799,49 +1807,65 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
            ( enqueueCounter <= m_Config.DumpImagesMaxEnqueue );
 }
 
-#define ADD_QUEUE( context, queue )                                         \
-    if( queue &&                                                            \
+#define ADD_QUEUE( _context, _queue )                                       \
+    if( _queue &&                                                           \
         ( pIntercept->config().ChromePerformanceTiming ||                   \
           pIntercept->config().Emulate_cl_intel_unified_shared_memory ) )   \
     {                                                                       \
         pIntercept->addQueue(                                               \
-            context,                                                        \
-            queue );                                                        \
+            _context,                                                       \
+            _queue );                                                       \
         if( pIntercept->config().ChromePerformanceTiming )                  \
         {                                                                   \
-            pIntercept->chromeRegisterCommandQueue( queue );                \
+            pIntercept->chromeRegisterCommandQueue( _queue );               \
         }                                                                   \
     }
 
-#define REMOVE_QUEUE( queue )                                               \
-    if( queue &&                                                            \
+#define REMOVE_QUEUE( _queue )                                              \
+    if( _queue &&                                                           \
         ( pIntercept->config().ChromePerformanceTiming ||                   \
           pIntercept->config().Emulate_cl_intel_unified_shared_memory ) )   \
     {                                                                       \
-        pIntercept->checkRemoveQueue( queue );                              \
+        pIntercept->checkRemoveQueue( _queue );                             \
     }
 
-#define ADD_BUFFER( buffer )                                                \
-    if( buffer &&                                                           \
+#define ADD_EVENT( _event )                                                 \
+    if( ( _event ) &&                                                       \
+        ( pIntercept->config().ChromeCallLogging ||                         \
+          pIntercept->config().ChromePerformanceTiming ) )                  \
+    {                                                                       \
+        pIntercept->addEvent( _event, enqueueCounter );                     \
+    }
+
+#define REMOVE_EVENT( _event )                                              \
+    if( ( _event ) &&                                                       \
+        ( pIntercept->config().ChromeCallLogging ||                         \
+          pIntercept->config().ChromePerformanceTiming ) )                  \
+    {                                                                       \
+        pIntercept->checkRemoveEvent( _event );                             \
+    }
+
+#define ADD_BUFFER( _buffer )                                               \
+    if( _buffer &&                                                          \
         ( pIntercept->config().DumpBuffersAfterCreate ||                    \
           pIntercept->config().DumpBuffersAfterMap ||                       \
           pIntercept->config().DumpBuffersBeforeUnmap ||                    \
           pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
     {                                                                       \
-        pIntercept->addBuffer( buffer );                                    \
+        pIntercept->addBuffer( _buffer );                                   \
     }
 
-#define ADD_IMAGE( image )                                                  \
-    if( image &&                                                            \
+#define ADD_IMAGE( _image )                                                 \
+    if( _image &&                                                           \
         ( pIntercept->config().DumpImagesBeforeEnqueue ||                   \
           pIntercept->config().DumpImagesAfterEnqueue ) )                   \
     {                                                                       \
-        pIntercept->addImage( image );                                      \
+        pIntercept->addImage( _image );                                     \
     }
 
-#define REMOVE_MEMOBJ( memobj )                                             \
-    if( memobj &&                                                           \
+#define REMOVE_MEMOBJ( _memobj )                                            \
+    if( _memobj &&                                                          \
         ( pIntercept->config().DumpBuffersAfterCreate ||                    \
           pIntercept->config().DumpBuffersAfterMap ||                       \
           pIntercept->config().DumpBuffersBeforeUnmap ||                    \
@@ -1850,7 +1874,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
           pIntercept->config().DumpImagesAfterEnqueue ) )                   \
     {                                                                       \
-        pIntercept->checkRemoveMemObj( memobj );                            \
+        pIntercept->checkRemoveMemObj( _memobj );                           \
     }
 
 #define ADD_SAMPLER( sampler, str )                                         \
