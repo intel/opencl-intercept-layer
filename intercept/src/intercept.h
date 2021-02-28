@@ -737,6 +737,7 @@ public:
 
     void    chromeCallLoggingExit(
                 const std::string& functionName,
+                bool includeId,
                 const uint64_t enqueueCounter,
                 const cl_kernel kernel,
                 clock::time_point start,
@@ -1584,6 +1585,16 @@ inline CObjectTracker& CLIntercept::objectTracker()
             NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
+    if( pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        pIntercept->chromeCallLoggingExit(                                  \
+            __FUNCTION__,                                                   \
+            false,                                                          \
+            0,                                                              \
+            NULL,                                                           \
+            cpuStart,                                                       \
+            cpuEnd );                                                       \
+    }                                                                       \
     ITT_CALL_LOGGING_EXIT();
 
 #define CALL_LOGGING_EXIT_EVENT(errorCode, event, ...)                      \
@@ -1594,6 +1605,37 @@ inline CObjectTracker& CLIntercept::objectTracker()
             errorCode,                                                      \
             event,                                                          \
             ##__VA_ARGS__ );                                                \
+    }                                                                       \
+    if( pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        pIntercept->chromeCallLoggingExit(                                  \
+            __FUNCTION__,                                                   \
+            true,                                                           \
+            enqueueCounter,                                                 \
+            NULL,                                                           \
+            cpuStart,                                                       \
+            cpuEnd );                                                       \
+    }                                                                       \
+    ITT_CALL_LOGGING_EXIT();
+
+#define CALL_LOGGING_EXIT_KERNEL_EVENT(errorCode, kernel, event, ...)       \
+    if( pIntercept->config().CallLogging )                                  \
+    {                                                                       \
+        pIntercept->callLoggingExit(                                        \
+            __FUNCTION__,                                                   \
+            errorCode,                                                      \
+            event,                                                          \
+            ##__VA_ARGS__ );                                                \
+    }                                                                       \
+    if( pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        pIntercept->chromeCallLoggingExit(                                  \
+            __FUNCTION__,                                                   \
+            true,                                                           \
+            enqueueCounter,                                                 \
+            kernel,                                                         \
+            cpuStart,                                                       \
+            cpuEnd );                                                       \
     }                                                                       \
     ITT_CALL_LOGGING_EXIT();
 
@@ -2333,32 +2375,22 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
 
 #define CPU_PERFORMANCE_TIMING_START()                                      \
     CLIntercept::clock::time_point   cpuStart, cpuEnd;                      \
-    if( ( pIntercept->config().HostPerformanceTiming ||                     \
-          pIntercept->config().ChromeCallLogging ) &&                       \
-        pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
         cpuStart = CLIntercept::clock::now();                               \
     }
 
 #define CPU_PERFORMANCE_TIMING_END()                                        \
-    if( ( pIntercept->config().HostPerformanceTiming ||                     \
-          pIntercept->config().ChromeCallLogging ) &&                       \
-        pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
         cpuEnd = CLIntercept::clock::now();                                 \
-        if( pIntercept->config().HostPerformanceTiming )                    \
+        if( pIntercept->config().HostPerformanceTiming &&                   \
+            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
                 __FUNCTION__,                                               \
-                NULL,                                                       \
-                cpuStart,                                                   \
-                cpuEnd );                                                   \
-        }                                                                   \
-        if( pIntercept->config().ChromeCallLogging )                        \
-        {                                                                   \
-            pIntercept->chromeCallLoggingExit(                              \
-                __FUNCTION__,                                               \
-                enqueueCounter,                                             \
                 NULL,                                                       \
                 cpuStart,                                                   \
                 cpuEnd );                                                   \
@@ -2366,24 +2398,15 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
     }
 
 #define CPU_PERFORMANCE_TIMING_END_KERNEL( _kernel )                        \
-    if( ( pIntercept->config().HostPerformanceTiming ||                     \
-          pIntercept->config().ChromeCallLogging ) &&                       \
-        pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
         cpuEnd = CLIntercept::clock::now();                                 \
-        if( pIntercept->config().HostPerformanceTiming )                    \
+        if( pIntercept->config().HostPerformanceTiming &&                   \
+            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
                 __FUNCTION__,                                               \
-                _kernel,                                                    \
-                cpuStart,                                                   \
-                cpuEnd );                                                   \
-        }                                                                   \
-        if( pIntercept->config().ChromeCallLogging )                        \
-        {                                                                   \
-            pIntercept->chromeCallLoggingExit(                              \
-                __FUNCTION__,                                               \
-                enqueueCounter,                                             \
                 _kernel,                                                    \
                 cpuStart,                                                   \
                 cpuEnd );                                                   \

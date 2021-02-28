@@ -4747,7 +4747,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
                 local_work_size );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( retVal, event );
+            CALL_LOGGING_EXIT_KERNEL_EVENT( retVal, kernel, event );
         }
 
         DUMP_BUFFERS_AFTER_ENQUEUE( kernel, command_queue );
@@ -4810,7 +4810,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
                 NULL );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( retVal, event );
+            CALL_LOGGING_EXIT_KERNEL_EVENT( retVal, kernel, event );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );

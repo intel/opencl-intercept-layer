@@ -3082,6 +3082,8 @@ void CLIntercept::eventCallbackCaller(
         pIntercept->enumName().name_command_exec_status( status ).c_str(),
         status );
 
+    clock::time_point   cpuStart = clock::now();
+
     pIntercept->eventCallback(
         event,
         status );
@@ -3092,6 +3094,8 @@ void CLIntercept::eventCallbackCaller(
             status,
             pEventCallbackInfo->pUserData );
     }
+
+    clock::time_point   cpuEnd = clock::now();
 
     CALL_LOGGING_EXIT( CL_SUCCESS );
 
@@ -11814,6 +11818,7 @@ void CLIntercept::ittTraceEvent(
 //
 void CLIntercept::chromeCallLoggingExit(
     const std::string& functionName,
+    bool includeId,
     const uint64_t enqueueCounter,
     const cl_kernel kernel,
     clock::time_point tickStart,
@@ -11821,15 +11826,21 @@ void CLIntercept::chromeCallLoggingExit(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    std::string str;
-    str += functionName;
+    std::string name;
+    name += functionName;
 
     if( kernel )
     {
         const std::string& kernelName = getShortKernelNameWithHash(kernel);
-        str += "( ";
-        str += kernelName;
-        str += " )";
+        name += "( ";
+        name += kernelName;
+        name += " )";
+    }
+
+    std::ostringstream  args;
+    if( includeId )
+    {
+        args << ", \"args\":{\"id\":\"" << enqueueCounter << "\"}";
     }
 
     uint64_t    processId =
@@ -11849,11 +11860,11 @@ void CLIntercept::chromeCallLoggingExit(
     m_InterceptTrace
         << "{\"ph\":\"X\", \"pid\":" << processId
         << ", \"tid\":" << threadId
-        << ", \"name\":\"" << str
+        << ", \"name\":\"" << name
         << "\", \"ts\":" << usStart
         << ", \"dur\":" << usDelta
-        << ", \"args\":{\"id\":" << enqueueCounter
-        << "}},\n";
+        << args.str()
+        << "},\n";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -12060,8 +12071,8 @@ void CLIntercept::chromeTraceEvent(
                         << ", \"tid\":" << m_EventsChromeTraced << "." << queueNumber
                         << ", \"ts\":" << usStarts[state]
                         << ", \"dur\":" << usDeltas[state]
-                        << ", \"cname\":\"" << colours[state]
-                        << "\", \"args\":{\"id\":" << enqueueCounter
+                        << ", \"cname\":\"" << colours[state] << "\""
+                        << ", \"args\":{\"id\":\"" << enqueueCounter << "\""
                         << "}},\n";
                 }
             }
@@ -12094,7 +12105,6 @@ void CLIntercept::chromeTraceEvent(
                     << ", \"args\":{\"id\":" << enqueueCounter
                     << "}},\n";
             }
-
         }
     }
     else
