@@ -29,9 +29,13 @@ Layer for OpenCL Applications:
   `DevicePerformanceTiming` is enabled.
 * `ChromePerformanceTimingInStages`: This is a further control that sits
   on top of `ChromePerformanceTiming`(it does nothing when this flag is not
-  on). When it is on it splits up the events into "Queued", "Submitted", 
+  on). When it is on, it splits up the events into "Queued", "Submitted",
   and "Execution" stages, and reorders the calls approximately by start time.
-
+* `ChromePerformanceTimingPerKernel`: This is a further control that sits
+  on top of `ChromePerformanceTiming`(it does nothing when this flag is not
+  on). When it is on, it organizes the performance information placed in the
+  JSON file on a per kernel name basis. It can be combined with the
+  `ChromePerformanceTimingInStages` control for information about event stages.
 
 ## Collecting Chrome Tracing Data
 

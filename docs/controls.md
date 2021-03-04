@@ -355,6 +355,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will gene
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will separate the performance infomation placed in the JSON file into Queued, Submitted, and Execution stages. It will also reorder the threads/queues by starting runtime. This flag is only functional when ChromePerformanceTiming is also set.
 
+##### `ChromePerformanceTimingPerKernel` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will organize the performance information placed in the JSON file on a per kernel name basis. It is only functional when ChromePerformanceTiming is also set. When ChromePerformanceTimingInStages is also set, information about event stages will be retained.
+
 ### Controls for Dumping and Injecting Programs and Build Options
 
 ##### `OmitProgramNumber` (bool)
