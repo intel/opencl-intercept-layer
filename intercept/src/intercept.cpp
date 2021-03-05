@@ -11839,15 +11839,30 @@ void CLIntercept::chromeTraceEvent(
 
             for( size_t state = 0; state < cNumStates; state++ )
             {
-                m_InterceptTrace
-                    << "{\"name\":\"" << name << " " << suffixes[state]
-                    << "\", \"ph\":\"X\", \"pid\":" << processId
-                    << ", \"tid\":" << m_EventsChromeTraced << "." << queueNumber
-                    << ", \"ts\":" << usStarts[state]
-                    << ", \"dur\":" << usDeltas[state]
-                    << ", \"cname\":\"" << colours[state]
-                    << "\", \"args\":{\"id\":" << enqueueCounter
-                    << "}},\n";
+                if( m_Config.ChromePerformanceTimingPerKernel )
+                {
+                    m_InterceptTrace
+                        << "{\"name\":\"" << name << " " << suffixes[state]
+                        << "\", \"ph\":\"X\", \"pid\":" << processId
+                        << ", \"tid\":\"" << name
+                        << "\", \"ts\":" << usStarts[state]
+                        << ", \"dur\":" << usDeltas[state]
+                        << ", \"cname\":\"" << colours[state]
+                        << "\", \"args\":{\"id\":" << enqueueCounter
+                        << "}},\n";
+                }
+                else
+                {
+                    m_InterceptTrace
+                        << "{\"name\":\"" << name << " " << suffixes[state]
+                        << "\", \"ph\":\"X\", \"pid\":" << processId
+                        << ", \"tid\":" << m_EventsChromeTraced << "." << queueNumber
+                        << ", \"ts\":" << usStarts[state]
+                        << ", \"dur\":" << usDeltas[state]
+                        << ", \"cname\":\"" << colours[state]
+                        << "\", \"args\":{\"id\":" << enqueueCounter
+                        << "}},\n";
+                }
             }
             m_EventsChromeTraced++;
         }
@@ -11856,15 +11871,29 @@ void CLIntercept::chromeTraceEvent(
             const uint64_t  usStart =
                 (commandStart - commandQueued + normalizedQueuedTimeNS) / 1000;
             const uint64_t  usDelta = ( commandEnd - commandStart ) / 1000;
+            if( m_Config.ChromePerformanceTimingPerKernel )
+            {
+                m_InterceptTrace
+                    << "{\"ph\":\"X\", \"pid\":" << processId
+                    << ", \"tid\":\"" << name
+                    << "\", \"name\":\"" << name
+                    << "\", \"ts\":" << usStart
+                    << ", \"dur\":" << usDelta
+                    << ", \"args\":{\"id\":" << enqueueCounter
+                    << "}},\n";
+            }
+            else
+            {
+                m_InterceptTrace
+                    << "{\"ph\":\"X\", \"pid\":" << processId
+                    << ", \"tid\":-" << queueNumber
+                    << ", \"name\":\"" << name
+                    << "\", \"ts\":" << usStart
+                    << ", \"dur\":" << usDelta
+                    << ", \"args\":{\"id\":" << enqueueCounter
+                    << "}},\n";
+            }
 
-            m_InterceptTrace
-                << "{\"ph\":\"X\", \"pid\":" << processId
-                << ", \"tid\":-" << queueNumber
-                << ", \"name\":\"" << name
-                << "\", \"ts\":" << usStart
-                << ", \"dur\":" << usDelta
-                << ", \"args\":{\"id\":" << enqueueCounter
-                << "}},\n";
         }
     }
     else
