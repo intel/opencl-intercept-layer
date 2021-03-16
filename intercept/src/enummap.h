@@ -23,7 +23,6 @@
 #pragma once
 
 #include "common.h"
-#include "cli_ext.h"
 
 #include <map>
 #include <string>
@@ -126,6 +125,7 @@ public:
     GENERATE_MAP_AND_FUNC(          name_gl,                         GLenum                          );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_device_usm_capabilities,    cl_device_unified_shared_memory_capabilities_intel );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_mem_alloc_flags,            cl_mem_alloc_flags_intel        );
+    GENERATE_MAP_AND_FUNC(          name_semaphore_type,             cl_semaphore_type_khr           );
 
     #undef GENERATE_MAP_AND_FUNC
     #undef GENERATE_MAP_AND_BITFIELD_FUNC

@@ -413,6 +413,71 @@ typedef struct _cl_device_pci_bus_info_khr {
 #define CL_QUEUE_PRIORITY_LOW_KHR (1<<2)
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_khr_semaphore
+
+// Note: This implements the provisional extension v0.9.0.
+
+typedef struct _cl_semaphore_khr* cl_semaphore_khr;
+typedef cl_properties cl_semaphore_properties_khr;
+typedef cl_uint cl_semaphore_info_khr;
+typedef cl_uint cl_semaphore_type_khr;
+typedef cl_ulong cl_semaphore_payload_khr;
+
+#define CL_SEMAPHORE_TYPE_BINARY_KHR                1
+
+#define CL_PLATFORM_SEMAPHORE_TYPES_KHR                          0x2036
+#define CL_DEVICE_SEMAPHORE_TYPES_KHR                            0x204C
+#define CL_SEMAPHORE_CONTEXT_KHR                                 0x2039
+#define CL_SEMAPHORE_REFERENCE_COUNT_KHR                         0x203A
+#define CL_SEMAPHORE_PROPERTIES_KHR                              0x203B
+#define CL_SEMAPHORE_PAYLOAD_KHR                                 0x203C
+#define CL_SEMAPHORE_TYPE_KHR                                    0x203D
+
+#define CL_DEVICE_HANDLE_LIST_KHR                                0x2051
+#define CL_DEVICE_HANDLE_LIST_END_KHR                            0
+
+#define CL_COMMAND_SEMAPHORE_WAIT_KHR                            0x2042
+#define CL_COMMAND_SEMAPHORE_SIGNAL_KHR                          0x2043
+
+#define CL_INVALID_SEMAPHORE_KHR                                 -1142
+
+cl_semaphore_khr clCreateSemaphoreWithPropertiesKHR(
+    cl_context context,
+    const cl_semaphore_properties_khr* sema_props,
+    cl_int* errcode_ret);
+
+cl_int clEnqueueWaitSemaphoresKHR(
+    cl_command_queue command_queue,
+    cl_uint num_sema_objects,
+    const cl_semaphore_khr* sema_objects,
+    const cl_semaphore_payload_khr* sema_payload_list,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event);
+
+cl_int clEnqueueSignalSemaphoresKHR(
+    cl_command_queue command_queue,
+    cl_uint num_sema_objects,
+    const cl_semaphore_khr* sema_objects,
+    const cl_semaphore_payload_khr* sema_payload_list,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event);
+
+cl_int clGetSemaphoreInfoKHR(
+    cl_semaphore_khr semaphore,
+    cl_semaphore_info_khr param_name,
+    size_t param_value_size,
+    void* param_value,
+    size_t* param_value_size_ret);
+
+cl_int clRetainSemaphoreKHR(
+    cl_semaphore_khr semaphore);
+
+cl_int clReleaseSemaphoreKHR(
+    cl_semaphore_khr semaphore);
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_khr_spir
 
 #define CL_DEVICE_SPIR_VERSIONS                     0x40E0

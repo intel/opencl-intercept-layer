@@ -114,3 +114,39 @@ cl_int CL_API_CALL clEnqueueMemAdviseINTEL_EMU(
     cl_uint num_events_in_wait_list,
     const cl_event* event_wait_list,
     cl_event* event);
+
+cl_semaphore_khr CL_API_CALL clCreateSemaphoreWithPropertiesKHR_EMU(
+    cl_context context,
+    const cl_semaphore_properties_khr *sema_props,
+    cl_int *errcode_ret);
+
+cl_int CL_API_CALL clEnqueueWaitSemaphoresKHR_EMU(
+    cl_command_queue command_queue,
+    cl_uint num_sema_objects,
+    const cl_semaphore_khr *sema_objects,
+    const cl_semaphore_payload_khr *sema_payload_list,
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event);
+
+cl_int CL_API_CALL clEnqueueSignalSemaphoresKHR_EMU(
+    cl_command_queue command_queue,
+    cl_uint num_sema_objects,
+    const cl_semaphore_khr *sema_objects,
+    const cl_semaphore_payload_khr *sema_payload_list,
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event);
+
+cl_int CL_API_CALL clGetSemaphoreInfoKHR_EMU(
+    cl_semaphore_khr semaphore,
+    cl_semaphore_info_khr param_name,
+    size_t param_value_size,
+    void *param_value,
+    size_t *param_value_size_ret);
+
+cl_int CL_API_CALL clRetainSemaphoreKHR_EMU(
+    cl_semaphore_khr semaphore);
+
+cl_int CL_API_CALL clReleaseSemaphoreKHR_EMU(
+    cl_semaphore_khr semaphore);

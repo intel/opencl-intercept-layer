@@ -45,6 +45,8 @@
 #include "CL/cl.h"
 #include "CL/cl_gl.h"
 
+#include "cli_ext.h"
+
 #if defined(_WIN32)
     #define CLI_DEBUG_BREAK()   __debugbreak();
 #elif defined(__linux__) || defined(__APPLE__)
