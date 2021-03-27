@@ -4675,7 +4675,75 @@ void CLIntercept::modifyCommandQueueProperties(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::createCommandQueueOverrideInit(
+void CLIntercept::createCommandQueueProperties(
+    cl_device_id device,
+    cl_command_queue_properties props,
+    cl_queue_properties*& pLocalQueueProperties ) const
+{
+    bool    addCommandQueuePropertiesEnum = true;
+    bool    addPriorityHintEnum =
+                config().DefaultQueuePriorityHint != 0 &&
+                checkDeviceForExtension( device, "cl_khr_priority_hints" );
+    bool    addThrottleHintEnum =
+                config().DefaultQueueThrottleHint != 0 &&
+                checkDeviceForExtension( device, "cl_khr_throttle_hints" );
+
+    int numProperties = 0;
+    if( addCommandQueuePropertiesEnum )
+    {
+        numProperties += 2;
+    }
+    if( addThrottleHintEnum )
+    {
+        numProperties += 2;
+    }
+    if( addThrottleHintEnum )
+    {
+        numProperties += 2;
+    }
+
+    // Allocate a new array of properties.  We need to allocate two
+    // properties for each pair, plus one property for the terminating
+    // zero.
+    pLocalQueueProperties = new cl_queue_properties[ numProperties + 1 ];
+    if( pLocalQueueProperties )
+    {
+        numProperties = 0;
+
+        if( addPriorityHintEnum )
+        {
+            CLI_ASSERT( config().DefaultQueuePriorityHint != 0 );
+            pLocalQueueProperties[ numProperties] = CL_QUEUE_PRIORITY_KHR;
+            pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueuePriorityHint;
+            numProperties += 2;
+        }
+        if( config().DefaultQueueThrottleHint != 0 )
+        {
+            CLI_ASSERT( config().DefaultQueueThrottleHint != 0 );
+            pLocalQueueProperties[ numProperties] = CL_QUEUE_THROTTLE_KHR;
+            pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueueThrottleHint;
+            numProperties += 2;
+        }
+
+        // This setting is added last in the list, in order to better behave with runtimes
+        // truncating it when a property has a value of 0, which may be the case below.
+        if( addCommandQueuePropertiesEnum )
+        {
+            modifyCommandQueueProperties(props);
+
+            pLocalQueueProperties[numProperties] = CL_QUEUE_PROPERTIES;
+            pLocalQueueProperties[numProperties + 1] = props;
+            numProperties += 2;
+        }
+
+        // Add the terminating zero.
+        pLocalQueueProperties[ numProperties ] = 0;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::createCommandQueuePropertiesOverride(
     cl_device_id device,
     const cl_queue_properties* properties,
     cl_queue_properties*& pLocalQueueProperties ) const
@@ -4775,96 +4843,18 @@ void CLIntercept::createCommandQueueOverrideInit(
             pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueueThrottleHint;
             numProperties += 2;
         }
-        // this setting is added last in the list, in order to better behave with runtimes
+
+        // This setting is added last in the list, in order to better behave with runtimes
         // truncating it when a property has a value of 0, which may be the case below.
         if( addCommandQueuePropertiesEnum )
         {
-          cl_command_queue_properties props = 0;
+            cl_command_queue_properties props = 0;
 
-          modifyCommandQueueProperties(props);
+            modifyCommandQueueProperties(props);
 
-          pLocalQueueProperties[numProperties] = CL_QUEUE_PROPERTIES;
-          pLocalQueueProperties[numProperties + 1] = props;
-          numProperties += 2;
-        }
-        // Add the terminating zero.
-        pLocalQueueProperties[ numProperties ] = 0;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::createCommandQueueOverrideCleanup(
-    cl_queue_properties*& pLocalQueueProperties ) const
-{
-    if( pLocalQueueProperties )
-    {
-        delete pLocalQueueProperties;
-        pLocalQueueProperties = NULL;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::createCommandQueuePropertiesInit(
-    cl_device_id device,
-    cl_command_queue_properties props,
-    cl_queue_properties*& pLocalQueueProperties ) const
-{
-    bool    addCommandQueuePropertiesEnum = true;
-    bool    addPriorityHintEnum =
-                config().DefaultQueuePriorityHint != 0 &&
-                checkDeviceForExtension( device, "cl_khr_priority_hints" );
-    bool    addThrottleHintEnum =
-                config().DefaultQueueThrottleHint != 0 &&
-                checkDeviceForExtension( device, "cl_khr_throttle_hints" );
-
-    int numProperties = 0;
-    if( addCommandQueuePropertiesEnum )
-    {
-        numProperties += 2;
-    }
-    if( addThrottleHintEnum )
-    {
-        numProperties += 2;
-    }
-    if( addThrottleHintEnum )
-    {
-        numProperties += 2;
-    }
-
-    // Allocate a new array of properties.  We need to allocate two
-    // properties for each pair, plus one property for the terminating
-    // zero.
-    pLocalQueueProperties = new cl_queue_properties[ numProperties + 1 ];
-    if( pLocalQueueProperties )
-    {
-        numProperties = 0;
-
-        if( addPriorityHintEnum )
-        {
-            CLI_ASSERT( config().DefaultQueuePriorityHint != 0 );
-            pLocalQueueProperties[ numProperties] = CL_QUEUE_PRIORITY_KHR;
-            pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueuePriorityHint;
+            pLocalQueueProperties[numProperties] = CL_QUEUE_PROPERTIES;
+            pLocalQueueProperties[numProperties + 1] = props;
             numProperties += 2;
-        }
-        if( config().DefaultQueueThrottleHint != 0 )
-        {
-            CLI_ASSERT( config().DefaultQueueThrottleHint != 0 );
-            pLocalQueueProperties[ numProperties] = CL_QUEUE_THROTTLE_KHR;
-            pLocalQueueProperties[ numProperties + 1 ] = config().DefaultQueueThrottleHint;
-            numProperties += 2;
-        }
-
-        // this setting is added last in the list, in order to better behave with runtimes
-        // truncating it when a property has a value of 0, which may be the case below.
-        if( addCommandQueuePropertiesEnum )
-        {
-          modifyCommandQueueProperties(props);
-
-          pLocalQueueProperties[numProperties] = CL_QUEUE_PROPERTIES;
-          pLocalQueueProperties[numProperties + 1] = props;
-          numProperties += 2;
         }
 
         // Add the terminating zero.
@@ -4879,7 +4869,7 @@ void CLIntercept::createCommandQueuePropertiesCleanup(
 {
     if( pLocalQueueProperties )
     {
-        delete pLocalQueueProperties;
+        delete [] pLocalQueueProperties;
         pLocalQueueProperties = NULL;
     }
 }
@@ -6699,6 +6689,104 @@ void CLIntercept::checkKernelArgUSMPointer(
                 kernel,
                 arg );
         }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::usmAllocPropertiesOverride(
+    const cl_mem_properties_intel* properties,
+    cl_mem_properties_intel*& pLocalAllocProperties ) const
+{
+#define CL_MEM_FLAGS_INTEL 0x10001
+#define CL_MEM_ALLOW_UNRESTRICTED_SIZE_INTEL (1 << 23)
+
+    bool    addMemFlagsINTELEnum = config().RelaxAllocationLimits != 0;
+
+    int     numProperties = 0;
+    if( properties )
+    {
+        while( properties[ numProperties ] != 0 )
+        {
+            switch( properties[ numProperties ] )
+            {
+            case CL_MEM_FLAGS_INTEL:
+                addMemFlagsINTELEnum = false;
+                break;
+            default:
+                break;
+            }
+            numProperties += 2;
+        }
+    }
+
+    if( addMemFlagsINTELEnum )
+    {
+        numProperties += 2;
+    }
+
+    // Allocate a new array of properties.  We need to allocate two
+    // properties for each pair, plus one property for the terminating
+    // zero.
+    pLocalAllocProperties = new cl_queue_properties[ numProperties + 1 ];
+    if( pLocalAllocProperties )
+    {
+        // Copy the old properties array to the new properties array,
+        // if the new properties array exists.
+        numProperties = 0;
+        if( properties )
+        {
+            while( properties[ numProperties ] != 0 )
+            {
+                pLocalAllocProperties[ numProperties ] = properties[ numProperties ];
+                if( properties[ numProperties ] == CL_MEM_FLAGS_INTEL )
+                {
+                    CLI_ASSERT( addMemFlagsINTELEnum == false );
+
+                    cl_mem_properties_intel flags = properties[ numProperties + 1 ];
+                    if( config().RelaxAllocationLimits )
+                    {
+                        flags |= CL_MEM_ALLOW_UNRESTRICTED_SIZE_INTEL;
+                    }
+
+                    pLocalAllocProperties[ numProperties + 1 ] = flags;
+                }
+                else
+                {
+                    pLocalAllocProperties[ numProperties + 1 ] =
+                        properties[ numProperties + 1 ];
+                }
+                numProperties += 2;
+            }
+        }
+        if( addMemFlagsINTELEnum )
+        {
+            pLocalAllocProperties[ numProperties] = CL_MEM_FLAGS_INTEL;
+
+            cl_mem_properties_intel flags = 0;
+            if( config().RelaxAllocationLimits )
+            {
+                flags |= CL_MEM_ALLOW_UNRESTRICTED_SIZE_INTEL;
+            }
+
+            pLocalAllocProperties[ numProperties + 1 ] = flags;
+            numProperties += 2;
+        }
+
+        // Add the terminating zero.
+        pLocalAllocProperties[ numProperties ] = 0;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::usmAllocPropertiesCleanup(
+    cl_mem_properties_intel*& pLocalAllocProperties ) const
+{
+    if( pLocalAllocProperties )
+    {
+        delete [] pLocalAllocProperties;
+        pLocalAllocProperties = NULL;
     }
 }
 

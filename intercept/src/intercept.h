@@ -355,15 +355,13 @@ public:
 
     void    modifyCommandQueueProperties(
                 cl_command_queue_properties& props ) const;
-    void    createCommandQueueOverrideInit(
-                cl_device_id device,
-                const cl_queue_properties* properties,
-                cl_queue_properties*& pLocalQueueProperties ) const;
-    void    createCommandQueueOverrideCleanup(
-                cl_queue_properties*& pLocalQueueProperties ) const;
-    void    createCommandQueuePropertiesInit(
+    void    createCommandQueueProperties(
                 cl_device_id device,
                 cl_command_queue_properties props,
+                cl_queue_properties*& pLocalQueueProperties ) const;
+    void    createCommandQueuePropertiesOverride(
+                cl_device_id device,
+                const cl_queue_properties* properties,
                 cl_queue_properties*& pLocalQueueProperties ) const;
     void    createCommandQueuePropertiesCleanup(
                 cl_queue_properties*& pLocalQueueProperties ) const;
@@ -475,6 +473,12 @@ public:
     void    checkKernelArgUSMPointer(
                 cl_kernel kernel,
                 const void* arg );
+
+    void    usmAllocPropertiesOverride(
+                const cl_mem_properties_intel* properties,
+                cl_mem_properties_intel*& pLocalAllocProperties ) const;
+    void    usmAllocPropertiesCleanup(
+                cl_mem_properties_intel*& pLocalAllocProperties ) const;
 
     void    startAubCapture(
                 const std::string& functionName,
@@ -2308,6 +2312,16 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
            ( enqueueCounter <= m_Config.DevicePerformanceTimingMaxEnqueue );
 }
 
+#define CREATE_COMMAND_QUEUE_PROPERTIES( _device, _props, _newprops )       \
+    if( pIntercept->config().DefaultQueuePriorityHint ||                    \
+        pIntercept->config().DefaultQueueThrottleHint )                     \
+    {                                                                       \
+        pIntercept->createCommandQueueProperties(                           \
+            _device,                                                        \
+            _props,                                                         \
+            _newprops );                                                    \
+    }
+
 #define CREATE_COMMAND_QUEUE_OVERRIDE_INIT( _device, _props, _newprops )    \
     if( pIntercept->config().DevicePerformanceTiming ||                     \
         pIntercept->config().ITTPerformanceTiming ||                        \
@@ -2318,39 +2332,14 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         pIntercept->config().DefaultQueuePriorityHint ||                    \
         pIntercept->config().DefaultQueueThrottleHint )                     \
     {                                                                       \
-        pIntercept->createCommandQueueOverrideInit(                         \
+        pIntercept->createCommandQueuePropertiesOverride(                   \
             _device,                                                        \
             _props,                                                         \
             _newprops );                                                    \
     }
 
-#define CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( _newprops )                  \
-    if( pIntercept->config().DevicePerformanceTiming ||                     \
-        pIntercept->config().ITTPerformanceTiming ||                        \
-        pIntercept->config().ChromePerformanceTiming ||                     \
-        pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
-        pIntercept->config().InOrderQueue ||                                \
-        pIntercept->config().NoProfilingQueue ||                            \
-        pIntercept->config().DefaultQueuePriorityHint ||                    \
-        pIntercept->config().DefaultQueueThrottleHint )                     \
-    {                                                                       \
-        pIntercept->createCommandQueueOverrideCleanup(                      \
-            _newprops );                                                    \
-    }
-
-#define CREATE_COMMAND_QUEUE_PROPERTIES_INIT( _device, _props, _newprops )  \
-    if( pIntercept->config().DefaultQueuePriorityHint ||                    \
-        pIntercept->config().DefaultQueueThrottleHint )                     \
-    {                                                                       \
-        pIntercept->createCommandQueuePropertiesInit(                       \
-            _device,                                                        \
-            _props,                                                         \
-            _newprops );                                                    \
-    }
-
-#define CREATE_COMMAND_QUEUE_PROPERTIES_CLEANUP( _newprops )                \
-    if( pIntercept->config().DefaultQueuePriorityHint ||                    \
-        pIntercept->config().DefaultQueueThrottleHint )                     \
+#define COMMAND_QUEUE_PROPERTIES_CLEANUP( _newprops )                       \
+    if( _newprops )                                                         \
     {                                                                       \
         pIntercept->createCommandQueuePropertiesCleanup(                    \
             _newprops );                                                    \
@@ -2477,6 +2466,23 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         pIntercept->checkKernelArgUSMPointer(                               \
             _kernel,                                                        \
             _arg );                                                         \
+    }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+#define USM_ALLOC_OVERRIDE_INIT( _props, _newprops )                        \
+    if( pIntercept->config().RelaxAllocationLimits )                        \
+    {                                                                       \
+        pIntercept->usmAllocPropertiesOverride(                             \
+            _props,                                                         \
+            _newprops );                                                    \
+    }
+
+#define USM_ALLOC_PROPERTIES_CLEANUP( _newprops )                           \
+    if( pIntercept->config().RelaxAllocationLimits )                        \
+    {                                                                       \
+        pIntercept->usmAllocPropertiesCleanup(                              \
+            _newprops );                                                    \
     }
 
 ///////////////////////////////////////////////////////////////////////////////

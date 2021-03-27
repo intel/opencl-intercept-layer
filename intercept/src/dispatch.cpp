@@ -692,9 +692,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
             deviceInfo.c_str(),
             pIntercept->enumName().name_command_queue_properties( properties ).c_str(),
             properties );
-        CREATE_COMMAND_QUEUE_PROPERTIES_INIT( device, properties, newProperties );
-
         pIntercept->modifyCommandQueueProperties( properties );
+        CREATE_COMMAND_QUEUE_PROPERTIES( device, properties, newProperties );
 
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
@@ -739,7 +738,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
         }
 
         CPU_PERFORMANCE_TIMING_END();
-        CREATE_COMMAND_QUEUE_PROPERTIES_CLEANUP( newProperties );
+        COMMAND_QUEUE_PROPERTIES_CLEANUP( newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ITT_REGISTER_COMMAND_QUEUE( retVal, false );
         ADD_OBJECT_ALLOCATION( retVal );
@@ -6225,7 +6224,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
         }
 
         CPU_PERFORMANCE_TIMING_END();
-        CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( newProperties );
+        COMMAND_QUEUE_PROPERTIES_CLEANUP( newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
@@ -6319,7 +6318,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
             }
 
             CPU_PERFORMANCE_TIMING_END();
-            CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( newProperties );
+            COMMAND_QUEUE_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( retVal );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
@@ -8389,23 +8388,41 @@ CL_API_ENTRY void* CL_API_CALL clHostMemAllocINTEL(
         if( dispatchX.clHostMemAllocINTEL )
         {
             GET_ENQUEUE_COUNTER();
+
+            cl_mem_properties_intel*    newProperties = NULL;
+            void*   retVal = NULL;
+
             // TODO: Make properties string.
             CALL_LOGGING_ENTER( "context = %p, properties = %p, size = %zu, alignment = %u",
                 context,
                 properties,
                 size,
                 alignment );
+            USM_ALLOC_OVERRIDE_INIT( properties, newProperties );
             CHECK_ERROR_INIT( errcode_ret );
             CPU_PERFORMANCE_TIMING_START();
 
-            void*   retVal = dispatchX.clHostMemAllocINTEL(
-                context,
-                properties,
-                size,
-                alignment,
-                errcode_ret );
+            if( ( retVal == NULL ) && newProperties )
+            {
+                retVal = dispatchX.clHostMemAllocINTEL(
+                    context,
+                    newProperties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
+            if( retVal == NULL )
+            {
+                retVal = dispatchX.clHostMemAllocINTEL(
+                    context,
+                    properties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
 
             CPU_PERFORMANCE_TIMING_END();
+            USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
@@ -8436,6 +8453,9 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
         {
             GET_ENQUEUE_COUNTER();
 
+            cl_mem_properties_intel*    newProperties = NULL;
+            void*   retVal = NULL;
+
             std::string deviceInfo;
             if( pIntercept->config().CallLogging )
             {
@@ -8451,18 +8471,33 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
                 properties,
                 size,
                 alignment );
+            USM_ALLOC_OVERRIDE_INIT( properties, newProperties );
             CHECK_ERROR_INIT( errcode_ret );
             CPU_PERFORMANCE_TIMING_START();
 
-            void*   retVal = dispatchX.clDeviceMemAllocINTEL(
-                context,
-                device,
-                properties,
-                size,
-                alignment,
-                errcode_ret );
+            if( ( retVal == NULL ) && newProperties )
+            {
+                retVal = dispatchX.clDeviceMemAllocINTEL(
+                    context,
+                    device,
+                    newProperties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
+            if( retVal == NULL )
+            {
+                retVal = dispatchX.clDeviceMemAllocINTEL(
+                    context,
+                    device,
+                    properties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
 
             CPU_PERFORMANCE_TIMING_END();
+            USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
@@ -8493,6 +8528,9 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
         {
             GET_ENQUEUE_COUNTER();
 
+            cl_mem_properties_intel*    newProperties = NULL;
+            void*   retVal = NULL;
+
             std::string deviceInfo;
             if( pIntercept->config().CallLogging )
             {
@@ -8508,18 +8546,33 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
                 properties,
                 size,
                 alignment );
+            USM_ALLOC_OVERRIDE_INIT( properties, newProperties );
             CHECK_ERROR_INIT( errcode_ret );
             CPU_PERFORMANCE_TIMING_START();
 
-            void*   retVal = dispatchX.clSharedMemAllocINTEL(
-                context,
-                device,
-                properties,
-                size,
-                alignment,
-                errcode_ret );
+            if( ( retVal == NULL ) && newProperties )
+            {
+                retVal = dispatchX.clSharedMemAllocINTEL(
+                    context,
+                    device,
+                    newProperties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
+            if( retVal == NULL )
+            {
+                retVal = dispatchX.clSharedMemAllocINTEL(
+                    context,
+                    device,
+                    properties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
 
             CPU_PERFORMANCE_TIMING_END();
+            USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
