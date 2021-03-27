@@ -3699,7 +3699,6 @@ bool CLIntercept::injectProgramSPIRV(
 //
 bool CLIntercept::injectProgramOptions(
     const cl_program program,
-    const char*& options,
     char*& newOptions )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
@@ -3843,8 +3842,6 @@ bool CLIntercept::injectProgramOptions(
                     }
                 }
 
-                options = newOptions;
-
                 injected = true;
             }
 
@@ -3858,62 +3855,36 @@ bool CLIntercept::injectProgramOptions(
 ///////////////////////////////////////////////////////////////////////////////
 //
 bool CLIntercept::appendBuildOptions(
-    const char*& options,
-    char*& newOptions )
+    const char* append,
+    const char* options,
+    char*& newOptions ) const
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
     bool    modified = false;
 
-    if( options == NULL )
-    {
-        // If the options string does not exist, we can simply point it at the
-        // options we'd like to "append" to it.  We don't need to allocate any
-        // new memory in this case.  We also expect that we haven't allocated
-        // any new options in this case, because if we did, we would have
-        // pointed the options string to the new options.
+    size_t  newSize = strlen(append) + 1;    // for the null terminator
 
-        CLI_ASSERT( newOptions == NULL );
-        options = config().AppendBuildOptions.c_str();
+    const char* oldOptions = newOptions ? newOptions : options;
+    if( oldOptions )
+    {
+        newSize += strlen(oldOptions) + 1;  // for a space
+    }
+
+    char* newNewOptions = new char[ newSize ];
+    if( newNewOptions )
+    {
+        memset( newNewOptions, 0, newSize );
+
+        if( oldOptions )
+        {
+            CLI_STRCAT( newNewOptions, newSize, oldOptions );
+            CLI_STRCAT( newNewOptions, newSize, " " );
+        }
+        CLI_STRCAT( newNewOptions, newSize, append );
+
+        delete [] newOptions;
+        newOptions = newNewOptions;
 
         modified = true;
-    }
-    else
-    {
-        // If the options string does exist, we have two possibilities:
-        // Either we've already modified the options so we've already
-        // allocated new options, or we're still working on the application
-        // provided options.
-
-        size_t  newSize =
-            strlen(options)
-            + 1     // for a space
-            + config().AppendBuildOptions.length()
-            + 1;    // for the null terminator
-
-        char* newNewOptions = new char[ newSize ];
-        if( newNewOptions )
-        {
-            memset( newNewOptions, 0, newSize );
-
-            CLI_STRCAT( newNewOptions, newSize, options );
-            CLI_STRCAT( newNewOptions, newSize, " " );
-            CLI_STRCAT( newNewOptions, newSize, config().AppendBuildOptions.c_str() );
-
-            // If we have already allocated new options, we can free them
-            // now.
-            if( newOptions )
-            {
-                delete [] newOptions;
-                newOptions = NULL;
-            }
-
-            // Either way, the new new options are now the new options.
-            newOptions = newNewOptions;
-            options = newOptions;
-
-            modified = true;
-        }
     }
 
     return modified;
@@ -4859,18 +4830,6 @@ void CLIntercept::createCommandQueuePropertiesOverride(
 
         // Add the terminating zero.
         pLocalQueueProperties[ numProperties ] = 0;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::createCommandQueuePropertiesCleanup(
-    cl_queue_properties*& pLocalQueueProperties ) const
-{
-    if( pLocalQueueProperties )
-    {
-        delete [] pLocalQueueProperties;
-        pLocalQueueProperties = NULL;
     }
 }
 
@@ -6775,18 +6734,6 @@ void CLIntercept::usmAllocPropertiesOverride(
 
         // Add the terminating zero.
         pLocalAllocProperties[ numProperties ] = 0;
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::usmAllocPropertiesCleanup(
-    cl_mem_properties_intel*& pLocalAllocProperties ) const
-{
-    if( pLocalAllocProperties )
-    {
-        delete [] pLocalAllocProperties;
-        pLocalAllocProperties = NULL;
     }
 }
 

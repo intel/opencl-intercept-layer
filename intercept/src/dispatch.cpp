@@ -2071,20 +2071,43 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
         char*   newOptions = NULL;
 
         SAVE_PROGRAM_OPTIONS_HASH( program, options );
-        MODIFY_PROGRAM_OPTIONS( program, options, newOptions );
+        PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions );
         DUMP_PROGRAM_OPTIONS( program, options );
 
         CALL_LOGGING_ENTER( "program = %p, pfn_notify = %p", program, pfn_notify );
         BUILD_LOGGING_INIT();
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_int  retVal = pIntercept->dispatch().clBuildProgram(
-            program,
-            num_devices,
-            device_list,
-            options,
-            pfn_notify,
-            user_data );
+        cl_int  retVal = CL_INVALID_OPERATION;
+        
+        if( newOptions != NULL )
+        {
+            pIntercept->callLoggingInfo("Trying to build a program with options: %s", newOptions);
+            retVal = pIntercept->dispatch().clBuildProgram(
+                program,
+                num_devices,
+                device_list,
+                newOptions,
+                pfn_notify,
+                user_data );
+            if( retVal != CL_SUCCESS )
+            {
+                pIntercept->callLoggingInfo("clBuildProgram with modified options failed!");
+                if( options == NULL ) { options = ""; }
+            }
+        }
+
+        if( retVal != CL_SUCCESS )
+        {
+            pIntercept->callLoggingInfo("Trying to build a program with old options: %s", options);
+            retVal = pIntercept->dispatch().clBuildProgram(
+                program,
+                num_devices,
+                device_list,
+                options,
+                pfn_notify,
+                user_data );
+        }
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
@@ -2095,7 +2118,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
         DUMP_KERNEL_ISA_BINARIES( program );
         AUTO_CREATE_SPIRV( program, options );
         INCREMENT_PROGRAM_COMPILE_COUNT( program );
-        DELETE_MODIFIED_OPTIONS( newOptions );
+        PROGRAM_OPTIONS_CLEANUP( newOptions );
 
         return retVal;
     }
@@ -2126,6 +2149,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
         const bool  modified = false;
 
         DUMP_PROGRAM_OPTIONS( program, options );
+        // TODO: Append options?
 
         CALL_LOGGING_ENTER( "program = %p, pfn_notify = %p", program, pfn_notify );
         BUILD_LOGGING_INIT();
@@ -2176,6 +2200,8 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         GET_ENQUEUE_COUNTER();
 
         const bool  modified = false;
+
+        // TODO: Append options?
 
         CALL_LOGGING_ENTER( "context = %p, num_input_programs = %u, pfn_notify = %p",
             context,

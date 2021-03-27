@@ -293,11 +293,11 @@ public:
                 char*& injectedIL );
     bool    injectProgramOptions(
                 const cl_program program,
-                const char*& options,
                 char*& newOptions );
     bool    appendBuildOptions(
-                const char*& options,
-                char*& newOptions );
+                const char* append,
+                const char* options,
+                char*& newOptions ) const;
     void    dumpProgramSourceScript(
                 const cl_program program,
                 const char* singleString );
@@ -362,8 +362,6 @@ public:
     void    createCommandQueuePropertiesOverride(
                 cl_device_id device,
                 const cl_queue_properties* properties,
-                cl_queue_properties*& pLocalQueueProperties ) const;
-    void    createCommandQueuePropertiesCleanup(
                 cl_queue_properties*& pLocalQueueProperties ) const;
     bool    checkHostPerformanceTimingEnqueueLimits(
                 uint64_t enqueueCounter ) const;
@@ -476,8 +474,6 @@ public:
 
     void    usmAllocPropertiesOverride(
                 const cl_mem_properties_intel* properties,
-                cl_mem_properties_intel*& pLocalAllocProperties ) const;
-    void    usmAllocPropertiesCleanup(
                 cl_mem_properties_intel*& pLocalAllocProperties ) const;
 
     void    startAubCapture(
@@ -2141,18 +2137,25 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 
 // Called from clBuildProgram:
 
-#define MODIFY_PROGRAM_OPTIONS( program, options, newOptions )              \
+#define PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions )       \
     bool    modified = false;                                               \
     if( pIntercept->config().InjectProgramSource )                          \
     {                                                                       \
         modified |= pIntercept->injectProgramOptions(                       \
             program,                                                        \
-            options,                                                        \
             newOptions );                                                   \
     }                                                                       \
     if( !pIntercept->config().AppendBuildOptions.empty() )                  \
     {                                                                       \
         modified |= pIntercept->appendBuildOptions(                         \
+            pIntercept->config().AppendBuildOptions.c_str(),                \
+            options,                                                        \
+            newOptions );                                                   \
+    }                                                                       \
+    if( pIntercept->config().RelaxAllocationLimits )                        \
+    {                                                                       \
+        modified |= pIntercept->appendBuildOptions(                         \
+            "-cl-intel-greater-than-4GB-buffer-required",                   \
             options,                                                        \
             newOptions );                                                   \
     }
@@ -2208,7 +2211,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
         pIntercept->incrementProgramCompileCount( _program );               \
     }
 
-#define DELETE_MODIFIED_OPTIONS( newOptions )                               \
+#define PROGRAM_OPTIONS_CLEANUP( newOptions )                               \
     delete [] newOptions;                                                   \
     newOptions = NULL;
 
@@ -2339,11 +2342,8 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     }
 
 #define COMMAND_QUEUE_PROPERTIES_CLEANUP( _newprops )                       \
-    if( _newprops )                                                         \
-    {                                                                       \
-        pIntercept->createCommandQueuePropertiesCleanup(                    \
-            _newprops );                                                    \
-    }
+    delete [] _newprops;                                                    \
+    _newprops = NULL;
 
 #define DEVICE_PERFORMANCE_TIMING_START( pEvent )                           \
     CLIntercept::clock::time_point   queuedTime;                            \
@@ -2479,11 +2479,8 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     }
 
 #define USM_ALLOC_PROPERTIES_CLEANUP( _newprops )                           \
-    if( pIntercept->config().RelaxAllocationLimits )                        \
-    {                                                                       \
-        pIntercept->usmAllocPropertiesCleanup(                              \
-            _newprops );                                                    \
-    }
+    delete [] _newprops;                                                    \
+    _newprops = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
