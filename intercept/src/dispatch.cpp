@@ -2079,10 +2079,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
         CPU_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = CL_INVALID_OPERATION;
-        
+
         if( newOptions != NULL )
         {
-            pIntercept->callLoggingInfo("Trying to build a program with options: %s", newOptions);
             retVal = pIntercept->dispatch().clBuildProgram(
                 program,
                 num_devices,
@@ -2090,16 +2089,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
                 newOptions,
                 pfn_notify,
                 user_data );
-            if( retVal != CL_SUCCESS )
-            {
-                pIntercept->callLoggingInfo("clBuildProgram with modified options failed!");
-                if( options == NULL ) { options = ""; }
-            }
         }
 
         if( retVal != CL_SUCCESS )
         {
-            pIntercept->callLoggingInfo("Trying to build a program with old options: %s", options);
             retVal = pIntercept->dispatch().clBuildProgram(
                 program,
                 num_devices,
@@ -2146,25 +2139,45 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
     {
         GET_ENQUEUE_COUNTER();
 
-        const bool  modified = false;
+        char*   newOptions = NULL;
 
+        SAVE_PROGRAM_OPTIONS_HASH( program, options );
+        PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions );
         DUMP_PROGRAM_OPTIONS( program, options );
-        // TODO: Append options?
 
         CALL_LOGGING_ENTER( "program = %p, pfn_notify = %p", program, pfn_notify );
         BUILD_LOGGING_INIT();
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_int  retVal = pIntercept->dispatch().clCompileProgram(
-            program,
-            num_devices,
-            device_list,
-            options,
-            num_input_headers,
-            input_headers,
-            header_include_names,
-            pfn_notify,
-            user_data );
+        cl_int  retVal = CL_INVALID_OPERATION;
+
+        if( newOptions != NULL )
+        {
+            retVal = pIntercept->dispatch().clCompileProgram(
+                program,
+                num_devices,
+                device_list,
+                newOptions,
+                num_input_headers,
+                input_headers,
+                header_include_names,
+                pfn_notify,
+                user_data );
+        }
+
+        if( retVal != CL_SUCCESS )
+        {
+            retVal = pIntercept->dispatch().clCompileProgram(
+                program,
+                num_devices,
+                device_list,
+                options,
+                num_input_headers,
+                input_headers,
+                header_include_names,
+                pfn_notify,
+                user_data );
+        }
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
@@ -2172,6 +2185,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
         CALL_LOGGING_EXIT( retVal );
 
         INCREMENT_PROGRAM_COMPILE_COUNT( program );
+        PROGRAM_OPTIONS_CLEANUP( newOptions );
 
         return retVal;
     }
@@ -2199,9 +2213,10 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
     {
         GET_ENQUEUE_COUNTER();
 
-        const bool  modified = false;
+        char*   newOptions = NULL;
+        cl_program  retVal = NULL;
 
-        // TODO: Append options?
+        PROGRAM_LINK_OPTIONS_OVERRIDE_INIT( num_devices, device_list, options, newOptions );
 
         CALL_LOGGING_ENTER( "context = %p, num_input_programs = %u, pfn_notify = %p",
             context,
@@ -2211,16 +2226,32 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         BUILD_LOGGING_INIT();
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_program  retVal = pIntercept->dispatch().clLinkProgram(
-            context,
-            num_devices,
-            device_list,
-            options,
-            num_input_programs,
-            input_programs,
-            pfn_notify,
-            user_data,
-            errcode_ret );
+        if( ( retVal == NULL ) && newOptions )
+        {
+            retVal = pIntercept->dispatch().clLinkProgram(
+                context,
+                num_devices,
+                device_list,
+                newOptions,
+                num_input_programs,
+                input_programs,
+                pfn_notify,
+                user_data,
+                errcode_ret );
+        }
+        if( retVal == NULL )
+        {
+            retVal = pIntercept->dispatch().clLinkProgram(
+                context,
+                num_devices,
+                device_list,
+                options,
+                num_input_programs,
+                input_programs,
+                pfn_notify,
+                user_data,
+                errcode_ret );
+        }
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
@@ -2236,6 +2267,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         DUMP_OUTPUT_PROGRAM_BINARIES( retVal );
         DUMP_KERNEL_ISA_BINARIES( retVal );
         INCREMENT_PROGRAM_COMPILE_COUNT( retVal );
+        PROGRAM_OPTIONS_CLEANUP( newOptions );
 
         return retVal;
     }

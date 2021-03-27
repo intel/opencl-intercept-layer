@@ -6653,6 +6653,77 @@ void CLIntercept::checkKernelArgUSMPointer(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+bool CLIntercept::checkRelaxAllocationLimitsSupport(
+    cl_program program ) const
+{
+    cl_int  errorCode = CL_SUCCESS;
+    bool    supported = true;
+
+    cl_uint         numDevices = 0;
+    cl_device_id*   deviceList = NULL;
+    if( errorCode == CL_SUCCESS )
+    {
+        errorCode = allocateAndGetProgramDeviceList(
+            program,
+            numDevices,
+            deviceList );
+    }
+
+    if( errorCode == CL_SUCCESS )
+    {
+        supported = checkRelaxAllocationLimitsSupport(
+            numDevices,
+            deviceList );
+    }
+
+    delete [] deviceList;
+
+    return ( errorCode == CL_SUCCESS ) && supported;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+bool CLIntercept::checkRelaxAllocationLimitsSupport(
+    cl_uint numDevices,
+    const cl_device_id* deviceList ) const
+{
+    cl_int  errorCode = CL_SUCCESS;
+    bool    supported = true;
+
+    // For now, check for Intel GPU devices to determine whether relaxed
+    // allocations are supported.  Eventually this can be checked using
+    // formal mechanisms.
+
+    for( cl_uint i = 0; i < numDevices; i++ )
+    {
+        cl_device_type  deviceType = 0;
+        cl_uint deviceVendorId;
+
+        errorCode |= dispatch().clGetDeviceInfo(
+            deviceList[ i ],
+            CL_DEVICE_TYPE,
+            sizeof( deviceType ),
+            &deviceType,
+            NULL );
+        errorCode |= dispatch().clGetDeviceInfo(
+            deviceList[ i ],
+            CL_DEVICE_VENDOR_ID,
+            sizeof( deviceVendorId ),
+            &deviceVendorId,
+            NULL );
+        if( ( deviceType & CL_DEVICE_TYPE_GPU ) == 0 ||
+            deviceVendorId != 0x8086 )
+        {
+            supported = false;
+            break;
+        }
+    }
+
+    return ( errorCode == CL_SUCCESS ) && supported;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::usmAllocPropertiesOverride(
     const cl_mem_properties_intel* properties,
     cl_mem_properties_intel*& pLocalAllocProperties ) const

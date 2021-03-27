@@ -472,6 +472,11 @@ public:
                 cl_kernel kernel,
                 const void* arg );
 
+    bool    checkRelaxAllocationLimitsSupport(
+                cl_program program ) const;
+    bool    checkRelaxAllocationLimitsSupport(
+                cl_uint numDevices,
+                const cl_device_id* deviceList ) const;
     void    usmAllocPropertiesOverride(
                 const cl_mem_properties_intel* properties,
                 cl_mem_properties_intel*& pLocalAllocProperties ) const;
@@ -1994,6 +1999,43 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
         pIntercept->saveProgramOptionsHash( program, options );             \
     }
 
+#define DUMP_PROGRAM_OPTIONS( program, options )                            \
+    if( ( modified == false ) &&                                            \
+        ( pIntercept->config().DumpProgramSource ||                         \
+          pIntercept->config().DumpInputProgramBinaries ||                  \
+          pIntercept->config().DumpProgramBinaries ||                       \
+          pIntercept->config().DumpProgramSPIRV ) )                         \
+    {                                                                       \
+        pIntercept->dumpProgramOptions( program, options );                 \
+    }                                                                       \
+    else if( ( modified == false ) &&                                       \
+             ( pIntercept->config().SimpleDumpProgramSource ||              \
+               pIntercept->config().DumpProgramSourceScript ) )             \
+    {                                                                       \
+        pIntercept->dumpProgramOptionsScript( program, options );           \
+    }
+
+#define INCREMENT_PROGRAM_COMPILE_COUNT( _program )                         \
+    if( _program &&                                                         \
+        ( pIntercept->config().BuildLogging ||                              \
+          pIntercept->config().KernelNameHashTracking ||                    \
+          pIntercept->config().InjectProgramSource ||                       \
+          pIntercept->config().DumpProgramSourceScript ||                   \
+          pIntercept->config().DumpProgramSource ||                         \
+          pIntercept->config().DumpProgramBinaries ||                       \
+          pIntercept->config().DumpProgramSPIRV ||                          \
+          pIntercept->config().DumpProgramBuildLogs ||                      \
+          pIntercept->config().DumpKernelISABinaries ||                     \
+          pIntercept->config().AutoCreateSPIRV ||                           \
+          pIntercept->config().AubCaptureUniqueKernels ) )                  \
+    {                                                                       \
+        pIntercept->incrementProgramCompileCount( _program );               \
+    }
+
+#define PROGRAM_OPTIONS_CLEANUP( newOptions )                               \
+    delete [] newOptions;                                                   \
+    newOptions = NULL;
+
 // Called from clCreateProgramWithSource:
 
 #define CREATE_COMBINED_PROGRAM_STRING( count, strings, lengths, singleString, hash ) \
@@ -2132,6 +2174,24 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 
 // Called from clLinkProgram:
 
+#define PROGRAM_LINK_OPTIONS_OVERRIDE_INIT( numDevices, deviceList, options, newOptions ) \
+    bool    modified = false;                                               \
+    if( !pIntercept->config().AppendLinkOptions.empty() )                   \
+    {                                                                       \
+        modified |= pIntercept->appendBuildOptions(                         \
+            pIntercept->config().AppendLinkOptions.c_str(),                 \
+            options,                                                        \
+            newOptions );                                                   \
+    }                                                                       \
+    if( pIntercept->config().RelaxAllocationLimits &&                       \
+        pIntercept->checkRelaxAllocationLimitsSupport( numDevices, deviceList ) )\
+    {                                                                       \
+        modified |= pIntercept->appendBuildOptions(                         \
+            "-cl-intel-greater-than-4GB-buffer-required",                   \
+            options,                                                        \
+            newOptions );                                                   \
+    }
+
 #define SAVE_PROGRAM_NUMBER( program )                                      \
     pIntercept->saveProgramNumber( program );
 
@@ -2152,28 +2212,13 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
             options,                                                        \
             newOptions );                                                   \
     }                                                                       \
-    if( pIntercept->config().RelaxAllocationLimits )                        \
+    if( pIntercept->config().RelaxAllocationLimits &&                       \
+        pIntercept->checkRelaxAllocationLimitsSupport( program ) )          \
     {                                                                       \
         modified |= pIntercept->appendBuildOptions(                         \
             "-cl-intel-greater-than-4GB-buffer-required",                   \
             options,                                                        \
             newOptions );                                                   \
-    }
-
-#define DUMP_PROGRAM_OPTIONS( program, options )                            \
-    if( ( modified == false ) &&                                            \
-        ( pIntercept->config().DumpProgramSource ||                         \
-          pIntercept->config().DumpInputProgramBinaries ||                  \
-          pIntercept->config().DumpProgramBinaries ||                       \
-          pIntercept->config().DumpProgramSPIRV ) )                         \
-    {                                                                       \
-        pIntercept->dumpProgramOptions( program, options );                 \
-    }                                                                       \
-    else if( ( modified == false ) &&                                       \
-             ( pIntercept->config().SimpleDumpProgramSource ||              \
-               pIntercept->config().DumpProgramSourceScript ) )             \
-    {                                                                       \
-        pIntercept->dumpProgramOptionsScript( program, options );           \
     }
 
 #define DUMP_OUTPUT_PROGRAM_BINARIES( program )                             \
@@ -2193,27 +2238,6 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
     {                                                                       \
         pIntercept->autoCreateSPIRV( _program, _options );                  \
     }
-
-#define INCREMENT_PROGRAM_COMPILE_COUNT( _program )                         \
-    if( _program &&                                                         \
-        ( pIntercept->config().BuildLogging ||                              \
-          pIntercept->config().KernelNameHashTracking ||                    \
-          pIntercept->config().InjectProgramSource ||                       \
-          pIntercept->config().DumpProgramSourceScript ||                   \
-          pIntercept->config().DumpProgramSource ||                         \
-          pIntercept->config().DumpProgramBinaries ||                       \
-          pIntercept->config().DumpProgramSPIRV ||                          \
-          pIntercept->config().DumpProgramBuildLogs ||                      \
-          pIntercept->config().DumpKernelISABinaries ||                     \
-          pIntercept->config().AutoCreateSPIRV ||                           \
-          pIntercept->config().AubCaptureUniqueKernels ) )                  \
-    {                                                                       \
-        pIntercept->incrementProgramCompileCount( _program );               \
-    }
-
-#define PROGRAM_OPTIONS_CLEANUP( newOptions )                               \
-    delete [] newOptions;                                                   \
-    newOptions = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
