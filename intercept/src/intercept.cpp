@@ -6728,10 +6728,9 @@ void CLIntercept::usmAllocPropertiesOverride(
     const cl_mem_properties_intel* properties,
     cl_mem_properties_intel*& pLocalAllocProperties ) const
 {
-#define CL_MEM_FLAGS_INTEL 0x10001
-#define CL_MEM_ALLOW_UNRESTRICTED_SIZE_INTEL (1 << 23)
+    const cl_mem_flags CL_MEM_ALLOW_UNRESTRICTED_SIZE_INTEL = (1 << 23);
 
-    bool    addMemFlagsINTELEnum = config().RelaxAllocationLimits != 0;
+    bool    addMemFlagsEnum = config().RelaxAllocationLimits != 0;
 
     int     numProperties = 0;
     if( properties )
@@ -6740,8 +6739,8 @@ void CLIntercept::usmAllocPropertiesOverride(
         {
             switch( properties[ numProperties ] )
             {
-            case CL_MEM_FLAGS_INTEL:
-                addMemFlagsINTELEnum = false;
+            case CL_MEM_FLAGS:
+                addMemFlagsEnum = false;
                 break;
             default:
                 break;
@@ -6750,7 +6749,7 @@ void CLIntercept::usmAllocPropertiesOverride(
         }
     }
 
-    if( addMemFlagsINTELEnum )
+    if( addMemFlagsEnum )
     {
         numProperties += 2;
     }
@@ -6769,9 +6768,9 @@ void CLIntercept::usmAllocPropertiesOverride(
             while( properties[ numProperties ] != 0 )
             {
                 pLocalAllocProperties[ numProperties ] = properties[ numProperties ];
-                if( properties[ numProperties ] == CL_MEM_FLAGS_INTEL )
+                if( properties[ numProperties ] == CL_MEM_FLAGS )
                 {
-                    CLI_ASSERT( addMemFlagsINTELEnum == false );
+                    CLI_ASSERT( addMemFlagsEnum == false );
 
                     cl_mem_properties_intel flags = properties[ numProperties + 1 ];
                     if( config().RelaxAllocationLimits )
@@ -6789,9 +6788,9 @@ void CLIntercept::usmAllocPropertiesOverride(
                 numProperties += 2;
             }
         }
-        if( addMemFlagsINTELEnum )
+        if( addMemFlagsEnum )
         {
-            pLocalAllocProperties[ numProperties] = CL_MEM_FLAGS_INTEL;
+            pLocalAllocProperties[ numProperties] = CL_MEM_FLAGS;
 
             cl_mem_properties_intel flags = 0;
             if( config().RelaxAllocationLimits )
