@@ -353,7 +353,7 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will gene
 
 ##### `ChromePerformanceTimingInStages` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will separate the performance infomation placed in the JSON file into Queued, Submitted, and Execution stages. It will also reorder the threads/queues by starting runtime. This flag is only functional when ChromePerformanceTiming is also set.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will separate the performance information placed in the JSON file into Queued, Submitted, and Execution stages. It will also reorder the threads/queues by starting runtime. This flag is only functional when ChromePerformanceTiming is also set.
 
 ##### `ChromePerformanceTimingPerKernel` (bool)
 
@@ -411,7 +411,11 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will look
 
 ##### `AppendBuildOptions` (string)
 
-If set, the Intercept Layer for OpenCL Applications will add these build options to the end of any application provided or injected build options for each call to clBuildProgram().
+If set, the Intercept Layer for OpenCL Applications will add these build options to the end of any application provided or injected build options for each call to clCompileProgram or clBuildProgram().
+
+##### `AppendLinkOptions` (string)
+
+If set, the Intercept Layer for OpenCL Applications will add these build options to the end of any application provided or injected build options for each call to clLinkProgram().
 
 ##### `DumpProgramBuildLogs` (bool)
 
@@ -652,6 +656,10 @@ If set to a nonzero value, and if no other priority hint is specified by the app
 ##### `DefaultQueueThrottleHint` (cl_uint)
 
 If set to a nonzero value, and if no other throttle hint is specified by the application, the Intercept Layer for OpencL Applications will attempt to create a command queue with this throttle hint value.  Note: HIGH throttle is 1, MED throttle is 2, and LOW throttle is 4.
+
+##### `RelaxAllocationLimits` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will attempt to relax allocation limits to enable allocations larger than CL\_DEVICE\_MAX\_MEM\_ALLOC\_SIZE.
 
 ### Platform and Device Query Overrides
 
