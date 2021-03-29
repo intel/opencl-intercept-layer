@@ -293,11 +293,11 @@ public:
                 char*& injectedIL );
     bool    injectProgramOptions(
                 const cl_program program,
-                const char*& options,
                 char*& newOptions );
     bool    appendBuildOptions(
-                const char*& options,
-                char*& newOptions );
+                const char* append,
+                const char* options,
+                char*& newOptions ) const;
     void    dumpProgramSourceScript(
                 const cl_program program,
                 const char* singleString );
@@ -355,17 +355,13 @@ public:
 
     void    modifyCommandQueueProperties(
                 cl_command_queue_properties& props ) const;
-    void    createCommandQueueOverrideInit(
-                cl_device_id device,
-                const cl_queue_properties* properties,
-                cl_queue_properties*& pLocalQueueProperties ) const;
-    void    createCommandQueueOverrideCleanup(
-                cl_queue_properties*& pLocalQueueProperties ) const;
-    void    createCommandQueuePropertiesInit(
+    void    createCommandQueueProperties(
                 cl_device_id device,
                 cl_command_queue_properties props,
                 cl_queue_properties*& pLocalQueueProperties ) const;
-    void    createCommandQueuePropertiesCleanup(
+    void    createCommandQueuePropertiesOverride(
+                cl_device_id device,
+                const cl_queue_properties* properties,
                 cl_queue_properties*& pLocalQueueProperties ) const;
     bool    checkHostPerformanceTimingEnqueueLimits(
                 uint64_t enqueueCounter ) const;
@@ -475,6 +471,15 @@ public:
     void    checkKernelArgUSMPointer(
                 cl_kernel kernel,
                 const void* arg );
+
+    bool    checkRelaxAllocationLimitsSupport(
+                cl_program program ) const;
+    bool    checkRelaxAllocationLimitsSupport(
+                cl_uint numDevices,
+                const cl_device_id* deviceList ) const;
+    void    usmAllocPropertiesOverride(
+                const cl_mem_properties_intel* properties,
+                cl_mem_properties_intel*& pLocalAllocProperties ) const;
 
     void    startAubCapture(
                 const std::string& functionName,
@@ -1994,6 +1999,43 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
         pIntercept->saveProgramOptionsHash( program, options );             \
     }
 
+#define DUMP_PROGRAM_OPTIONS( program, options )                            \
+    if( ( modified == false ) &&                                            \
+        ( pIntercept->config().DumpProgramSource ||                         \
+          pIntercept->config().DumpInputProgramBinaries ||                  \
+          pIntercept->config().DumpProgramBinaries ||                       \
+          pIntercept->config().DumpProgramSPIRV ) )                         \
+    {                                                                       \
+        pIntercept->dumpProgramOptions( program, options );                 \
+    }                                                                       \
+    else if( ( modified == false ) &&                                       \
+             ( pIntercept->config().SimpleDumpProgramSource ||              \
+               pIntercept->config().DumpProgramSourceScript ) )             \
+    {                                                                       \
+        pIntercept->dumpProgramOptionsScript( program, options );           \
+    }
+
+#define INCREMENT_PROGRAM_COMPILE_COUNT( _program )                         \
+    if( _program &&                                                         \
+        ( pIntercept->config().BuildLogging ||                              \
+          pIntercept->config().KernelNameHashTracking ||                    \
+          pIntercept->config().InjectProgramSource ||                       \
+          pIntercept->config().DumpProgramSourceScript ||                   \
+          pIntercept->config().DumpProgramSource ||                         \
+          pIntercept->config().DumpProgramBinaries ||                       \
+          pIntercept->config().DumpProgramSPIRV ||                          \
+          pIntercept->config().DumpProgramBuildLogs ||                      \
+          pIntercept->config().DumpKernelISABinaries ||                     \
+          pIntercept->config().AutoCreateSPIRV ||                           \
+          pIntercept->config().AubCaptureUniqueKernels ) )                  \
+    {                                                                       \
+        pIntercept->incrementProgramCompileCount( _program );               \
+    }
+
+#define PROGRAM_OPTIONS_CLEANUP( newOptions )                               \
+    delete [] newOptions;                                                   \
+    newOptions = NULL;
+
 // Called from clCreateProgramWithSource:
 
 #define CREATE_COMBINED_PROGRAM_STRING( count, strings, lengths, singleString, hash ) \
@@ -2132,41 +2174,51 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 
 // Called from clLinkProgram:
 
+#define PROGRAM_LINK_OPTIONS_OVERRIDE_INIT( numDevices, deviceList, options, newOptions ) \
+    bool    modified = false;                                               \
+    if( !pIntercept->config().AppendLinkOptions.empty() )                   \
+    {                                                                       \
+        modified |= pIntercept->appendBuildOptions(                         \
+            pIntercept->config().AppendLinkOptions.c_str(),                 \
+            options,                                                        \
+            newOptions );                                                   \
+    }                                                                       \
+    if( pIntercept->config().RelaxAllocationLimits &&                       \
+        pIntercept->checkRelaxAllocationLimitsSupport( numDevices, deviceList ) )\
+    {                                                                       \
+        modified |= pIntercept->appendBuildOptions(                         \
+            "-cl-intel-greater-than-4GB-buffer-required",                   \
+            options,                                                        \
+            newOptions );                                                   \
+    }
+
 #define SAVE_PROGRAM_NUMBER( program )                                      \
     pIntercept->saveProgramNumber( program );
 
 // Called from clBuildProgram:
 
-#define MODIFY_PROGRAM_OPTIONS( program, options, newOptions )              \
+#define PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions )       \
     bool    modified = false;                                               \
     if( pIntercept->config().InjectProgramSource )                          \
     {                                                                       \
         modified |= pIntercept->injectProgramOptions(                       \
             program,                                                        \
-            options,                                                        \
             newOptions );                                                   \
     }                                                                       \
     if( !pIntercept->config().AppendBuildOptions.empty() )                  \
     {                                                                       \
         modified |= pIntercept->appendBuildOptions(                         \
+            pIntercept->config().AppendBuildOptions.c_str(),                \
             options,                                                        \
             newOptions );                                                   \
-    }
-
-#define DUMP_PROGRAM_OPTIONS( program, options )                            \
-    if( ( modified == false ) &&                                            \
-        ( pIntercept->config().DumpProgramSource ||                         \
-          pIntercept->config().DumpInputProgramBinaries ||                  \
-          pIntercept->config().DumpProgramBinaries ||                       \
-          pIntercept->config().DumpProgramSPIRV ) )                         \
-    {                                                                       \
-        pIntercept->dumpProgramOptions( program, options );                 \
     }                                                                       \
-    else if( ( modified == false ) &&                                       \
-             ( pIntercept->config().SimpleDumpProgramSource ||              \
-               pIntercept->config().DumpProgramSourceScript ) )             \
+    if( pIntercept->config().RelaxAllocationLimits &&                       \
+        pIntercept->checkRelaxAllocationLimitsSupport( program ) )          \
     {                                                                       \
-        pIntercept->dumpProgramOptionsScript( program, options );           \
+        modified |= pIntercept->appendBuildOptions(                         \
+            "-cl-intel-greater-than-4GB-buffer-required",                   \
+            options,                                                        \
+            newOptions );                                                   \
     }
 
 #define DUMP_OUTPUT_PROGRAM_BINARIES( program )                             \
@@ -2186,27 +2238,6 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
     {                                                                       \
         pIntercept->autoCreateSPIRV( _program, _options );                  \
     }
-
-#define INCREMENT_PROGRAM_COMPILE_COUNT( _program )                         \
-    if( _program &&                                                         \
-        ( pIntercept->config().BuildLogging ||                              \
-          pIntercept->config().KernelNameHashTracking ||                    \
-          pIntercept->config().InjectProgramSource ||                       \
-          pIntercept->config().DumpProgramSourceScript ||                   \
-          pIntercept->config().DumpProgramSource ||                         \
-          pIntercept->config().DumpProgramBinaries ||                       \
-          pIntercept->config().DumpProgramSPIRV ||                          \
-          pIntercept->config().DumpProgramBuildLogs ||                      \
-          pIntercept->config().DumpKernelISABinaries ||                     \
-          pIntercept->config().AutoCreateSPIRV ||                           \
-          pIntercept->config().AubCaptureUniqueKernels ) )                  \
-    {                                                                       \
-        pIntercept->incrementProgramCompileCount( _program );               \
-    }
-
-#define DELETE_MODIFIED_OPTIONS( newOptions )                               \
-    delete [] newOptions;                                                   \
-    newOptions = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -2308,6 +2339,16 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
            ( enqueueCounter <= m_Config.DevicePerformanceTimingMaxEnqueue );
 }
 
+#define CREATE_COMMAND_QUEUE_PROPERTIES( _device, _props, _newprops )       \
+    if( pIntercept->config().DefaultQueuePriorityHint ||                    \
+        pIntercept->config().DefaultQueueThrottleHint )                     \
+    {                                                                       \
+        pIntercept->createCommandQueueProperties(                           \
+            _device,                                                        \
+            _props,                                                         \
+            _newprops );                                                    \
+    }
+
 #define CREATE_COMMAND_QUEUE_OVERRIDE_INIT( _device, _props, _newprops )    \
     if( pIntercept->config().DevicePerformanceTiming ||                     \
         pIntercept->config().ITTPerformanceTiming ||                        \
@@ -2318,43 +2359,15 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         pIntercept->config().DefaultQueuePriorityHint ||                    \
         pIntercept->config().DefaultQueueThrottleHint )                     \
     {                                                                       \
-        pIntercept->createCommandQueueOverrideInit(                         \
+        pIntercept->createCommandQueuePropertiesOverride(                   \
             _device,                                                        \
             _props,                                                         \
             _newprops );                                                    \
     }
 
-#define CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( _newprops )                  \
-    if( pIntercept->config().DevicePerformanceTiming ||                     \
-        pIntercept->config().ITTPerformanceTiming ||                        \
-        pIntercept->config().ChromePerformanceTiming ||                     \
-        pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
-        pIntercept->config().InOrderQueue ||                                \
-        pIntercept->config().NoProfilingQueue ||                            \
-        pIntercept->config().DefaultQueuePriorityHint ||                    \
-        pIntercept->config().DefaultQueueThrottleHint )                     \
-    {                                                                       \
-        pIntercept->createCommandQueueOverrideCleanup(                      \
-            _newprops );                                                    \
-    }
-
-#define CREATE_COMMAND_QUEUE_PROPERTIES_INIT( _device, _props, _newprops )  \
-    if( pIntercept->config().DefaultQueuePriorityHint ||                    \
-        pIntercept->config().DefaultQueueThrottleHint )                     \
-    {                                                                       \
-        pIntercept->createCommandQueuePropertiesInit(                       \
-            _device,                                                        \
-            _props,                                                         \
-            _newprops );                                                    \
-    }
-
-#define CREATE_COMMAND_QUEUE_PROPERTIES_CLEANUP( _newprops )                \
-    if( pIntercept->config().DefaultQueuePriorityHint ||                    \
-        pIntercept->config().DefaultQueueThrottleHint )                     \
-    {                                                                       \
-        pIntercept->createCommandQueuePropertiesCleanup(                    \
-            _newprops );                                                    \
-    }
+#define COMMAND_QUEUE_PROPERTIES_CLEANUP( _newprops )                       \
+    delete [] _newprops;                                                    \
+    _newprops = NULL;
 
 #define DEVICE_PERFORMANCE_TIMING_START( pEvent )                           \
     CLIntercept::clock::time_point   queuedTime;                            \
@@ -2478,6 +2491,20 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
             _kernel,                                                        \
             _arg );                                                         \
     }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+#define USM_ALLOC_OVERRIDE_INIT( _props, _newprops )                        \
+    if( pIntercept->config().RelaxAllocationLimits )                        \
+    {                                                                       \
+        pIntercept->usmAllocPropertiesOverride(                             \
+            _props,                                                         \
+            _newprops );                                                    \
+    }
+
+#define USM_ALLOC_PROPERTIES_CLEANUP( _newprops )                           \
+    delete [] _newprops;                                                    \
+    _newprops = NULL;
 
 ///////////////////////////////////////////////////////////////////////////////
 //

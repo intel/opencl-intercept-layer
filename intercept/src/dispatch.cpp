@@ -692,9 +692,8 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
             deviceInfo.c_str(),
             pIntercept->enumName().name_command_queue_properties( properties ).c_str(),
             properties );
-        CREATE_COMMAND_QUEUE_PROPERTIES_INIT( device, properties, newProperties );
-
         pIntercept->modifyCommandQueueProperties( properties );
+        CREATE_COMMAND_QUEUE_PROPERTIES( device, properties, newProperties );
 
         CHECK_ERROR_INIT( errcode_ret );
         CPU_PERFORMANCE_TIMING_START();
@@ -739,7 +738,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
         }
 
         CPU_PERFORMANCE_TIMING_END();
-        CREATE_COMMAND_QUEUE_PROPERTIES_CLEANUP( newProperties );
+        COMMAND_QUEUE_PROPERTIES_CLEANUP( newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ITT_REGISTER_COMMAND_QUEUE( retVal, false );
         ADD_OBJECT_ALLOCATION( retVal );
@@ -2072,20 +2071,36 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
         char*   newOptions = NULL;
 
         SAVE_PROGRAM_OPTIONS_HASH( program, options );
-        MODIFY_PROGRAM_OPTIONS( program, options, newOptions );
+        PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions );
         DUMP_PROGRAM_OPTIONS( program, options );
 
         CALL_LOGGING_ENTER( "program = %p, pfn_notify = %p", program, pfn_notify );
         BUILD_LOGGING_INIT();
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_int  retVal = pIntercept->dispatch().clBuildProgram(
-            program,
-            num_devices,
-            device_list,
-            options,
-            pfn_notify,
-            user_data );
+        cl_int  retVal = CL_INVALID_OPERATION;
+
+        if( newOptions != NULL )
+        {
+            retVal = pIntercept->dispatch().clBuildProgram(
+                program,
+                num_devices,
+                device_list,
+                newOptions,
+                pfn_notify,
+                user_data );
+        }
+
+        if( retVal != CL_SUCCESS )
+        {
+            retVal = pIntercept->dispatch().clBuildProgram(
+                program,
+                num_devices,
+                device_list,
+                options,
+                pfn_notify,
+                user_data );
+        }
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
@@ -2096,7 +2111,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
         DUMP_KERNEL_ISA_BINARIES( program );
         AUTO_CREATE_SPIRV( program, options );
         INCREMENT_PROGRAM_COMPILE_COUNT( program );
-        DELETE_MODIFIED_OPTIONS( newOptions );
+        PROGRAM_OPTIONS_CLEANUP( newOptions );
 
         return retVal;
     }
@@ -2124,24 +2139,45 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
     {
         GET_ENQUEUE_COUNTER();
 
-        const bool  modified = false;
+        char*   newOptions = NULL;
 
+        SAVE_PROGRAM_OPTIONS_HASH( program, options );
+        PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions );
         DUMP_PROGRAM_OPTIONS( program, options );
 
         CALL_LOGGING_ENTER( "program = %p, pfn_notify = %p", program, pfn_notify );
         BUILD_LOGGING_INIT();
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_int  retVal = pIntercept->dispatch().clCompileProgram(
-            program,
-            num_devices,
-            device_list,
-            options,
-            num_input_headers,
-            input_headers,
-            header_include_names,
-            pfn_notify,
-            user_data );
+        cl_int  retVal = CL_INVALID_OPERATION;
+
+        if( newOptions != NULL )
+        {
+            retVal = pIntercept->dispatch().clCompileProgram(
+                program,
+                num_devices,
+                device_list,
+                newOptions,
+                num_input_headers,
+                input_headers,
+                header_include_names,
+                pfn_notify,
+                user_data );
+        }
+
+        if( retVal != CL_SUCCESS )
+        {
+            retVal = pIntercept->dispatch().clCompileProgram(
+                program,
+                num_devices,
+                device_list,
+                options,
+                num_input_headers,
+                input_headers,
+                header_include_names,
+                pfn_notify,
+                user_data );
+        }
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
@@ -2149,6 +2185,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
         CALL_LOGGING_EXIT( retVal );
 
         INCREMENT_PROGRAM_COMPILE_COUNT( program );
+        PROGRAM_OPTIONS_CLEANUP( newOptions );
 
         return retVal;
     }
@@ -2176,7 +2213,10 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
     {
         GET_ENQUEUE_COUNTER();
 
-        const bool  modified = false;
+        char*   newOptions = NULL;
+        cl_program  retVal = NULL;
+
+        PROGRAM_LINK_OPTIONS_OVERRIDE_INIT( num_devices, device_list, options, newOptions );
 
         CALL_LOGGING_ENTER( "context = %p, num_input_programs = %u, pfn_notify = %p",
             context,
@@ -2186,16 +2226,32 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         BUILD_LOGGING_INIT();
         CPU_PERFORMANCE_TIMING_START();
 
-        cl_program  retVal = pIntercept->dispatch().clLinkProgram(
-            context,
-            num_devices,
-            device_list,
-            options,
-            num_input_programs,
-            input_programs,
-            pfn_notify,
-            user_data,
-            errcode_ret );
+        if( ( retVal == NULL ) && newOptions )
+        {
+            retVal = pIntercept->dispatch().clLinkProgram(
+                context,
+                num_devices,
+                device_list,
+                newOptions,
+                num_input_programs,
+                input_programs,
+                pfn_notify,
+                user_data,
+                errcode_ret );
+        }
+        if( retVal == NULL )
+        {
+            retVal = pIntercept->dispatch().clLinkProgram(
+                context,
+                num_devices,
+                device_list,
+                options,
+                num_input_programs,
+                input_programs,
+                pfn_notify,
+                user_data,
+                errcode_ret );
+        }
 
         CPU_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
@@ -2211,6 +2267,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         DUMP_OUTPUT_PROGRAM_BINARIES( retVal );
         DUMP_KERNEL_ISA_BINARIES( retVal );
         INCREMENT_PROGRAM_COMPILE_COUNT( retVal );
+        PROGRAM_OPTIONS_CLEANUP( newOptions );
 
         return retVal;
     }
@@ -6225,7 +6282,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
         }
 
         CPU_PERFORMANCE_TIMING_END();
-        CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( newProperties );
+        COMMAND_QUEUE_PROPERTIES_CLEANUP( newProperties );
         CHECK_ERROR( errcode_ret[0] );
         ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
@@ -6319,7 +6376,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
             }
 
             CPU_PERFORMANCE_TIMING_END();
-            CREATE_COMMAND_QUEUE_OVERRIDE_CLEANUP( newProperties );
+            COMMAND_QUEUE_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( retVal );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
@@ -8389,23 +8446,41 @@ CL_API_ENTRY void* CL_API_CALL clHostMemAllocINTEL(
         if( dispatchX.clHostMemAllocINTEL )
         {
             GET_ENQUEUE_COUNTER();
+
+            cl_mem_properties_intel*    newProperties = NULL;
+            void*   retVal = NULL;
+
             // TODO: Make properties string.
             CALL_LOGGING_ENTER( "context = %p, properties = %p, size = %zu, alignment = %u",
                 context,
                 properties,
                 size,
                 alignment );
+            USM_ALLOC_OVERRIDE_INIT( properties, newProperties );
             CHECK_ERROR_INIT( errcode_ret );
             CPU_PERFORMANCE_TIMING_START();
 
-            void*   retVal = dispatchX.clHostMemAllocINTEL(
-                context,
-                properties,
-                size,
-                alignment,
-                errcode_ret );
+            if( ( retVal == NULL ) && newProperties )
+            {
+                retVal = dispatchX.clHostMemAllocINTEL(
+                    context,
+                    newProperties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
+            if( retVal == NULL )
+            {
+                retVal = dispatchX.clHostMemAllocINTEL(
+                    context,
+                    properties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
 
             CPU_PERFORMANCE_TIMING_END();
+            USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
@@ -8436,6 +8511,9 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
         {
             GET_ENQUEUE_COUNTER();
 
+            cl_mem_properties_intel*    newProperties = NULL;
+            void*   retVal = NULL;
+
             std::string deviceInfo;
             if( pIntercept->config().CallLogging )
             {
@@ -8451,18 +8529,33 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
                 properties,
                 size,
                 alignment );
+            USM_ALLOC_OVERRIDE_INIT( properties, newProperties );
             CHECK_ERROR_INIT( errcode_ret );
             CPU_PERFORMANCE_TIMING_START();
 
-            void*   retVal = dispatchX.clDeviceMemAllocINTEL(
-                context,
-                device,
-                properties,
-                size,
-                alignment,
-                errcode_ret );
+            if( ( retVal == NULL ) && newProperties )
+            {
+                retVal = dispatchX.clDeviceMemAllocINTEL(
+                    context,
+                    device,
+                    newProperties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
+            if( retVal == NULL )
+            {
+                retVal = dispatchX.clDeviceMemAllocINTEL(
+                    context,
+                    device,
+                    properties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
 
             CPU_PERFORMANCE_TIMING_END();
+            USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
@@ -8493,6 +8586,9 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
         {
             GET_ENQUEUE_COUNTER();
 
+            cl_mem_properties_intel*    newProperties = NULL;
+            void*   retVal = NULL;
+
             std::string deviceInfo;
             if( pIntercept->config().CallLogging )
             {
@@ -8508,18 +8604,33 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
                 properties,
                 size,
                 alignment );
+            USM_ALLOC_OVERRIDE_INIT( properties, newProperties );
             CHECK_ERROR_INIT( errcode_ret );
             CPU_PERFORMANCE_TIMING_START();
 
-            void*   retVal = dispatchX.clSharedMemAllocINTEL(
-                context,
-                device,
-                properties,
-                size,
-                alignment,
-                errcode_ret );
+            if( ( retVal == NULL ) && newProperties )
+            {
+                retVal = dispatchX.clSharedMemAllocINTEL(
+                    context,
+                    device,
+                    newProperties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
+            if( retVal == NULL )
+            {
+                retVal = dispatchX.clSharedMemAllocINTEL(
+                    context,
+                    device,
+                    properties,
+                    size,
+                    alignment,
+                    errcode_ret );
+            }
 
             CPU_PERFORMANCE_TIMING_END();
+            USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
