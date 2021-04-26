@@ -7974,7 +7974,53 @@ CL_API_ENTRY cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_suggested_local_work_size
+CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
+    cl_command_queue commandQueue,
+    cl_kernel kernel,
+    cl_uint workDim,
+    const size_t *globalWorkOffset,
+    const size_t *globalWorkSize,
+    size_t *suggestedLocalWorkSize)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(commandQueue);
+        if( dispatchX.clGetKernelSuggestedLocalWorkSizeKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER_KERNEL(
+                kernel,
+                "queue = %p, kernel = %p",
+                commandQueue,
+                kernel );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int retVal = dispatchX.clGetKernelSuggestedLocalWorkSizeKHR(
+                commandQueue,
+                kernel,
+                workDim,
+                globalWorkOffset,
+                globalWorkSize,
+                suggestedLocalWorkSize );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // Unofficial cl_get_kernel_suggested_local_work_size extension:
+// This function should stay in sync with clGetKernelSuggestedLocalWorkSizeKHR, above.
 CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeINTEL(
     cl_command_queue commandQueue,
     cl_kernel kernel,

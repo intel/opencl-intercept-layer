@@ -720,6 +720,9 @@ CEnumNameMap::CEnumNameMap()
     // cl_khr_initalize_memory
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_MEMORY_INITIALIZE_KHR );
 
+    // cl_khr_pci_bus_info extension
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_BUS_INFO_KHR );
+
     // cl_khr_priority_hints extension
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_PRIORITY_KHR );
 
