@@ -45,6 +45,10 @@ Detailed instructions:
 * [How to Use the Intercept Layer for OpenCL Applications with VTune](docs/vtune_logging.md)
 * [How to Use the Intercept Layer for OpenCL Applications with Chrome](docs/chrome_tracing.md)
 
+## Tutorial
+
+A tutorial demonstrating common usages of the Intercept Layer for OpenCL Applications can be found [here](https://github.com/bashbaug/SimpleOpenCLSamples/tree/master/tutorials/interceptlayer).
+
 ## License
 
 The Intercept Layer for OpenCL Applications is licensed under the [MIT License](LICENSE).
