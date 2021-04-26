@@ -665,6 +665,7 @@ public:
     cl_platform_id  getPlatform( cl_kernel kernel ) const;
     cl_platform_id  getPlatform( cl_mem memobj ) const;
 
+    cl_uint getRefCount( cl_accelerator_intel accelerator );
     cl_uint getRefCount( cl_command_queue queue ) const;
     cl_uint getRefCount( cl_context conest ) const;
     cl_uint getRefCount( cl_device_id device ) const;
@@ -1071,7 +1072,7 @@ private:
     typedef std::map< const cl_context, SBuiltinKernelOverrides* >  CBuiltinKernelOverridesMap;
     CBuiltinKernelOverridesMap  m_BuiltinKernelOverridesMap;
 
-    typedef std::map< const cl_accelerator_intel, cl_platform_id>   CAcceleratorInfoMap;
+    typedef std::map< const cl_accelerator_intel, cl_platform_id >  CAcceleratorInfoMap;
     CAcceleratorInfoMap     m_AcceleratorInfoMap;
 
     struct Config
@@ -1326,6 +1327,30 @@ inline cl_platform_id CLIntercept::getPlatform( cl_mem memobj ) const
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+inline cl_uint CLIntercept::getRefCount( cl_accelerator_intel accelerator )
+{
+    auto platform = this->getPlatform(accelerator);
+    auto dispatchX = this->dispatchX(platform);
+    if( dispatchX.clGetAcceleratorInfoINTEL == NULL )
+    {
+        getExtensionFunctionAddress(
+            platform,
+            "clGetAcceleratorInfoINTEL" );
+    }
+
+    cl_uint refCount = 0;
+    if( dispatchX.clGetAcceleratorInfoINTEL )
+    {
+        dispatchX.clGetAcceleratorInfoINTEL(
+            accelerator,
+            CL_ACCELERATOR_REFERENCE_COUNT_INTEL,
+            sizeof(refCount),
+            &refCount,
+            NULL );
+    }
+    return refCount;
+}
+
 inline cl_uint CLIntercept::getRefCount( cl_command_queue queue ) const
 {
     cl_uint refCount = 0;

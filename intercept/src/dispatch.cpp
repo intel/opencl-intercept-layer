@@ -8139,17 +8139,9 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainAcceleratorINTEL(
         {
             GET_ENQUEUE_COUNTER();
 
-            cl_uint ref_count = 0;
-            if( pIntercept->config().CallLogging )
-            {
-                ref_count = 0;
-                dispatchX.clGetAcceleratorInfoINTEL(
-                    accelerator,
-                    CL_ACCELERATOR_REFERENCE_COUNT_INTEL,
-                    sizeof( ref_count ),
-                    &ref_count,
-                    NULL );
-            }
+            cl_uint ref_count =
+                pIntercept->config().CallLogging ?
+                pIntercept->getRefCount( accelerator ) : 0;
             CALL_LOGGING_ENTER( "[ ref count = %d ] accelerator = %p",
                 ref_count,
                 accelerator );
@@ -8160,16 +8152,9 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainAcceleratorINTEL(
 
             CPU_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            if( pIntercept->config().CallLogging )
-            {
-                ref_count = 0;
-                dispatchX.clGetAcceleratorInfoINTEL(
-                    accelerator,
-                    CL_ACCELERATOR_REFERENCE_COUNT_INTEL,
-                    sizeof( ref_count ),
-                    &ref_count,
-                    NULL );
-            }
+            ref_count =
+                pIntercept->config().CallLogging ?
+                pIntercept->getRefCount( accelerator ) : 0;
             CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
             return retVal;
@@ -8196,17 +8181,9 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseAcceleratorINTEL(
 
             pIntercept->checkRemoveAcceleratorInfo( accelerator );
 
-            cl_uint ref_count = 0;
-            if( pIntercept->config().CallLogging )
-            {
-                ref_count = 0;
-                dispatchX.clGetAcceleratorInfoINTEL(
-                    accelerator,
-                    CL_ACCELERATOR_REFERENCE_COUNT_INTEL,
-                    sizeof( ref_count ),
-                    &ref_count,
-                    NULL );
-            }
+            cl_uint ref_count =
+                pIntercept->config().CallLogging ?
+                pIntercept->getRefCount( accelerator ) : 0;
             CALL_LOGGING_ENTER( "[ ref count = %d ] accelerator = %p",
                 ref_count,
                 accelerator );
