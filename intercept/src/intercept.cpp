@@ -5800,6 +5800,33 @@ void CLIntercept::removeSVMAllocation(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::addUSMAllocation(
+    void* usmPtr,
+    size_t size )
+{
+    if( usmPtr )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        m_MemAllocNumberMap[ usmPtr ] = m_MemAllocNumber;
+        m_USMAllocInfoMap[ usmPtr ] = size;
+        m_MemAllocNumber++;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::removeUSMAllocation(
+    void* usmPtr )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    m_MemAllocNumberMap.erase( usmPtr );
+    m_USMAllocInfoMap.erase( usmPtr );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::setKernelArg(
     cl_kernel kernel,
     cl_uint arg_index,
@@ -5825,37 +5852,49 @@ void CLIntercept::setKernelArgSVMPointer(
 
     // Unlike clSetKernelArg(), which must pass a cl_mem, clSetKernelArgSVMPointer
     // can pass a pointer to the base of a SVM allocation or anywhere inside of
-    // an SVM allocation.  As a result, we may need to search the SVM map to find
-    // the base address and size of the SVM allocation.  Still, try to just lookup
-    // the SVM allocation in the map, just in case the app sets the base address
-    // (this may be the common case?).
+    // an SVM allocation.  As a result, we need to search the SVM map to find the
+    // base address and size of the SVM allocation.
 
     CKernelArgMemMap&   kernelArgMap = m_KernelArgMap[ kernel ];
 
-    if( m_SVMAllocInfoMap.find( arg ) != m_SVMAllocInfoMap.end() )
+    CSVMAllocInfoMap::iterator iter = m_SVMAllocInfoMap.lower_bound( arg );
+    if( iter->first != arg && iter != m_SVMAllocInfoMap.begin() )
     {
-        // Got it, the pointer was the base address of an SVM allocation.
-        kernelArgMap[ arg_index ] = arg;
+        // Go to the previous iterator.
+        --iter;
     }
-    else
-    {
-        intptr_t    iarg = (intptr_t)arg;
-        for( CSVMAllocInfoMap::iterator i = m_SVMAllocInfoMap.begin();
-             i != m_SVMAllocInfoMap.end();
-             ++i )
-        {
-            const void* ptr = (*i).first;
-            size_t      size = (*i).second;
 
-            intptr_t    start = (intptr_t)ptr;
-            intptr_t    end = start + size;
-            if( start <= iarg &&
-                iarg < end )
-            {
-                kernelArgMap[ arg_index ] = ptr;
-                break;
-            }
-        }
+    const void* startPtr = iter->first;
+    const void* endPtr = (const char*)startPtr + iter->second;
+    if( arg >= startPtr && arg < endPtr )
+    {
+        kernelArgMap[ arg_index ] = startPtr;
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::setKernelArgUSMPointer(
+    cl_kernel kernel,
+    cl_uint arg_index,
+    const void* arg )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    CKernelArgMemMap&   kernelArgMap = m_KernelArgMap[ kernel ];
+
+    CUSMAllocInfoMap::iterator iter = m_USMAllocInfoMap.lower_bound( arg );
+    if( iter->first != arg && iter != m_USMAllocInfoMap.begin() )
+    {
+        // Go to the previous iterator.
+        --iter;
+    }
+
+    const void* startPtr = iter->first;
+    const void* endPtr = (const char*)startPtr + iter->second;
+    if( arg >= startPtr && arg < endPtr )
+    {
+        kernelArgMap[ arg_index ] = startPtr;
     }
 }
 
@@ -5869,6 +5908,9 @@ void CLIntercept::dumpBuffersForKernel(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
+    cl_platform_id  platform = getPlatform(kernel);
+
+    std::vector<char>   transferBuf;
     std::string fileNamePrefix = "";
 
     // Get the dump directory name.
@@ -5893,7 +5935,8 @@ void CLIntercept::dumpBuffersForKernel(
         void*   allocation = (void*)(*i).second;
         cl_mem  memobj = (cl_mem)allocation;
         ++i;
-        if( ( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() ) ||
+        if( ( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() ) ||
+            ( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() ) ||
             ( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() ) )
         {
             unsigned int        number = m_MemAllocNumberMap[ memobj ];
@@ -5938,7 +5981,55 @@ void CLIntercept::dumpBuffersForKernel(
             }
 
             // Dump the buffer contents to the file.
-            if( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() )
+            if( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() )
+            {
+                size_t  size = m_USMAllocInfoMap[ allocation ];
+
+                if( dispatchX(platform).clEnqueueMemcpyINTEL == NULL )
+                {
+                    getExtensionFunctionAddress(
+                        platform,
+                        "clEnqueueMemcpyINTEL" );
+                }
+                if( transferBuf.size() < size )
+                {
+                    transferBuf.resize(size);
+                }
+
+                auto dispatchX = this->dispatchX(platform);
+                if( dispatchX.clEnqueueMemcpyINTEL &&
+                    transferBuf.size() >= size )
+                {
+                    cl_int  error = dispatchX.clEnqueueMemcpyINTEL(
+                        command_queue,
+                        CL_TRUE,
+                        transferBuf.data(),
+                        allocation,
+                        size,
+                        0,
+                        NULL,
+                        NULL );
+                    if( error == CL_SUCCESS )
+                    {
+                        std::ofstream os;
+                        os.open(
+                            fileName.c_str(),
+                            std::ios::out | std::ios::binary );
+
+                        if( os.good() )
+                        {
+                            os.write( transferBuf.data(), size );
+                            os.close();
+                        }
+                        else
+                        {
+                            logf( "Failed to open buffer dump file for writing: %s\n",
+                                fileName.c_str() );
+                        }
+                    }
+                }
+            }
+            else if( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() )
             {
                 size_t  size = m_SVMAllocInfoMap[ allocation ];
 

@@ -481,43 +481,43 @@ If set, the Intercept Layer for OpenCL Applications will dump the contents of a 
 
 ##### `DumpBuffersBeforeEnqueue` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump buffers before calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued are dumped.  Buffers are dumped as raw binary data to a "memDumpPreEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Buffer\_\<Unique Memory Object Number\>.bin".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump buffer, SVM, and USM kernel arguments before calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued are dumped.  Buffers are dumped as raw binary data to a "memDumpPreEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Buffer\_\<Unique Memory Object Number\>.bin".
 
 ##### `DumpBuffersAfterEnqueue` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump buffers after calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued are dumped.  Buffers are dumped as raw binary data to a "memDumpPostEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Buffer\_\<Unique Memory Object Number\>.bin".  Note that this is the same naming convention as with DumpBuffersBeforeEnqueue, so the changes resulting from an enqueue can be determined by diff'ing the preEnqueue folder with the postEnqueue folder.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump buffer, SVM, and USM kernel arguments after calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued are dumped.  Buffers are dumped as raw binary data to a "memDumpPostEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Buffer\_\<Unique Memory Object Number\>.bin".  Note that this is the same naming convention as with DumpBuffersBeforeEnqueue, so the changes resulting from an enqueue can be determined by diff'ing the preEnqueue folder with the postEnqueue folder.
 
 ##### `DumpBuffersForKernel` (string)
 
-If set, the Intercept Layer for OpenCL Applications will only dump buffers when the specified kernel is enqueued.  This control is ignored unless DumpBuffersBeforeEnqueue or DumpBuffersAfterEnqueue are enabled.
+If set, the Intercept Layer for OpenCL Applications will only dump buffer, SVM, and USM kernel arguments when the specified kernel is enqueued.  This control is ignored unless DumpBuffersBeforeEnqueue or DumpBuffersAfterEnqueue are enabled.
 
 ##### `DumpImagesBeforeEnqueue` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump images before calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued are dumped.  Images are dumped as raw binary data to a "memDumpPreEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Image\_\<Unique Memory Object Number\>\_\<Width\>x\<Height\>x\<Depth\>\_\<Element Size\>bpp.raw".
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump image kernel arguments before calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued are dumped.  Images are dumped as raw binary data to a "memDumpPreEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Image\_\<Unique Memory Object Number\>\_\<Width\>x\<Height\>x\<Depth\>\_\<Element Size\>bpp.raw".
 
 ##### `DumpImagesAfterEnqueue` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump images after calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued are dumped.  Images are dumped as raw binary data to a "memDumpPostEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Image\_\<Unique Memory Object Number\>\_\<Width\>x\<Height\>x\<Depth\>\_\<Element Size\>bpp.raw".  Note that this is the same naming convention as with DumpImagesBeforeEnqueue, so the changes resulting from an enqueue can be determined by diff'ing the preEnqueue folder with the postEnqueue folder.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump image kernel arguments after calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued are dumped.  Images are dumped as raw binary data to a "memDumpPostEnqueue" subdirectory of the dump directory.  The filenames will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Image\_\<Unique Memory Object Number\>\_\<Width\>x\<Height\>x\<Depth\>\_\<Element Size\>bpp.raw".  Note that this is the same naming convention as with DumpImagesBeforeEnqueue, so the changes resulting from an enqueue can be determined by diff'ing the preEnqueue folder with the postEnqueue folder.
 
 ##### `DumpImagesForKernel` (string)
 
-If set, the Intercept Layer for OpenCL Applications will only dump image when the specified kernel is enqueued.  This control is ignored unless DumpImagesBeforeEnqueue or DumpImagesAfterEnqueue are enabled.
+If set, the Intercept Layer for OpenCL Applications will only dump image kernel arguments when the specified kernel is enqueued.  This control is ignored unless DumpImagesBeforeEnqueue or DumpImagesAfterEnqueue are enabled.
 
 ##### `DumpBuffersMinEnqueue` (cl_uint)
 
-The Intercept Layer for OpenCL Applications will only dump buffers when the enqueue counter is greater than this value, inclusive.
+The Intercept Layer for OpenCL Applications will only dump buffer, SVM, and USM kernel arguments when the enqueue counter is greater than this value, inclusive.
 
 ##### `DumpBuffersMaxEnqueue` (cl_uint)
 
-The Intercept Layer for OpenCL Applications will only dump buffers when the enqueue counter is less than this value, inclusive.
+The Intercept Layer for OpenCL Applications will only dump buffer, SVM, and USM kernel arguments when the enqueue counter is less than this value, inclusive.
 
 ##### `DumpImagesMinEnqueue` (cl_uint)
 
-The Intercept Layer for OpenCL Applications will only dump images when the enqueue counter is greater than this value, inclusive.
+The Intercept Layer for OpenCL Applications will only dump image kernel arguments when the enqueue counter is greater than this value, inclusive.
 
 ##### `DumpImagesMaxEnqueue` (cl_uint)
 
-The Intercept Layer for OpenCL Applications will only dump images when the enqueue counter is less than this value, inclusive.
+The Intercept Layer for OpenCL Applications will only dump image kernel arguments when the enqueue counter is less than this value, inclusive.
 
 ### Device Partitioning Controls
 

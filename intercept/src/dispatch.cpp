@@ -8457,6 +8457,7 @@ CL_API_ENTRY void* CL_API_CALL clHostMemAllocINTEL(
             }
 
             CPU_PERFORMANCE_TIMING_END();
+            ADD_USM_ALLOCATION( retVal, size );
             USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
@@ -8532,6 +8533,7 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
             }
 
             CPU_PERFORMANCE_TIMING_END();
+            ADD_USM_ALLOCATION( retVal, size );
             USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
@@ -8607,6 +8609,7 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
             }
 
             CPU_PERFORMANCE_TIMING_END();
+            ADD_USM_ALLOCATION( retVal, size );
             USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
@@ -8643,6 +8646,7 @@ CL_API_ENTRY cl_int CL_API_CALL clMemFreeINTEL(
                 ptr );
 
             CPU_PERFORMANCE_TIMING_END();
+            REMOVE_USM_ALLOCATION( ptr );
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
 
@@ -8679,6 +8683,7 @@ clMemBlockingFreeINTEL(
                 ptr );
 
             CPU_PERFORMANCE_TIMING_END();
+            REMOVE_USM_ALLOCATION( ptr );
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
 
@@ -8757,6 +8762,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
                 arg_index,
                 arg_value );
             CHECK_KERNEL_ARG_USM_POINTER( kernel, arg_value );
+            SET_KERNEL_ARG_USM_POINTER( kernel, arg_index, arg_value );
             CPU_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clSetKernelArgMemPointerINTEL(

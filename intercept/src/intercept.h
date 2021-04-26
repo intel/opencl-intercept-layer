@@ -429,11 +429,20 @@ public:
                 size_t size );
     void    removeSVMAllocation(
                 void* svmPtr );
+    void    addUSMAllocation(
+                void* usmPtr,
+                size_t size );
+    void    removeUSMAllocation(
+                void* usmPtr );
     void    setKernelArg(
                 cl_kernel kernel,
                 cl_uint arg_index,
                 cl_mem memobj );
     void    setKernelArgSVMPointer(
+                cl_kernel kernel,
+                cl_uint arg_index,
+                const void* arg );
+    void    setKernelArgUSMPointer(
                 cl_kernel kernel,
                 cl_uint arg_index,
                 const void* arg );
@@ -1021,6 +1030,9 @@ private:
 
     typedef std::map< const void*, size_t >    CSVMAllocInfoMap;
     CSVMAllocInfoMap    m_SVMAllocInfoMap;
+
+    typedef std::map< const void*, size_t >    CUSMAllocInfoMap;
+    CUSMAllocInfoMap    m_USMAllocInfoMap;
 
     struct SImageInfo
     {
@@ -1829,6 +1841,22 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
         pIntercept->removeSVMAllocation( svmPtr );                          \
     }
 
+#define ADD_USM_ALLOCATION( usmPtr, size )                                  \
+    if( usmPtr &&                                                           \
+        ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
+          pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
+    {                                                                       \
+        pIntercept->addUSMAllocation( usmPtr, size );                       \
+    }
+
+#define REMOVE_USM_ALLOCATION( usmPtr )                                     \
+    if( usmPtr &&                                                           \
+        ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
+          pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
+    {                                                                       \
+        pIntercept->removeUSMAllocation( usmPtr );                          \
+    }
+
 #define SET_KERNEL_ARG( kernel, arg_index, arg_size, arg_value )            \
     if ( pIntercept->config().DumpArgumentsOnSet )                          \
     {                                                                       \
@@ -1851,6 +1879,13 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
         pIntercept->config().DumpBuffersAfterEnqueue )                      \
     {                                                                       \
         pIntercept->setKernelArgSVMPointer( kernel, arg_index, arg_value ); \
+    }
+
+#define SET_KERNEL_ARG_USM_POINTER( kernel, arg_index, arg_value )          \
+    if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
+        pIntercept->config().DumpBuffersAfterEnqueue )                      \
+    {                                                                       \
+        pIntercept->setKernelArgUSMPointer( kernel, arg_index, arg_value ); \
     }
 
 #define INITIALIZE_BUFFER_CONTENTS_INIT( _flags, _size, _ptr )              \
