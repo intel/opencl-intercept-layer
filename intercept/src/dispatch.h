@@ -197,6 +197,15 @@ struct CLdispatchX
                 void* param_value,
                 size_t* param_value_size_ret);
 
+    // cl_khr_suggested_local_work_size
+    cl_int  (CL_API_CALL *clGetKernelSuggestedLocalWorkSizeKHR) (
+                cl_command_queue command_queue,
+                cl_kernel kernel,
+                cl_uint work_dim,
+                const size_t* global_work_offset,
+                const size_t* global_work_size,
+                size_t* suggested_local_work_size);
+
     // cl_khr_create_command_queue
     cl_command_queue    (CL_API_CALL *clCreateCommandQueueWithPropertiesKHR) (
             cl_context context,

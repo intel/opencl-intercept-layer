@@ -5083,6 +5083,9 @@ void CLIntercept::addTimingEvent(
             {
                 cl_platform_id  platform = getPlatform(device);
 
+                // TODO: Switch to or add support for clGetKernelSuggestedLocalWorkSizeKHR
+                // support is available.
+
                 if( dispatchX(platform).clGetKernelSuggestedLocalWorkSizeINTEL == NULL )
                 {
                     getExtensionFunctionAddress(
@@ -10813,6 +10816,8 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateProgramWithILKHR );
     // cl_khr_subgroups
     CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSubGroupInfoKHR );
+    // cl_khr_suggested_local_work_size
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeKHR );
     // cl_khr_create_command_queue
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandQueueWithPropertiesKHR );
 

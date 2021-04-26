@@ -383,6 +383,18 @@ cl_program CL_API_CALL clCreateProgramWithILKHR(
 #define CL_CONTEXT_MEMORY_INITIALIZE_KHR            0x2030
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_khr_pci_bus_info
+
+typedef struct _cl_device_pci_bus_info_khr {
+    cl_uint pci_domain;
+    cl_uint pci_bus;
+    cl_uint pci_device;
+    cl_uint pci_function;
+} cl_device_pci_bus_info_khr;
+
+#define CL_DEVICE_PCI_BUS_INFO_KHR                  0x410F
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_khr_priority_hints
 
 #define CL_QUEUE_PRIORITY_KHR 0x1096
@@ -413,6 +425,19 @@ cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
     size_t param_value_size,
     void* param_value,
     size_t* param_value_size_ret);
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_khr_suggested_local_work_size
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL
+clGetKernelSuggestedLocalWorkSizeKHR(
+    cl_command_queue command_queue,
+    cl_kernel kernel,
+    cl_uint work_dim,
+    const size_t* global_work_offset,
+    const size_t* global_work_size,
+    size_t* suggested_local_work_size);
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_terminate_context
