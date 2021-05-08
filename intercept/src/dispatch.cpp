@@ -26,6 +26,26 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+static std::string getFormattedEventWaitList(
+    const CLIntercept* pIntercept,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list )
+{
+    std::string eventWaitListString;
+    if( pIntercept->config().CallLogging &&  num_events_in_wait_list )
+    {
+        eventWaitListString += ", event_wait_list = ";
+        pIntercept->getEventListString(
+        num_events_in_wait_list,
+        event_wait_list,
+        eventWaitListString );
+    }
+    return eventWaitListString;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformIDs)(
     cl_uint num_entries,
     cl_platform_id* platforms,
@@ -3202,14 +3222,17 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+ 
             CALL_LOGGING_ENTER(
-                "queue = %p, buffer = %p, %s, offset = %zu, cb = %zu, ptr = %p",
+                "queue = %p, buffer = %p, %s, offset = %zu, cb = %zu, ptr = %p%s",
                 command_queue,
                 buffer,
                 blocking_read ? "blocking" : "non-blocking",
                 offset,
                 cb,
-                ptr );
+                ptr,
+                eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -3294,28 +3317,32 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
             if( ( buffer_origin != NULL ) &&
                 ( host_origin != NULL ) &&
                 ( region != NULL ) )
             {
                 CALL_LOGGING_ENTER(
-                    "queue = %p, buffer = %p, %s, buffer_origin = < %zu, %zu, %zu >, host_origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >, ptr = %p",
+                    "queue = %p, buffer = %p, %s, buffer_origin = < %zu, %zu, %zu >, host_origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >, ptr = %p%s",
                     command_queue,
                     buffer,
                     blocking_read ? "blocking" : "non-blocking",
                     buffer_origin[0], buffer_origin[1], buffer_origin[2],
                     host_origin[0], host_origin[1], host_origin[2],
                     region[0], region[1], region[2],
-                    ptr );
+                    ptr,
+                    eventWaitListString.c_str() );
             }
             else
             {
                 CALL_LOGGING_ENTER(
-                    "queue = %p, buffer = %p, %s, ptr = %p",
+                    "queue = %p, buffer = %p, %s, ptr = %p%s",
                     command_queue,
                     buffer,
                     blocking_read ? "blocking" : "non-blocking",
-                    ptr );
+                    ptr,
+                    eventWaitListString.c_str() );
             }
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
@@ -3384,14 +3411,17 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
             CALL_LOGGING_ENTER(
-                "queue = %p, buffer = %p, %s, offset = %zu, cb = %zu, ptr = %p",
+                "queue = %p, buffer = %p, %s, offset = %zu, cb = %zu, ptr = %p%s",
                 command_queue,
                 buffer,
                 blocking_write ? "blocking" : "non-blocking",
                 offset,
                 cb,
-                ptr );
+                ptr,
+                eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -3476,28 +3506,32 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
             if( ( buffer_origin != NULL ) &&
                 ( host_origin != NULL ) &&
                 ( region != NULL ) )
             {
                 CALL_LOGGING_ENTER(
-                    "queue = %p, buffer = %p, %s, buffer_origin = < %zu, %zu, %zu >, host_origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >, ptr = %p",
+                    "queue = %p, buffer = %p, %s, buffer_origin = < %zu, %zu, %zu >, host_origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >, ptr = %p%s",
                     command_queue,
                     buffer,
                     blocking_write ? "blocking" : "non-blocking",
                     buffer_origin[0], buffer_origin[1], buffer_origin[2],
                     host_origin[0], host_origin[1], host_origin[2],
                     region[0], region[1], region[2],
-                    ptr );
+                    ptr,
+                    eventWaitListString.c_str() );
             }
             else
             {
                 CALL_LOGGING_ENTER(
-                    "queue = %p, buffer = %p, %s, ptr = %p",
+                    "queue = %p, buffer = %p, %s, ptr = %p%s",
                     command_queue,
                     buffer,
                     blocking_write ? "blocking" : "non-blocking",
-                    ptr );
+                    ptr,
+                    eventWaitListString.c_str() );
             }
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
@@ -3567,12 +3601,15 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillBuffer)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
-            CALL_LOGGING_ENTER( "queue = %p, buffer = %p, pattern_size = %zu, offset = %zu, size = %zu",
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+            
+            CALL_LOGGING_ENTER( "queue = %p, buffer = %p, pattern_size = %zu, offset = %zu, size = %zu%s",
                 command_queue,
                 buffer,
                 pattern_size,
                 offset,
-                size );
+                size,
+                eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -3628,13 +3665,16 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBuffer)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
-            CALL_LOGGING_ENTER("queue = %p, src_buffer = %p, dst_buffer = %p, src_offset = %zu, dst_offset = %zu, cb = %zu",
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
+            CALL_LOGGING_ENTER("queue = %p, src_buffer = %p, dst_buffer = %p, src_offset = %zu, dst_offset = %zu, cb = %zu%s",
                 command_queue,
                 src_buffer,
                 dst_buffer,
                 src_offset,
                 dst_offset,
-                cb );
+                cb,
+                eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -3711,26 +3751,30 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferRect)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
             if( ( src_origin != NULL ) &&
                 ( dst_origin != NULL ) &&
                 ( region != NULL ) )
             {
                 CALL_LOGGING_ENTER(
-                    "queue = %p, src_buffer = %p, dst_buffer = %p, src_origin = < %zu, %zu, %zu >, dst_origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >",
+                    "queue = %p, src_buffer = %p, dst_buffer = %p, src_origin = < %zu, %zu, %zu >, dst_origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >%s",
                     command_queue,
                     src_buffer,
                     dst_buffer,
                     src_origin[0], src_origin[1], src_origin[2],
                     dst_origin[0], dst_origin[1], dst_origin[2],
-                    region[0], region[1], region[2] );
+                    region[0], region[1], region[2],
+                    eventWaitListString.c_str() );
             }
             else
             {
                 CALL_LOGGING_ENTER(
-                    "queue = %p, src_buffer = %p, dst_buffer = %p",
+                    "queue = %p, src_buffer = %p, dst_buffer = %p%s",
                     command_queue,
                     src_buffer,
-                    dst_buffer );
+                    dst_buffer,
+                    eventWaitListString.c_str() );
             }
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
@@ -3793,17 +3837,19 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
             if( ( origin != NULL ) &&
                 ( region != NULL ) )
             {
                 CALL_LOGGING_ENTER(
-                    "queue = %p, image = %p, %s, origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >, ptr = %p",
+                    "queue = %p, image = %p, %s, origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >, ptr = %p%s",
                     command_queue,
                     image,
                     blocking_read ? "blocking" : "non-blocking",
                     origin[0], origin[1], origin[2],
                     region[0], region[1], region[2],
-                    ptr );
+                    ptr,
+                    eventWaitListString.c_str() );
             }
             else
             {
@@ -3812,7 +3858,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
                     command_queue,
                     image,
                     blocking_read ? "blocking" : "non-blocking",
-                    ptr );
+                    ptr,
+                    eventWaitListString.c_str() );
             }
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
@@ -3898,12 +3945,15 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
             CALL_LOGGING_ENTER(
-                "queue = %p, image = %p, %s, ptr = %p",
+                "queue = %p, image = %p, %s, ptr = %p%s",
                 command_queue,
                 image,
                 blocking_write ? "blocking" : "non-blocking",
-                ptr );
+                ptr,
+                eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -3986,9 +4036,12 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillImage)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
-            CALL_LOGGING_ENTER( "queue = %p, image = %p",
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
+            CALL_LOGGING_ENTER( "queue = %p, image = %p%s",
                 command_queue,
-                image );
+                image,
+                eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -4043,10 +4096,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImage)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
-            CALL_LOGGING_ENTER( "queue = %p, src_image = %p, dst_image = %p",
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
+            CALL_LOGGING_ENTER( "queue = %p, src_image = %p, dst_image = %p%s",
                 command_queue,
                 src_image,
-                dst_image );
+                dst_image,
+                eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -4118,10 +4174,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImageToBuffer)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
-            CALL_LOGGING_ENTER( "queue = %p, src_image = %p, dst_buffer = %p",
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
+            CALL_LOGGING_ENTER( "queue = %p, src_image = %p, dst_buffer = %p%s",
                 command_queue,
                 src_image,
-                dst_buffer );
+                dst_buffer,
+                eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -4177,10 +4236,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferToImage)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
-            CALL_LOGGING_ENTER( "queue = %p, src_buffer = %p, dst_image = %p",
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
+            CALL_LOGGING_ENTER( "queue = %p, src_buffer = %p, dst_image = %p%s",
                 command_queue,
                 src_buffer,
-                dst_image );
+                dst_image,
+                eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -4237,8 +4299,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
             cl_uint map_count = 0;
-            std::string eventWaitListString;
             if( pIntercept->config().CallLogging )
             {
                 map_count = 0;
@@ -4248,16 +4310,6 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                     sizeof( map_count ),
                     &map_count,
                     NULL );
-                if( num_events_in_wait_list )
-                {
-                    std::string eventString;
-                    pIntercept->getEventListString(
-                        num_events_in_wait_list,
-                        event_wait_list,
-                        eventString );
-                    eventWaitListString += ", event_wait_list = ";
-                    eventWaitListString += eventString;
-                }
             }
             CALL_LOGGING_ENTER(
                 "[ map count = %d ] queue = %p, buffer = %p, %s, map_flags = %s (%llX), offset = %zu, cb = %zu%s",
@@ -4350,6 +4402,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
             cl_uint map_count = 0;
             if( pIntercept->config().CallLogging )
             {
@@ -4365,7 +4418,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                 ( region != NULL ) )
             {
                 CALL_LOGGING_ENTER(
-                    "[ map count = %d ] queue = %p, image = %p, %s, map_flags = %s (%llX), origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >",
+                    "[ map count = %d ] queue = %p, image = %p, %s, map_flags = %s (%llX), origin = < %zu, %zu, %zu >, region = < %zu, %zu, %zu >%s",
                     map_count,
                     command_queue,
                     image,
@@ -4373,18 +4426,20 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                     pIntercept->enumName().name_map_flags( map_flags ).c_str(),
                     map_flags,
                     origin[0], origin[1], origin[2],
-                    region[0], region[1], region[2] );
+                    region[0], region[1], region[2],
+                    eventWaitListString.c_str() );
             }
             else
             {
                 CALL_LOGGING_ENTER(
-                    "[ map count = %d ] queue = %p, image = %p, %s, map_flags = %s (%llX)",
+                    "[ map count = %d ] queue = %p, image = %p, %s, map_flags = %s (%llX)%s",
                     map_count,
                     command_queue,
                     image,
                     blocking_map ? "blocking" : "non-blocking",
                     pIntercept->enumName().name_map_flags( map_flags ).c_str(),
-                    map_flags );
+                    map_flags,
+                    eventWaitListString.c_str() );
             }
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
@@ -4462,8 +4517,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueUnmapMemObject)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
             cl_uint map_count = 0;
-            std::string eventWaitListString;
             if( pIntercept->config().CallLogging )
             {
                 map_count = 0;
@@ -4473,16 +4528,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueUnmapMemObject)(
                     sizeof( map_count ),
                     &map_count,
                     NULL );
-                if( num_events_in_wait_list )
-                {
-                    std::string eventString;
-                    pIntercept->getEventListString(
-                        num_events_in_wait_list,
-                        event_wait_list,
-                        eventString );
-                    eventWaitListString += ", event_wait_list = ";
-                    eventWaitListString += eventString;
-                }
             }
             CALL_LOGGING_ENTER(
                 "[ map count = %d ] queue = %p, memobj = %p, mapped_ptr = %p%s",
@@ -4631,16 +4676,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
                     global_work_size,
                     local_work_size,
                     argsString );
-                if( num_events_in_wait_list )
-                {
-                    std::string eventString;
-                    pIntercept->getEventListString(
-                        num_events_in_wait_list,
-                        event_wait_list,
-                        eventString );
-                    argsString += ", event_wait_list = ";
-                    argsString += eventString;
-                }
+                argsString += getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
             }
             CALL_LOGGING_ENTER_KERNEL(
                 kernel,
@@ -4745,11 +4781,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
             CALL_LOGGING_ENTER_KERNEL(
                 kernel,
-                "queue = %p, kernel = %p",
+                "queue = %p, kernel = %p%s",
                 command_queue,
-                kernel );
+                kernel,
+                eventWaitListString.c_str());
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CPU_PERFORMANCE_TIMING_START();
@@ -5000,18 +5038,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarkerWithWaitList)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
-            std::string eventWaitListString;
-            if( pIntercept->config().CallLogging &&
-                num_events_in_wait_list )
-            {
-                std::string eventString;
-                pIntercept->getEventListString(
-                    num_events_in_wait_list,
-                    event_wait_list,
-                    eventString );
-                eventWaitListString += ", event_wait_list = ";
-                eventWaitListString += eventString;
-            }
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
             CALL_LOGGING_ENTER( "queue = %p%s",
                 command_queue,
                 eventWaitListString.c_str() );
@@ -5059,18 +5087,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrierWithWaitList)(
 
         if( pIntercept->config().NullEnqueue == false )
         {
-            std::string eventWaitListString;
-            if( pIntercept->config().CallLogging &&
-                num_events_in_wait_list )
-            {
-                std::string eventString;
-                pIntercept->getEventListString(
-                    num_events_in_wait_list,
-                    event_wait_list,
-                    eventString );
-                eventWaitListString += ", event_wait_list = ";
-                eventWaitListString += eventString;
-            }
+            const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
             CALL_LOGGING_ENTER( "queue = %p%s",
                 command_queue,
                 eventWaitListString.c_str() );
@@ -8915,11 +8932,14 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
 
             if( pIntercept->config().NullEnqueue == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, dst_ptr = %p, pattern_size = %zu, size = %zu",
+                const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
+                CALL_LOGGING_ENTER( "queue = %p, dst_ptr = %p, pattern_size = %zu, size = %zu%s",
                     queue,
                     dst_ptr,
                     pattern_size,
-                    size );
+                    size,
+                    eventWaitListString.c_str() );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 CPU_PERFORMANCE_TIMING_START();
@@ -8978,12 +8998,15 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
 
             if( pIntercept->config().NullEnqueue == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, %s, dst_ptr = %p, src_ptr = %p, size = %zu",
+                const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
+                CALL_LOGGING_ENTER( "queue = %p, %s, dst_ptr = %p, src_ptr = %p, size = %zu%s",
                     queue,
                     blocking ? "blocking" : "non-blocking",
                     dst_ptr,
                     src_ptr,
-                    size );
+                    size,
+                    eventWaitListString.c_str() );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 CPU_PERFORMANCE_TIMING_START();
@@ -9041,12 +9064,15 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
 
             if( pIntercept->config().NullEnqueue == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %zu, flags = %s (%llX)",
+                const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
+                CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %zu, flags = %s (%llX)%s",
                     queue,
                     ptr,
                     size,
                     pIntercept->enumName().name_mem_migration_flags( flags ).c_str(),
-                    flags );
+                    flags,
+                    eventWaitListString.c_str() );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 CPU_PERFORMANCE_TIMING_START();
@@ -9103,12 +9129,15 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
 
             if( pIntercept->config().NullEnqueue == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %zu, advice = %s (%u)",
+                const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
+
+                CALL_LOGGING_ENTER( "queue = %p, ptr = %p, size = %zu, advice = %s (%u)%s",
                     queue,
                     ptr,
                     size,
                     pIntercept->enumName().name(advice).c_str(),
-                    advice );
+                    advice,
+                    eventWaitListString.c_str() );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 CPU_PERFORMANCE_TIMING_START();
