@@ -3223,7 +3223,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
         if( pIntercept->config().NullEnqueue == false )
         {
             const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
- 
+
             CALL_LOGGING_ENTER(
                 "queue = %p, buffer = %p, %s, offset = %zu, cb = %zu, ptr = %p%s",
                 command_queue,
@@ -3602,7 +3602,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillBuffer)(
         if( pIntercept->config().NullEnqueue == false )
         {
             const std::string eventWaitListString = getFormattedEventWaitList(pIntercept, num_events_in_wait_list, event_wait_list);
-            
+
             CALL_LOGGING_ENTER( "queue = %p, buffer = %p, pattern_size = %zu, offset = %zu, size = %zu%s",
                 command_queue,
                 buffer,
