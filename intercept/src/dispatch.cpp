@@ -36,13 +36,12 @@ static std::string getFormattedEventWaitList(
     {
         eventWaitListString += ", event_wait_list = ";
         pIntercept->getEventListString(
-        num_events_in_wait_list,
-        event_wait_list,
-        eventWaitListString );
+            num_events_in_wait_list,
+            event_wait_list,
+            eventWaitListString );
     }
     return eventWaitListString;
 }
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //

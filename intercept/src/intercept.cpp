@@ -11868,7 +11868,7 @@ void CLIntercept::chromeCallLoggingExit(
     std::ostringstream  args;
     if( includeId )
     {
-        args << ", \"args\":{\"id\":\"" << enqueueCounter << "\"}";
+        args << ", \"args\":{\"id\":" << enqueueCounter << "}";
     }
 
     uint64_t    processId =
@@ -12099,8 +12099,8 @@ void CLIntercept::chromeTraceEvent(
                         << ", \"tid\":" << m_EventsChromeTraced << "." << queueNumber
                         << ", \"ts\":" << usStarts[state]
                         << ", \"dur\":" << usDeltas[state]
-                        << ", \"cname\":\"" << colours[state] << "\""
-                        << ", \"args\":{\"id\":\"" << enqueueCounter << "\""
+                        << ", \"cname\":\"" << colours[state]
+                        << "\", \"args\":{\"id\":" << enqueueCounter
                         << "}},\n";
                 }
             }
