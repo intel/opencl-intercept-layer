@@ -418,6 +418,11 @@ public:
                 cl_command_queue queue );
     void    checkRemoveQueue(
                 cl_command_queue queue );
+    void    addEvent(
+                cl_event event,
+                uint64_t enqueueCounter );
+    void    checkRemoveEvent(
+                cl_event event );
     void    addBuffer(
                 cl_mem buffer );
     void    addImage(
@@ -737,6 +742,7 @@ public:
 
     void    chromeCallLoggingExit(
                 const std::string& functionName,
+                bool includeId,
                 const uint64_t enqueueCounter,
                 const cl_kernel kernel,
                 clock::time_point start,
@@ -1016,6 +1022,9 @@ private:
     typedef std::list< cl_command_queue >   CQueueList;
     typedef std::map< cl_context, CQueueList >  CContextQueuesMap;
     CContextQueuesMap   m_ContextQueuesMap;
+
+    typedef std::map< cl_event, uint64_t >  CEventIdMap;
+    CEventIdMap m_EventIdMap;
 
     unsigned int    m_MemAllocNumber;
 
@@ -1584,6 +1593,16 @@ inline CObjectTracker& CLIntercept::objectTracker()
             NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
+    if( pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        pIntercept->chromeCallLoggingExit(                                  \
+            __FUNCTION__,                                                   \
+            false,                                                          \
+            0,                                                              \
+            NULL,                                                           \
+            cpuStart,                                                       \
+            cpuEnd );                                                       \
+    }                                                                       \
     ITT_CALL_LOGGING_EXIT();
 
 #define CALL_LOGGING_EXIT_EVENT(errorCode, event, ...)                      \
@@ -1594,6 +1613,37 @@ inline CObjectTracker& CLIntercept::objectTracker()
             errorCode,                                                      \
             event,                                                          \
             ##__VA_ARGS__ );                                                \
+    }                                                                       \
+    if( pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        pIntercept->chromeCallLoggingExit(                                  \
+            __FUNCTION__,                                                   \
+            true,                                                           \
+            enqueueCounter,                                                 \
+            NULL,                                                           \
+            cpuStart,                                                       \
+            cpuEnd );                                                       \
+    }                                                                       \
+    ITT_CALL_LOGGING_EXIT();
+
+#define CALL_LOGGING_EXIT_KERNEL_EVENT(errorCode, kernel, event, ...)       \
+    if( pIntercept->config().CallLogging )                                  \
+    {                                                                       \
+        pIntercept->callLoggingExit(                                        \
+            __FUNCTION__,                                                   \
+            errorCode,                                                      \
+            event,                                                          \
+            ##__VA_ARGS__ );                                                \
+    }                                                                       \
+    if( pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        pIntercept->chromeCallLoggingExit(                                  \
+            __FUNCTION__,                                                   \
+            true,                                                           \
+            enqueueCounter,                                                 \
+            kernel,                                                         \
+            cpuStart,                                                       \
+            cpuEnd );                                                       \
     }                                                                       \
     ITT_CALL_LOGGING_EXIT();
 
@@ -1757,49 +1807,65 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
            ( enqueueCounter <= m_Config.DumpImagesMaxEnqueue );
 }
 
-#define ADD_QUEUE( context, queue )                                         \
-    if( queue &&                                                            \
+#define ADD_QUEUE( _context, _queue )                                       \
+    if( _queue &&                                                           \
         ( pIntercept->config().ChromePerformanceTiming ||                   \
           pIntercept->config().Emulate_cl_intel_unified_shared_memory ) )   \
     {                                                                       \
         pIntercept->addQueue(                                               \
-            context,                                                        \
-            queue );                                                        \
+            _context,                                                       \
+            _queue );                                                       \
         if( pIntercept->config().ChromePerformanceTiming )                  \
         {                                                                   \
-            pIntercept->chromeRegisterCommandQueue( queue );                \
+            pIntercept->chromeRegisterCommandQueue( _queue );               \
         }                                                                   \
     }
 
-#define REMOVE_QUEUE( queue )                                               \
-    if( queue &&                                                            \
+#define REMOVE_QUEUE( _queue )                                              \
+    if( _queue &&                                                           \
         ( pIntercept->config().ChromePerformanceTiming ||                   \
           pIntercept->config().Emulate_cl_intel_unified_shared_memory ) )   \
     {                                                                       \
-        pIntercept->checkRemoveQueue( queue );                              \
+        pIntercept->checkRemoveQueue( _queue );                             \
     }
 
-#define ADD_BUFFER( buffer )                                                \
-    if( buffer &&                                                           \
+#define ADD_EVENT( _event )                                                 \
+    if( ( _event ) &&                                                       \
+        ( pIntercept->config().ChromeCallLogging ||                         \
+          pIntercept->config().ChromePerformanceTiming ) )                  \
+    {                                                                       \
+        pIntercept->addEvent( _event, enqueueCounter );                     \
+    }
+
+#define REMOVE_EVENT( _event )                                              \
+    if( ( _event ) &&                                                       \
+        ( pIntercept->config().ChromeCallLogging ||                         \
+          pIntercept->config().ChromePerformanceTiming ) )                  \
+    {                                                                       \
+        pIntercept->checkRemoveEvent( _event );                             \
+    }
+
+#define ADD_BUFFER( _buffer )                                               \
+    if( _buffer &&                                                          \
         ( pIntercept->config().DumpBuffersAfterCreate ||                    \
           pIntercept->config().DumpBuffersAfterMap ||                       \
           pIntercept->config().DumpBuffersBeforeUnmap ||                    \
           pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
     {                                                                       \
-        pIntercept->addBuffer( buffer );                                    \
+        pIntercept->addBuffer( _buffer );                                   \
     }
 
-#define ADD_IMAGE( image )                                                  \
-    if( image &&                                                            \
+#define ADD_IMAGE( _image )                                                 \
+    if( _image &&                                                           \
         ( pIntercept->config().DumpImagesBeforeEnqueue ||                   \
           pIntercept->config().DumpImagesAfterEnqueue ) )                   \
     {                                                                       \
-        pIntercept->addImage( image );                                      \
+        pIntercept->addImage( _image );                                     \
     }
 
-#define REMOVE_MEMOBJ( memobj )                                             \
-    if( memobj &&                                                           \
+#define REMOVE_MEMOBJ( _memobj )                                            \
+    if( _memobj &&                                                          \
         ( pIntercept->config().DumpBuffersAfterCreate ||                    \
           pIntercept->config().DumpBuffersAfterMap ||                       \
           pIntercept->config().DumpBuffersBeforeUnmap ||                    \
@@ -1808,7 +1874,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
           pIntercept->config().DumpImagesAfterEnqueue ) )                   \
     {                                                                       \
-        pIntercept->checkRemoveMemObj( memobj );                            \
+        pIntercept->checkRemoveMemObj( _memobj );                           \
     }
 
 #define ADD_SAMPLER( sampler, str )                                         \
@@ -2333,32 +2399,22 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
 
 #define CPU_PERFORMANCE_TIMING_START()                                      \
     CLIntercept::clock::time_point   cpuStart, cpuEnd;                      \
-    if( ( pIntercept->config().HostPerformanceTiming ||                     \
-          pIntercept->config().ChromeCallLogging ) &&                       \
-        pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
         cpuStart = CLIntercept::clock::now();                               \
     }
 
 #define CPU_PERFORMANCE_TIMING_END()                                        \
-    if( ( pIntercept->config().HostPerformanceTiming ||                     \
-          pIntercept->config().ChromeCallLogging ) &&                       \
-        pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
         cpuEnd = CLIntercept::clock::now();                                 \
-        if( pIntercept->config().HostPerformanceTiming )                    \
+        if( pIntercept->config().HostPerformanceTiming &&                   \
+            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
                 __FUNCTION__,                                               \
-                NULL,                                                       \
-                cpuStart,                                                   \
-                cpuEnd );                                                   \
-        }                                                                   \
-        if( pIntercept->config().ChromeCallLogging )                        \
-        {                                                                   \
-            pIntercept->chromeCallLoggingExit(                              \
-                __FUNCTION__,                                               \
-                enqueueCounter,                                             \
                 NULL,                                                       \
                 cpuStart,                                                   \
                 cpuEnd );                                                   \
@@ -2366,24 +2422,15 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
     }
 
 #define CPU_PERFORMANCE_TIMING_END_KERNEL( _kernel )                        \
-    if( ( pIntercept->config().HostPerformanceTiming ||                     \
-          pIntercept->config().ChromeCallLogging ) &&                       \
-        pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
         cpuEnd = CLIntercept::clock::now();                                 \
-        if( pIntercept->config().HostPerformanceTiming )                    \
+        if( pIntercept->config().HostPerformanceTiming &&                   \
+            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
                 __FUNCTION__,                                               \
-                _kernel,                                                    \
-                cpuStart,                                                   \
-                cpuEnd );                                                   \
-        }                                                                   \
-        if( pIntercept->config().ChromeCallLogging )                        \
-        {                                                                   \
-            pIntercept->chromeCallLoggingExit(                              \
-                __FUNCTION__,                                               \
-                enqueueCounter,                                             \
                 _kernel,                                                    \
                 cpuStart,                                                   \
                 cpuEnd );                                                   \
