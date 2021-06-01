@@ -1020,6 +1020,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ATTRIBUTE_ASYNC_ENGINE_COUNT_NV );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_BUS_ID_NV );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_SLOT_ID_NV );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_DOMAIN_ID_NV );
 
     // cl_qcom_ext_host_ptr extension
     ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_EXT_HOST_PTR_QCOM );
