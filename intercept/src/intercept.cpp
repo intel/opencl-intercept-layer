@@ -2739,13 +2739,24 @@ void CLIntercept::logQueueInfo(
     logf( "Queue Info for %p:\n", queue );
 
     char*   deviceName = NULL;
-    errorCode = allocateAndGetDeviceInfoString(
+    errorCode |= allocateAndGetDeviceInfoString(
         device,
         CL_DEVICE_NAME,
         deviceName );
+    cl_command_queue_properties props = 0;
+    errorCode |= dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_PROPERTIES,
+        sizeof(props),
+        &props,
+        NULL );
     if( errorCode == CL_SUCCESS )
     {
         logf( "    For device: %s\n", deviceName );
+        logf( "    Queue properties: %s\n",
+            props == 0 ?
+            "(None)" :
+            enumName().name_command_queue_properties(props).c_str() );
     }
 
     // Queue family information, may not be supported for all devices.
