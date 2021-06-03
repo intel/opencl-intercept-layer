@@ -201,6 +201,9 @@ public:
     void    logKernelInfo(
                 const cl_kernel* kernels,
                 cl_uint numKernels );
+    void    logQueueInfo(
+                const cl_device_id device,
+                const cl_command_queue queue );
 
     void    logCL_GLTextureDetails( cl_mem image, cl_GLenum target, cl_GLint miplevel, cl_GLuint texture );
 
@@ -2475,6 +2478,14 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
 #define COMMAND_QUEUE_PROPERTIES_CLEANUP( _newprops )                       \
     delete [] _newprops;                                                    \
     _newprops = NULL;
+
+#define QUEUE_INFO_LOGGING( _device, _queue )                               \
+    if( pIntercept->config().QueueInfoLogging && ( _queue != NULL ) )       \
+    {                                                                       \
+        pIntercept->logQueueInfo(                                           \
+            _device,                                                        \
+            _queue );                                                       \
+    }
 
 #define DEVICE_PERFORMANCE_TIMING_START( pEvent )                           \
     CLIntercept::clock::time_point   queuedTime;                            \

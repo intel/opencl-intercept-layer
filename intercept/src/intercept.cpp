@@ -2728,6 +2728,52 @@ void CLIntercept::logKernelInfo(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::logQueueInfo(
+    const cl_device_id device,
+    const cl_command_queue queue )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_int  errorCode = CL_SUCCESS;
+
+    logf( "Queue Info for %p:\n", queue );
+
+    char*   deviceName = NULL;
+    errorCode = allocateAndGetDeviceInfoString(
+        device,
+        CL_DEVICE_NAME,
+        deviceName );
+    if( errorCode == CL_SUCCESS )
+    {
+        logf( "    For device: %s\n", deviceName );
+    }
+
+    // Queue family information, may not be supported for all devices.
+    cl_uint queueFamily = 0;
+    cl_int errorCode_qf = dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_FAMILY_INTEL,
+        sizeof(queueFamily),
+        &queueFamily,
+        NULL );
+    cl_uint queueIndex = 0;
+    errorCode_qf |= dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_INDEX_INTEL,
+        sizeof(queueIndex),
+        &queueIndex,
+        NULL );
+    if( errorCode_qf == CL_SUCCESS )
+    {
+        logf( "    Queue family: %u\n", queueFamily );
+        logf( "    Queue index: %u\n", queueIndex );
+    }
+
+    delete [] deviceName;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 cl_int CLIntercept::autoPartitionGetDeviceIDs(
     cl_platform_id platform,
     cl_device_type device_type,
