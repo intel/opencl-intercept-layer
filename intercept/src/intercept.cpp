@@ -1790,6 +1790,7 @@ void CLIntercept::getDevicePartitionPropertiesString(
             switch( property )
             {
             case CL_DEVICE_PARTITION_EQUALLY:
+            case CL_DEVICE_PARTITION_EQUALLY_EXT:
                 {
                     auto pu = (const cl_uint*)( properties + 1 );
                     CLI_SPRINTF( s, 256, "%u", pu[0] );
@@ -1799,6 +1800,7 @@ void CLIntercept::getDevicePartitionPropertiesString(
                 }
                 break;
             case CL_DEVICE_PARTITION_BY_COUNTS:
+            case CL_DEVICE_PARTITION_BY_COUNTS_EXT:
                 {
                     str += "{ ";
                     do
@@ -1817,6 +1819,8 @@ void CLIntercept::getDevicePartitionPropertiesString(
                     }
                     while( *properties != CL_DEVICE_PARTITION_BY_COUNTS_LIST_END );
                     str += " }";
+
+                    ++properties;
                 }
                 break;
             case CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN:
@@ -1826,6 +1830,62 @@ void CLIntercept::getDevicePartitionPropertiesString(
 
                     properties += 2;
                 }
+                break;
+            case CL_DEVICE_PARTITION_BY_NAMES_EXT:
+                {
+                    str += "{ ";
+                    do
+                    {
+                        ++properties;
+                        auto pu = (const cl_uint*)properties;
+                        if( pu[0] == CL_PARTITION_BY_NAMES_LIST_END_EXT )
+                        {
+                            str += "CL_PARTITION_BY_NAMES_LIST_END_EXT";
+                        }
+                        else
+                        {
+                            CLI_SPRINTF( s, 256, "%u, ", pu[0] );
+                            str += s;
+                        }
+                    }
+                    while( *properties != CL_PARTITION_BY_NAMES_LIST_END_EXT );
+                    str += " }";
+
+                    ++properties;
+                }
+                break;
+            case CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN_EXT:
+                // The extension uses different enums than the OpenCL 1.2
+                // feature, and we don't have an enum map for them (yet).
+                switch( properties[1] )
+                {
+                case CL_AFFINITY_DOMAIN_L1_CACHE_EXT:
+                    str += "CL_AFFINITY_DOMAIN_L1_CACHE_EXT";
+                    break;
+                case CL_AFFINITY_DOMAIN_L2_CACHE_EXT:
+                    str += "CL_AFFINITY_DOMAIN_L2_CACHE_EXT";
+                    break;
+                case CL_AFFINITY_DOMAIN_L3_CACHE_EXT:
+                    str += "CL_AFFINITY_DOMAIN_L3_CACHE_EXT";
+                    break;
+                case CL_AFFINITY_DOMAIN_L4_CACHE_EXT:
+                    str += "CL_AFFINITY_DOMAIN_L4_CACHE_EXT";
+                    break;
+                case CL_AFFINITY_DOMAIN_NUMA_EXT:
+                    str += "CL_AFFINITY_DOMAIN_NUMA_EXT";
+                    break;
+                case CL_AFFINITY_DOMAIN_NEXT_FISSIONABLE_EXT:
+                    str += "CL_AFFINITY_DOMAIN_NEXT_FISSIONABLE_EXT";
+                    break;
+                default:
+                    {
+                        CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)properties[1] );
+                        str += s;
+                    }
+                    break;
+                }
+
+                properties += 2;
                 break;
             default:
                 {

@@ -282,7 +282,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateSubDevices)(
         }
         CALL_LOGGING_ENTER( "in_device = %s, properties = [ %s ], num_devices = %u",
             deviceInfo.c_str(),
-            propsStr.c_str() );
+            propsStr.c_str(),
+            num_devices );
         CPU_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = pIntercept->dispatch().clCreateSubDevices(

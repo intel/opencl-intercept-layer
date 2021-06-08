@@ -453,7 +453,6 @@ clGetKernelSuggestedLocalWorkSizeKHR(
 #define CL_QUEUE_THROTTLE_MED_KHR (1<<1)
 #define CL_QUEUE_THROTTLE_LOW_KHR (1<<2)
 
-
 ///////////////////////////////////////////////////////////////////////////////
 // cl_ext_atomic_counters
 
@@ -481,6 +480,15 @@ clGetKernelSuggestedLocalWorkSizeKHR(
 #define CL_INVALID_PARTITION_COUNT_EXT              -1058
 #define CL_INVALID_PARTITION_NAME_EXT               -1059
 
+#define CL_AFFINITY_DOMAIN_L1_CACHE_EXT             0x1
+#define CL_AFFINITY_DOMAIN_L2_CACHE_EXT             0x2
+#define CL_AFFINITY_DOMAIN_L3_CACHE_EXT             0x3
+#define CL_AFFINITY_DOMAIN_L4_CACHE_EXT             0x4
+#define CL_AFFINITY_DOMAIN_NUMA_EXT                 0x10
+#define CL_AFFINITY_DOMAIN_NEXT_FISSIONABLE_EXT     0x100
+
+#define CL_PARTITION_BY_COUNTS_LIST_END_EXT         0x0
+#define CL_PARTITION_BY_NAMES_LIST_END_EXT          -1
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_altera_compiler_mode
