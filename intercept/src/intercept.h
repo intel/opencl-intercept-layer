@@ -145,6 +145,9 @@ public:
                 cl_uint num_devices,
                 const cl_device_id* devices,
                 std::string& str ) const;
+    void    getDevicePartitionPropertiesString(
+                const cl_device_partition_property* properties,
+                std::string& str ) const;
     void    getEventListString(
                 cl_uint num_events,
                 const cl_event* event_list,

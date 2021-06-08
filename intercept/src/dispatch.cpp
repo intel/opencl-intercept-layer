@@ -267,7 +267,22 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateSubDevices)(
     if( pIntercept && pIntercept->dispatch().clCreateSubDevices )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER();
+
+        std::string deviceInfo;
+        std::string propsStr;
+        if( pIntercept->config().CallLogging )
+        {
+            pIntercept->getDeviceInfoString(
+                1,
+                &in_device,
+                deviceInfo );
+            pIntercept->getDevicePartitionPropertiesString(
+                properties,
+                propsStr );
+        }
+        CALL_LOGGING_ENTER( "in_device = %s, properties = [ %s ], num_devices = %u",
+            deviceInfo.c_str(),
+            propsStr.c_str() );
         CPU_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = pIntercept->dispatch().clCreateSubDevices(
