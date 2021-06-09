@@ -1772,6 +1772,117 @@ void CLIntercept::getDeviceInfoString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getDevicePartitionPropertiesString(
+    const cl_device_partition_property* properties,
+    std::string& str ) const
+{
+    str = "";
+
+    if( properties )
+    {
+        char    s[256];
+
+        while( properties[0] != 0 )
+        {
+            cl_int  property = (cl_int)properties[0];
+            str += enumName().name( property ) + " = ";
+
+            switch( property )
+            {
+            case CL_DEVICE_PARTITION_EQUALLY:
+            case CL_DEVICE_PARTITION_EQUALLY_EXT:
+                {
+                    auto pu = (const cl_uint*)( properties + 1 );
+                    CLI_SPRINTF( s, 256, "%u", pu[0] );
+                    str += s;
+
+                    properties += 2;
+                }
+                break;
+            case CL_DEVICE_PARTITION_BY_COUNTS:
+            case CL_DEVICE_PARTITION_BY_COUNTS_EXT:
+                {
+                    ++properties;
+                    str += "{ ";
+                    do
+                    {
+                        auto pu = (const cl_uint*)properties;
+                        if( pu[0] == CL_DEVICE_PARTITION_BY_COUNTS_LIST_END )
+                        {
+                            str += "CL_DEVICE_PARTITION_BY_COUNTS_LIST_END";
+                        }
+                        else
+                        {
+                            CLI_SPRINTF( s, 256, "%u, ", pu[0] );
+                            str += s;
+                        }
+                    }
+                    while( *properties++ != CL_DEVICE_PARTITION_BY_COUNTS_LIST_END );
+                    str += " }";
+                }
+                break;
+            case CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN:
+                {
+                    auto pd = (const cl_device_affinity_domain*)( properties + 1 );
+                    str += enumName().name_device_affinity_domain(pd[0]);
+
+                    properties += 2;
+                }
+                break;
+            case CL_DEVICE_PARTITION_BY_NAMES_EXT:
+                {
+                    ++properties;
+                    str += "{ ";
+                    do
+                    {
+                        auto pu = (const cl_uint*)properties;
+                        if( pu[0] == CL_PARTITION_BY_NAMES_LIST_END_EXT )
+                        {
+                            str += "CL_PARTITION_BY_NAMES_LIST_END_EXT";
+                        }
+                        else
+                        {
+                            CLI_SPRINTF( s, 256, "%u, ", pu[0] );
+                            str += s;
+                        }
+                    }
+                    while( *properties++ != CL_PARTITION_BY_NAMES_LIST_END_EXT );
+                    str += " }";
+                }
+                break;
+            case CL_DEVICE_PARTITION_BY_AFFINITY_DOMAIN_EXT:
+                // The extension uses different enums than the OpenCL 1.2
+                // feature, and we don't have an enum map for them (yet).
+                {
+                    CLI_SPRINTF( s, 256, "%04X", (cl_uint)properties[1] );
+                    str += s;
+
+                    properties += 2;
+                }
+                break;
+            default:
+                {
+                    CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
+                    str += s;
+                    // Advance by two properties.  This may not be correct,
+                    // but it's the best we can do when the property is
+                    // unknown.
+                    properties += 2;
+                }
+                break;
+            }
+
+            if( properties[0] != 0 )
+            {
+                str += ", ";
+            }
+        }
+    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::getEventListString(
     cl_uint numEvents,
     const cl_event* eventList,
