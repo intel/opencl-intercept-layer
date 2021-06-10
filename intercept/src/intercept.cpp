@@ -1806,13 +1806,13 @@ void CLIntercept::getDevicePartitionPropertiesString(
                     str += "{ ";
                     do
                     {
-                        auto pu = (const cl_uint*)properties;
-                        if( pu[0] == CL_DEVICE_PARTITION_BY_COUNTS_LIST_END )
+                        if( *properties == CL_DEVICE_PARTITION_BY_COUNTS_LIST_END )
                         {
                             str += "CL_DEVICE_PARTITION_BY_COUNTS_LIST_END";
                         }
                         else
                         {
+                            auto pu = (const cl_uint*)properties;
                             CLI_SPRINTF( s, 256, "%u, ", pu[0] );
                             str += s;
                         }
@@ -1835,13 +1835,13 @@ void CLIntercept::getDevicePartitionPropertiesString(
                     str += "{ ";
                     do
                     {
-                        auto pu = (const cl_uint*)properties;
-                        if( pu[0] == CL_PARTITION_BY_NAMES_LIST_END_EXT )
+                        if( *properties == CL_PARTITION_BY_NAMES_LIST_END_EXT )
                         {
                             str += "CL_PARTITION_BY_NAMES_LIST_END_EXT";
                         }
                         else
                         {
+                            auto pu = (const cl_uint*)properties;
                             CLI_SPRINTF( s, 256, "%u, ", pu[0] );
                             str += s;
                         }
