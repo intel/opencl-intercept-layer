@@ -7985,8 +7985,20 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
                 properties |= (cl_command_queue_properties)CL_QUEUE_PROFILING_ENABLE;
             }
 
-            CALL_LOGGING_ENTER( "context = %p",
-                context );
+            std::string deviceInfo;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getDeviceInfoString(
+                    1,
+                    &device,
+                    deviceInfo );
+            }
+            CALL_LOGGING_ENTER( "context = %p, device = %s, properties = %s (%llX), configuration = %u",
+                context,
+                deviceInfo.c_str(),
+                pIntercept->enumName().name_command_queue_properties( properties ).c_str(),
+                properties,
+                configuration );
             CHECK_ERROR_INIT( errcode_ret );
             CPU_PERFORMANCE_TIMING_START();
 
