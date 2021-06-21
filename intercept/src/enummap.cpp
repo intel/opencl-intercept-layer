@@ -720,6 +720,9 @@ CEnumNameMap::CEnumNameMap()
     // cl_khr_initalize_memory
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_MEMORY_INITIALIZE_KHR );
 
+    // cl_khr_integer_dot_product
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_INTEGER_DOT_PRODUCT_CAPABILITIES_KHR );
+
     // cl_khr_pci_bus_info extension
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_BUS_INFO_KHR );
 
@@ -746,7 +749,6 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT );
 
     // cl_ext_cxx_for_opencl
-
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_CXX_FOR_OPENCL_NUMERIC_VERSION_EXT );
 
     // cl_ext_device_fission
