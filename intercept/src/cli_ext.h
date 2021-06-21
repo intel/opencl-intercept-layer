@@ -383,6 +383,16 @@ cl_program CL_API_CALL clCreateProgramWithILKHR(
 #define CL_CONTEXT_MEMORY_INITIALIZE_KHR            0x2030
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_khr_integer_dot_product
+
+typedef cl_bitfield         cl_device_integer_dot_product_capabilities_khr;
+
+#define CL_DEVICE_INTEGER_DOT_PRODUCT_INPUT_4x8BIT_PACKED_KHR (1 << 0)
+#define CL_DEVICE_INTEGER_DOT_PRODUCT_INPUT_4x8BIT_KHR      (1 << 1)
+
+#define CL_DEVICE_INTEGER_DOT_PRODUCT_CAPABILITIES_KHR      0x1073
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_khr_pci_bus_info
 
 typedef struct _cl_device_pci_bus_info_khr {
