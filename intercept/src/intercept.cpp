@@ -5039,7 +5039,7 @@ void CLIntercept::dummyCommandQueue(
             else
             {
                 logf( "Error creating dummy command queue!  %s (%i)\n",
-                    enumName().name( errorCode ),
+                    enumName().name( errorCode ).c_str(),
                     errorCode );
             }
         }
@@ -7947,8 +7947,8 @@ cl_program CLIntercept::createProgramWithInjectionBinaries(
                 }
                 if( errorCode != CL_SUCCESS )
                 {
-                    log( "Injecting binaries failed: clCreateProgramWithBinary() returned %s\n" +
-                        enumName().name( errorCode ) + "\n" );
+                    logf("Injecting binaries failed: clCreateProgramWithBinary() returned %s\n",
+                        enumName().name( errorCode ).c_str() );
                 }
             }
 
