@@ -5007,6 +5007,47 @@ void CLIntercept::createCommandQueuePropertiesOverride(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::dummyCommandQueue(
+    cl_context context,
+    cl_device_id device )
+{
+    if( config().DummyOutOfOrderQueue )
+    {
+        cl_command_queue_properties props;
+        dispatch().clGetDeviceInfo(
+            device,
+            CL_DEVICE_QUEUE_ON_HOST_PROPERTIES,
+            sizeof(props),
+            &props,
+            NULL );
+        if( props & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE )
+        {
+            std::lock_guard<std::mutex> lock(m_Mutex);
+
+            log( "Creating and destroying a dummy out-of-order queue.\n" );
+
+            cl_int  errorCode = CL_SUCCESS;
+            cl_command_queue dummy = dispatch().clCreateCommandQueue(
+                context,
+                device,
+                CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE,
+                &errorCode );
+            if( errorCode == CL_SUCCESS )
+            {
+                dispatch().clReleaseCommandQueue( dummy );
+            }
+            else
+            {
+                logf( "Error creating dummy command queue!  %s (%i)\n",
+                    enumName().name( errorCode ).c_str(),
+                    errorCode );
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::addTimingEvent(
     const std::string& functionName,
     const uint64_t enqueueCounter,
@@ -7906,8 +7947,8 @@ cl_program CLIntercept::createProgramWithInjectionBinaries(
                 }
                 if( errorCode != CL_SUCCESS )
                 {
-                    log( "Injecting binaries failed: clCreateProgramWithBinary() returned %s\n" +
-                        enumName().name( errorCode ) + "\n" );
+                    logf("Injecting binaries failed: clCreateProgramWithBinary() returned %s\n",
+                        enumName().name( errorCode ).c_str() );
                 }
             }
 
