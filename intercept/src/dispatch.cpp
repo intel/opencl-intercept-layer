@@ -7303,6 +7303,120 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_external_memory
+cl_int clEnqueueAcquireExternalMemObjectsKHR(
+    cl_command_queue command_queue,
+    cl_uint num_mem_objects,
+    const cl_mem *mem_objects,
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_queue);
+        if( dispatchX.clEnqueueAcquireExternalMemObjectsKHR )
+        {
+            cl_int  retVal = CL_SUCCESS;
+
+            INCREMENT_ENQUEUE_COUNTER();
+            CHECK_AUBCAPTURE_START( command_queue );
+
+            if( pIntercept->config().NullEnqueue == false )
+            {
+                CALL_LOGGING_ENTER();
+                CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+                DEVICE_PERFORMANCE_TIMING_START( event );
+                CPU_PERFORMANCE_TIMING_START();
+
+                retVal = dispatchX.clEnqueueAcquireExternalMemObjectsKHR(
+                    command_queue,
+                    num_mem_objects,
+                    mem_objects,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event);
+
+                CPU_PERFORMANCE_TIMING_END();
+                DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
+                CHECK_ERROR( retVal );
+                ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+                CALL_LOGGING_EXIT_EVENT( retVal, event );
+                ADD_EVENT( event ? event[0] : NULL );
+            }
+
+            FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
+            CHECK_AUBCAPTURE_STOP( command_queue );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_external_memory
+cl_int clEnqueueReleaseExternalMemObjectsKHR(
+    cl_command_queue command_queue,
+    cl_uint num_mem_objects,
+    const cl_mem *mem_objects,
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_queue);
+        if( dispatchX.clEnqueueReleaseExternalMemObjectsKHR )
+        {
+            cl_int  retVal = CL_SUCCESS;
+
+            INCREMENT_ENQUEUE_COUNTER();
+            CHECK_AUBCAPTURE_START( command_queue );
+
+            if( pIntercept->config().NullEnqueue == false )
+            {
+                CALL_LOGGING_ENTER();
+                CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+                DEVICE_PERFORMANCE_TIMING_START( event );
+                CPU_PERFORMANCE_TIMING_START();
+
+                retVal = dispatchX.clEnqueueReleaseExternalMemObjectsKHR(
+                    command_queue,
+                    num_mem_objects,
+                    mem_objects,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event);
+
+                CPU_PERFORMANCE_TIMING_END();
+                DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
+                CHECK_ERROR( retVal );
+                ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+                CALL_LOGGING_EXIT_EVENT( retVal, event );
+                ADD_EVENT( event ? event[0] : NULL );
+            }
+
+            FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
+            CHECK_AUBCAPTURE_STOP( command_queue );
+
+            DEVICE_PERFORMANCE_TIMING_CHECK();
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_khr_gl_sharing
 CL_API_ENTRY cl_int CL_API_CALL clGetGLContextInfoKHR(
     const cl_context_properties *properties,

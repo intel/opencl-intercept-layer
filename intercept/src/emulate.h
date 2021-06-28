@@ -115,6 +115,8 @@ cl_int CL_API_CALL clEnqueueMemAdviseINTEL_EMU(
     const cl_event* event_wait_list,
     cl_event* event);
 
+// cl_khr_semaphore
+
 cl_semaphore_khr CL_API_CALL clCreateSemaphoreWithPropertiesKHR_EMU(
     cl_context context,
     const cl_semaphore_properties_khr *sema_props,

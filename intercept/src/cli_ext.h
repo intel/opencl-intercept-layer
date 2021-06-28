@@ -312,6 +312,57 @@ typedef struct _cl_name_version_khr
 } cl_name_version_khr;
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_khr_external_memory
+
+// Note: This implements the provisional extension v0.9.0.
+
+typedef cl_uint             cl_external_memory_handle_type_khr;
+
+#define CL_PLATFORM_EXTERNAL_MEMORY_IMPORT_HANDLE_TYPES_KHR      0x2044
+
+#define CL_DEVICE_EXTERNAL_MEMORY_IMPORT_HANDLE_TYPES_KHR        0x204F
+
+#define CL_DEVICE_HANDLE_LIST_KHR                                0x2051
+#define CL_DEVICE_HANDLE_LIST_END_KHR                            0
+
+#define CL_COMMAND_ACQUIRE_EXTERNAL_MEM_OBJECTS_KHR              0x2047
+#define CL_COMMAND_RELEASE_EXTERNAL_MEM_OBJECTS_KHR              0x2048
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clEnqueueAcquireExternalMemObjectsKHR(
+    cl_command_queue command_queue,
+    cl_uint num_mem_objects,
+    const cl_mem *mem_objects,
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clEnqueueReleaseExternalMemObjectsKHR(
+    cl_command_queue command_queue,
+    cl_uint num_mem_objects,
+    const cl_mem *mem_objects,
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event);
+
+// cl_khr_external_memory_dma_buf
+#define CL_EXTERNAL_MEMORY_HANDLE_DMA_BUF_KHR           0x2067
+
+// cl_khr_external_memory_dx
+#define CL_EXTERNAL_MEMORY_HANDLE_D3D11_TEXTURE_KHR     0x2063
+#define CL_EXTERNAL_MEMORY_HANDLE_D3D11_TEXTURE_KMT_KHR 0x2064
+#define CL_EXTERNAL_MEMORY_HANDLE_D3D12_HEAP_KHR        0x2065
+#define CL_EXTERNAL_MEMORY_HANDLE_D3D12_RESOURCE_KHR    0x2066
+
+// cl_khr_external_memory_opaque_fd
+#define CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_FD_KHR         0x2060
+
+// cl_khr_external_memory_win32
+#define CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KHR      0x2061
+#define CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KMT_KHR  0x2062
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_khr_fp16
 
 #define CL_DEVICE_HALF_FP_CONFIG                         0x1033
@@ -413,8 +464,9 @@ typedef cl_ulong cl_semaphore_payload_khr;
 #define CL_SEMAPHORE_PAYLOAD_KHR                                 0x203C
 #define CL_SEMAPHORE_TYPE_KHR                                    0x203D
 
-#define CL_DEVICE_HANDLE_LIST_KHR                                0x2051
-#define CL_DEVICE_HANDLE_LIST_END_KHR                            0
+// Shared with cl_khr_external_memory:
+//#define CL_DEVICE_HANDLE_LIST_KHR                              0x2051
+//#define CL_DEVICE_HANDLE_LIST_END_KHR                          0
 
 #define CL_COMMAND_SEMAPHORE_WAIT_KHR                            0x2042
 #define CL_COMMAND_SEMAPHORE_SIGNAL_KHR                          0x2043

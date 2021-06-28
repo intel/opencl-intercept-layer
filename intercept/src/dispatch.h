@@ -179,6 +179,24 @@ struct CLdispatchX
             const cl_queue_properties_khr* properties,
             cl_int* errcode_ret);
 
+    // cl_khr_external_memory
+    cl_int  (CL_API_CALL *clEnqueueAcquireExternalMemObjectsKHR) (
+        cl_command_queue command_queue,
+        cl_uint num_mem_objects,
+        const cl_mem *mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event *event_wait_list,
+        cl_event *event);
+
+    // cl_khr_external_memory
+    cl_int  (CL_API_CALL *clEnqueueReleaseExternalMemObjectsKHR) (
+        cl_command_queue command_queue,
+        cl_uint num_mem_objects,
+        const cl_mem *mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event *event_wait_list,
+        cl_event *event);
+
     // cl_khr_gl_event
     cl_event    (CL_API_CALL *clCreateEventFromGLsyncKHR) (
                 cl_context context,

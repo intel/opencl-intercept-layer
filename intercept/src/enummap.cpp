@@ -705,6 +705,29 @@ CEnumNameMap::CEnumNameMap()
     //CL_DEVICE_ILS_WITH_VERSION_KHR                   0x1061
     //CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR      0x1062
 
+    // cl_khr_external_memory
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_EXTERNAL_MEMORY_IMPORT_HANDLE_TYPES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_EXTERNAL_MEMORY_IMPORT_HANDLE_TYPES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_HANDLE_LIST_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_EXTERNAL_MEM_OBJECTS_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_EXTERNAL_MEM_OBJECTS_KHR );
+
+    // cl_khr_external_memory_dma_buf
+    ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_DMA_BUF_KHR );
+
+    // cl_khr_external_memory_dx
+    ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_D3D11_TEXTURE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_D3D11_TEXTURE_KMT_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_D3D12_HEAP_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_D3D12_RESOURCE_KHR );
+
+    // cl_khr_external_memory_opaque_fd
+    ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_FD_KHR );
+
+    // cl_khr_external_memory_win32
+    ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KMT_KHR );
+
     // cl_khr_gl_event
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_GL_FENCE_SYNC_OBJECT_KHR );
 
@@ -737,10 +760,11 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_PROPERTIES_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_PAYLOAD_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_TYPE_KHR );
+    // Shared with cl_khr_external_memory:
+    //CL_DEVICE_HANDLE_LIST_KHR                      0x2051
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_SEMAPHORE_WAIT_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_SEMAPHORE_SIGNAL_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_SEMAPHORE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_HANDLE_LIST_KHR );
 
     ADD_ENUM_NAME( m_cl_semaphore_type_khr, CL_SEMAPHORE_TYPE_BINARY_KHR );
 

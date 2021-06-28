@@ -2153,19 +2153,69 @@ void CLIntercept::getMemPropertiesString(
             cl_int  property = (cl_int)properties[0];
             str += enumName().name( property ) + " = ";
 
-            // There are no mem properties (yet).
+            switch( property )
+            {
+            case CL_DEVICE_HANDLE_LIST_KHR:
+                {
+                    ++properties;
+                    str += "{ ";
+                    do
+                    {
+                        if( *properties == CL_DEVICE_HANDLE_LIST_END_KHR )
+                        {
+                            str += "CL_DEVICE_HANDLE_LIST_END_KHR";
+                        }
+                        else
+                        {
+                            auto pDevice = (const cl_device_id*)properties;
+                            std::string deviceInfo;
+                            getDeviceInfoString(
+                                1,
+                                pDevice,
+                                deviceInfo );
+                            str += deviceInfo;
+                            str += ", ";
 
-            //switch( property )
-            //{
-            //default:
+                        }
+                    }
+                    while( *properties++ != CL_DEVICE_HANDLE_LIST_END_KHR );
+                    str += " }";
+                }
+                break;
+            case CL_EXTERNAL_MEMORY_HANDLE_DMA_BUF_KHR:
+            case CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_FD_KHR:
+                {
+                    auto pfd = (const int*)( properties + 1);
+                    CLI_SPRINTF( s, 256, "%d", pfd[0] );
+                    str += s;
+                    properties += 2;
+                }
+                break;
+            case CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KHR:
+            case CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KMT_KHR:
+            case CL_EXTERNAL_MEMORY_HANDLE_D3D11_TEXTURE_KHR:
+            case CL_EXTERNAL_MEMORY_HANDLE_D3D11_TEXTURE_KMT_KHR:
+            case CL_EXTERNAL_MEMORY_HANDLE_D3D12_HEAP_KHR:
+            case CL_EXTERNAL_MEMORY_HANDLE_D3D12_RESOURCE_KHR:
+                {
+                    auto pfd = (const void**)( properties + 1);
+                    CLI_SPRINTF( s, 256, "%p", pfd[0] );
+                    str += s;
+                    properties += 2;
+                }
+                break;
+            default:
                 {
                     CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
                     str += s;
+                    // Advance by two properties.  This may not be correct,
+                    // but it's the best we can do when the property is
+                    // unknown.
+                    properties += 2;
                 }
-            //    break;
-            //}
+                break;
+            }
 
-            properties += 2;
             if( properties[0] != 0 )
             {
                 str += ", ";
@@ -11311,6 +11361,10 @@ void* CLIntercept::getExtensionFunctionAddress(
 
     // cl_khr_create_command_queue
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandQueueWithPropertiesKHR );
+
+    // cl_khr_external_memory
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireExternalMemObjectsKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseExternalMemObjectsKHR );
 
     // cl_khr_gl_event
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateEventFromGLsyncKHR );
