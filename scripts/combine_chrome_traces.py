@@ -42,7 +42,7 @@ def main():
         print("    Can also be useful to compare two or more single process executions on a common timeline.")
         print()
         print("    Use as:")
-        print("    chrome-trace-combine <number of traces> <space-separated paths to all json traces> [space-separated event filters]")
+        print("    combine_chrome_traces.py <number of traces> <space-separated paths to all json traces> [space-separated event filters]")
         print()
         print("        Optional arguments: event-filters are names of OpenCL kernels or OpenCL API calls")
         print("                            that should be retained in the filtered output.")
