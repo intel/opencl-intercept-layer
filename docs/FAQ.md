@@ -79,6 +79,8 @@ This should produce output like:
 In this case, you should set `OpenCLFileName` to `/path/to/your/libOpenCL.so.1`.
 It is possible to have multiple OpenCL libraries or OpenCL ICD loaders installed on a system, and this can help to identify which OpenCL library or OpenCL ICD loader the Intercept Layer for OpenCL Applications should pass calls to.
 
+Please remember that environment variable controls have a "CLI_" prefix, so to set `OpenCLFileName` using an environment variable the environment variable should be `CLI_OpenCLFileName`.
+
 ## It's still crashing!
 
 If your application is still crashing, here are a few things to try:
@@ -99,6 +101,7 @@ If you think you are setting a control but it does not appear to be taking effec
     ````
 * If you are setting a control via an environment variable, be aware that on many operating systems, such as Linux, environment variables are case sensitive.
   Likewise, if you are executing your application via a non-standard method, such as via `sudo` or a syscall, be extra sure that you are properly inheriting the environment.
+* Please remember as well that environment variable controls have a "CLI_" prefix before the name of the control, so to set the `CallLogging` control you would set the environment variable `CLI_CallLogging`.
 * If you are setting a variable via the registry or a configuration file, double-check that the config file is in the proper location (typically the user's home directory, as defined by the `$HOME` environment variable), or the proper location in the registry.
 * Windows users may find it most convenient to set controls via the `cliconfig` configuration application.
 * Many of the most common controls are also supported by `cliloader` command line options.
