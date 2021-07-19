@@ -299,6 +299,8 @@ public:
                 char*& injectedIL );
     bool    injectProgramOptions(
                 const cl_program program,
+                cl_bool isCompile,
+                cl_bool isLink,
                 char*& newOptions );
     bool    appendBuildOptions(
                 const char* append,
@@ -328,6 +330,8 @@ public:
                 const char* options );
     void    dumpProgramOptions(
                 const cl_program program,
+                cl_bool isCompile,
+                cl_bool isLink,
                 const char* options );
     void    dumpProgramBuildLog(
                 const cl_program program,
@@ -2134,14 +2138,18 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
         pIntercept->saveProgramOptionsHash( program, options );             \
     }
 
-#define DUMP_PROGRAM_OPTIONS( program, options )                            \
+#define DUMP_PROGRAM_OPTIONS( program, options, isCompile, isLink )         \
     if( ( modified == false ) &&                                            \
         ( pIntercept->config().DumpProgramSource ||                         \
           pIntercept->config().DumpInputProgramBinaries ||                  \
           pIntercept->config().DumpProgramBinaries ||                       \
           pIntercept->config().DumpProgramSPIRV ) )                         \
     {                                                                       \
-        pIntercept->dumpProgramOptions( program, options );                 \
+        pIntercept->dumpProgramOptions(                                     \
+            program,                                                        \
+            isCompile,                                                      \
+            isLink,                                                         \
+            options );                                                      \
     }                                                                       \
     else if( ( modified == false ) &&                                       \
              ( pIntercept->config().SimpleDumpProgramSource ||              \
@@ -2330,30 +2338,32 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 #define SAVE_PROGRAM_NUMBER( program )                                      \
     pIntercept->saveProgramNumber( program );
 
-// Called from clBuildProgram:
+// Called from clCompileProgram and clBuildProgram:
 
-#define PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions )       \
+#define PROGRAM_OPTIONS_OVERRIDE_INIT( _program, _options, _newOptions, _isCompile ) \
     bool    modified = false;                                               \
     if( pIntercept->config().InjectProgramSource )                          \
     {                                                                       \
         modified |= pIntercept->injectProgramOptions(                       \
-            program,                                                        \
-            newOptions );                                                   \
+            _program,                                                       \
+            _isCompile,                                                     \
+            false, /* isLink */                                             \
+            _newOptions );                                                  \
     }                                                                       \
     if( !pIntercept->config().AppendBuildOptions.empty() )                  \
     {                                                                       \
         modified |= pIntercept->appendBuildOptions(                         \
             pIntercept->config().AppendBuildOptions.c_str(),                \
-            options,                                                        \
-            newOptions );                                                   \
+            _options,                                                       \
+            _newOptions );                                                  \
     }                                                                       \
     if( pIntercept->config().RelaxAllocationLimits &&                       \
         pIntercept->checkRelaxAllocationLimitsSupport( program ) )          \
     {                                                                       \
         modified |= pIntercept->appendBuildOptions(                         \
             "-cl-intel-greater-than-4GB-buffer-required",                   \
-            options,                                                        \
-            newOptions );                                                   \
+            _options,                                                       \
+            _newOptions );                                                  \
     }
 
 #define DUMP_OUTPUT_PROGRAM_BINARIES( program )                             \

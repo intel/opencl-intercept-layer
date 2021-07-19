@@ -2105,11 +2105,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
     {
         GET_ENQUEUE_COUNTER();
 
+        const bool isCompile = false;
+        const bool isLink = false;
         char*   newOptions = NULL;
 
         SAVE_PROGRAM_OPTIONS_HASH( program, options );
-        PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions );
-        DUMP_PROGRAM_OPTIONS( program, options );
+        PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions, isCompile );
+        DUMP_PROGRAM_OPTIONS( program, options, isCompile, isLink );
 
         CALL_LOGGING_ENTER( "program = %p, pfn_notify = %p", program, pfn_notify );
         BUILD_LOGGING_INIT();
@@ -2176,11 +2178,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
     {
         GET_ENQUEUE_COUNTER();
 
+        const bool isCompile = true;
+        const bool isLink = false;
         char*   newOptions = NULL;
 
         SAVE_PROGRAM_OPTIONS_HASH( program, options );
-        PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions );
-        DUMP_PROGRAM_OPTIONS( program, options );
+        PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions, isCompile );
+        DUMP_PROGRAM_OPTIONS( program, options, isCompile, isLink );
 
         CALL_LOGGING_ENTER( "program = %p, pfn_notify = %p", program, pfn_notify );
         BUILD_LOGGING_INIT();
@@ -2250,6 +2254,8 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
     {
         GET_ENQUEUE_COUNTER();
 
+        const bool isCompile = false;
+        const bool isLink = true;
         char*   newOptions = NULL;
         cl_program  retVal = NULL;
 
@@ -2300,7 +2306,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         // This is a new program object, so we don't currently have a hash for it.
         SAVE_PROGRAM_NUMBER( retVal );
         SAVE_PROGRAM_OPTIONS_HASH( retVal, options );
-        DUMP_PROGRAM_OPTIONS( retVal, options );
+        DUMP_PROGRAM_OPTIONS( retVal, options, isCompile, isLink );
         DUMP_OUTPUT_PROGRAM_BINARIES( retVal );
         DUMP_KERNEL_ISA_BINARIES( retVal );
         INCREMENT_PROGRAM_COMPILE_COUNT( retVal );

@@ -3871,6 +3871,8 @@ bool CLIntercept::injectProgramSPIRV(
 //
 bool CLIntercept::injectProgramOptions(
     const cl_program program,
+    cl_bool isCompile,
+    cl_bool isLink,
     char*& newOptions )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
@@ -3911,27 +3913,32 @@ bool CLIntercept::injectProgramOptions(
         CLI_SPRINTF( numberString3, 256, "%08X",
             (unsigned int)programInfo.ProgramHash );
 
+        const std::string suffix =
+            isCompile ? "_compile_options.txt" :
+            isLink ? "_link_options.txt" :
+            "_options.txt";
+
         std::string fileName1;
         fileName1 = fileName;
         fileName1 += "/CLI_";
         fileName1 += numberString1;
-        fileName1 += "_options.txt";
+        fileName1 += suffix;
 
         std::string fileName2;
         fileName2 = fileName;
         fileName2 += "/CLI_";
         fileName2 += numberString2;
-        fileName2 += "_options.txt";
+        fileName2 += suffix;
 
         std::string fileName3;
         fileName3 = fileName;
         fileName3 += "/CLI_";
         fileName3 += numberString3;
-        fileName3 += "_options.txt";
+        fileName3 += suffix;
 
         std::string fileName4;
         fileName4 = fileName;
-        fileName4 += "/CLI_options.txt";
+        fileName4 += suffix;
 
         std::ifstream is;
 
@@ -4583,6 +4590,8 @@ void CLIntercept::dumpProgramOptionsScript(
 //
 void CLIntercept::dumpProgramOptions(
     const cl_program program,
+    cl_bool isCompile,
+    cl_bool isLink,
     const char* options )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
@@ -4628,9 +4637,12 @@ void CLIntercept::dumpProgramOptions(
             fileName += "/CLI_";
             fileName += numberString;
         }
-        // Dump the program source to a .txt file.
+        // Dump the program options to a .txt file.
         {
-            fileName += "_options.txt";
+            fileName +=
+                isCompile ? "_compile_options.txt" :
+                isLink ? "_link_options.txt" :
+                "_options.txt";
             std::ofstream os;
             os.open(
                 fileName.c_str(),
