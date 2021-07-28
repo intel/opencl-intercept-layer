@@ -86,7 +86,7 @@ def main():
     for j in range(numFiles):
         for k in range(len(inputFiles[j])):
             if (inputFiles[j][k].find("start_time") != -1):
-                start_times.append(int(inputFiles[j][2].split(":")[-1].split("}")[0]))
+                start_times.append(int(inputFiles[j][2].split(":")[-1].split("}")[0].strip('"')))
                 break
         if(len(start_times) != j+1):
             print("ERROR: start_time not found in trace file "+sys.argv[j+2]+". Please check if the trace is valid.")
@@ -111,7 +111,9 @@ def main():
             if (filteredFiles[j][k].find("\"ts\"") != -1):
                 ts = int(filteredFiles[j][k].split("\"ts\":")[-1].split(",")[0]) + offset
                 filteredFiles[j][k] = re.sub("\"ts\":\d+", "\"ts\":"+str(ts), filteredFiles[j][k])
-
+            elif (filteredFiles[j][k].find("start_time") != -1):
+                filteredFiles[j][k] = re.sub('\"start_time\":["]?\d+["]?', "\"start_time\":"+str(epoch), filteredFiles[j][k])
+    
     # Write to output file
     tstamp = datetime.datetime.now()
     fName = "merged_" + str(tstamp.year) + '-' + str(tstamp.month) + '-' + str(tstamp.day) \
