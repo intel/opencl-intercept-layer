@@ -7083,8 +7083,6 @@ CL_API_ENTRY cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
     NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
-#if defined(_WIN32)
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_khr_d3d10_sharing
@@ -7884,9 +7882,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
 
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
-#endif
 
-#if defined(_WIN32)
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_dx9_media_sharing Extension
@@ -8092,7 +8088,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
 
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -8725,8 +8720,6 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedGLTextureFormatsINTEL(
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
-#if defined(_WIN32)
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_sharing_format_query
@@ -8867,8 +8860,6 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedD3D11TextureFormatsINTEL(
     }
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
-
-#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //
