@@ -1536,7 +1536,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetSupportedImageFormats)(
     if( pIntercept && pIntercept->dispatch().clGetSupportedImageFormats )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER( "flags = %s (%llX), image_type = %s (%X)",
+        CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), image_type = %s (%X)",
+            context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags,
             pIntercept->enumName().name( image_type ).c_str(),
@@ -5329,8 +5330,6 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
     }
 }
 
-// CL-GL Sharing
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_khr_gl_sharing
@@ -8677,6 +8676,245 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
         }
     }
 
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_intel_sharing_format_query
+CL_API_ENTRY cl_int CL_API_CALL clGetSupportedGLTextureFormatsINTEL(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_object_type image_type,
+    cl_uint num_entries,
+    cl_GLenum* gl_formats,
+    cl_uint* num_texture_formats)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clGetSupportedGLTextureFormatsINTEL )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), image_type = %s (%X)",
+                context,
+                pIntercept->enumName().name_mem_flags( flags ).c_str(),
+                flags,
+                pIntercept->enumName().name( image_type ).c_str(),
+                image_type );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clGetSupportedGLTextureFormatsINTEL(
+                context,
+                flags,
+                image_type,
+                num_entries,
+                gl_formats,
+                num_texture_formats);
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+#if defined(_WIN32)
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_intel_sharing_format_query
+CL_API_ENTRY cl_int CL_API_CALL clGetSupportedDX9MediaSurfaceFormatsINTEL(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_object_type image_type,
+    cl_uint plane,
+    cl_uint num_entries,
+    D3DFORMAT* dx9_formats,
+    cl_uint* num_surface_formats)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clGetSupportedDX9MediaSurfaceFormatsINTEL )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), image_type = %s (%X), plane = %u",
+                context,
+                pIntercept->enumName().name_mem_flags( flags ).c_str(),
+                flags,
+                pIntercept->enumName().name( image_type ).c_str(),
+                image_type,
+                plane );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clGetSupportedDX9MediaSurfaceFormatsINTEL(
+                context,
+                flags,
+                image_type,
+                plane,
+                num_entries,
+                dx9_formats,
+                num_surface_formats);
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_intel_sharing_format_query
+CL_API_ENTRY cl_int CL_API_CALL clGetSupportedD3D10TextureFormatsINTEL(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_object_type image_type,
+    cl_uint num_entries,
+    DXGI_FORMAT* d3d10_formats,
+    cl_uint* num_texture_formats)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clGetSupportedD3D10TextureFormatsINTEL )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), image_type = %s (%X)",
+                context,
+                pIntercept->enumName().name_mem_flags( flags ).c_str(),
+                flags,
+                pIntercept->enumName().name( image_type ).c_str(),
+                image_type );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clGetSupportedD3D10TextureFormatsINTEL(
+                context,
+                flags,
+                image_type,
+                num_entries,
+                d3d10_formats,
+                num_texture_formats);
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_intel_sharing_format_query
+CL_API_ENTRY cl_int CL_API_CALL clGetSupportedD3D11TextureFormatsINTEL(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_object_type image_type,
+    cl_uint plane,
+    cl_uint num_entries,
+    DXGI_FORMAT* d3d11_formats,
+    cl_uint* num_texture_formats)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clGetSupportedD3D11TextureFormatsINTEL )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), image_type = %s (%X), plane = %u",
+                context,
+                pIntercept->enumName().name_mem_flags( flags ).c_str(),
+                flags,
+                pIntercept->enumName().name( image_type ).c_str(),
+                image_type,
+                plane );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clGetSupportedD3D11TextureFormatsINTEL(
+                context,
+                flags,
+                image_type,
+                plane,
+                num_entries,
+                d3d11_formats,
+                num_texture_formats);
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+#endif
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_intel_sharing_format_query
+CL_API_ENTRY cl_int CL_API_CALL clGetSupportedVA_APIMediaSurfaceFormatsINTEL(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_object_type image_type,
+    cl_uint plane,
+    cl_uint num_entries,
+    VAImageFormat* va_api_formats,
+    cl_uint* num_surface_formats)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clGetSupportedVA_APIMediaSurfaceFormatsINTEL )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), image_type = %s (%X), plane = %u",
+                context,
+                pIntercept->enumName().name_mem_flags( flags ).c_str(),
+                flags,
+                pIntercept->enumName().name( image_type ).c_str(),
+                image_type,
+                plane );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clGetSupportedVA_APIMediaSurfaceFormatsINTEL(
+                context,
+                flags,
+                image_type,
+                plane,
+                num_entries,
+                va_api_formats,
+                num_surface_formats);
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 

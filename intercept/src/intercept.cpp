@@ -11194,6 +11194,16 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireVA_APIMediaSurfacesINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseVA_APIMediaSurfacesINTEL );
 
+    // cl_intel_sharing_format_query
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSupportedGLTextureFormatsINTEL );
+#if defined(_WIN32)
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSupportedDX9MediaSurfaceFormatsINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSupportedD3D10TextureFormatsINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSupportedD3D11TextureFormatsINTEL );
+#endif
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSupportedVA_APIMediaSurfaceFormatsINTEL );
+
+    // cl_intel_unified_shared_memory
     if( m_Config.Emulate_cl_intel_unified_shared_memory )
     {
         CHECK_RETURN_EXTENSION_FUNCTION_EMU( clHostMemAllocINTEL );

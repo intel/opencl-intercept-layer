@@ -447,4 +447,54 @@ struct CLdispatchX
         size_t size,
         void* host_ptr,
         cl_int* errcode_ret);
+
+    // cl_intel_sharing_format_query
+    cl_int (CL_API_CALL *clGetSupportedGLTextureFormatsINTEL) (
+        cl_context context,
+        cl_mem_flags flags,
+        cl_mem_object_type image_type,
+        cl_uint num_entries,
+        cl_GLenum* gl_formats,
+        cl_uint* num_texture_formats);
+
+#if defined(_WIN32)
+    // cl_intel_sharing_format_query
+    cl_int (CL_API_CALL *clGetSupportedDX9MediaSurfaceFormatsINTEL) (
+        cl_context context,
+        cl_mem_flags flags,
+        cl_mem_object_type image_type,
+        cl_uint plane,
+        cl_uint num_entries,
+        D3DFORMAT* dx9_formats,
+        cl_uint* num_surface_formats);
+
+    // cl_intel_sharing_format_query
+    cl_int (CL_API_CALL *clGetSupportedD3D10TextureFormatsINTEL) (
+        cl_context context,
+        cl_mem_flags flags,
+        cl_mem_object_type image_type,
+        cl_uint num_entries,
+        DXGI_FORMAT* d3d10_formats,
+        cl_uint* num_texture_formats);
+
+    // cl_intel_sharing_format_query
+    cl_int (CL_API_CALL *clGetSupportedD3D11TextureFormatsINTEL) (
+        cl_context context,
+        cl_mem_flags flags,
+        cl_mem_object_type image_type,
+        cl_uint plane,
+        cl_uint num_entries,
+        DXGI_FORMAT* d3d11_formats,
+        cl_uint* num_texture_formats);
+#endif
+
+    // cl_intel_sharing_format_query
+    cl_int (CL_API_CALL *clGetSupportedVA_APIMediaSurfaceFormatsINTEL) (
+        cl_context context,
+        cl_mem_flags flags,
+        cl_mem_object_type image_type,
+        cl_uint plane,
+        cl_uint num_entries,
+        VAImageFormat* va_api_formats,
+        cl_uint* num_surface_formats);
 };
