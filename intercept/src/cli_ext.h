@@ -47,6 +47,9 @@ typedef cl_uint cl_d3d10_device_set_khr;
 class ID3D10Buffer;
 class ID3D10Texture2D;
 class ID3D10Texture3D;
+#if !defined(_WIN32)
+typedef cl_uint UINT;
+#endif
 
 // cl_khr_d3d10_sharing
 #define CL_INVALID_D3D10_DEVICE_KHR                  -1002
@@ -659,6 +662,9 @@ typedef struct _cl_queue_family_properties_intel {
 typedef cl_uint cl_dx9_device_source_intel;
 typedef cl_uint cl_dx9_device_set_intel;
 class IDirect3DSurface9;
+#if !defined(_WIN32)
+typedef void* HANDLE;
+#endif
 
 // cl_intel_dx9_media_sharing
 // These error codes are shared with cl_khr_dx9_media_sharing.
