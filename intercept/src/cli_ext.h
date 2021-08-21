@@ -659,6 +659,21 @@ typedef struct _cl_queue_family_properties_intel {
 #define CL_QUEUE_CAPABILITY_KERNEL_INTEL                    (1 << 26)
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_intel_device_attribute_query
+typedef cl_bitfield         cl_device_feature_capabilities_intel;
+
+#define CL_DEVICE_FEATURE_FLAG_DP4A_INTEL                   (1 << 0)
+#define CL_DEVICE_FEATURE_FLAG_DPAS_INTEL                   (1 << 1)
+
+#define CL_DEVICE_IP_VERSION_INTEL                          0x4250
+#define CL_DEVICE_ID_INTEL                                  0x4251
+#define CL_DEVICE_NUM_SLICES_INTEL                          0x4252
+#define CL_DEVICE_NUM_SUB_SLICES_PER_SLICE_INTEL            0x4253
+#define CL_DEVICE_NUM_EUS_PER_SUB_SLICE_INTEL               0x4254
+#define CL_DEVICE_NUM_THREADS_PER_EU_INTEL                  0x4255
+#define CL_DEVICE_FEATURE_CAPABILITIES_INTEL                0x4256
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_intel_driver_diagnostics
 
 #define CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL           0x4106

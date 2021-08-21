@@ -854,6 +854,15 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_BARRIER_INTEL );
     ADD_ENUM_NAME( m_cl_command_queue_capabilities_intel, CL_QUEUE_CAPABILITY_KERNEL_INTEL );
 
+    // cl_intel_device_attribute_query
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_IP_VERSION_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_ID_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUM_SLICES_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUM_SUB_SLICES_PER_SLICE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUM_EUS_PER_SUB_SLICE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUM_THREADS_PER_EU_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_FEATURE_CAPABILITIES_INTEL );
+
     // cl_intel_driver_diagnostics
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL );
 
