@@ -7083,6 +7083,8 @@ CL_API_ENTRY cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
     NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
 }
 
+#if defined(_WIN32)
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_khr_d3d10_sharing
@@ -7103,7 +7105,16 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D10KHR(
         if( dispatchX.clGetDeviceIDsFromD3D10KHR )
         {
             GET_ENQUEUE_COUNTER();
-            CALL_LOGGING_ENTER();
+
+            std::string platformInfo;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getPlatformInfoString(
+                    platform,
+                    platformInfo );
+            }
+            CALL_LOGGING_ENTER( "platform = %s",
+                platformInfo.c_str() );
             CPU_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clGetDeviceIDsFromD3D10KHR(
@@ -7399,7 +7410,16 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D11KHR(
         if( dispatchX.clGetDeviceIDsFromD3D11KHR )
         {
             GET_ENQUEUE_COUNTER();
-            CALL_LOGGING_ENTER();
+
+            std::string platformInfo;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getPlatformInfoString(
+                    platform,
+                    platformInfo );
+            }
+            CALL_LOGGING_ENTER( "platform = %s",
+                platformInfo.c_str() )
             CPU_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clGetDeviceIDsFromD3D11KHR(
@@ -7696,7 +7716,16 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
         if( dispatchX.clGetDeviceIDsFromDX9MediaAdapterKHR )
         {
             GET_ENQUEUE_COUNTER();
-            CALL_LOGGING_ENTER();
+
+            std::string platformInfo;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getPlatformInfoString(
+                    platform,
+                    platformInfo );
+            }
+            CALL_LOGGING_ENTER( "platform = %s",
+                platformInfo.c_str() )
             CPU_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clGetDeviceIDsFromDX9MediaAdapterKHR(
@@ -7882,7 +7911,9 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
 
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
+#endif
 
+#if defined(_WIN32)
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_intel_dx9_media_sharing Extension
@@ -7903,7 +7934,16 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9INTEL(
         if( dispatchX.clGetDeviceIDsFromDX9INTEL )
         {
             GET_ENQUEUE_COUNTER();
-            CALL_LOGGING_ENTER();
+
+            std::string platformInfo;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getPlatformInfoString(
+                    platform,
+                    platformInfo );
+            }
+            CALL_LOGGING_ENTER( "platform = %s",
+                platformInfo.c_str() )
             CPU_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clGetDeviceIDsFromDX9INTEL(
@@ -8088,6 +8128,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
 
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -8490,7 +8531,16 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromVA_APIMediaAdapterINTEL(
         if( dispatchX.clGetDeviceIDsFromVA_APIMediaAdapterINTEL )
         {
             GET_ENQUEUE_COUNTER();
-            CALL_LOGGING_ENTER();
+
+            std::string platformInfo;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getPlatformInfoString(
+                    platform,
+                    platformInfo );
+            }
+            CALL_LOGGING_ENTER( "platform = %s",
+                platformInfo.c_str() )
             CPU_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clGetDeviceIDsFromVA_APIMediaAdapterINTEL(

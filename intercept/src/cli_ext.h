@@ -40,16 +40,15 @@ cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_d3d10_sharing
 
+#if defined(_WIN32)
+
 // Minimal set of types for cl_khr_d3d10_sharing.
-// Don't include cl_d3d10.h here so we don't have a dependency on d3d10.h.
+// Don't include cl_d3d10.h here because we don't want a dependency on d3d10.h.
 typedef cl_uint cl_d3d10_device_source_khr;
 typedef cl_uint cl_d3d10_device_set_khr;
 class ID3D10Buffer;
 class ID3D10Texture2D;
 class ID3D10Texture3D;
-#if !defined(_WIN32)
-typedef cl_uint UINT;
-#endif
 
 // cl_khr_d3d10_sharing
 #define CL_INVALID_D3D10_DEVICE_KHR                  -1002
@@ -126,11 +125,15 @@ cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
     const cl_event* event_wait_list,
     cl_event* event);
 
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_d3d11_sharing
 
+#if defined(_WIN32)
+
 // Minimal set of types for cl_khr_d3d11_sharing.
-// Don't include cl_d3d11.h here so we don't have a dependency on d3d10.h.
+// Don't include cl_d3d11.h here because we don't want a dependency on d3d10.h.
 typedef cl_uint cl_d3d11_device_source_khr;
 typedef cl_uint cl_d3d11_device_set_khr;
 class ID3D11Buffer;
@@ -212,11 +215,15 @@ cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
     const cl_event* event_wait_list,
     cl_event* event);
 
+#endif
+
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_dx9_media_sharing
 
+#if defined(_WIN32)
+
 // Minimal set of types for cl_khr_dx9_media_sharing.
-// Don't include cl_d3d9.h here so we don't have a dependency on d3d9.h.
+// Don't include cl_d3d9.h here because we don't want a dependency on d3d9.h.
 typedef cl_uint cl_dx9_media_adapter_type_khr;
 typedef cl_uint cl_dx9_media_adapter_set_khr;
 typedef cl_uint cl_dx9_media_adapter_type_khr;
@@ -284,6 +291,8 @@ cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
     cl_uint num_events_in_wait_list,
     const cl_event* event_wait_list,
     cl_event* event);
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_extended_versioning
@@ -657,14 +666,13 @@ typedef struct _cl_queue_family_properties_intel {
 ///////////////////////////////////////////////////////////////////////////////
 // cl_intel_d3d9_media_sharing
 
+#if defined(_WIN32)
+
 // Minimal set of types for cl_khr_dx9_media_sharing.
-// Don't include cl_d3d9.h here so we don't have a dependency on d3d9.h.
+// Don't include cl_d3d9.h here because we don't want a dependency on d3d9.h.
 typedef cl_uint cl_dx9_device_source_intel;
 typedef cl_uint cl_dx9_device_set_intel;
 class IDirect3DSurface9;
-#if !defined(_WIN32)
-typedef void* HANDLE;
-#endif
 
 // cl_intel_dx9_media_sharing
 // These error codes are shared with cl_khr_dx9_media_sharing.
@@ -728,6 +736,8 @@ cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
     cl_uint num_events_in_wait_list,
     const cl_event* event_wait_list,
     cl_event* event );
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_intel_egl_image_yuv

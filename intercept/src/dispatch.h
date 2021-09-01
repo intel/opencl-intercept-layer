@@ -31,6 +31,7 @@
 
 struct CLdispatchX
 {
+#if defined(_WIN32)
     // cl_khr_d3d10_sharing
     cl_int  (CL_API_CALL *clGetDeviceIDsFromD3D10KHR) (
                 cl_platform_id platform,
@@ -170,6 +171,7 @@ struct CLdispatchX
                 cl_uint num_events_in_wait_list,
                 const cl_event* event_wait_list,
                 cl_event* event);
+#endif
 
     // cl_khr_create_command_queue
     cl_command_queue    (CL_API_CALL *clCreateCommandQueueWithPropertiesKHR) (
@@ -259,6 +261,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clReleaseAcceleratorINTEL) (
         cl_accelerator_intel accelerator );
 
+#if defined(_WIN32)
     // cl_intel_dx9_media_sharing
     cl_int  (CL_API_CALL *clGetDeviceIDsFromDX9INTEL) (
                 cl_platform_id platform,
@@ -295,6 +298,7 @@ struct CLdispatchX
                 cl_uint num_events_in_wait_list,
                 const cl_event* event_wait_list,
                 cl_event* event );
+#endif
 
     // cl_intel_sharing_format_query
     cl_int (CL_API_CALL *clGetSupportedGLTextureFormatsINTEL) (

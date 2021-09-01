@@ -632,6 +632,7 @@ CEnumNameMap::CEnumNameMap()
 
     // Extensions
 
+#if defined(_WIN32)
     // cl_khr_d3d10_sharing
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D10_DEVICE_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D10_RESOURCE_KHR );
@@ -649,7 +650,9 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_IMAGE_D3D10_SUBRESOURCE_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_D3D10_OBJECTS_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_D3D10_OBJECTS_KHR );
+#endif
 
+#if defined(_WIN32)
     // cl_khr_d3d11_sharing
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D11_DEVICE_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_D3D11_RESOURCE_KHR );
@@ -667,7 +670,9 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_IMAGE_D3D11_SUBRESOURCE_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_D3D11_OBJECTS_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_D3D11_OBJECTS_KHR );
+#endif
 
+#if defined(_WIN32)
     // cl_khr_dx9_media_sharing
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_DX9_MEDIA_ADAPTER_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_DX9_MEDIA_SURFACE_KHR );
@@ -688,6 +693,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_IMAGE_DX9_MEDIA_PLANE_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_DX9_MEDIA_SURFACES_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_DX9_MEDIA_SURFACES_KHR );
+#endif
 
     // cl_khr_extended_versioning extension
     // Most enums for this extension were added to OpenCL 3.0.
@@ -851,6 +857,7 @@ CEnumNameMap::CEnumNameMap()
     // cl_intel_driver_diagnostics
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL );
 
+#if defined(_WIN32)
     // cl_intel_dx9_media_sharing
     // These error codes are shared with cl_khr_dx9_media_sharing.
     //CL_INVALID_DX9_DEVICE_INTEL                   -1010
@@ -872,6 +879,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_IMAGE_DX9_PLANE_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_DX9_OBJECTS_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_DX9_OBJECTS_INTEL );
+#endif
 
     // cl_intel_egl_image_yuv
     ADD_ENUM_NAME( m_cl_int, CL_EGL_YUV_PLANE_INTEL );

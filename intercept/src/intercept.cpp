@@ -1946,11 +1946,13 @@ void CLIntercept::getContextPropertiesString(
             case CL_GLX_DISPLAY_KHR:
             case CL_WGL_HDC_KHR:
             case CL_CGL_SHAREGROUP_KHR:
+#if defined(_WIN32)
             case CL_CONTEXT_D3D10_DEVICE_KHR:
             case CL_CONTEXT_D3D11_DEVICE_KHR:
             case CL_CONTEXT_ADAPTER_D3D9_KHR:
             case CL_CONTEXT_ADAPTER_D3D9EX_KHR:
             case CL_CONTEXT_ADAPTER_DXVA_KHR:
+#endif
                 {
                     const void** pp = (const void**)( properties + 1 );
                     const void*  value = pp[0];
@@ -11129,6 +11131,7 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clEnqueueReleaseGLObjects );
 #endif
 
+#if defined(_WIN32)
     // cl_khr_d3d10_sharing
     CHECK_RETURN_EXTENSION_FUNCTION( clGetDeviceIDsFromD3D10KHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromD3D10BufferKHR );
@@ -11150,6 +11153,7 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromDX9MediaSurfaceKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireDX9MediaSurfacesKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseDX9MediaSurfacesKHR );
+#endif
 
     // cl_khr_create_command_queue
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandQueueWithPropertiesKHR );
@@ -11179,11 +11183,13 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clRetainAcceleratorINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clReleaseAcceleratorINTEL );
 
+#if defined(_WIN32)
     // cl_intel_dx9_media_sharing
     CHECK_RETURN_EXTENSION_FUNCTION( clGetDeviceIDsFromDX9INTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromDX9MediaSurfaceINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireDX9ObjectsINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseDX9ObjectsINTEL );
+#endif
 
     // cl_intel_sharing_format_query
     CHECK_RETURN_EXTENSION_FUNCTION( clGetSupportedGLTextureFormatsINTEL );
