@@ -11139,6 +11139,7 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromD3D10Texture3DKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireD3D10ObjectsKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseD3D10ObjectsKHR );
+
     // cl_khr_d3d11_sharing
     CHECK_RETURN_EXTENSION_FUNCTION( clGetDeviceIDsFromD3D11KHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromD3D11BufferKHR );
@@ -11146,6 +11147,7 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromD3D11Texture3DKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireD3D11ObjectsKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseD3D11ObjectsKHR );
+
     // cl_khr_dx9_media_sharing
     CHECK_RETURN_EXTENSION_FUNCTION( clGetDeviceIDsFromDX9MediaAdapterKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromDX9MediaSurfaceKHR );
@@ -11153,19 +11155,33 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseDX9MediaSurfacesKHR );
 #endif
 
+    // cl_khr_create_command_queue
+    CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandQueueWithPropertiesKHR );
+
     // cl_khr_gl_event
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateEventFromGLsyncKHR );
 
     // cl_khr_il_program
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateProgramWithILKHR );
+
     // cl_khr_subgroups
     CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSubGroupInfoKHR );
+
     // cl_khr_suggested_local_work_size
     CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeKHR );
-    // cl_khr_create_command_queue
-    CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandQueueWithPropertiesKHR );
 
-    // Intel Extensions
+    // Unofficial MDAPI extension:
+    CHECK_RETURN_EXTENSION_FUNCTION( clCreatePerfCountersCommandQueueINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clSetPerformanceConfigurationINTEL );
+
+    // Unofficial suggested local work size extension:
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeINTEL );
+
+    // cl_intel_accelerator
+    CHECK_RETURN_EXTENSION_FUNCTION( clCreateAcceleratorINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetAcceleratorInfoINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clRetainAcceleratorINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clReleaseAcceleratorINTEL );
 
 #if defined(_WIN32)
     // cl_intel_dx9_media_sharing
@@ -11175,25 +11191,14 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseDX9ObjectsINTEL );
 #endif
 
-    // Unofficial MDAPI extension:
-    CHECK_RETURN_EXTENSION_FUNCTION( clCreatePerfCountersCommandQueueINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clSetPerformanceConfigurationINTEL );
+    // cl_intel_sharing_format_query
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSupportedGLTextureFormatsINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSupportedDX9MediaSurfaceFormatsINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSupportedD3D10TextureFormatsINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSupportedD3D11TextureFormatsINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSupportedVA_APIMediaSurfaceFormatsINTEL );
 
-    // Unofficial cl_get_kernel_suggested_local_work_size extension:
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeINTEL );
-
-    // cl_intel_accelerator
-    CHECK_RETURN_EXTENSION_FUNCTION( clCreateAcceleratorINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetAcceleratorInfoINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clRetainAcceleratorINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clReleaseAcceleratorINTEL );
-
-    // cl_intel_va_api_media_sharing
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetDeviceIDsFromVA_APIMediaAdapterINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromVA_APIMediaSurfaceINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireVA_APIMediaSurfacesINTEL );
-    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseVA_APIMediaSurfacesINTEL );
-
+    // cl_intel_unified_shared_memory
     if( m_Config.Emulate_cl_intel_unified_shared_memory )
     {
         CHECK_RETURN_EXTENSION_FUNCTION_EMU( clHostMemAllocINTEL );
@@ -11224,6 +11229,12 @@ void* CLIntercept::getExtensionFunctionAddress(
         CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMigrateMemINTEL );
         CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueMemAdviseINTEL );
     }
+
+    // cl_intel_va_api_media_sharing
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetDeviceIDsFromVA_APIMediaAdapterINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCreateFromVA_APIMediaSurfaceINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireVA_APIMediaSurfacesINTEL );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseVA_APIMediaSurfacesINTEL );
 
     // cl_nv_create_buffer
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateBufferNV );

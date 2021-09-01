@@ -31,12 +31,6 @@
 
 struct CLdispatchX
 {
-    // cl_khr_gl_event
-    cl_event    (CL_API_CALL *clCreateEventFromGLsyncKHR) (
-                cl_context context,
-                cl_GLsync sync,
-                cl_int* errcode_ret);
-
 #if defined(_WIN32)
     // cl_khr_d3d10_sharing
     cl_int  (CL_API_CALL *clGetDeviceIDsFromD3D10KHR) (
@@ -179,6 +173,19 @@ struct CLdispatchX
                 cl_event* event);
 #endif
 
+    // cl_khr_create_command_queue
+    cl_command_queue    (CL_API_CALL *clCreateCommandQueueWithPropertiesKHR) (
+            cl_context context,
+            cl_device_id device,
+            const cl_queue_properties_khr* properties,
+            cl_int* errcode_ret);
+
+    // cl_khr_gl_event
+    cl_event    (CL_API_CALL *clCreateEventFromGLsyncKHR) (
+                cl_context context,
+                cl_GLsync sync,
+                cl_int* errcode_ret);
+
     // cl_khr_il_program
     cl_program (CL_API_CALL *clCreateProgramWithILKHR) (
                 cl_context context,
@@ -206,12 +213,53 @@ struct CLdispatchX
                 const size_t* global_work_size,
                 size_t* suggested_local_work_size);
 
-    // cl_khr_create_command_queue
-    cl_command_queue    (CL_API_CALL *clCreateCommandQueueWithPropertiesKHR) (
-            cl_context context,
-            cl_device_id device,
-            const cl_queue_properties_khr* properties,
-            cl_int* errcode_ret);
+    // Unofficial MDAPI extension:
+    cl_command_queue    (CL_API_CALL *clCreatePerfCountersCommandQueueINTEL) (
+                cl_context context,
+                cl_device_id device,
+                cl_command_queue_properties properties,
+                cl_uint configuration,
+                cl_int* errcode_ret);
+
+    // Unofficial MDAPI extension:
+    cl_int (CL_API_CALL *clSetPerformanceConfigurationINTEL)(
+        cl_device_id    device,
+        cl_uint         count,
+        cl_uint*        offsets,
+        cl_uint*        values );
+
+    // Unofficial suggested local work size extension:
+    cl_int (CL_API_CALL *clGetKernelSuggestedLocalWorkSizeINTEL)(
+        cl_command_queue commandQueue,
+        cl_kernel kernel,
+        cl_uint workDim,
+        const size_t *globalWorkOffset,
+        const size_t *globalWorkSize,
+        size_t *suggestedLocalWorkSize);
+
+    // cl_intel_accelerator
+    cl_accelerator_intel (CL_API_CALL *clCreateAcceleratorINTEL) (
+        cl_context context,
+        cl_accelerator_type_intel accelerator_type,
+        size_t descriptor_size,
+        const void* descriptor,
+        cl_int* errcode_ret );
+
+    // cl_intel_accelerator
+    cl_int (CL_API_CALL *clGetAcceleratorInfoINTEL) (
+        cl_accelerator_intel accelerator,
+        cl_accelerator_info_intel param_name,
+        size_t param_value_size,
+        void* param_value,
+        size_t* param_value_size_ret );
+
+    // cl_intel_accelerator
+    cl_int (CL_API_CALL *clRetainAcceleratorINTEL) (
+        cl_accelerator_intel accelerator );
+
+    // cl_intel_accelerator
+    cl_int (CL_API_CALL *clReleaseAcceleratorINTEL) (
+        cl_accelerator_intel accelerator );
 
 #if defined(_WIN32)
     // cl_intel_dx9_media_sharing
@@ -252,89 +300,53 @@ struct CLdispatchX
                 cl_event* event );
 #endif
 
-    // Unofficial MDAPI extension:
-    cl_command_queue    (CL_API_CALL *clCreatePerfCountersCommandQueueINTEL) (
-                cl_context context,
-                cl_device_id device,
-                cl_command_queue_properties properties,
-                cl_uint configuration,
-                cl_int* errcode_ret);
-
-    // Unofficial MDAPI extension:
-    cl_int (CL_API_CALL *clSetPerformanceConfigurationINTEL)(
-        cl_device_id    device,
-        cl_uint         count,
-        cl_uint*        offsets,
-        cl_uint*        values );
-
-    // Unofficial cl_get_kernel_suggested_local_work_size extension:
-    cl_int (CL_API_CALL *clGetKernelSuggestedLocalWorkSizeINTEL)(
-        cl_command_queue commandQueue,
-        cl_kernel kernel,
-        cl_uint workDim,
-        const size_t *globalWorkOffset,
-        const size_t *globalWorkSize,
-        size_t *suggestedLocalWorkSize);
-
-    // cl_intel_accelerator
-    cl_accelerator_intel (CL_API_CALL *clCreateAcceleratorINTEL) (
-        cl_context context,
-        cl_accelerator_type_intel accelerator_type,
-        size_t descriptor_size,
-        const void* descriptor,
-        cl_int* errcode_ret );
-
-    // cl_intel_accelerator
-    cl_int (CL_API_CALL *clGetAcceleratorInfoINTEL) (
-        cl_accelerator_intel accelerator,
-        cl_accelerator_info_intel param_name,
-        size_t param_value_size,
-        void* param_value,
-        size_t* param_value_size_ret );
-
-    // cl_intel_accelerator
-    cl_int (CL_API_CALL *clRetainAcceleratorINTEL) (
-        cl_accelerator_intel accelerator );
-
-    // cl_intel_accelerator
-    cl_int (CL_API_CALL *clReleaseAcceleratorINTEL) (
-        cl_accelerator_intel accelerator );
-
-    // cl_intel_va_api_media_sharing
-    cl_int (CL_API_CALL *clGetDeviceIDsFromVA_APIMediaAdapterINTEL) (
-        cl_platform_id platform,
-        cl_va_api_device_source_intel media_adapter_type,
-        void *media_adapter,
-        cl_va_api_device_set_intel media_adapter_set,
-        cl_uint num_entries,
-        cl_device_id *devices,
-        cl_uint *num_devices);
-
-    // cl_intel_va_api_media_sharing
-    cl_mem (CL_API_CALL *clCreateFromVA_APIMediaSurfaceINTEL) (
+    // cl_intel_sharing_format_query
+    cl_int (CL_API_CALL *clGetSupportedGLTextureFormatsINTEL) (
         cl_context context,
         cl_mem_flags flags,
-        VASurfaceID *surface,
+        cl_mem_object_type image_type,
+        cl_uint num_entries,
+        cl_GLenum* gl_formats,
+        cl_uint* num_texture_formats);
+
+    // cl_intel_sharing_format_query
+    cl_int (CL_API_CALL *clGetSupportedDX9MediaSurfaceFormatsINTEL) (
+        cl_context context,
+        cl_mem_flags flags,
+        cl_mem_object_type image_type,
         cl_uint plane,
-        cl_int *errcode_ret);
+        cl_uint num_entries,
+        D3DFORMAT* dx9_formats,
+        cl_uint* num_surface_formats);
 
-    // cl_intel_va_api_media_sharing
-    cl_int (CL_API_CALL *clEnqueueAcquireVA_APIMediaSurfacesINTEL) (
-        cl_command_queue command_queue,
-        cl_uint num_objects,
-        const cl_mem *mem_objects,
-        cl_uint num_events_in_wait_list,
-        const cl_event *event_wait_list,
-        cl_event *event);
+    // cl_intel_sharing_format_query
+    cl_int (CL_API_CALL *clGetSupportedD3D10TextureFormatsINTEL) (
+        cl_context context,
+        cl_mem_flags flags,
+        cl_mem_object_type image_type,
+        cl_uint num_entries,
+        DXGI_FORMAT* d3d10_formats,
+        cl_uint* num_texture_formats);
 
-    // cl_intel_va_api_media_sharing
-    cl_int (CL_API_CALL *clEnqueueReleaseVA_APIMediaSurfacesINTEL) (
-        cl_command_queue command_queue,
-        cl_uint num_objects,
-        const cl_mem *mem_objects,
-        cl_uint num_events_in_wait_list,
-        const cl_event *event_wait_list,
-        cl_event *event);
+    // cl_intel_sharing_format_query
+    cl_int (CL_API_CALL *clGetSupportedD3D11TextureFormatsINTEL) (
+        cl_context context,
+        cl_mem_flags flags,
+        cl_mem_object_type image_type,
+        cl_uint plane,
+        cl_uint num_entries,
+        DXGI_FORMAT* d3d11_formats,
+        cl_uint* num_texture_formats);
+
+    // cl_intel_sharing_format_query
+    cl_int (CL_API_CALL *clGetSupportedVA_APIMediaSurfaceFormatsINTEL) (
+        cl_context context,
+        cl_mem_flags flags,
+        cl_mem_object_type image_type,
+        cl_uint plane,
+        cl_uint num_entries,
+        VAImageFormat* va_api_formats,
+        cl_uint* num_surface_formats);
 
     // cl_intel_unified_shared_memory
     void* (CL_API_CALL *clHostMemAllocINTEL) (
@@ -438,6 +450,42 @@ struct CLdispatchX
         cl_uint num_events_in_wait_list,
         const cl_event* event_wait_list,
         cl_event* event);
+
+    // cl_intel_va_api_media_sharing
+    cl_int (CL_API_CALL *clGetDeviceIDsFromVA_APIMediaAdapterINTEL) (
+        cl_platform_id platform,
+        cl_va_api_device_source_intel media_adapter_type,
+        void *media_adapter,
+        cl_va_api_device_set_intel media_adapter_set,
+        cl_uint num_entries,
+        cl_device_id *devices,
+        cl_uint *num_devices);
+
+    // cl_intel_va_api_media_sharing
+    cl_mem (CL_API_CALL *clCreateFromVA_APIMediaSurfaceINTEL) (
+        cl_context context,
+        cl_mem_flags flags,
+        VASurfaceID *surface,
+        cl_uint plane,
+        cl_int *errcode_ret);
+
+    // cl_intel_va_api_media_sharing
+    cl_int (CL_API_CALL *clEnqueueAcquireVA_APIMediaSurfacesINTEL) (
+        cl_command_queue command_queue,
+        cl_uint num_objects,
+        const cl_mem *mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event *event_wait_list,
+        cl_event *event);
+
+    // cl_intel_va_api_media_sharing
+    cl_int (CL_API_CALL *clEnqueueReleaseVA_APIMediaSurfacesINTEL) (
+        cl_command_queue command_queue,
+        cl_uint num_objects,
+        const cl_mem *mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event *event_wait_list,
+        cl_event *event);
 
     // cl_nv_create_buffer
     cl_mem (CL_API_CALL *clCreateBufferNV) (

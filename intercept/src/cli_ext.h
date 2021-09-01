@@ -841,6 +841,62 @@ typedef struct _cl_motion_estimation_desc_intel {
 #define CL_KERNEL_COMPILE_SUB_GROUP_SIZE_INTEL      0x410A
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_intel_sharing_format_query
+
+// Minimal set of types for cl_intel_sharing_format_query.
+typedef void D3DFORMAT;
+typedef void DXGI_FORMAT;
+typedef void VAImageFormat;
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clGetSupportedGLTextureFormatsINTEL(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_object_type image_type,
+    cl_uint num_entries,
+    cl_GLenum* gl_formats,
+    cl_uint* num_texture_formats);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clGetSupportedDX9MediaSurfaceFormatsINTEL(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_object_type image_type,
+    cl_uint plane,
+    cl_uint num_entries,
+    D3DFORMAT* dx9_formats,
+    cl_uint* num_surface_formats);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clGetSupportedD3D10TextureFormatsINTEL(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_object_type image_type,
+    cl_uint num_entries,
+    DXGI_FORMAT* d3d10_formats,
+    cl_uint* num_texture_formats);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clGetSupportedD3D11TextureFormatsINTEL(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_object_type image_type,
+    cl_uint plane,
+    cl_uint num_entries,
+    DXGI_FORMAT* d3d11_formats,
+    cl_uint* num_texture_formats);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clGetSupportedVA_APIMediaSurfaceFormatsINTEL(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_object_type image_type,
+    cl_uint plane,
+    cl_uint num_entries,
+    VAImageFormat* va_api_formats,
+    cl_uint* num_surface_formats);
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_intel_simultaneous_sharing
 
 #define CL_DEVICE_SIMULTANEOUS_INTEROPS_INTEL       0x4104
