@@ -5845,7 +5845,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clSVMAlloc) (
     if( pIntercept && pIntercept->dispatch().clSVMAlloc )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER( "flags = %s (%llX), size = %zu, alignment = %u",
+        CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), size = %zu, alignment = %u",
+            context,
             pIntercept->enumName().name_svm_mem_flags( flags ).c_str(),
             flags,
             size,
@@ -5887,7 +5888,8 @@ CL_API_ENTRY void CL_API_CALL CLIRN(clSVMFree) (
     if( pIntercept && pIntercept->dispatch().clSVMFree )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER( "svm_pointer = %p",
+        CALL_LOGGING_ENTER( "context = %p, svm_pointer = %p",
+            context,
             svm_pointer );
         CPU_PERFORMANCE_TIMING_START();
 
