@@ -2086,6 +2086,8 @@ void CLIntercept::getCommandQueuePropertiesString(
                 }
                 break;
             case CL_QUEUE_SIZE:
+            case CL_QUEUE_FAMILY_INTEL:
+            case CL_QUEUE_INDEX_INTEL:
                 {
                     const cl_uint*  pu = (const cl_uint*)( properties + 1);
                     CLI_SPRINTF( s, 256, "%u", pu[0] );
