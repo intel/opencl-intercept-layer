@@ -863,6 +863,11 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUM_THREADS_PER_EU_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_FEATURE_CAPABILITIES_INTEL );
 
+    // cl_intel_device_side_avc_motion_estimation (partial)
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_AVC_ME_VERSION_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_AVC_ME_SUPPORTS_TEXTURE_SAMPLER_USE_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_AVC_ME_SUPPORTS_PREEMPTION_INTEL );
+
     // cl_intel_driver_diagnostics
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL );
 
