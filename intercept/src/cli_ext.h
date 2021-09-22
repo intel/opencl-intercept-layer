@@ -674,6 +674,13 @@ typedef cl_bitfield         cl_device_feature_capabilities_intel;
 #define CL_DEVICE_FEATURE_CAPABILITIES_INTEL                0x4256
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_intel_device_side_avc_motion_estimation (partial)
+
+#define CL_DEVICE_AVC_ME_VERSION_INTEL                      0x410B
+#define CL_DEVICE_AVC_ME_SUPPORTS_TEXTURE_SAMPLER_USE_INTEL 0x410C
+#define CL_DEVICE_AVC_ME_SUPPORTS_PREEMPTION_INTEL          0x410D
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_intel_driver_diagnostics
 
 #define CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL           0x4106
