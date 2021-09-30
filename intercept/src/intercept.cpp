@@ -5310,27 +5310,52 @@ void CLIntercept::addTimingEvent(
             {
                 cl_platform_id  platform = getPlatform(device);
 
-                // TODO: Switch to or add support for clGetKernelSuggestedLocalWorkSizeKHR
-                // support is available.
-
-                if( dispatchX(platform).clGetKernelSuggestedLocalWorkSizeINTEL == NULL )
+                // Try the cl_khr_suggested_local_work_size version first.
+                if( useSuggestedLWS == false )
                 {
-                    getExtensionFunctionAddress(
-                        platform,
-                        "clGetKernelSuggestedLocalWorkSizeINTEL" );
+                    if( dispatchX(platform).clGetKernelSuggestedLocalWorkSizeKHR == NULL )
+                    {
+                        getExtensionFunctionAddress(
+                            platform,
+                            "clGetKernelSuggestedLocalWorkSizeKHR" );
+                    }
+
+                    auto dispatchX = this->dispatchX(platform);
+                    if( dispatchX.clGetKernelSuggestedLocalWorkSizeKHR )
+                    {
+                        cl_int testErrorCode = dispatchX.clGetKernelSuggestedLocalWorkSizeKHR(
+                            queue,
+                            kernel,
+                            workDim,
+                            gwo,
+                            gws,
+                            suggestedLWS );
+                        useSuggestedLWS = ( testErrorCode == CL_SUCCESS );
+                    }
                 }
 
-                auto dispatchX = this->dispatchX(platform);
-                if( dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL )
+                // If this fails, try the unofficial Intel version next.
+                if( useSuggestedLWS == false )
                 {
-                    cl_int testErrorCode = dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL(
-                        queue,
-                        kernel,
-                        workDim,
-                        gwo == NULL ? emptyGWO : gwo,
-                        gws,
-                        suggestedLWS );
-                    useSuggestedLWS = ( testErrorCode == CL_SUCCESS );
+                    if( dispatchX(platform).clGetKernelSuggestedLocalWorkSizeINTEL == NULL )
+                    {
+                        getExtensionFunctionAddress(
+                            platform,
+                            "clGetKernelSuggestedLocalWorkSizeINTEL" );
+                    }
+
+                    auto dispatchX = this->dispatchX(platform);
+                    if( dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL )
+                    {
+                        cl_int testErrorCode = dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL(
+                            queue,
+                            kernel,
+                            workDim,
+                            gwo == NULL ? emptyGWO : gwo,
+                            gws,
+                            suggestedLWS );
+                        useSuggestedLWS = ( testErrorCode == CL_SUCCESS );
+                    }
                 }
             }
 
