@@ -281,7 +281,7 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dist
 
 ##### `DevicePerformanceTimeSuggestedLWSTracking` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will query for a suggested local work size when the passed-in local work size is NULL.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will attempt to query and track the suggested local work size when the passed-in local work size is NULL.
 
 ##### `DevicePerformanceTimingSkipUnmap` (bool)
 
