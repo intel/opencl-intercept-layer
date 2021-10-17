@@ -1025,6 +1025,10 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_VA_API_MEDIA_SURFACE_ALREADY_ACQUIRED_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_VA_API_MEDIA_SURFACE_NOT_ACQUIRED_INTEL );
 
+    // cl_nv_create_buffer
+    ADD_ENUM_NAME( m_cl_mem_flags_NV, CL_MEM_LOCATION_HOST_NV );
+    ADD_ENUM_NAME( m_cl_mem_flags_NV, CL_MEM_PINNED_NV );
+
     // cl_nv_device_attribute_query
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_CAPABILITY_MAJOR_NV );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMPUTE_CAPABILITY_MINOR_NV );

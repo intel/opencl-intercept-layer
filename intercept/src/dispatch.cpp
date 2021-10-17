@@ -1049,10 +1049,11 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateBufferNV(
         if( dispatchX.clCreateBufferNV )
         {
             GET_ENQUEUE_COUNTER();
-            CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), flags_NV = %llX, size = %zu, host_ptr = %p",
+            CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), flags_NV = %s (%llX), size = %zu, host_ptr = %p",
                 context,
                 pIntercept->enumName().name_mem_flags( flags ).c_str(),
                 flags,
+                pIntercept->enumName().name_mem_flags_NV( flags_NV ).c_str(),
                 flags_NV,
                 size,
                 host_ptr );
