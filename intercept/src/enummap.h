@@ -119,6 +119,7 @@ public:
     GENERATE_MAP_AND_BITFIELD_FUNC( name_kernel_arg_type_qualifier,  cl_kernel_arg_type_qualifier    );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_map_flags,                  cl_map_flags                    );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_mem_flags,                  cl_mem_flags                    );
+    GENERATE_MAP_AND_BITFIELD_FUNC( name_mem_flags_NV,               cl_mem_flags_NV                 );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_mem_migration_flags,        cl_mem_migration_flags          );
     GENERATE_MAP_AND_FUNC(          name_program_binary_type,        cl_program_binary_type          );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_svm_mem_flags,              cl_svm_mem_flags                );
