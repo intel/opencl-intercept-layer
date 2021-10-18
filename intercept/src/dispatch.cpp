@@ -7304,7 +7304,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_khr_external_memory
-cl_int clEnqueueAcquireExternalMemObjectsKHR(
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireExternalMemObjectsKHR(
     cl_command_queue command_queue,
     cl_uint num_mem_objects,
     const cl_mem *mem_objects,
@@ -7360,7 +7360,7 @@ cl_int clEnqueueAcquireExternalMemObjectsKHR(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_khr_external_memory
-cl_int clEnqueueReleaseExternalMemObjectsKHR(
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseExternalMemObjectsKHR(
     cl_command_queue command_queue,
     cl_uint num_mem_objects,
     const cl_mem *mem_objects,
