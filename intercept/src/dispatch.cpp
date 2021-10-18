@@ -5628,6 +5628,60 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseSemaphoreKHR(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_external_semaphore
+CL_API_ENTRY cl_int CL_API_CALL clGetSemaphoreHandleForTypeKHR(
+    cl_semaphore_khr semaphore,
+    cl_device_id device,
+    cl_external_semaphore_handle_type_khr handle_type,
+    size_t handle_size,
+    void* handle_ptr,
+    size_t* handle_size_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(semaphore);
+        if( dispatchX.clGetSemaphoreHandleForTypeKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            std::string deviceInfo;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getDeviceInfoString(
+                    1,
+                    &device,
+                    deviceInfo );
+            }
+            CALL_LOGGING_ENTER( "semaphore = %p, device = %s, handle_type = %s (%X)",
+                semaphore,
+                deviceInfo.c_str(),
+                pIntercept->enumName().name( handle_type ).c_str(),
+                handle_type );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clGetSemaphoreHandleForTypeKHR(
+                semaphore,
+                device,
+                handle_type,
+                handle_size,
+                handle_ptr,
+                handle_size_ret);
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_khr_gl_sharing
 CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
     cl_context context,

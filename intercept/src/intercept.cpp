@@ -2281,6 +2281,25 @@ void CLIntercept::getSemaphorePropertiesString(
                     str += " }";
                 }
                 break;
+            case CL_SEMAPHORE_HANDLE_OPAQUE_FD_KHR:
+            case CL_SEMAPHORE_HANDLE_SYNC_FD_KHR:
+                {
+                    auto pfd = (const int*)( properties + 1);
+                    CLI_SPRINTF( s, 256, "%d", pfd[0] );
+                    str += s;
+                    properties += 2;
+                }
+                break;
+            case CL_SEMAPHORE_HANDLE_D3D12_FENCE_KHR:
+            case CL_SEMAPHORE_HANDLE_OPAQUE_WIN32_KHR:
+            case CL_SEMAPHORE_HANDLE_OPAQUE_WIN32_KMT_KHR:
+                {
+                    auto pfd = (const void**)( properties + 1);
+                    CLI_SPRINTF( s, 256, "%p", pfd[0] );
+                    str += s;
+                    properties += 2;
+                }
+                break;
             default:
                 {
                     CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
@@ -11365,6 +11384,9 @@ void* CLIntercept::getExtensionFunctionAddress(
     // cl_khr_external_memory
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueAcquireExternalMemObjectsKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseExternalMemObjectsKHR );
+
+    // cl_khr_external_semaphore
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSemaphoreHandleForTypeKHR );
 
     // cl_khr_gl_event
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateEventFromGLsyncKHR );

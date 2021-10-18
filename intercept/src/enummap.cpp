@@ -728,6 +728,26 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KMT_KHR );
 
+    // cl_khr_external_semaphore
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_SEMAPHORE_IMPORT_HANDLE_TYPES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SEMAPHORE_IMPORT_HANDLE_TYPES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR );
+
+    // cl_khr_external_semaphore_dx_fence
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_HANDLE_D3D12_FENCE_KHR );
+
+    // cl_khr_external_semaphore_opaque_fd 1
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_HANDLE_OPAQUE_FD_KHR );
+
+    // cl_khr_external_semaphore_sync_fd
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_HANDLE_SYNC_FD_KHR );
+
+    // cl_khr_external_semaphore_win32
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_HANDLE_OPAQUE_WIN32_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_HANDLE_OPAQUE_WIN32_KMT_KHR );
+
     // cl_khr_gl_event
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_GL_FENCE_SYNC_OBJECT_KHR );
 

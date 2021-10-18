@@ -363,6 +363,43 @@ cl_int CL_API_CALL clEnqueueReleaseExternalMemObjectsKHR(
 #define CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KMT_KHR  0x2062
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_khr_external_semaphore
+
+typedef struct _cl_semaphore_khr * cl_semaphore_khr;
+typedef cl_uint             cl_external_semaphore_handle_type_khr;
+
+#define CL_PLATFORM_SEMAPHORE_IMPORT_HANDLE_TYPES_KHR       0x2037
+#define CL_PLATFORM_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR       0x2038
+
+#define CL_DEVICE_SEMAPHORE_IMPORT_HANDLE_TYPES_KHR         0x204D
+#define CL_DEVICE_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR         0x204E
+
+#define CL_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR                0x203F
+#define CL_SEMAPHORE_EXPORT_HANDLE_TYPES_LIST_END_KHR       0
+
+extern CL_API_ENTRY cl_int CL_API_CALL
+clGetSemaphoreHandleForTypeKHR(
+    cl_semaphore_khr semaphore,
+    cl_device_id device,
+    cl_external_semaphore_handle_type_khr handle_type,
+    size_t handle_size,
+    void* handle_ptr,
+    size_t* handle_size_ret);
+
+// cl_khr_external_semaphore_dx_fence
+#define CL_SEMAPHORE_HANDLE_D3D12_FENCE_KHR                 0x2059
+
+// cl_khr_external_semaphore_opaque_fd
+#define CL_SEMAPHORE_HANDLE_OPAQUE_FD_KHR                   0x2055
+
+// cl_khr_external_semaphore_sync_fd
+#define CL_SEMAPHORE_HANDLE_SYNC_FD_KHR                     0x2058
+
+// cl_khr_external_semaphore_win32
+#define CL_SEMAPHORE_HANDLE_OPAQUE_WIN32_KHR                0x2056
+#define CL_SEMAPHORE_HANDLE_OPAQUE_WIN32_KMT_KHR            0x2057
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_khr_fp16
 
 #define CL_DEVICE_HALF_FP_CONFIG                         0x1033
@@ -448,7 +485,8 @@ typedef struct _cl_device_pci_bus_info_khr {
 
 // Note: This implements the provisional extension v0.9.0.
 
-typedef struct _cl_semaphore_khr* cl_semaphore_khr;
+// Shared with cl_khr_external_semaphore:
+//typedef struct _cl_semaphore_khr* cl_semaphore_khr;
 typedef cl_properties cl_semaphore_properties_khr;
 typedef cl_uint cl_semaphore_info_khr;
 typedef cl_uint cl_semaphore_type_khr;
