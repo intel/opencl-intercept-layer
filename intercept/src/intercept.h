@@ -539,6 +539,12 @@ public:
                 size_t* param_value_size_ret,
                 char* pointer ) const;
     template< class T >
+    cl_int  writeVectorToMemory(
+                size_t param_value_size,
+                const std::vector<T>& param,
+                size_t* param_value_size_ret,
+                T* pointer ) const;
+    template< class T >
     cl_int  writeParamToMemory(
                 size_t param_value_size,
                 T param,
@@ -1216,6 +1222,39 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN( CLIntercept );
 };
+
+///////////////////////////////////////////////////////////////////////////////
+//
+template< class T >
+cl_int CLIntercept::writeVectorToMemory(
+    size_t param_value_size,
+    const std::vector<T>& param,
+    size_t *param_value_size_ret,
+    T* pointer ) const
+{
+    cl_int  errorCode = CL_SUCCESS;
+
+    size_t  size = param.size() * sizeof(T);
+
+    if( pointer != NULL )
+    {
+        if( param_value_size < size )
+        {
+            errorCode = CL_INVALID_VALUE;
+        }
+        else
+        {
+            CLI_MEMCPY(pointer, size, param.data(), size);
+        }
+    }
+
+    if( param_value_size_ret != NULL )
+    {
+        *param_value_size_ret = size;
+    }
+
+    return errorCode;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //

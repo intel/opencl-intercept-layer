@@ -435,6 +435,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl\_khr\_extended\_versioning extension.
 
+##### `Emulate_cl_khr_semaphore` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl\_khr\_semaphore extension.
+
 ##### `Emulate_cl_intel_unified_shared_memory` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl\_intel\_unified\_shared\_memory extension USM APIs using SVM APIs.  This can be useful to test USM applications on an implementation that supports SVM, but not USM.
