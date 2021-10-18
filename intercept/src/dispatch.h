@@ -33,151 +33,151 @@ struct CLdispatchX
 #if defined(_WIN32)
     // cl_khr_d3d10_sharing
     cl_int  (CL_API_CALL *clGetDeviceIDsFromD3D10KHR) (
-                cl_platform_id platform,
-                cl_d3d10_device_source_khr d3d_device_source,
-                void* d3d_object,
-                cl_d3d10_device_set_khr d3d_device_set,
-                cl_uint num_entries,
-                cl_device_id* devices,
-                cl_uint* num_devices);
+        cl_platform_id platform,
+        cl_d3d10_device_source_khr d3d_device_source,
+        void* d3d_object,
+        cl_d3d10_device_set_khr d3d_device_set,
+        cl_uint num_entries,
+        cl_device_id* devices,
+        cl_uint* num_devices);
 
     // cl_khr_d3d10_sharing
     cl_mem  (CL_API_CALL *clCreateFromD3D10BufferKHR) (
-                cl_context context,
-                cl_mem_flags flags,
-                ID3D10Buffer* resource,
-                cl_int* errcode_ret);
+        cl_context context,
+        cl_mem_flags flags,
+        ID3D10Buffer* resource,
+        cl_int* errcode_ret);
 
     // cl_khr_d3d10_sharing
     cl_mem  (CL_API_CALL *clCreateFromD3D10Texture2DKHR) (
-                cl_context context,
-                cl_mem_flags flags,
-                ID3D10Texture2D* resource,
-                UINT subresource,
-                cl_int* errcode_ret);
+        cl_context context,
+        cl_mem_flags flags,
+        ID3D10Texture2D* resource,
+        UINT subresource,
+        cl_int* errcode_ret);
 
     // cl_khr_d3d10_sharing
     cl_mem  (CL_API_CALL *clCreateFromD3D10Texture3DKHR) (
-                cl_context context,
-                cl_mem_flags flags,
-                ID3D10Texture3D* resource,
-                UINT subresource,
-                cl_int* errcode_ret);
+        cl_context context,
+        cl_mem_flags flags,
+        ID3D10Texture3D* resource,
+        UINT subresource,
+        cl_int* errcode_ret);
 
     // cl_khr_d3d10_sharing
     cl_int  (CL_API_CALL *clEnqueueAcquireD3D10ObjectsKHR) (
-                cl_command_queue command_queue,
-                cl_uint num_objects,
-                const cl_mem* mem_objects,
-                cl_uint num_events_in_wait_list,
-                const cl_event* event_wait_list,
-                cl_event* event);
+        cl_command_queue command_queue,
+        cl_uint num_objects,
+        const cl_mem* mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
 
     // cl_khr_d3d10_sharing
     cl_int  (CL_API_CALL *clEnqueueReleaseD3D10ObjectsKHR) (
-                cl_command_queue command_queue,
-                cl_uint num_objects,
-                const cl_mem* mem_objects,
-                cl_uint num_events_in_wait_list,
-                const cl_event* event_wait_list,
-                cl_event* event);
+        cl_command_queue command_queue,
+        cl_uint num_objects,
+        const cl_mem* mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
 
     // cl_khr_d3d11_sharing
     cl_int  (CL_API_CALL *clGetDeviceIDsFromD3D11KHR) (
-                cl_platform_id platform,
-                cl_d3d11_device_source_khr d3d_device_source,
-                void* d3d_object,
-                cl_d3d11_device_set_khr d3d_device_set,
-                cl_uint num_entries,
-                cl_device_id* devices,
-                cl_uint* num_devices);
+        cl_platform_id platform,
+        cl_d3d11_device_source_khr d3d_device_source,
+        void* d3d_object,
+        cl_d3d11_device_set_khr d3d_device_set,
+        cl_uint num_entries,
+        cl_device_id* devices,
+        cl_uint* num_devices);
 
     // cl_khr_d3d11_sharing
     cl_mem  (CL_API_CALL *clCreateFromD3D11BufferKHR) (
-                cl_context context,
-                cl_mem_flags flags,
-                ID3D11Buffer* resource,
-                cl_int* errcode_ret);
+        cl_context context,
+        cl_mem_flags flags,
+        ID3D11Buffer* resource,
+        cl_int* errcode_ret);
 
     // cl_khr_d3d11_sharing
     cl_mem  (CL_API_CALL *clCreateFromD3D11Texture2DKHR) (
-                cl_context context,
-                cl_mem_flags flags,
-                ID3D11Texture2D* resource,
-                UINT subresource,
-                cl_int* errcode_ret);
+        cl_context context,
+        cl_mem_flags flags,
+        ID3D11Texture2D* resource,
+        UINT subresource,
+        cl_int* errcode_ret);
 
     // cl_khr_d3d11_sharing
     cl_mem  (CL_API_CALL *clCreateFromD3D11Texture3DKHR) (
-                cl_context context,
-                cl_mem_flags flags,
-                ID3D11Texture3D* resource,
-                UINT subresource,
-                cl_int* errcode_ret);
+        cl_context context,
+        cl_mem_flags flags,
+        ID3D11Texture3D* resource,
+        UINT subresource,
+        cl_int* errcode_ret);
 
     // cl_khr_d3d11_sharing
     cl_int  (CL_API_CALL *clEnqueueAcquireD3D11ObjectsKHR) (
-                cl_command_queue command_queue,
-                cl_uint num_objects,
-                const cl_mem* mem_objects,
-                cl_uint num_events_in_wait_list,
-                const cl_event* event_wait_list,
-                cl_event* event);
+        cl_command_queue command_queue,
+        cl_uint num_objects,
+        const cl_mem* mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
 
     // cl_khr_d3d11_sharing
     cl_int  (CL_API_CALL *clEnqueueReleaseD3D11ObjectsKHR) (
-                cl_command_queue command_queue,
-                cl_uint num_objects,
-                const cl_mem* mem_objects,
-                cl_uint num_events_in_wait_list,
-                const cl_event* event_wait_list,
-                cl_event* event);
+        cl_command_queue command_queue,
+        cl_uint num_objects,
+        const cl_mem* mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
 
     // cl_khr_dx9_media_sharing
     cl_int  (CL_API_CALL *clGetDeviceIDsFromDX9MediaAdapterKHR) (
-                cl_platform_id platform,
-                cl_uint num_media_adapters,
-                cl_dx9_media_adapter_type_khr* media_adapters_type,
-                void* media_adapters,
-                cl_dx9_media_adapter_set_khr media_adapter_set,
-                cl_uint num_entries,
-                cl_device_id* devices,
-                cl_uint* num_devices);
+        cl_platform_id platform,
+        cl_uint num_media_adapters,
+        cl_dx9_media_adapter_type_khr* media_adapters_type,
+        void* media_adapters,
+        cl_dx9_media_adapter_set_khr media_adapter_set,
+        cl_uint num_entries,
+        cl_device_id* devices,
+        cl_uint* num_devices);
 
     // cl_khr_dx9_media_sharing
     cl_mem  (CL_API_CALL *clCreateFromDX9MediaSurfaceKHR) (
-                cl_context context,
-                cl_mem_flags flags,
-                cl_dx9_media_adapter_type_khr adapter_type,
-                void* surface_info,
-                cl_uint plane,
-                cl_int* errcode_ret);
+        cl_context context,
+        cl_mem_flags flags,
+        cl_dx9_media_adapter_type_khr adapter_type,
+        void* surface_info,
+        cl_uint plane,
+        cl_int* errcode_ret);
 
     // cl_khr_dx9_media_sharing
     cl_int  (CL_API_CALL *clEnqueueAcquireDX9MediaSurfacesKHR) (
-                cl_command_queue command_queue,
-                cl_uint num_objects,
-                const cl_mem* mem_objects,
-                cl_uint num_events_in_wait_list,
-                const cl_event* event_wait_list,
-                cl_event* event);
+        cl_command_queue command_queue,
+        cl_uint num_objects,
+        const cl_mem* mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
 
     // cl_khr_dx9_media_sharing
     cl_int  (CL_API_CALL *clEnqueueReleaseDX9MediaSurfacesKHR) (
-                cl_command_queue command_queue,
-                cl_uint num_objects,
-                const cl_mem* mem_objects,
-                cl_uint num_events_in_wait_list,
-                const cl_event* event_wait_list,
-                cl_event* event);
+        cl_command_queue command_queue,
+        cl_uint num_objects,
+        const cl_mem* mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
 #endif
 
     // cl_khr_create_command_queue
     cl_command_queue    (CL_API_CALL *clCreateCommandQueueWithPropertiesKHR) (
-            cl_context context,
-            cl_device_id device,
-            const cl_queue_properties_khr* properties,
-            cl_int* errcode_ret);
+        cl_context context,
+        cl_device_id device,
+        const cl_queue_properties_khr* properties,
+        cl_int* errcode_ret);
 
     // cl_khr_external_memory
     cl_int  (CL_API_CALL *clEnqueueAcquireExternalMemObjectsKHR) (
@@ -197,18 +197,27 @@ struct CLdispatchX
         const cl_event *event_wait_list,
         cl_event *event);
 
+    // cl_khr_external_semaphore
+    cl_int  (CL_API_CALL *clGetSemaphoreHandleForTypeKHR) (
+        cl_semaphore_khr semaphore,
+        cl_device_id device,
+        cl_external_semaphore_handle_type_khr handle_type,
+        size_t handle_size,
+        void* handle_ptr,
+        size_t* handle_size_ret);
+
     // cl_khr_gl_event
     cl_event    (CL_API_CALL *clCreateEventFromGLsyncKHR) (
-                cl_context context,
-                cl_GLsync sync,
-                cl_int* errcode_ret);
+        cl_context context,
+        cl_GLsync sync,
+        cl_int* errcode_ret);
 
     // cl_khr_il_program
     cl_program (CL_API_CALL *clCreateProgramWithILKHR) (
-                cl_context context,
-                const void *il,
-                size_t length,
-                cl_int *errcode_ret);
+        cl_context context,
+        const void *il,
+        size_t length,
+        cl_int *errcode_ret);
 
     // cl_khr_semaphore
     cl_semaphore_khr (CL_API_CALL *clCreateSemaphoreWithPropertiesKHR)(
@@ -254,31 +263,31 @@ struct CLdispatchX
 
     // cl_khr_subgroups
     cl_int  (CL_API_CALL *clGetKernelSubGroupInfoKHR) (
-                cl_kernel kernel,
-                cl_device_id device,
-                cl_kernel_sub_group_info param_name,
-                size_t input_value_size,
-                const void* input_value,
-                size_t param_value_size,
-                void* param_value,
-                size_t* param_value_size_ret);
+        cl_kernel kernel,
+        cl_device_id device,
+        cl_kernel_sub_group_info param_name,
+        size_t input_value_size,
+        const void* input_value,
+        size_t param_value_size,
+        void* param_value,
+        size_t* param_value_size_ret);
 
     // cl_khr_suggested_local_work_size
     cl_int  (CL_API_CALL *clGetKernelSuggestedLocalWorkSizeKHR) (
-                cl_command_queue command_queue,
-                cl_kernel kernel,
-                cl_uint work_dim,
-                const size_t* global_work_offset,
-                const size_t* global_work_size,
-                size_t* suggested_local_work_size);
+        cl_command_queue command_queue,
+        cl_kernel kernel,
+        cl_uint work_dim,
+        const size_t* global_work_offset,
+        const size_t* global_work_size,
+        size_t* suggested_local_work_size);
 
     // Unofficial MDAPI extension:
     cl_command_queue    (CL_API_CALL *clCreatePerfCountersCommandQueueINTEL) (
-                cl_context context,
-                cl_device_id device,
-                cl_command_queue_properties properties,
-                cl_uint configuration,
-                cl_int* errcode_ret);
+        cl_context context,
+        cl_device_id device,
+        cl_command_queue_properties properties,
+        cl_uint configuration,
+        cl_int* errcode_ret);
 
     // Unofficial MDAPI extension:
     cl_int (CL_API_CALL *clSetPerformanceConfigurationINTEL)(
@@ -323,40 +332,40 @@ struct CLdispatchX
 #if defined(_WIN32)
     // cl_intel_dx9_media_sharing
     cl_int  (CL_API_CALL *clGetDeviceIDsFromDX9INTEL) (
-                cl_platform_id platform,
-                cl_dx9_device_source_intel d3d_device_source,
-                void *dx9_object,
-                cl_dx9_device_set_intel d3d_device_set,
-                cl_uint num_entries,
-                cl_device_id* devices,
-                cl_uint* num_devices );
+        cl_platform_id platform,
+        cl_dx9_device_source_intel d3d_device_source,
+        void *dx9_object,
+        cl_dx9_device_set_intel d3d_device_set,
+        cl_uint num_entries,
+        cl_device_id* devices,
+        cl_uint* num_devices );
 
     // cl_intel_dx9_media_sharing
     cl_mem  (CL_API_CALL *clCreateFromDX9MediaSurfaceINTEL) (
-                cl_context context,
-                cl_mem_flags flags,
-                IDirect3DSurface9* resource,
-                HANDLE sharedHandle,
-                UINT plane,
-                cl_int* errcode_ret );
+        cl_context context,
+        cl_mem_flags flags,
+        IDirect3DSurface9* resource,
+        HANDLE sharedHandle,
+        UINT plane,
+        cl_int* errcode_ret );
 
     // cl_intel_dx9_media_sharing
     cl_int  (CL_API_CALL *clEnqueueAcquireDX9ObjectsINTEL) (
-                cl_command_queue command_queue,
-                cl_uint num_objects,
-                const cl_mem* mem_objects,
-                cl_uint num_events_in_wait_list,
-                const cl_event* event_wait_list,
-                cl_event* event );
+        cl_command_queue command_queue,
+        cl_uint num_objects,
+        const cl_mem* mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event );
 
     // cl_intel_dx9_media_sharing
     cl_int  (CL_API_CALL *clEnqueueReleaseDX9ObjectsINTEL) (
-                cl_command_queue command_queue,
-                cl_uint num_objects,
-                const cl_mem* mem_objects,
-                cl_uint num_events_in_wait_list,
-                const cl_event* event_wait_list,
-                cl_event* event );
+        cl_command_queue command_queue,
+        cl_uint num_objects,
+        const cl_mem* mem_objects,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event );
 #endif
 
     // cl_intel_sharing_format_query
