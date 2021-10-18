@@ -23,7 +23,6 @@
 #pragma once
 
 #include "common.h"
-#include "cli_ext.h"
 
 #include "CL/cl_icd.h"
 
@@ -192,6 +191,48 @@ struct CLdispatchX
                 const void *il,
                 size_t length,
                 cl_int *errcode_ret);
+
+    // cl_khr_semaphore
+    cl_semaphore_khr (CL_API_CALL *clCreateSemaphoreWithPropertiesKHR)(
+        cl_context context,
+        const cl_semaphore_properties_khr *sema_props,
+        cl_int *errcode_ret);
+
+    // cl_khr_semaphore
+    cl_int (CL_API_CALL *clEnqueueWaitSemaphoresKHR)(
+        cl_command_queue command_queue,
+        cl_uint num_sema_objects,
+        const cl_semaphore_khr *sema_objects,
+        const cl_semaphore_payload_khr *sema_payload_list,
+        cl_uint num_events_in_wait_list,
+        const cl_event *event_wait_list,
+        cl_event *event);
+
+    // cl_khr_semaphore
+    cl_int (CL_API_CALL *clEnqueueSignalSemaphoresKHR)(
+        cl_command_queue command_queue,
+        cl_uint num_sema_objects,
+        const cl_semaphore_khr *sema_objects,
+        const cl_semaphore_payload_khr *sema_payload_list,
+        cl_uint num_events_in_wait_list,
+        const cl_event *event_wait_list,
+        cl_event *event);
+
+    // cl_khr_semaphore
+    cl_int (CL_API_CALL *clGetSemaphoreInfoKHR)(
+        cl_semaphore_khr semaphore,
+        cl_semaphore_info_khr param_name,
+        size_t param_value_size,
+        void *param_value,
+        size_t *param_value_size_ret);
+
+    // cl_khr_semaphore
+    cl_int (CL_API_CALL *clReleaseSemaphoreKHR)(
+        cl_semaphore_khr semaphore);
+
+    // cl_khr_semaphore
+    cl_int (CL_API_CALL *clRetainSemaphoreKHR)(
+        cl_semaphore_khr semaphore);
 
     // cl_khr_subgroups
     cl_int  (CL_API_CALL *clGetKernelSubGroupInfoKHR) (

@@ -112,6 +112,7 @@ CLI_CONTROL( bool,          DumpKernelISABinaries,                  false, "If s
 
 CLI_CONTROL_SEPARATOR( Controls for Emulating Features: )
 CLI_CONTROL( bool,          Emulate_cl_khr_extended_versioning,     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl_khr_extended_versioning extension." )
+CLI_CONTROL( bool,          Emulate_cl_khr_semaphore,               false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl_khr_semaphore extension." )
 CLI_CONTROL( bool,          Emulate_cl_intel_unified_shared_memory, false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl_intel_unified_shared_memory extension USM APIs using SVM APIs.  This can be useful to test USM applications on an implementation that supports SVM, but not USM." )
 
 CLI_CONTROL_SEPARATOR( Controls for Automatically Creating SPIR-V Modules: )

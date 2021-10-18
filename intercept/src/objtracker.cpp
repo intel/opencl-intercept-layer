@@ -65,4 +65,5 @@ void CObjectTracker::writeReport( std::ostream& os ) const
     ReportHelper( "cl_program",         m_Programs,         os );
     ReportHelper( "cl_kernel",          m_Kernels,          os );
     ReportHelper( "cl_event",           m_Events,           os );
+    ReportHelper( "cl_semaphore_khr",       m_Semaphores,       os );
 }

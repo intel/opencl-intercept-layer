@@ -2180,6 +2180,83 @@ void CLIntercept::getMemPropertiesString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getSemaphorePropertiesString(
+    const cl_semaphore_properties_khr* properties,
+    std::string& str ) const
+{
+    str = "";
+
+    if( properties )
+    {
+        char    s[256];
+
+        while( properties[0] != 0 )
+        {
+            cl_int  property = (cl_int)properties[0];
+            str += enumName().name( property ) + " = ";
+
+            switch( property )
+            {
+            case CL_SEMAPHORE_TYPE_KHR:
+                {
+                    auto pt = (const cl_semaphore_type_khr*)( properties + 1 );
+                    str += enumName().name_semaphore_type( pt[0] );
+                    properties += 2;
+                }
+                break;
+            case CL_DEVICE_HANDLE_LIST_KHR:
+                {
+                    ++properties;
+                    str += "{ ";
+                    do
+                    {
+                        if( *properties == CL_DEVICE_HANDLE_LIST_END_KHR )
+                        {
+                            str += "CL_DEVICE_HANDLE_LIST_END_KHR";
+                        }
+                        else
+                        {
+                            auto pDevice = (const cl_device_id*)properties;
+                            std::string deviceInfo;
+                            getDeviceInfoString(
+                                1,
+                                pDevice,
+                                deviceInfo );
+                            str += deviceInfo;
+                            str += ", ";
+
+                        }
+                    }
+                    while( *properties++ != CL_DEVICE_HANDLE_LIST_END_KHR );
+                    str += " }";
+                }
+                break;
+            default:
+                {
+                    CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
+                    str += s;
+                    // Advance by two properties.  This may not be correct,
+                    // but it's the best we can do when the property is
+                    // unknown.
+                    properties += 2;
+                }
+                break;
+            }
+
+            if( properties[0] != 0 )
+            {
+                str += ", ";
+            }
+        }
+    }
+    else
+    {
+        str = "NULL";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::getCreateKernelsInProgramRetString(
     cl_int retVal,
     cl_kernel* kernels,
@@ -5789,6 +5866,49 @@ void CLIntercept::checkRemoveAcceleratorInfo(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::addSemaphoreInfo(
+    cl_semaphore_khr semaphore,
+    cl_context context )
+{
+    if( semaphore )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        m_SemaphoreInfoMap[semaphore] = getPlatform(context);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::checkRemoveSemaphoreInfo(
+    cl_semaphore_khr semaphore )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    CSemaphoreInfoMap::iterator iter = m_SemaphoreInfoMap.find( semaphore );
+    if( iter != m_SemaphoreInfoMap.end() )
+    {
+        cl_platform_id  platform = iter->second;
+        auto dispatchX = this->dispatchX(platform);
+
+        cl_uint refCount = 0;
+        cl_int  errorCode = CL_SUCCESS;
+
+        errorCode = dispatchX.clGetSemaphoreInfoKHR(
+            semaphore,
+            CL_SEMAPHORE_REFERENCE_COUNT_KHR,
+            sizeof( refCount ),
+            &refCount,
+            NULL );
+        if( errorCode == CL_SUCCESS && refCount == 1 )
+        {
+            m_SemaphoreInfoMap.erase( iter );
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::addSamplerString(
     cl_sampler sampler,
     const std::string& str )
@@ -8707,37 +8827,6 @@ cl_int CLIntercept::writeStringToMemory(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-template< class T >
-cl_int CLIntercept::writeParamToMemory(
-    size_t param_value_size,
-    T param,
-    size_t *param_value_size_ret,
-    T* pointer ) const
-{
-    cl_int  errorCode = CL_SUCCESS;
-
-    if( pointer != NULL )
-    {
-        if( param_value_size < sizeof(param) )
-        {
-            errorCode = CL_INVALID_VALUE;
-        }
-        else
-        {
-            *pointer = param;
-        }
-    }
-
-    if( param_value_size_ret != NULL )
-    {
-        *param_value_size_ret = sizeof(param);
-    }
-
-    return errorCode;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
 static cl_int parseExtensionString(
     const char* originalStr,
     cl_name_version_khr* ptr,
@@ -9138,6 +9227,22 @@ bool CLIntercept::overrideGetPlatformInfo(
             platformExtensions = NULL;
         }
         break;
+    case CL_PLATFORM_SEMAPHORE_TYPES_KHR:
+        if( m_Config.Emulate_cl_khr_semaphore )
+        {
+            // If we decide to emulate multiple semaphore types we will need
+            // to return an array, but for now we can return just the binary
+            // semaphore type.
+            auto    ptr = (cl_semaphore_type_khr*)param_value;
+            cl_semaphore_type_khr type = CL_SEMAPHORE_TYPE_BINARY_KHR;
+            errorCode = writeParamToMemory(
+                param_value_size,
+                type,
+                param_value_size_ret,
+                ptr );
+            override = true;
+        }
+        break;
     default:
         break;
     }
@@ -9198,6 +9303,7 @@ bool CLIntercept::overrideGetDeviceInfo(
             override = true;
         }
         else if( m_Config.Emulate_cl_khr_extended_versioning ||
+                 m_Config.Emulate_cl_khr_semaphore ||
                  m_Config.Emulate_cl_intel_unified_shared_memory )
         {
             std::string newExtensions;
@@ -9205,6 +9311,11 @@ bool CLIntercept::overrideGetDeviceInfo(
                 !checkDeviceForExtension( device, "cl_khr_extended_versioning") )
             {
                 newExtensions += "cl_khr_extended_versioning ";
+            }
+            if( m_Config.Emulate_cl_khr_semaphore &&
+                !checkDeviceForExtension( device, "cl_khr_semaphore") )
+            {
+                newExtensions += "cl_khr_semaphore ";
             }
             if( m_Config.Emulate_cl_intel_unified_shared_memory &&
                 !checkDeviceForExtension( device, "cl_intel_unified_shared_memory") )
@@ -9674,6 +9785,22 @@ bool CLIntercept::overrideGetDeviceInfo(
             default:
                 break;
             }
+        }
+        break;
+    case CL_DEVICE_SEMAPHORE_TYPES_KHR:
+        if( m_Config.Emulate_cl_khr_semaphore )
+        {
+            // If we decide to emulate multiple semaphore types we will need
+            // to return an array, but for now we can return just the binary
+            // semaphore type.
+            auto    ptr = (cl_semaphore_type_khr*)param_value;
+            cl_semaphore_type_khr type = CL_SEMAPHORE_TYPE_BINARY_KHR;
+            errorCode = writeParamToMemory(
+                param_value_size,
+                type,
+                param_value_size_ret,
+                ptr );
+            override = true;
         }
         break;
     default:
@@ -11190,6 +11317,25 @@ void* CLIntercept::getExtensionFunctionAddress(
 
     // cl_khr_il_program
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateProgramWithILKHR );
+
+    if( m_Config.Emulate_cl_khr_semaphore )
+    {
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCreateSemaphoreWithPropertiesKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clEnqueueWaitSemaphoresKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clEnqueueSignalSemaphoresKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clGetSemaphoreInfoKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clRetainSemaphoreKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clReleaseSemaphoreKHR );
+    }
+    else
+    {
+        CHECK_RETURN_EXTENSION_FUNCTION( clCreateSemaphoreWithPropertiesKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueWaitSemaphoresKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueSignalSemaphoresKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clGetSemaphoreInfoKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clRetainSemaphoreKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clReleaseSemaphoreKHR );
+    }
 
     // cl_khr_subgroups
     CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSubGroupInfoKHR );

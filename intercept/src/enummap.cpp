@@ -729,6 +729,21 @@ CEnumNameMap::CEnumNameMap()
     // cl_khr_priority_hints extension
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_PRIORITY_KHR );
 
+    // cl_khr_semaphore
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_SEMAPHORE_TYPES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SEMAPHORE_TYPES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_CONTEXT_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_REFERENCE_COUNT_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_PROPERTIES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_PAYLOAD_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_TYPE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_SEMAPHORE_WAIT_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_SEMAPHORE_SIGNAL_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_SEMAPHORE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_HANDLE_LIST_KHR );
+
+    ADD_ENUM_NAME( m_cl_semaphore_type_khr, CL_SEMAPHORE_TYPE_BINARY_KHR );
+
     // cl_khr_spir
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIR_VERSIONS );
     ADD_ENUM_NAME( m_cl_int, CL_PROGRAM_BINARY_TYPE_INTERMEDIATE );

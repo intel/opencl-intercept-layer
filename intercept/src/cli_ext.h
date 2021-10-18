@@ -30,6 +30,7 @@ extern "C" {
 // cl_khr_create_command_queue
 
 typedef cl_properties cl_queue_properties_khr;
+
 extern CL_API_ENTRY
 cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
     cl_context context,
@@ -50,13 +51,11 @@ class ID3D10Buffer;
 class ID3D10Texture2D;
 class ID3D10Texture3D;
 
-// cl_khr_d3d10_sharing
 #define CL_INVALID_D3D10_DEVICE_KHR                  -1002
 #define CL_INVALID_D3D10_RESOURCE_KHR                -1003
 #define CL_D3D10_RESOURCE_ALREADY_ACQUIRED_KHR       -1004
 #define CL_D3D10_RESOURCE_NOT_ACQUIRED_KHR           -1005
 
-// cl_khr_d3d10_sharing
 #define CL_D3D10_DEVICE_KHR                          0x4010
 #define CL_D3D10_DXGI_ADAPTER_KHR                    0x4011
 #define CL_PREFERRED_DEVICES_FOR_D3D10_KHR           0x4012
@@ -68,7 +67,6 @@ class ID3D10Texture3D;
 #define CL_COMMAND_ACQUIRE_D3D10_OBJECTS_KHR         0x4017
 #define CL_COMMAND_RELEASE_D3D10_OBJECTS_KHR         0x4018
 
-// cl_khr_d3d10_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clGetDeviceIDsFromD3D10KHR(
     cl_platform_id platform,
@@ -79,7 +77,6 @@ cl_int CL_API_CALL clGetDeviceIDsFromD3D10KHR(
     cl_device_id* devices,
     cl_uint* num_devices);
 
-// cl_khr_d3d10_sharing
 extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
     cl_context context,
@@ -87,7 +84,6 @@ cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
     ID3D10Buffer* resource,
     cl_int* errcode_ret);
 
-// cl_khr_d3d10_sharing
 extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
     cl_context context,
@@ -96,7 +92,6 @@ cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
     UINT subresource,
     cl_int* errcode_ret);
 
-// cl_khr_d3d10_sharing
 extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
     cl_context context,
@@ -105,7 +100,6 @@ cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
     UINT subresource,
     cl_int* errcode_ret);
 
-// cl_khr_d3d10_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
     cl_command_queue command_queue,
@@ -115,7 +109,6 @@ cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
     const cl_event* event_wait_list,
     cl_event* event);
 
-// cl_khr_d3d10_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
     cl_command_queue command_queue,
@@ -140,13 +133,11 @@ class ID3D11Buffer;
 class ID3D11Texture2D;
 class ID3D11Texture3D;
 
-// cl_khr_d3d11_sharing
 #define CL_INVALID_D3D11_DEVICE_KHR                  -1006
 #define CL_INVALID_D3D11_RESOURCE_KHR                -1007
 #define CL_D3D11_RESOURCE_ALREADY_ACQUIRED_KHR       -1008
 #define CL_D3D11_RESOURCE_NOT_ACQUIRED_KHR           -1009
 
-// cl_khr_d3d11_sharing
 #define CL_D3D11_DEVICE_KHR                          0x4019
 #define CL_D3D11_DXGI_ADAPTER_KHR                    0x401A
 #define CL_PREFERRED_DEVICES_FOR_D3D11_KHR           0x401B
@@ -158,7 +149,6 @@ class ID3D11Texture3D;
 #define CL_COMMAND_ACQUIRE_D3D11_OBJECTS_KHR         0x4020
 #define CL_COMMAND_RELEASE_D3D11_OBJECTS_KHR         0x4021
 
-// cl_khr_d3d11_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clGetDeviceIDsFromD3D11KHR(
     cl_platform_id platform,
@@ -169,7 +159,6 @@ cl_int CL_API_CALL clGetDeviceIDsFromD3D11KHR(
     cl_device_id* devices,
     cl_uint* num_devices);
 
-// cl_khr_d3d11_sharing
 extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
     cl_context context,
@@ -177,7 +166,6 @@ cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
     ID3D11Buffer* resource,
     cl_int* errcode_ret);
 
-// cl_khr_d3d11_sharing
 extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
     cl_context context,
@@ -186,7 +174,6 @@ cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
     UINT subresource,
     cl_int* errcode_ret);
 
-// cl_khr_d3d11_sharing
 extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
     cl_context context,
@@ -195,7 +182,6 @@ cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
     UINT subresource,
     cl_int* errcode_ret);
 
-// cl_khr_d3d11_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
     cl_command_queue command_queue,
@@ -205,7 +191,6 @@ cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
     const cl_event* event_wait_list,
     cl_event* event);
 
-// cl_khr_d3d11_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
     cl_command_queue command_queue,
@@ -229,13 +214,11 @@ typedef cl_uint cl_dx9_media_adapter_set_khr;
 typedef cl_uint cl_dx9_media_adapter_type_khr;
 class IDirect3DSurface9;
 
-// cl_khr_dx9_media_sharing
 #define CL_INVALID_DX9_MEDIA_ADAPTER_KHR                -1010
 #define CL_INVALID_DX9_MEDIA_SURFACE_KHR                -1011
 #define CL_DX9_MEDIA_SURFACE_ALREADY_ACQUIRED_KHR       -1012
 #define CL_DX9_MEDIA_SURFACE_NOT_ACQUIRED_KHR           -1013
 
-// cl_khr_dx9_media_sharing
 #define CL_ADAPTER_D3D9_KHR                              0x2020
 #define CL_ADAPTER_D3D9EX_KHR                            0x2021
 #define CL_ADAPTER_DXVA_KHR                              0x2022
@@ -250,7 +233,6 @@ class IDirect3DSurface9;
 #define CL_COMMAND_ACQUIRE_DX9_MEDIA_SURFACES_KHR        0x202B
 #define CL_COMMAND_RELEASE_DX9_MEDIA_SURFACES_KHR        0x202C
 
-// cl_khr_dx9_media_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
     cl_platform_id platform,
@@ -262,7 +244,6 @@ cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
     cl_device_id* devices,
     cl_uint* num_devices);
 
-// cl_khr_dx9_media_sharing
 extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
     cl_context context,
@@ -272,7 +253,6 @@ cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
     cl_uint plane,
     cl_int* errcode_ret);
 
-// cl_khr_dx9_media_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
     cl_command_queue command_queue,
@@ -282,7 +262,6 @@ cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
     const cl_event* event_wait_list,
     cl_event* event);
 
-// cl_khr_dx9_media_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
     cl_command_queue command_queue,
@@ -370,6 +349,7 @@ cl_int CL_API_CALL clGetGLContextInfoKHR(
 
 #define CL_DEVICE_IL_VERSION_KHR                        0x105B
 #define CL_PROGRAM_IL_KHR                               0x1169
+
 extern CL_API_ENTRY
 cl_program CL_API_CALL clCreateProgramWithILKHR(
     cl_context context,
@@ -413,6 +393,77 @@ typedef struct _cl_device_pci_bus_info_khr {
 #define CL_QUEUE_PRIORITY_LOW_KHR (1<<2)
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_khr_semaphore
+
+// Note: This implements the provisional extension v0.9.0.
+
+typedef struct _cl_semaphore_khr* cl_semaphore_khr;
+typedef cl_properties cl_semaphore_properties_khr;
+typedef cl_uint cl_semaphore_info_khr;
+typedef cl_uint cl_semaphore_type_khr;
+typedef cl_ulong cl_semaphore_payload_khr;
+
+#define CL_SEMAPHORE_TYPE_BINARY_KHR                1
+
+#define CL_PLATFORM_SEMAPHORE_TYPES_KHR                          0x2036
+#define CL_DEVICE_SEMAPHORE_TYPES_KHR                            0x204C
+#define CL_SEMAPHORE_CONTEXT_KHR                                 0x2039
+#define CL_SEMAPHORE_REFERENCE_COUNT_KHR                         0x203A
+#define CL_SEMAPHORE_PROPERTIES_KHR                              0x203B
+#define CL_SEMAPHORE_PAYLOAD_KHR                                 0x203C
+#define CL_SEMAPHORE_TYPE_KHR                                    0x203D
+
+#define CL_DEVICE_HANDLE_LIST_KHR                                0x2051
+#define CL_DEVICE_HANDLE_LIST_END_KHR                            0
+
+#define CL_COMMAND_SEMAPHORE_WAIT_KHR                            0x2042
+#define CL_COMMAND_SEMAPHORE_SIGNAL_KHR                          0x2043
+
+#define CL_INVALID_SEMAPHORE_KHR                                 -1142
+
+extern CL_API_ENTRY
+cl_semaphore_khr CL_API_CALL clCreateSemaphoreWithPropertiesKHR(
+    cl_context context,
+    const cl_semaphore_properties_khr* sema_props,
+    cl_int* errcode_ret);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clEnqueueWaitSemaphoresKHR(
+    cl_command_queue command_queue,
+    cl_uint num_sema_objects,
+    const cl_semaphore_khr* sema_objects,
+    const cl_semaphore_payload_khr* sema_payload_list,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clEnqueueSignalSemaphoresKHR(
+    cl_command_queue command_queue,
+    cl_uint num_sema_objects,
+    const cl_semaphore_khr* sema_objects,
+    const cl_semaphore_payload_khr* sema_payload_list,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clGetSemaphoreInfoKHR(
+    cl_semaphore_khr semaphore,
+    cl_semaphore_info_khr param_name,
+    size_t param_value_size,
+    void* param_value,
+    size_t* param_value_size_ret);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clRetainSemaphoreKHR(
+    cl_semaphore_khr semaphore);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clReleaseSemaphoreKHR(
+    cl_semaphore_khr semaphore);
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_khr_spir
 
 #define CL_DEVICE_SPIR_VERSIONS                     0x40E0
@@ -425,6 +476,7 @@ typedef struct _cl_device_pci_bus_info_khr {
 #define CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE_KHR   0x2034
 
 typedef cl_uint  cl_kernel_sub_group_info;
+
 extern CL_API_ENTRY
 cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
     cl_kernel kernel,
@@ -440,8 +492,7 @@ cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
 // cl_khr_suggested_local_work_size
 
 extern CL_API_ENTRY
-cl_int CL_API_CALL
-clGetKernelSuggestedLocalWorkSizeKHR(
+cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
     cl_command_queue command_queue,
     cl_kernel kernel,
     cl_uint work_dim,
@@ -696,14 +747,12 @@ typedef cl_uint cl_dx9_device_source_intel;
 typedef cl_uint cl_dx9_device_set_intel;
 class IDirect3DSurface9;
 
-// cl_intel_dx9_media_sharing
 // These error codes are shared with cl_khr_dx9_media_sharing.
 #define CL_INVALID_DX9_DEVICE_INTEL                   -1010
 #define CL_INVALID_DX9_RESOURCE_INTEL                 -1011
 #define CL_DX9_RESOURCE_ALREADY_ACQUIRED_INTEL        -1012
 #define CL_DX9_RESOURCE_NOT_ACQUIRED_INTEL            -1013
 
-// cl_intel_dx9_media_sharing
 #define CL_D3D9_DEVICE_INTEL                          0x4022
 #define CL_D3D9EX_DEVICE_INTEL                        0x4070
 #define CL_DXVA_DEVICE_INTEL                          0x4071
@@ -718,7 +767,6 @@ class IDirect3DSurface9;
 #define CL_COMMAND_ACQUIRE_DX9_OBJECTS_INTEL          0x402A
 #define CL_COMMAND_RELEASE_DX9_OBJECTS_INTEL          0x402B
 
-// cl_intel_dx9_media_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clGetDeviceIDsFromDX9INTEL(
     cl_platform_id platform,
@@ -729,7 +777,6 @@ cl_int CL_API_CALL clGetDeviceIDsFromDX9INTEL(
     cl_device_id* devices,
     cl_uint* num_devices );
 
-// cl_intel_dx9_media_sharing
 extern CL_API_ENTRY
 cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
     cl_context context,
@@ -739,7 +786,6 @@ cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
     UINT plane,
     cl_int* errcode_ret );
 
-// cl_intel_dx9_media_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
     cl_command_queue command_queue,
@@ -749,7 +795,6 @@ cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
     const cl_event* event_wait_list,
     cl_event* event );
 
-// cl_intel_dx9_media_sharing
 extern CL_API_ENTRY
 cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
     cl_command_queue command_queue,
@@ -987,110 +1032,110 @@ typedef cl_uint cl_mem_advice_intel;
 #define CL_COMMAND_MIGRATEMEM_INTEL     0x4206
 #define CL_COMMAND_MEMADVISE_INTEL      0x4207
 
-extern CL_API_ENTRY void* CL_API_CALL
-clHostMemAllocINTEL(
-            cl_context context,
-            const cl_mem_properties_intel* properties,
-            size_t size,
-            cl_uint alignment,
-            cl_int* errcode_ret);
+extern CL_API_ENTRY
+void* CL_API_CALL clHostMemAllocINTEL(
+    cl_context context,
+    const cl_mem_properties_intel* properties,
+    size_t size,
+    cl_uint alignment,
+    cl_int* errcode_ret);
 
-extern CL_API_ENTRY void* CL_API_CALL
-clDeviceMemAllocINTEL(
-            cl_context context,
-            cl_device_id device,
-            const cl_mem_properties_intel* properties,
-            size_t size,
-            cl_uint alignment,
-            cl_int* errcode_ret);
+extern CL_API_ENTRY
+void* CL_API_CALL clDeviceMemAllocINTEL(
+    cl_context context,
+    cl_device_id device,
+    const cl_mem_properties_intel* properties,
+    size_t size,
+    cl_uint alignment,
+    cl_int* errcode_ret);
 
-extern CL_API_ENTRY void* CL_API_CALL
-clSharedMemAllocINTEL(
-            cl_context context,
-            cl_device_id device,
-            const cl_mem_properties_intel* properties,
-            size_t size,
-            cl_uint alignment,
-            cl_int* errcode_ret);
+extern CL_API_ENTRY
+void* CL_API_CALL clSharedMemAllocINTEL(
+    cl_context context,
+    cl_device_id device,
+    const cl_mem_properties_intel* properties,
+    size_t size,
+    cl_uint alignment,
+    cl_int* errcode_ret);
 
-extern CL_API_ENTRY cl_int CL_API_CALL
-clMemFreeINTEL(
-            cl_context context,
-            void* ptr);
+extern CL_API_ENTRY
+cl_int CL_API_CALL clMemFreeINTEL(
+    cl_context context,
+    void* ptr);
 
-extern CL_API_ENTRY cl_int CL_API_CALL
-clMemBlockingFreeINTEL(
-            cl_context context,
-            void* ptr);
+extern CL_API_ENTRY
+cl_int CL_API_CALL clMemBlockingFreeINTEL(
+    cl_context context,
+    void* ptr);
 
-extern CL_API_ENTRY cl_int CL_API_CALL
-clGetMemAllocInfoINTEL(
-            cl_context context,
-            const void* ptr,
-            cl_mem_info_intel param_name,
-            size_t param_value_size,
-            void* param_value,
-            size_t* param_value_size_ret);
+extern CL_API_ENTRY
+cl_int CL_API_CALL clGetMemAllocInfoINTEL(
+    cl_context context,
+    const void* ptr,
+    cl_mem_info_intel param_name,
+    size_t param_value_size,
+    void* param_value,
+    size_t* param_value_size_ret);
 
-extern CL_API_ENTRY cl_int CL_API_CALL
-clSetKernelArgMemPointerINTEL(
-            cl_kernel kernel,
-            cl_uint arg_index,
-            const void* arg_value);
+extern CL_API_ENTRY
+cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
+    cl_kernel kernel,
+    cl_uint arg_index,
+    const void* arg_value);
 
 // Memset has been deprecated and replaced by Memfill.
 // This function can eventually be removed.
-extern CL_API_ENTRY cl_int CL_API_CALL
-clEnqueueMemsetINTEL(       // Deprecated
-            cl_command_queue command_queue,
-            void* dst_ptr,
-            cl_int value,
-            size_t size,
-            cl_uint num_events_in_wait_list,
-            const cl_event* event_wait_list,
-            cl_event* event);
+extern CL_API_ENTRY
+cl_int CL_API_CALL clEnqueueMemsetINTEL(       // Deprecated
+    cl_command_queue command_queue,
+    void* dst_ptr,
+    cl_int value,
+    size_t size,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event);
 
-extern CL_API_ENTRY cl_int CL_API_CALL
-clEnqueueMemFillINTEL(
-            cl_command_queue command_queue,
-            void* dst_ptr,
-            const void* pattern,
-            size_t pattern_size,
-            size_t size,
-            cl_uint num_events_in_wait_list,
-            const cl_event* event_wait_list,
-            cl_event* event);
+extern CL_API_ENTRY
+cl_int CL_API_CALL clEnqueueMemFillINTEL(
+    cl_command_queue command_queue,
+    void* dst_ptr,
+    const void* pattern,
+    size_t pattern_size,
+    size_t size,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event);
 
-extern CL_API_ENTRY cl_int CL_API_CALL
-clEnqueueMemcpyINTEL(
-            cl_command_queue command_queue,
-            cl_bool blocking,
-            void* dst_ptr,
-            const void* src_ptr,
-            size_t size,
-            cl_uint num_events_in_wait_list,
-            const cl_event* event_wait_list,
-            cl_event* event);
+extern CL_API_ENTRY
+cl_int CL_API_CALL clEnqueueMemcpyINTEL(
+    cl_command_queue command_queue,
+    cl_bool blocking,
+    void* dst_ptr,
+    const void* src_ptr,
+    size_t size,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event);
 
-extern CL_API_ENTRY cl_int CL_API_CALL
-clEnqueueMigrateMemINTEL(
-            cl_command_queue command_queue,
-            const void* ptr,
-            size_t size,
-            cl_mem_migration_flags flags,
-            cl_uint num_events_in_wait_list,
-            const cl_event* event_wait_list,
-            cl_event* event);
+extern CL_API_ENTRY
+cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
+    cl_command_queue command_queue,
+    const void* ptr,
+    size_t size,
+    cl_mem_migration_flags flags,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event);
 
-extern CL_API_ENTRY cl_int CL_API_CALL
-clEnqueueMemAdviseINTEL(
-            cl_command_queue command_queue,
-            const void* ptr,
-            size_t size,
-            cl_mem_advice_intel advice,
-            cl_uint num_events_in_wait_list,
-            const cl_event* event_wait_list,
-            cl_event* event);
+extern CL_API_ENTRY
+cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
+    cl_command_queue command_queue,
+    const void* ptr,
+    size_t size,
+    cl_mem_advice_intel advice,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event);
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_intel_va_api_media_sharing
@@ -1155,14 +1200,14 @@ cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 
 typedef cl_bitfield         cl_mem_flags_NV;
 
-extern CL_API_ENTRY cl_mem CL_API_CALL
-clCreateBufferNV(
-            cl_context context,
-            cl_mem_flags flags,
-            cl_mem_flags_NV flags_NV,
-            size_t size,
-            void* host_ptr,
-            cl_int* errcode_ret);
+extern CL_API_ENTRY
+cl_mem CL_API_CALL clCreateBufferNV(
+    cl_context context,
+    cl_mem_flags flags,
+    cl_mem_flags_NV flags_NV,
+    size_t size,
+    void* host_ptr,
+    cl_int* errcode_ret);
 
 #define CL_MEM_LOCATION_HOST_NV                     (1 << 0)
 #define CL_MEM_PINNED_NV                            (1 << 1)

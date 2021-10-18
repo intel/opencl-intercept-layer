@@ -5333,6 +5333,301 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_semaphore
+CL_API_ENTRY cl_semaphore_khr CL_API_CALL clCreateSemaphoreWithPropertiesKHR(
+    cl_context context,
+    const cl_semaphore_properties_khr* properties,
+    cl_int* errcode_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clCreateSemaphoreWithPropertiesKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            std::string propsStr;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getSemaphorePropertiesString(
+                    properties,
+                    propsStr );
+            }
+            CALL_LOGGING_ENTER( "context = %p, properties = [ %s ]",
+                context,
+                propsStr.c_str() );
+            CHECK_ERROR_INIT( errcode_ret );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_semaphore_khr    retVal = dispatchX.clCreateSemaphoreWithPropertiesKHR(
+                context,
+                properties,
+                errcode_ret );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( errcode_ret[0] );
+            ADD_OBJECT_ALLOCATION( retVal );
+            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+
+            if( retVal != NULL )
+            {
+                pIntercept->addSemaphoreInfo(
+                    retVal,
+                    context );
+            }
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_semaphore
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueWaitSemaphoresKHR(
+    cl_command_queue queue,
+    cl_uint num_sema_objects,
+    const cl_semaphore_khr *sema_objects,
+    const cl_semaphore_payload_khr *sema_payload_list,
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(queue);
+        if( dispatchX.clEnqueueWaitSemaphoresKHR )
+        {
+            cl_int  retVal = CL_SUCCESS;
+
+            INCREMENT_ENQUEUE_COUNTER();
+            CHECK_AUBCAPTURE_START( queue );
+
+            if( pIntercept->config().NullEnqueue == false )
+            {
+                CALL_LOGGING_ENTER( "queue = %p, num_sema_objects = %u",
+                    queue,
+                    num_sema_objects );
+                CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+                DEVICE_PERFORMANCE_TIMING_START( event );
+                CPU_PERFORMANCE_TIMING_START();
+
+                retVal = dispatchX.clEnqueueWaitSemaphoresKHR(
+                    queue,
+                    num_sema_objects,
+                    sema_objects,
+                    sema_payload_list,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event );
+
+                CPU_PERFORMANCE_TIMING_END();
+                DEVICE_PERFORMANCE_TIMING_END( queue, event );
+                CHECK_ERROR( retVal );
+                ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+                CALL_LOGGING_EXIT_EVENT( retVal, event );
+            }
+
+            FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
+            CHECK_AUBCAPTURE_STOP( queue  );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_semaphore
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueSignalSemaphoresKHR(
+    cl_command_queue queue,
+    cl_uint num_sema_objects,
+    const cl_semaphore_khr *sema_objects,
+    const cl_semaphore_payload_khr *sema_payload_list,
+    cl_uint num_events_in_wait_list,
+    const cl_event *event_wait_list,
+    cl_event *event)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(queue);
+        if( dispatchX.clEnqueueSignalSemaphoresKHR )
+        {
+            cl_int  retVal = CL_SUCCESS;
+
+            INCREMENT_ENQUEUE_COUNTER();
+            CHECK_AUBCAPTURE_START( queue );
+
+            if( pIntercept->config().NullEnqueue == false )
+            {
+                CALL_LOGGING_ENTER( "queue = %p, num_sema_objects = %u",
+                    queue,
+                    num_sema_objects );
+                CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+                DEVICE_PERFORMANCE_TIMING_START( event );
+                CPU_PERFORMANCE_TIMING_START();
+
+                retVal = dispatchX.clEnqueueSignalSemaphoresKHR(
+                    queue,
+                    num_sema_objects,
+                    sema_objects,
+                    sema_payload_list,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event );
+
+                CPU_PERFORMANCE_TIMING_END();
+                DEVICE_PERFORMANCE_TIMING_END( queue, event );
+                CHECK_ERROR( retVal );
+                ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+                CALL_LOGGING_EXIT_EVENT( retVal, event );
+            }
+
+            FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
+            CHECK_AUBCAPTURE_STOP( queue  );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_semaphore
+CL_API_ENTRY cl_int CL_API_CALL clGetSemaphoreInfoKHR(
+    const cl_semaphore_khr semaphore,
+    cl_semaphore_info_khr param_name,
+    size_t param_value_size,
+    void *param_value,
+    size_t *param_value_size_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(semaphore);
+        if( dispatchX.clGetSemaphoreInfoKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER( "semaphore = %p, param_name = %s (%08X)",
+                semaphore,
+                pIntercept->enumName().name( param_name ).c_str(),
+                param_name );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clGetSemaphoreInfoKHR(
+                semaphore,
+                param_name,
+                param_value_size,
+                param_value,
+                param_value_size_ret );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_semaphore
+CL_API_ENTRY cl_int CL_API_CALL clRetainSemaphoreKHR(
+    cl_semaphore_khr semaphore )
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(semaphore);
+        if( dispatchX.clRetainSemaphoreKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            cl_uint ref_count =
+                pIntercept->config().CallLogging ?
+                pIntercept->getRefCount( semaphore ) : 0;
+            CALL_LOGGING_ENTER( "[ ref count = %d ] semaphore = %p",
+                ref_count,
+                semaphore );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clRetainSemaphoreKHR(
+                semaphore );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            ADD_OBJECT_RETAIN( semaphore );
+            ref_count =
+                pIntercept->config().CallLogging ?
+                pIntercept->getRefCount( semaphore ) : 0;
+            CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_semaphore
+CL_API_ENTRY cl_int CL_API_CALL clReleaseSemaphoreKHR(
+    cl_semaphore_khr semaphore)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(semaphore);
+        if( dispatchX.clReleaseSemaphoreKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            pIntercept->checkRemoveSemaphoreInfo( semaphore );
+
+            cl_uint ref_count =
+                pIntercept->config().CallLogging ?
+                pIntercept->getRefCount( semaphore ) : 0;
+            CALL_LOGGING_ENTER( "[ ref count = %d ] semaphore = %p",
+                ref_count,
+                semaphore );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clReleaseSemaphoreKHR(
+                semaphore );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            ADD_OBJECT_RELEASE( semaphore );
+            CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_khr_gl_sharing
 CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
     cl_context context,
