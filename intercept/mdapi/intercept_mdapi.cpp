@@ -175,7 +175,14 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
     {
         if( m_pMDHelper->ActivateMetricSet() )
         {
+            cl_int errorCode = CL_SUCCESS;
+            if (errcode_ret == NULL) {
+                errcode_ret = &errorCode;
+            }
+
             cl_uint configuration = m_pMDHelper->GetMetricsConfiguration();
+            logf( "Calling clCreatePerfCountersCommandQueueINTEL with configuration %u....\n",
+                configuration);
 
             retVal = dispatchX.clCreatePerfCountersCommandQueueINTEL(
                 context,
@@ -185,7 +192,13 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
                 errcode_ret );
             if( retVal == NULL )
             {
-                log( "clCreatePerfCountersCommandQueueINTEL() returned NULL!\n" );
+                logf( "clCreatePerfCountersCommandQueueINTEL returned %s (%d)!\n",
+                    enumName().name( errcode_ret[0] ).c_str(),
+                    errcode_ret[0] );
+            }
+            else
+            {
+                log( "clCreatePerfCountersCommandQueueINTEL succeeded.\n" );
             }
         }
         else
