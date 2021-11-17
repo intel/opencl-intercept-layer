@@ -695,6 +695,36 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_DX9_MEDIA_SURFACES_KHR );
 #endif
 
+    // cl_khr_command_buffer
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMMAND_BUFFER_CAPABILITIES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMMAND_BUFFER_REQUIRED_QUEUE_PROPERTIES_KHR );
+
+    ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_KERNEL_PRINTF_KHR );
+    ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_DEVICE_SIDE_ENQUEUE_KHR );
+    ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_SIMULTANEOUS_USE_KHR );
+    ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_OUT_OF_ORDER_KHR );
+
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_BUFFER_PROPERTIES_KHR );
+
+    ADD_ENUM_NAME( m_cl_command_buffer_properties_khr, CL_COMMAND_BUFFER_SIMULTANEOUS_USE_KHR )
+
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_COMMAND_BUFFER_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_SYNC_POINT_WAIT_LIST_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_INCOMPATIBLE_COMMAND_QUEUE_KHR );
+
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_BUFFER_INFO_QUEUES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_BUFFER_INFO_NUM_QUEUES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_BUFFER_INFO_REFERENCE_COUNT_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_BUFFER_INFO_STATE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_BUFFER_INFO_PROPERTIES_ARRAY_KHR );
+
+    //CL_COMMAND_BUFFER_STATE_RECORDING_KHR               0
+    //CL_COMMAND_BUFFER_STATE_EXECUTABLE_KHR              1
+    //CL_COMMAND_BUFFER_STATE_PENDING_KHR                 2
+    //CL_COMMAND_BUFFER_STATE_INVALID_KHR                 3
+
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_COMMAND_BUFFER_KHR );
+
     // cl_khr_extended_versioning extension
     // Most enums for this extension were added to OpenCL 3.0.
     //CL_PLATFORM_NUMERIC_VERSION_KHR                  0x0906

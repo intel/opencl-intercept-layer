@@ -2082,7 +2082,7 @@ void CLIntercept::getCommandQueuePropertiesString(
                 {
                     const cl_command_queue_properties*  pp =
                         (const cl_command_queue_properties*)( properties + 1);
-                    str += enumName().name_command_queue_properties( pp[0] ).c_str();
+                    str += enumName().name_command_queue_properties( pp[0] );
                 }
                 break;
             case CL_QUEUE_SIZE:
@@ -2297,6 +2297,56 @@ void CLIntercept::getSemaphorePropertiesString(
                     auto pfd = (const void**)( properties + 1);
                     CLI_SPRINTF( s, 256, "%p", pfd[0] );
                     str += s;
+                    properties += 2;
+                }
+                break;
+            default:
+                {
+                    CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
+                    str += s;
+                    // Advance by two properties.  This may not be correct,
+                    // but it's the best we can do when the property is
+                    // unknown.
+                    properties += 2;
+                }
+                break;
+            }
+
+            if( properties[0] != 0 )
+            {
+                str += ", ";
+            }
+        }
+    }
+    else
+    {
+        str = "NULL";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::getCommandBufferPropertiesString(
+    const cl_command_buffer_properties_khr* properties,
+    std::string& str ) const
+{
+    str = "";
+
+    if( properties )
+    {
+        char    s[256];
+
+        while( properties[0] != 0 )
+        {
+            cl_int  property = (cl_int)properties[0];
+            str += enumName().name( property ) + " = ";
+
+            switch( property )
+            {
+            case CL_COMMAND_BUFFER_PROPERTIES_KHR:
+                {
+                    auto pt = (const cl_command_buffer_properties_khr*)( properties + 1 );
+                    str += enumName().name_command_buffer_properties( pt[0] );
                     properties += 2;
                 }
                 break;
@@ -5914,21 +5964,30 @@ void CLIntercept::checkRemoveAcceleratorInfo(
     CAcceleratorInfoMap::iterator iter = m_AcceleratorInfoMap.find( accelerator );
     if( iter != m_AcceleratorInfoMap.end() )
     {
-        cl_platform_id  platform = iter->second;
+        auto platform = iter->second;
         auto dispatchX = this->dispatchX(platform);
-
-        cl_uint refCount = 0;
-        cl_int  errorCode = CL_SUCCESS;
-
-        errorCode = dispatchX.clGetAcceleratorInfoINTEL(
-            accelerator,
-            CL_ACCELERATOR_REFERENCE_COUNT_INTEL,
-            sizeof( refCount ),
-            &refCount,
-            NULL );
-        if( errorCode == CL_SUCCESS && refCount == 1 )
+        if( dispatchX.clGetAcceleratorInfoINTEL == NULL )
         {
-            m_AcceleratorInfoMap.erase( iter );
+            getExtensionFunctionAddress(
+                platform,
+                "clGetAcceleratorInfoINTEL" );
+        }
+
+        if( dispatchX.clGetAcceleratorInfoINTEL == NULL )
+        {
+            cl_uint refCount = 0;
+            cl_int  errorCode = CL_SUCCESS;
+
+            errorCode = dispatchX.clGetAcceleratorInfoINTEL(
+                accelerator,
+                CL_ACCELERATOR_REFERENCE_COUNT_INTEL,
+                sizeof( refCount ),
+                &refCount,
+                NULL );
+            if( errorCode == CL_SUCCESS && refCount == 1 )
+            {
+                m_AcceleratorInfoMap.erase( iter );
+            }
         }
     }
 }
@@ -5957,21 +6016,80 @@ void CLIntercept::checkRemoveSemaphoreInfo(
     CSemaphoreInfoMap::iterator iter = m_SemaphoreInfoMap.find( semaphore );
     if( iter != m_SemaphoreInfoMap.end() )
     {
-        cl_platform_id  platform = iter->second;
+        auto platform = iter->second;
         auto dispatchX = this->dispatchX(platform);
-
-        cl_uint refCount = 0;
-        cl_int  errorCode = CL_SUCCESS;
-
-        errorCode = dispatchX.clGetSemaphoreInfoKHR(
-            semaphore,
-            CL_SEMAPHORE_REFERENCE_COUNT_KHR,
-            sizeof( refCount ),
-            &refCount,
-            NULL );
-        if( errorCode == CL_SUCCESS && refCount == 1 )
+        if( dispatchX.clGetSemaphoreInfoKHR == NULL )
         {
-            m_SemaphoreInfoMap.erase( iter );
+            getExtensionFunctionAddress(
+                platform,
+                "clGetSemaphoreInfoKHR" );
+        }
+
+        if( dispatchX.clGetSemaphoreInfoKHR == NULL )
+        {
+            cl_uint refCount = 0;
+            cl_int  errorCode = CL_SUCCESS;
+            errorCode = dispatchX.clGetSemaphoreInfoKHR(
+                semaphore,
+                CL_SEMAPHORE_REFERENCE_COUNT_KHR,
+                sizeof( refCount ),
+                &refCount,
+                NULL );
+            if( errorCode == CL_SUCCESS && refCount == 1 )
+            {
+                m_SemaphoreInfoMap.erase( iter );
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::addCommandBufferInfo(
+    cl_command_buffer_khr cmdbuf,
+    cl_command_queue queue )
+{
+    if( cmdbuf )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        m_CommandBufferInfoMap[cmdbuf] = getPlatform(queue);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::checkRemoveCommandBufferInfo(
+    cl_command_buffer_khr cmdbuf)
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    CCommandBufferInfoMap::iterator iter = m_CommandBufferInfoMap.find( cmdbuf );
+    if( iter != m_CommandBufferInfoMap.end() )
+    {
+        auto platform = iter->second;
+        auto dispatchX = this->dispatchX(platform);
+        if( dispatchX.clGetCommandBufferInfoKHR == NULL )
+        {
+            getExtensionFunctionAddress(
+                platform,
+                "clGetCommandBufferInfoKHR" );
+        }
+
+        if( dispatchX.clGetCommandBufferInfoKHR == NULL )
+        {
+            cl_uint refCount = 0;
+            cl_int  errorCode = CL_SUCCESS;
+            errorCode = dispatchX.clGetCommandBufferInfoKHR(
+                cmdbuf,
+                CL_COMMAND_BUFFER_INFO_REFERENCE_COUNT_KHR,
+                sizeof( refCount ),
+                &refCount,
+                NULL );
+            if( errorCode == CL_SUCCESS && refCount == 1 )
+            {
+                m_CommandBufferInfoMap.erase( iter );
+            }
         }
     }
 }
@@ -11378,6 +11496,44 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseDX9MediaSurfacesKHR );
 #endif
 
+    // cl_khr_command_buffer
+    if( m_Config.Emulate_cl_khr_command_buffer )
+    {
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCreateCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clFinalizeCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clRetainCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clReleaseCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clEnqueueCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandBarrierWithWaitListKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandCopyBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandCopyBufferRectKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandCopyBufferToImageKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandCopyImageKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandCopyImageToBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandFillBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandFillImageKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandNDRangeKernelKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clGetCommandBufferInfoKHR );
+    }
+    else
+    {
+        CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clFinalizeCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clRetainCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clReleaseCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandBarrierWithWaitListKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferRectKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferToImageKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyImageKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyImageToBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillImageKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandNDRangeKernelKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clGetCommandBufferInfoKHR );
+    }
+
     // cl_khr_create_command_queue
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandQueueWithPropertiesKHR );
 
@@ -11394,6 +11550,7 @@ void* CLIntercept::getExtensionFunctionAddress(
     // cl_khr_il_program
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateProgramWithILKHR );
 
+    // cl_khr_semaphore
     if( m_Config.Emulate_cl_khr_semaphore )
     {
         CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCreateSemaphoreWithPropertiesKHR );

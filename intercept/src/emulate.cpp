@@ -677,3 +677,378 @@ cl_int CL_API_CALL clReleaseSemaphoreKHR_EMU(
     }
     return CL_SUCCESS;
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+typedef struct _cl_command_buffer_khr
+{
+    static _cl_command_buffer_khr* create(
+        cl_uint num_queues,
+        const cl_command_queue* queues,
+        const cl_command_buffer_properties_khr* properties,
+        cl_int* errcode_ret)
+    {
+        cl_command_buffer_khr cmdbuf = NULL;
+        cl_int errorCode = CL_SUCCESS;
+        if( num_queues != 1 || queues == NULL )
+        {
+            errorCode = CL_INVALID_VALUE;
+        }
+        if( errcode_ret )
+        {
+            errcode_ret[0] = errorCode;
+        }
+        if( errorCode == CL_SUCCESS) {
+            cmdbuf = new _cl_command_buffer_khr();
+            cmdbuf->Queues.reserve(num_queues);
+            cmdbuf->Queues.insert(
+                cmdbuf->Queues.begin(),
+                queues,
+                queues + num_queues );
+        }
+        return cmdbuf;
+    }
+
+    static bool isValid( cl_command_buffer_khr cmdbuf )
+    {
+        return cmdbuf && cmdbuf->Magic == cMagic;
+    }
+
+    const cl_uint Magic;
+    std::vector<cl_command_queue>   Queues;
+    cl_uint RefCount;
+
+private:
+    static constexpr cl_uint cMagic = 0x434d4442;   // "CMDB"
+
+    _cl_command_buffer_khr() :
+        Magic(cMagic),
+        RefCount(1) {}
+} cli_command_buffer;
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_command_buffer_khr CL_API_CALL clCreateCommandBufferKHR_EMU(
+    cl_uint num_queues,
+    const cl_command_queue* queues,
+    const cl_command_buffer_properties_khr* properties,
+    cl_int* errcode_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+    if( pIntercept == NULL || !pIntercept->config().Emulate_cl_khr_command_buffer )
+    {
+        if( errcode_ret )
+        {
+            errcode_ret[0] = CL_INVALID_OPERATION;
+        }
+        return NULL;
+    }
+
+    return cli_command_buffer::create(
+        num_queues,
+        queues,
+        properties,
+        errcode_ret);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clFinalizeCommandBufferKHR_EMU(
+    cl_command_buffer_khr cmdbuf)
+{
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clRetainCommandBufferKHR_EMU(
+    cl_command_buffer_khr cmdbuf)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+    if( pIntercept == NULL || !pIntercept->config().Emulate_cl_khr_command_buffer )
+    {
+        return CL_INVALID_OPERATION;
+    }
+    if( !cli_command_buffer::isValid(cmdbuf) )
+    {
+        return CL_INVALID_COMMAND_BUFFER_KHR;
+    }
+
+    cmdbuf->RefCount++;
+    return CL_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clReleaseCommandBufferKHR_EMU(
+    cl_command_buffer_khr cmdbuf)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+    if( pIntercept == NULL || !pIntercept->config().Emulate_cl_khr_command_buffer )
+    {
+        return CL_INVALID_OPERATION;
+    }
+    if( !cli_command_buffer::isValid(cmdbuf) )
+    {
+        return CL_INVALID_COMMAND_BUFFER_KHR;
+    }
+
+    cmdbuf->RefCount--;
+    if( cmdbuf->RefCount == 0 )
+    {
+        delete cmdbuf;
+    }
+    return CL_SUCCESS;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clEnqueueCommandBufferKHR_EMU(
+    cl_uint num_queues,
+    cl_command_queue* queues,
+    cl_command_buffer_khr cmdbuf,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event)
+{
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clCommandBarrierWithWaitListKHR_EMU(
+    cl_command_buffer_khr cmdbuf,
+    cl_command_queue command_queue,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point,
+    cl_mutable_command_khr* mutable_handle)
+{
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clCommandCopyBufferKHR_EMU(
+    cl_command_buffer_khr cmdbuf,
+    cl_command_queue command_queue,
+    cl_mem src_buffer,
+    cl_mem dst_buffer,
+    size_t src_offset,
+    size_t dst_offset,
+    size_t size,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point,
+    cl_mutable_command_khr* mutable_handle)
+{
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clCommandCopyBufferRectKHR_EMU(
+    cl_command_buffer_khr cmdbuf,
+    cl_command_queue command_queue,
+    cl_mem src_buffer,
+    cl_mem dst_buffer,
+    const size_t* src_origin,
+    const size_t* dst_origin,
+    const size_t* region,
+    size_t src_row_pitch,
+    size_t src_slice_pitch,
+    size_t dst_row_pitch,
+    size_t dst_slice_pitch,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point,
+    cl_mutable_command_khr* mutable_handle)
+{
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clCommandCopyBufferToImageKHR_EMU(
+    cl_command_buffer_khr cmdbuf,
+    cl_command_queue command_queue,
+    cl_mem src_buffer,
+    cl_mem dst_image,
+    size_t src_offset,
+    const size_t* dst_origin,
+    const size_t* region,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point,
+    cl_mutable_command_khr* mutable_handle)
+{
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clCommandCopyImageKHR_EMU(
+    cl_command_buffer_khr cmdbuf,
+    cl_command_queue command_queue,
+    cl_mem src_image,
+    cl_mem dst_image,
+    const size_t* src_origin,
+    const size_t* dst_origin,
+    const size_t* region,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point,
+    cl_mutable_command_khr* mutable_handle)
+{
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clCommandCopyImageToBufferKHR_EMU(
+    cl_command_buffer_khr cmdbuf,
+    cl_command_queue command_queue,
+    cl_mem src_image,
+    cl_mem dst_buffer,
+    const size_t* src_origin,
+    const size_t* region,
+    size_t dst_offset,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point,
+    cl_mutable_command_khr* mutable_handle)
+{
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clCommandFillBufferKHR_EMU(
+    cl_command_buffer_khr cmdbuf,
+    cl_command_queue command_queue,
+    cl_mem buffer,
+    const void* pattern,
+    size_t pattern_size,
+    size_t offset,
+    size_t size,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point,
+    cl_mutable_command_khr* mutable_handle)
+{
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clCommandFillImageKHR_EMU(
+    cl_command_buffer_khr cmdbuf,
+    cl_command_queue command_queue,
+    cl_mem image,
+    const void* fill_color,
+    const size_t* origin,
+    const size_t* region,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point,
+    cl_mutable_command_khr* mutable_handle)
+{
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clCommandNDRangeKernelKHR_EMU(
+    cl_command_buffer_khr cmdbuf,
+    cl_command_queue command_queue,
+    const cl_ndrange_kernel_command_properties_khr* properties,
+    cl_kernel kernel,
+    cl_uint work_dim,
+    const size_t* global_work_offset,
+    const size_t* global_work_size,
+    const size_t* local_work_size,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point,
+    cl_mutable_command_khr* mutable_handle)
+{
+    return CL_INVALID_OPERATION;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+cl_int CL_API_CALL clGetCommandBufferInfoKHR_EMU(
+    cl_command_buffer_khr cmdbuf,
+    cl_command_buffer_info_khr param_name,
+    size_t param_value_size,
+    void* param_value,
+    size_t* param_value_size_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+    if( pIntercept == NULL || !pIntercept->config().Emulate_cl_khr_command_buffer )
+    {
+        return CL_INVALID_OPERATION;
+    }
+    if( !cli_command_buffer::isValid(cmdbuf) )
+    {
+        return CL_INVALID_COMMAND_BUFFER_KHR;
+    }
+
+    switch( param_name )
+    {
+    case CL_COMMAND_BUFFER_INFO_QUEUES_KHR:
+        {
+            auto*   ptr = (cl_command_queue*)param_value;
+            return pIntercept->writeVectorToMemory(
+                param_value_size,
+                cmdbuf->Queues,
+                param_value_size_ret,
+                ptr );
+        }
+        break;
+    case CL_COMMAND_BUFFER_INFO_NUM_QUEUES_KHR:
+        {
+            auto*   ptr = (cl_uint*)param_value;
+            return pIntercept->writeParamToMemory(
+                param_value_size,
+                static_cast<cl_uint>(cmdbuf->Queues.size()),
+                param_value_size_ret,
+                ptr );
+        }
+        break;
+    case CL_COMMAND_BUFFER_INFO_REFERENCE_COUNT_KHR:
+        {
+            auto*   ptr = (cl_uint*)param_value;
+            return pIntercept->writeParamToMemory(
+                param_value_size,
+                cmdbuf->RefCount,
+                param_value_size_ret,
+                ptr );
+        }
+        break;
+    case CL_COMMAND_BUFFER_INFO_STATE_KHR:
+    case CL_COMMAND_BUFFER_INFO_PROPERTIES_ARRAY_KHR:
+        // TODO!
+        return CL_INVALID_VALUE;
+    default:
+        return CL_INVALID_VALUE;
+    }
+
+    return CL_INVALID_OPERATION;
+}

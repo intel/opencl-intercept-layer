@@ -80,6 +80,7 @@ private:
     CTracker    m_Kernels;
     CTracker    m_Events;
     CTracker    m_Semaphores;
+    CTracker    m_CommandBuffers;
     //cl_accelerator_intel?
 
     CTracker&   GetTracker( cl_device_id )      { return m_Devices;         }
@@ -91,7 +92,7 @@ private:
     CTracker&   GetTracker( cl_kernel )         { return m_Kernels;         }
     CTracker&   GetTracker( cl_event )          { return m_Events;          }
     CTracker&   GetTracker( cl_semaphore_khr )  { return m_Semaphores;      }
-
+    CTracker&   GetTracker( cl_command_buffer_khr ) { return m_CommandBuffers; }
 
     static void ReportHelper(
         const std::string& label,
