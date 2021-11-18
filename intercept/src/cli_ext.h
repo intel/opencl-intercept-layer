@@ -36,8 +36,9 @@ typedef struct _cl_command_buffer_khr* cl_command_buffer_khr;
 typedef cl_uint             cl_sync_point_khr;
 typedef cl_uint             cl_command_buffer_info_khr;
 typedef cl_uint             cl_command_buffer_state_khr;
-typedef cl_bitfield         cl_command_buffer_properties_khr;
-typedef cl_bitfield         cl_ndrange_kernel_command_properties_khr;
+typedef cl_properties       cl_command_buffer_properties_khr;
+typedef cl_bitfield         cl_command_buffer_flags_khr;
+typedef cl_properties       cl_ndrange_kernel_command_properties_khr;
 typedef struct _cl_mutable_command_khr* cl_mutable_command_khr;
 
 #define CL_DEVICE_COMMAND_BUFFER_CAPABILITIES_KHR           0x12A9
@@ -48,18 +49,18 @@ typedef struct _cl_mutable_command_khr* cl_mutable_command_khr;
 #define CL_COMMAND_BUFFER_CAPABILITY_SIMULTANEOUS_USE_KHR   (1 << 2)
 #define CL_COMMAND_BUFFER_CAPABILITY_OUT_OF_ORDER_KHR       (1 << 3)
 
-#define CL_COMMAND_BUFFER_PROPERTIES_KHR                    0x1293
+#define CL_COMMAND_BUFFER_FLAGS_KHR                         0x1293
 #define CL_COMMAND_BUFFER_SIMULTANEOUS_USE_KHR              (1 << 0)
 
 #define CL_INVALID_COMMAND_BUFFER_KHR                       -1138
 #define CL_INVALID_SYNC_POINT_WAIT_LIST_KHR                 -1139
 #define CL_INCOMPATIBLE_COMMAND_QUEUE_KHR                   -1140
 
-#define CL_COMMAND_BUFFER_INFO_QUEUES_KHR                   0x1294
-#define CL_COMMAND_BUFFER_INFO_NUM_QUEUES_KHR               0x1295
-#define CL_COMMAND_BUFFER_INFO_REFERENCE_COUNT_KHR          0x1296
-#define CL_COMMAND_BUFFER_INFO_STATE_KHR                    0x1297
-#define CL_COMMAND_BUFFER_INFO_PROPERTIES_ARRAY_KHR         0x1298
+#define CL_COMMAND_BUFFER_QUEUES_KHR                        0x1294
+#define CL_COMMAND_BUFFER_NUM_QUEUES_KHR                    0x1295
+#define CL_COMMAND_BUFFER_REFERENCE_COUNT_KHR               0x1296
+#define CL_COMMAND_BUFFER_STATE_KHR                         0x1297
+#define CL_COMMAND_BUFFER_PROPERTIES_ARRAY_KHR              0x1298
 
 #define CL_COMMAND_BUFFER_STATE_RECORDING_KHR               0
 #define CL_COMMAND_BUFFER_STATE_EXECUTABLE_KHR              1

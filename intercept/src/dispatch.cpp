@@ -10211,6 +10211,30 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clCreateCommandBufferKHR(
 CL_API_ENTRY cl_int CL_API_CALL clFinalizeCommandBufferKHR(
     cl_command_buffer_khr command_buffer)
 {
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clFinalizeCommandBufferKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER( "command_buffer = %p",
+                command_buffer );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clFinalizeCommandBufferKHR(
+                command_buffer );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
@@ -10306,6 +10330,57 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueCommandBufferKHR(
     const cl_event* event_wait_list,
     cl_event* event)
 {
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clEnqueueCommandBufferKHR )
+        {
+            cl_int  retVal = CL_SUCCESS;
+
+            INCREMENT_ENQUEUE_COUNTER();
+            COMMAND_BUFFER_GET_QUEUE( num_queues, queues, command_buffer );
+            CHECK_AUBCAPTURE_START( command_queue );
+
+            if( pIntercept->config().NullEnqueue == false )
+            {
+                const std::string eventWaitListString = getFormattedEventWaitList(
+                    pIntercept,
+                    num_events_in_wait_list,
+                    event_wait_list);
+                CALL_LOGGING_ENTER( "num_queues = %u, queues = %p, command_buffer = %p%s",
+                    num_queues,
+                    queues,
+                    command_buffer,
+                    eventWaitListString.c_str() );
+                CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+                DEVICE_PERFORMANCE_TIMING_START( event );
+                CPU_PERFORMANCE_TIMING_START();
+
+                retVal = dispatchX.clEnqueueCommandBufferKHR(
+                    num_queues,
+                    queues,
+                    command_buffer,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event);
+
+                CPU_PERFORMANCE_TIMING_END();
+                DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
+                CHECK_ERROR( retVal );
+                ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+                CALL_LOGGING_EXIT_EVENT( retVal, event );
+                ADD_EVENT( event ? event[0] : NULL );
+            }
+
+            FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
+            CHECK_AUBCAPTURE_STOP( command_queue );
+
+            return retVal;
+        }
+    }
+
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
@@ -10476,6 +10551,44 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
     cl_sync_point_khr* sync_point,
     cl_mutable_command_khr* mutable_handle)
 {
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clCommandNDRangeKernelKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER_KERNEL(
+                kernel,
+                "command_buffer = %p, command_queue = %p",
+                command_buffer,
+                command_queue );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clCommandNDRangeKernelKHR(
+                command_buffer,
+                command_queue,
+                properties,
+                kernel,
+                work_dim,
+                global_work_offset,
+                global_work_size,
+                local_work_size,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point,
+                mutable_handle );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 

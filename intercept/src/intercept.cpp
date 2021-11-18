@@ -2343,10 +2343,10 @@ void CLIntercept::getCommandBufferPropertiesString(
 
             switch( property )
             {
-            case CL_COMMAND_BUFFER_PROPERTIES_KHR:
+            case CL_COMMAND_BUFFER_FLAGS_KHR:
                 {
-                    auto pt = (const cl_command_buffer_properties_khr*)( properties + 1 );
-                    str += enumName().name_command_buffer_properties( pt[0] );
+                    auto pt = (const cl_command_buffer_flags_khr*)( properties + 1 );
+                    str += enumName().name_command_buffer_flags( pt[0] );
                     properties += 2;
                 }
                 break;
@@ -5785,6 +5785,68 @@ void CLIntercept::checkTimingEvents()
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+cl_command_queue CLIntercept::getCommandBufferCommandQueue(
+    cl_uint numQueues,
+    cl_command_queue* queues,
+    cl_command_buffer_khr cmdbuf )
+{
+    if( numQueues != 0 && queues != NULL )
+    {
+        return queues[0];
+    }
+
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_command_queue    queue = NULL;
+
+    CCommandBufferInfoMap::iterator iter = m_CommandBufferInfoMap.find( cmdbuf );
+    if( iter != m_CommandBufferInfoMap.end() )
+    {
+        auto platform = iter->second;
+        auto dispatchX = this->dispatchX(platform);
+        if( dispatchX.clGetCommandBufferInfoKHR == NULL )
+        {
+            getExtensionFunctionAddress(
+                platform,
+                "clGetCommandBufferInfoKHR" );
+        }
+
+        if( dispatchX.clGetCommandBufferInfoKHR )
+        {
+            dispatchX.clGetCommandBufferInfoKHR(
+                cmdbuf,
+                CL_COMMAND_BUFFER_NUM_QUEUES_KHR,
+                sizeof( numQueues ),
+                &numQueues,
+                NULL );
+            if( numQueues == 1)
+            {
+                dispatchX.clGetCommandBufferInfoKHR(
+                    cmdbuf,
+                    CL_COMMAND_BUFFER_QUEUES_KHR,
+                    sizeof( queue ),
+                    &queue,
+                    NULL );
+            }
+            else if( numQueues > 1 )
+            {
+                std::vector<cl_command_queue> queues(numQueues);
+                dispatchX.clGetCommandBufferInfoKHR(
+                    cmdbuf,
+                    CL_COMMAND_BUFFER_QUEUES_KHR,
+                    queues.size() * sizeof(queues[0]),
+                    queues.data(),
+                    NULL );
+                queue = queues[0];
+            }
+        }
+    }
+
+    return queue;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 cl_command_queue CLIntercept::createCommandQueueWithProperties(
     cl_context context,
     cl_device_id device,
@@ -5973,7 +6035,7 @@ void CLIntercept::checkRemoveAcceleratorInfo(
                 "clGetAcceleratorInfoINTEL" );
         }
 
-        if( dispatchX.clGetAcceleratorInfoINTEL == NULL )
+        if( dispatchX.clGetAcceleratorInfoINTEL )
         {
             cl_uint refCount = 0;
             cl_int  errorCode = CL_SUCCESS;
@@ -6025,7 +6087,7 @@ void CLIntercept::checkRemoveSemaphoreInfo(
                 "clGetSemaphoreInfoKHR" );
         }
 
-        if( dispatchX.clGetSemaphoreInfoKHR == NULL )
+        if( dispatchX.clGetSemaphoreInfoKHR )
         {
             cl_uint refCount = 0;
             cl_int  errorCode = CL_SUCCESS;
@@ -6076,13 +6138,13 @@ void CLIntercept::checkRemoveCommandBufferInfo(
                 "clGetCommandBufferInfoKHR" );
         }
 
-        if( dispatchX.clGetCommandBufferInfoKHR == NULL )
+        if( dispatchX.clGetCommandBufferInfoKHR )
         {
             cl_uint refCount = 0;
             cl_int  errorCode = CL_SUCCESS;
             errorCode = dispatchX.clGetCommandBufferInfoKHR(
                 cmdbuf,
-                CL_COMMAND_BUFFER_INFO_REFERENCE_COUNT_KHR,
+                CL_COMMAND_BUFFER_REFERENCE_COUNT_KHR,
                 sizeof( refCount ),
                 &refCount,
                 NULL );

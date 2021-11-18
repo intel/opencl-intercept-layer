@@ -399,6 +399,11 @@ public:
                 cl_event event );
     void    checkTimingEvents();
 
+    cl_command_queue    getCommandBufferCommandQueue(
+                cl_uint numQueues,
+                cl_command_queue* queues,
+                cl_command_buffer_khr cmdbuf );
+
     cl_command_queue    createCommandQueueWithProperties(
                 cl_context context,
                 cl_device_id device,
@@ -1659,7 +1664,7 @@ inline cl_uint CLIntercept::getRefCount( cl_command_buffer_khr cmdbuf )
     {
         dispatchX.clGetCommandBufferInfoKHR(
             cmdbuf,
-            CL_COMMAND_BUFFER_INFO_REFERENCE_COUNT_KHR,
+            CL_COMMAND_BUFFER_REFERENCE_COUNT_KHR,
             sizeof(refCount),
             &refCount,
             NULL );
@@ -2795,6 +2800,16 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     {                                                                       \
         pIntercept->checkTimingEvents();                                    \
     }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+#define COMMAND_BUFFER_GET_QUEUE( _numQueues, _queues, _cmdbuf )            \
+    cl_command_queue command_queue =                                        \
+        pIntercept->getCommandBufferCommandQueue(                           \
+            _numQueues,                                                     \
+            _queues,                                                        \
+            _cmdbuf );
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

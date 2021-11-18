@@ -1012,7 +1012,7 @@ cl_int CL_API_CALL clGetCommandBufferInfoKHR_EMU(
 
     switch( param_name )
     {
-    case CL_COMMAND_BUFFER_INFO_QUEUES_KHR:
+    case CL_COMMAND_BUFFER_QUEUES_KHR:
         {
             auto*   ptr = (cl_command_queue*)param_value;
             return pIntercept->writeVectorToMemory(
@@ -1022,7 +1022,7 @@ cl_int CL_API_CALL clGetCommandBufferInfoKHR_EMU(
                 ptr );
         }
         break;
-    case CL_COMMAND_BUFFER_INFO_NUM_QUEUES_KHR:
+    case CL_COMMAND_BUFFER_NUM_QUEUES_KHR:
         {
             auto*   ptr = (cl_uint*)param_value;
             return pIntercept->writeParamToMemory(
@@ -1032,7 +1032,7 @@ cl_int CL_API_CALL clGetCommandBufferInfoKHR_EMU(
                 ptr );
         }
         break;
-    case CL_COMMAND_BUFFER_INFO_REFERENCE_COUNT_KHR:
+    case CL_COMMAND_BUFFER_REFERENCE_COUNT_KHR:
         {
             auto*   ptr = (cl_uint*)param_value;
             return pIntercept->writeParamToMemory(
@@ -1042,8 +1042,8 @@ cl_int CL_API_CALL clGetCommandBufferInfoKHR_EMU(
                 ptr );
         }
         break;
-    case CL_COMMAND_BUFFER_INFO_STATE_KHR:
-    case CL_COMMAND_BUFFER_INFO_PROPERTIES_ARRAY_KHR:
+    case CL_COMMAND_BUFFER_STATE_KHR:
+    case CL_COMMAND_BUFFER_PROPERTIES_ARRAY_KHR:
         // TODO!
         return CL_INVALID_VALUE;
     default:

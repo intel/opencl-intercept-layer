@@ -127,7 +127,7 @@ public:
     GENERATE_MAP_AND_BITFIELD_FUNC( name_mem_alloc_flags,            cl_mem_alloc_flags_intel        );
     GENERATE_MAP_AND_FUNC(          name_semaphore_type,             cl_semaphore_type_khr           );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_device_command_buffer_capabilities, cl_device_command_buffer_capabilities_khr );
-    GENERATE_MAP_AND_BITFIELD_FUNC( name_command_buffer_properties,  cl_command_buffer_properties_khr );
+    GENERATE_MAP_AND_BITFIELD_FUNC( name_command_buffer_flags,       cl_command_buffer_flags_khr     );
 
     #undef GENERATE_MAP_AND_FUNC
     #undef GENERATE_MAP_AND_BITFIELD_FUNC
