@@ -10395,6 +10395,37 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
     cl_sync_point_khr* sync_point,
     cl_mutable_command_khr* mutable_handle)
 {
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clCommandBarrierWithWaitListKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER(
+                "command_buffer = %p, command_queue = %p",
+                command_buffer,
+                command_queue );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clCommandBarrierWithWaitListKHR(
+                command_buffer,
+                command_queue,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point,
+                mutable_handle );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
@@ -10414,6 +10445,42 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
     cl_sync_point_khr* sync_point,
     cl_mutable_command_khr* mutable_handle)
 {
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clCommandCopyBufferKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER(
+                "command_buffer = %p, command_queue = %p",
+                command_buffer,
+                command_queue );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clCommandCopyBufferKHR(
+                command_buffer,
+                command_queue,
+                src_buffer,
+                dst_buffer,
+                src_offset,
+                dst_offset,
+                size,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point,
+                mutable_handle );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
@@ -10437,6 +10504,46 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
     cl_sync_point_khr* sync_point,
     cl_mutable_command_khr* mutable_handle)
 {
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clCommandCopyBufferRectKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER(
+                "command_buffer = %p, command_queue = %p",
+                command_buffer,
+                command_queue );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clCommandCopyBufferRectKHR(
+                command_buffer,
+                command_queue,
+                src_buffer,
+                dst_buffer,
+                src_origin,
+                dst_origin,
+                region,
+                src_row_pitch,
+                src_slice_pitch,
+                dst_row_pitch,
+                dst_slice_pitch,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point,
+                mutable_handle );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
@@ -10456,6 +10563,42 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
     cl_sync_point_khr* sync_point,
     cl_mutable_command_khr* mutable_handle)
 {
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clCommandCopyBufferToImageKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER(
+                "command_buffer = %p, command_queue = %p",
+                command_buffer,
+                command_queue );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clCommandCopyBufferToImageKHR(
+                command_buffer,
+                command_queue,
+                src_buffer,
+                dst_image,
+                src_offset,
+                dst_origin,
+                region,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point,
+                mutable_handle );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
@@ -10475,6 +10618,42 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
     cl_sync_point_khr* sync_point,
     cl_mutable_command_khr* mutable_handle)
 {
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clCommandCopyImageKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER(
+                "command_buffer = %p, command_queue = %p",
+                command_buffer,
+                command_queue );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clCommandCopyImageKHR(
+                command_buffer,
+                command_queue,
+                src_image,
+                dst_image,
+                src_origin,
+                dst_origin,
+                region,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point,
+                mutable_handle );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
@@ -10494,6 +10673,42 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
     cl_sync_point_khr* sync_point,
     cl_mutable_command_khr* mutable_handle)
 {
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clCommandCopyImageToBufferKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER(
+                "command_buffer = %p, command_queue = %p",
+                command_buffer,
+                command_queue );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clCommandCopyImageToBufferKHR(
+                command_buffer,
+                command_queue,
+                src_image,
+                dst_buffer,
+                src_origin,
+                region,
+                dst_offset,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point,
+                mutable_handle );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
@@ -10513,6 +10728,42 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
     cl_sync_point_khr* sync_point,
     cl_mutable_command_khr* mutable_handle)
 {
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clCommandFillBufferKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER(
+                "command_buffer = %p, command_queue = %p",
+                command_buffer,
+                command_queue );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clCommandFillBufferKHR(
+                command_buffer,
+                command_queue,
+                buffer,
+                pattern,
+                pattern_size,
+                offset,
+                size,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point,
+                mutable_handle );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
@@ -10531,6 +10782,41 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
     cl_sync_point_khr* sync_point,
     cl_mutable_command_khr* mutable_handle)
 {
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clCommandFillImageKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER(
+                "command_buffer = %p, command_queue = %p",
+                command_buffer,
+                command_queue );
+            CPU_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clCommandFillImageKHR(
+                command_buffer,
+                command_queue,
+                image,
+                fill_color,
+                origin,
+                region,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point,
+                mutable_handle );
+
+            CPU_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
     NULL_FUNCTION_POINTER_RETURN_ERROR();
 }
 
