@@ -11559,42 +11559,21 @@ void* CLIntercept::getExtensionFunctionAddress(
 #endif
 
     // cl_khr_command_buffer
-    if( m_Config.Emulate_cl_khr_command_buffer )
-    {
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCreateCommandBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clFinalizeCommandBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clRetainCommandBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clReleaseCommandBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clEnqueueCommandBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandBarrierWithWaitListKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandCopyBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandCopyBufferRectKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandCopyBufferToImageKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandCopyImageKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandCopyImageToBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandFillBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandFillImageKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clCommandNDRangeKernelKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION_EMU( clGetCommandBufferInfoKHR );
-    }
-    else
-    {
-        CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clFinalizeCommandBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clRetainCommandBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clReleaseCommandBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueCommandBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clCommandBarrierWithWaitListKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferRectKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferToImageKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyImageKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyImageToBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillBufferKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillImageKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clCommandNDRangeKernelKHR );
-        CHECK_RETURN_EXTENSION_FUNCTION( clGetCommandBufferInfoKHR );
-    }
+    CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandBufferKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clFinalizeCommandBufferKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clRetainCommandBufferKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clReleaseCommandBufferKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueCommandBufferKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCommandBarrierWithWaitListKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferRectKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferToImageKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyImageKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyImageToBufferKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillBufferKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillImageKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCommandNDRangeKernelKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetCommandBufferInfoKHR );
 
     // cl_khr_create_command_queue
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandQueueWithPropertiesKHR );

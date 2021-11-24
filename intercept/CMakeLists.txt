@@ -80,7 +80,6 @@ set(CLINTERCEPT_SOURCE_FILES
     src/dispatch.cpp
     src/dispatch.h
     src/emulate.cpp
-    src/emulate_cmdbuf.cpp
     src/emulate.h
     src/enummap.cpp
     src/enummap.h
