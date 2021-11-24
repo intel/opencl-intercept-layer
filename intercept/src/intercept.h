@@ -167,6 +167,9 @@ public:
     void    getSemaphorePropertiesString(
                 const cl_semaphore_properties_khr* properties,
                 std::string& str ) const;
+    void    getCommandBufferPropertiesString(
+                const cl_command_buffer_properties_khr* properties,
+                std::string& str ) const;
     void    getCreateKernelsInProgramRetString(
                 cl_int retVal,
                 cl_kernel* kernels,
@@ -396,6 +399,11 @@ public:
                 cl_event event );
     void    checkTimingEvents();
 
+    cl_command_queue    getCommandBufferCommandQueue(
+                cl_uint numQueues,
+                cl_command_queue* queues,
+                cl_command_buffer_khr cmdbuf );
+
     cl_command_queue    createCommandQueueWithProperties(
                 cl_context context,
                 cl_device_id device,
@@ -424,6 +432,12 @@ public:
                 cl_context context );
     void    checkRemoveSemaphoreInfo(
                 cl_semaphore_khr semaphore );
+
+    void    addCommandBufferInfo(
+                cl_command_buffer_khr cmdbuf,
+                cl_command_queue queue);
+    void    checkRemoveCommandBufferInfo(
+                cl_command_buffer_khr cmdbuf );
 
     void    addSamplerString(
                 cl_sampler sampler,
@@ -700,6 +714,7 @@ public:
     const CLdispatchX&  dispatchX( cl_mem memobj ) const;
     const CLdispatchX&  dispatchX( cl_platform_id platform ) const;
     const CLdispatchX&  dispatchX( cl_semaphore_khr semaphore ) const;
+    const CLdispatchX&  dispatchX( cl_command_buffer_khr cmdbuf ) const;
 
     cl_platform_id  getPlatform( cl_accelerator_intel accelerator ) const;
     cl_platform_id  getPlatform( cl_command_queue queue ) const;
@@ -708,6 +723,7 @@ public:
     cl_platform_id  getPlatform( cl_kernel kernel ) const;
     cl_platform_id  getPlatform( cl_mem memobj ) const;
     cl_platform_id  getPlatform( cl_semaphore_khr semaphore ) const;
+    cl_platform_id  getPlatform( cl_command_buffer_khr cmdbuf ) const;
 
     cl_uint getRefCount( cl_accelerator_intel accelerator );
     cl_uint getRefCount( cl_command_queue queue ) const;
@@ -719,6 +735,7 @@ public:
     cl_uint getRefCount( cl_mem memobj ) const;
     cl_uint getRefCount( cl_sampler sampler ) const;
     cl_uint getRefCount( cl_semaphore_khr semaphore );
+    cl_uint getRefCount( cl_command_buffer_khr cmdbuf );
 
     const OS::Services& OS() const;
 
@@ -1130,6 +1147,9 @@ private:
     typedef std::map< const cl_semaphore_khr, cl_platform_id >  CSemaphoreInfoMap;
     CSemaphoreInfoMap   m_SemaphoreInfoMap;
 
+    typedef std::map< const cl_command_buffer_khr, cl_platform_id > CCommandBufferInfoMap;
+    CCommandBufferInfoMap   m_CommandBufferInfoMap;
+
     struct Config
     {
 #define CLI_CONTROL( _type, _name, _init, _desc )   _type _name;
@@ -1351,6 +1371,12 @@ inline const CLdispatchX& CLIntercept::dispatchX( cl_semaphore_khr semaphore ) c
     return dispatchX( platform );
 }
 
+inline const CLdispatchX& CLIntercept::dispatchX( cl_command_buffer_khr cmdbuf ) const
+{
+    cl_platform_id  platform = getPlatform( cmdbuf );
+    return dispatchX( platform );
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 inline cl_platform_id CLIntercept::getPlatform( cl_accelerator_intel accelerator ) const
@@ -1454,6 +1480,19 @@ inline cl_platform_id CLIntercept::getPlatform( cl_semaphore_khr semaphore ) con
 {
     CSemaphoreInfoMap::const_iterator iter = m_SemaphoreInfoMap.find(semaphore);
     if( iter != m_SemaphoreInfoMap.end() )
+    {
+        return iter->second;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+inline cl_platform_id CLIntercept::getPlatform( cl_command_buffer_khr cmdbuf ) const
+{
+    CCommandBufferInfoMap::const_iterator iter = m_CommandBufferInfoMap.find(cmdbuf);
+    if( iter != m_CommandBufferInfoMap.end() )
     {
         return iter->second;
     }
@@ -1602,6 +1641,30 @@ inline cl_uint CLIntercept::getRefCount( cl_semaphore_khr semaphore )
         dispatchX.clGetSemaphoreInfoKHR(
             semaphore,
             CL_SEMAPHORE_REFERENCE_COUNT_KHR,
+            sizeof(refCount),
+            &refCount,
+            NULL );
+    }
+    return refCount;
+}
+
+inline cl_uint CLIntercept::getRefCount( cl_command_buffer_khr cmdbuf )
+{
+    auto platform = this->getPlatform(cmdbuf);
+    auto dispatchX = this->dispatchX(platform);
+    if( dispatchX.clGetCommandBufferInfoKHR == NULL )
+    {
+        getExtensionFunctionAddress(
+            platform,
+            "clGetCommandBufferInfoKHR" );
+    }
+
+    cl_uint refCount = 0;
+    if( dispatchX.clGetCommandBufferInfoKHR )
+    {
+        dispatchX.clGetCommandBufferInfoKHR(
+            cmdbuf,
+            CL_COMMAND_BUFFER_REFERENCE_COUNT_KHR,
             sizeof(refCount),
             &refCount,
             NULL );
@@ -2737,6 +2800,16 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     {                                                                       \
         pIntercept->checkTimingEvents();                                    \
     }
+
+///////////////////////////////////////////////////////////////////////////////
+//
+#define COMMAND_BUFFER_GET_QUEUE( _numQueues, _queues, _cmdbuf )            \
+    cl_command_queue command_queue =                                        \
+        pIntercept->getCommandBufferCommandQueue(                           \
+            _numQueues,                                                     \
+            _queues,                                                        \
+            _cmdbuf );
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

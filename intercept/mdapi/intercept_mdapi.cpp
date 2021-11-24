@@ -175,11 +175,7 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
     {
         if( m_pMDHelper->ActivateMetricSet() )
         {
-            cl_int errorCode = CL_SUCCESS;
-            if (errcode_ret == NULL) {
-                errcode_ret = &errorCode;
-            }
-
+            cl_int  errorCode = CL_SUCCESS;
             cl_uint configuration = m_pMDHelper->GetMetricsConfiguration();
             logf( "Calling clCreatePerfCountersCommandQueueINTEL with configuration %u....\n",
                 configuration);
@@ -189,16 +185,20 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
                 device,
                 properties,
                 configuration,
-                errcode_ret );
+                &errorCode );
             if( retVal == NULL )
             {
                 logf( "clCreatePerfCountersCommandQueueINTEL returned %s (%d)!\n",
-                    enumName().name( errcode_ret[0] ).c_str(),
-                    errcode_ret[0] );
+                    enumName().name( errorCode ).c_str(),
+                    errorCode );
             }
             else
             {
                 log( "clCreatePerfCountersCommandQueueINTEL succeeded.\n" );
+            }
+            if( errcode_ret )
+            {
+                errcode_ret[0] = errorCode;
             }
         }
         else
