@@ -173,26 +173,26 @@ struct CLdispatchX
 #endif
 
     // cl_khr_command_buffer
-    cl_command_buffer_khr	(CL_API_CALL *clCreateCommandBufferKHR) (
+    cl_command_buffer_khr (CL_API_CALL *clCreateCommandBufferKHR) (
         cl_uint num_queues,
         const cl_command_queue* queues,
         const cl_command_buffer_properties_khr* properties,
         cl_int* errcode_ret);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clFinalizeCommandBufferKHR) (
+    cl_int (CL_API_CALL *clFinalizeCommandBufferKHR) (
         cl_command_buffer_khr command_buffer);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clRetainCommandBufferKHR) (
+    cl_int (CL_API_CALL *clRetainCommandBufferKHR) (
         cl_command_buffer_khr command_buffer);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clReleaseCommandBufferKHR) (
+    cl_int (CL_API_CALL *clReleaseCommandBufferKHR) (
         cl_command_buffer_khr command_buffer);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clEnqueueCommandBufferKHR) (
+    cl_int (CL_API_CALL *clEnqueueCommandBufferKHR) (
         cl_uint num_queues,
         cl_command_queue* queues,
         cl_command_buffer_khr command_buffer,
@@ -201,7 +201,7 @@ struct CLdispatchX
         cl_event* event);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clCommandBarrierWithWaitListKHR) (
+    cl_int (CL_API_CALL *clCommandBarrierWithWaitListKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
         cl_uint num_sync_points_in_wait_list,
@@ -210,7 +210,7 @@ struct CLdispatchX
         cl_mutable_command_khr* mutable_handle);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clCommandCopyBufferKHR) (
+    cl_int (CL_API_CALL *clCommandCopyBufferKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
         cl_mem src_buffer,
@@ -224,7 +224,7 @@ struct CLdispatchX
         cl_mutable_command_khr* mutable_handle);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clCommandCopyBufferRectKHR) (
+    cl_int (CL_API_CALL *clCommandCopyBufferRectKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
         cl_mem src_buffer,
@@ -242,7 +242,7 @@ struct CLdispatchX
         cl_mutable_command_khr* mutable_handle);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clCommandCopyBufferToImageKHR) (
+    cl_int (CL_API_CALL *clCommandCopyBufferToImageKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
         cl_mem src_buffer,
@@ -256,7 +256,7 @@ struct CLdispatchX
         cl_mutable_command_khr* mutable_handle);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clCommandCopyImageKHR) (
+    cl_int (CL_API_CALL *clCommandCopyImageKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
         cl_mem src_image,
@@ -270,7 +270,7 @@ struct CLdispatchX
         cl_mutable_command_khr* mutable_handle);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clCommandCopyImageToBufferKHR) (
+    cl_int (CL_API_CALL *clCommandCopyImageToBufferKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
         cl_mem src_image,
@@ -284,7 +284,7 @@ struct CLdispatchX
         cl_mutable_command_khr* mutable_handle);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clCommandFillBufferKHR) (
+    cl_int (CL_API_CALL *clCommandFillBufferKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
         cl_mem buffer,
@@ -298,7 +298,7 @@ struct CLdispatchX
         cl_mutable_command_khr* mutable_handle);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clCommandFillImageKHR) (
+    cl_int (CL_API_CALL *clCommandFillImageKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
         cl_mem image,
@@ -311,7 +311,7 @@ struct CLdispatchX
         cl_mutable_command_khr* mutable_handle);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clCommandNDRangeKernelKHR) (
+    cl_int (CL_API_CALL *clCommandNDRangeKernelKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
         const cl_ndrange_kernel_command_properties_khr* properties,
@@ -326,7 +326,7 @@ struct CLdispatchX
         cl_mutable_command_khr* mutable_handle);
 
     // cl_khr_command_buffer
-    cl_int	(CL_API_CALL *clGetCommandBufferInfoKHR) (
+    cl_int (CL_API_CALL *clGetCommandBufferInfoKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_buffer_info_khr param_name,
         size_t param_value_size,
