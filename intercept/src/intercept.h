@@ -802,7 +802,8 @@ public:
                 uint64_t enqueueCounter,
                 unsigned int queueNumber,
                 cl_event event,
-                clock::time_point queuedTime );
+                clock::time_point queuedTime,
+                int64_t profilingDeltaNS );
 
     // USM Emulation:
     void*   emulatedHostMemAlloc(
@@ -970,6 +971,8 @@ private:
 
         cl_uint     NumComputeUnits;
         cl_uint     MaxClockFrequency;
+
+        int64_t     ProfilingDeltaNS;
 
         bool        Supports_cl_khr_create_command_queue;
         bool        Supports_cl_khr_subgroups;

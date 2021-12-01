@@ -1194,6 +1194,56 @@ void CLIntercept::cacheDeviceInfo(
         deviceInfo.NumComputeUnits = deviceComputeUnits;
         deviceInfo.MaxClockFrequency = deviceMaxClockFrequency;
 
+        if( deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(2, 1, 0) &&
+            dispatch().clGetDeviceAndHostTimer &&
+            dispatch().clGetHostTimer )
+        {
+            logf("For device %s:\n", deviceInfo.Name.c_str());
+
+            cl_int  errorCode = CL_SUCCESS;
+            cl_ulong    deviceTimeNS = 0;
+            cl_ulong    hostTimeNS = 0;
+
+            using ns = std::chrono::nanoseconds;
+            uint64_t    interceptTimeNS =
+                std::chrono::duration_cast<ns>(clock::now().time_since_epoch()).count();
+
+            errorCode |= dispatch().clGetHostTimer(
+                device,
+                &hostTimeNS);
+
+            int64_t deltaIHNS = interceptTimeNS - hostTimeNS;
+            logf("\tIntercept Time = %llu, Host Time = %llu, Delta = %lld\n",
+                interceptTimeNS,
+                hostTimeNS,
+                deltaIHNS);
+
+            errorCode |= dispatch().clGetDeviceAndHostTimer(
+                device,
+                &deviceTimeNS,
+                &hostTimeNS);
+
+            int64_t deltaHDNS = deviceTimeNS - hostTimeNS;
+            logf("\tDevice Time = %llu, Host Time = %llu, Delta = %lld\n",
+                deviceTimeNS,
+                hostTimeNS,
+                deltaHDNS);
+
+            cl_long deltaNS = deltaIHNS - deltaHDNS;
+
+            if( errorCode == CL_SUCCESS )
+            {
+                logf("\tComputed delta: %lld\n", deltaNS);
+                deviceInfo.ProfilingDeltaNS = deltaNS;
+            }
+            else
+            {
+                logf("clGetDeviceAndHostTimer returned %s (%d)!\n",
+                    enumName().name( errorCode ).c_str(),
+                    errorCode );
+            }
+        }
+
         deviceInfo.Supports_cl_khr_create_command_queue =
             checkDeviceForExtension( device, "cl_khr_create_command_queue" );
         deviceInfo.Supports_cl_khr_subgroups =
@@ -5724,6 +5774,8 @@ void CLIntercept::checkTimingEvents()
 
                 if( config().ChromePerformanceTiming )
                 {
+                    const SDeviceInfo&  deviceInfo = m_DeviceInfoMap[node.Device];
+
                     const std::string& name =
                         node.KernelName.empty() ?
                         node.FunctionName :
@@ -5734,7 +5786,8 @@ void CLIntercept::checkTimingEvents()
                         node.EnqueueCounter,
                         node.QueueNumber,
                         node.Event,
-                        node.QueuedTime );
+                        node.QueuedTime,
+                        deviceInfo.ProfilingDeltaNS );
                 }
 
 #if defined(USE_MDAPI)
@@ -12673,7 +12726,8 @@ void CLIntercept::chromeTraceEvent(
     uint64_t enqueueCounter,
     unsigned int queueNumber,
     cl_event event,
-    const clock::time_point queuedTime )
+    const clock::time_point queuedTime,
+    int64_t profilingDeltaNS )
 {
     cl_int  errorCode = CL_SUCCESS;
 
@@ -12729,6 +12783,16 @@ void CLIntercept::chromeTraceEvent(
         using ns = std::chrono::nanoseconds;
         const uint64_t  normalizedQueuedTimeNS =
             std::chrono::duration_cast<ns>(queuedTime - m_StartTime).count();
+
+        const uint64_t  measuredQueuedTimeNS =
+            std::chrono::duration_cast<ns>(queuedTime.time_since_epoch()).count();
+
+        int64_t deltaNS = measuredQueuedTimeNS - commandQueued;
+
+        logf("Computed Delta = %lld, Queried Delta = %lld, Delta of Deltas = %lld\n",
+            deltaNS,
+            profilingDeltaNS,
+            deltaNS - profilingDeltaNS );
 
         const uint64_t  processId = OS().GetProcessID();
 
