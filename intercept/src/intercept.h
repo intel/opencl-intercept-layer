@@ -803,6 +803,7 @@ public:
                 unsigned int queueNumber,
                 cl_event event,
                 clock::time_point queuedTime,
+                bool useProfilingDelta,
                 int64_t profilingDeltaNS );
 
     // USM Emulation:
@@ -972,6 +973,7 @@ private:
         cl_uint     NumComputeUnits;
         cl_uint     MaxClockFrequency;
 
+        bool        UseProfilingDelta;
         int64_t     ProfilingDeltaNS;
 
         bool        Supports_cl_khr_create_command_queue;

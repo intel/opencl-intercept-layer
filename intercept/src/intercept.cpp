@@ -1194,12 +1194,13 @@ void CLIntercept::cacheDeviceInfo(
         deviceInfo.NumComputeUnits = deviceComputeUnits;
         deviceInfo.MaxClockFrequency = deviceMaxClockFrequency;
 
+        deviceInfo.UseProfilingDelta = false;
+        deviceInfo.ProfilingDeltaNS = 0;
+
         if( deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(2, 1, 0) &&
             dispatch().clGetDeviceAndHostTimer &&
             dispatch().clGetHostTimer )
         {
-            logf("For device %s:\n", deviceInfo.Name.c_str());
-
             cl_int  errorCode = CL_SUCCESS;
             cl_ulong    deviceTimeNS = 0;
             cl_ulong    hostTimeNS = 0;
@@ -1233,7 +1234,10 @@ void CLIntercept::cacheDeviceInfo(
 
             if( errorCode == CL_SUCCESS )
             {
-                logf("\tComputed delta: %lld\n", deltaNS);
+                logf("For device %s: Computed delta: %lld\n",
+                    deviceInfo.Name.c_str(),
+                    deltaNS);
+                deviceInfo.UseProfilingDelta = true;
                 deviceInfo.ProfilingDeltaNS = deltaNS;
             }
             else
@@ -5774,7 +5778,8 @@ void CLIntercept::checkTimingEvents()
 
                 if( config().ChromePerformanceTiming )
                 {
-                    const SDeviceInfo&  deviceInfo = m_DeviceInfoMap[node.Device];
+                    const SDeviceInfo&  deviceInfo =
+                        m_DeviceInfoMap[node.Device];
 
                     const std::string& name =
                         node.KernelName.empty() ?
@@ -5787,6 +5792,7 @@ void CLIntercept::checkTimingEvents()
                         node.QueueNumber,
                         node.Event,
                         node.QueuedTime,
+                        deviceInfo.UseProfilingDelta,
                         deviceInfo.ProfilingDeltaNS );
                 }
 
@@ -12727,6 +12733,7 @@ void CLIntercept::chromeTraceEvent(
     unsigned int queueNumber,
     cl_event event,
     const clock::time_point queuedTime,
+    bool useProfilingDelta,
     int64_t profilingDeltaNS )
 {
     cl_int  errorCode = CL_SUCCESS;
@@ -12780,19 +12787,29 @@ void CLIntercept::chromeTraceEvent(
 
     if( errorCode == CL_SUCCESS )
     {
+        const int64_t threshold = 1000000000;   // 1s
+
         using ns = std::chrono::nanoseconds;
-        const uint64_t  normalizedQueuedTimeNS =
-            std::chrono::duration_cast<ns>(queuedTime - m_StartTime).count();
-
-        const uint64_t  measuredQueuedTimeNS =
+        const uint64_t  startTimeNS =
+            std::chrono::duration_cast<ns>(m_StartTime.time_since_epoch()).count();
+        const uint64_t  estimatedQueuedTimeNS =
             std::chrono::duration_cast<ns>(queuedTime.time_since_epoch()).count();
+        const uint64_t  profilingQueuedTimeNS =
+            commandQueued + profilingDeltaNS;
+        const uint64_t  deltaNS =
+            estimatedQueuedTimeNS > profilingQueuedTimeNS ?
+            estimatedQueuedTimeNS - profilingQueuedTimeNS :
+            profilingQueuedTimeNS - estimatedQueuedTimeNS;
+        const uint64_t  normalizedQueuedTimeNS =
+            useProfilingDelta && deltaNS < threshold ?
+            profilingQueuedTimeNS - startTimeNS :
+            estimatedQueuedTimeNS - startTimeNS;
 
-        int64_t deltaNS = measuredQueuedTimeNS - commandQueued;
-
-        logf("Computed Delta = %lld, Queried Delta = %lld, Delta of Deltas = %lld\n",
-            deltaNS,
-            profilingDeltaNS,
-            deltaNS - profilingDeltaNS );
+        logf("p = %llu, e = %llu, e - p = %lld, deltaNS = %llu\n",
+            profilingQueuedTimeNS,
+            estimatedQueuedTimeNS,
+            estimatedQueuedTimeNS - profilingQueuedTimeNS,
+            deltaNS);
 
         const uint64_t  processId = OS().GetProcessID();
 
