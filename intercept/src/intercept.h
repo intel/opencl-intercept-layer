@@ -799,6 +799,8 @@ public:
                 cl_command_queue queue );
     void    chromeTraceEvent(
                 const std::string& name,
+                bool useProfilingDelta,
+                int64_t profilingDeltaNS,
                 uint64_t enqueueCounter,
                 unsigned int queueNumber,
                 cl_event event,
@@ -970,6 +972,9 @@ private:
 
         cl_uint     NumComputeUnits;
         cl_uint     MaxClockFrequency;
+
+        bool        UseProfilingDelta;
+        int64_t     ProfilingDeltaNS;
 
         bool        Supports_cl_khr_create_command_queue;
         bool        Supports_cl_khr_subgroups;
