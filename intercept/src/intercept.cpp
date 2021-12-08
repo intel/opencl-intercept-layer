@@ -1194,57 +1194,43 @@ void CLIntercept::cacheDeviceInfo(
         deviceInfo.NumComputeUnits = deviceComputeUnits;
         deviceInfo.MaxClockFrequency = deviceMaxClockFrequency;
 
+        // By default we will not use the profiling delta.
         deviceInfo.UseProfilingDelta = false;
         deviceInfo.ProfilingDeltaNS = 0;
 
+        // If the device numeric version is OpenCL 2.1 or newer and we have
+        // the device and host timer APIs we might be able to use the device
+        // and host timer.
         if( deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(2, 1, 0) &&
             dispatch().clGetDeviceAndHostTimer &&
             dispatch().clGetHostTimer )
         {
             cl_int  errorCode = CL_SUCCESS;
-            cl_ulong    deviceTimeNS = 0;
-            cl_ulong    hostTimeNS = 0;
 
             using ns = std::chrono::nanoseconds;
             uint64_t    interceptTimeNS =
                 std::chrono::duration_cast<ns>(clock::now().time_since_epoch()).count();
 
+            cl_ulong    ihostTimeNS = 0;
             errorCode |= dispatch().clGetHostTimer(
                 device,
-                &hostTimeNS);
+                &ihostTimeNS);
 
-            int64_t deltaIHNS = interceptTimeNS - hostTimeNS;
-            logf("\tIntercept Time = %llu, Host Time = %llu, Delta = %lld\n",
-                interceptTimeNS,
-                hostTimeNS,
-                deltaIHNS);
-
+            cl_ulong    deviceTimeNS = 0;
+            cl_ulong    dhostTimeNS = 0;
             errorCode |= dispatch().clGetDeviceAndHostTimer(
                 device,
                 &deviceTimeNS,
-                &hostTimeNS);
-
-            int64_t deltaHDNS = deviceTimeNS - hostTimeNS;
-            logf("\tDevice Time = %llu, Host Time = %llu, Delta = %lld\n",
-                deviceTimeNS,
-                hostTimeNS,
-                deltaHDNS);
-
-            cl_long deltaNS = deltaIHNS - deltaHDNS;
+                &dhostTimeNS);
 
             if( errorCode == CL_SUCCESS )
             {
-                logf("For device %s: Computed delta: %lld\n",
-                    deviceInfo.Name.c_str(),
-                    deltaNS);
+                // The profiling delta is what we need to add to a device time
+                // to convert it to the intercept time.
                 deviceInfo.UseProfilingDelta = true;
-                deviceInfo.ProfilingDeltaNS = deltaNS;
-            }
-            else
-            {
-                logf("clGetDeviceAndHostTimer returned %s (%d)!\n",
-                    enumName().name( errorCode ).c_str(),
-                    errorCode );
+                deviceInfo.ProfilingDeltaNS =
+                    (interceptTimeNS - ihostTimeNS) -
+                    (deviceTimeNS - dhostTimeNS);
             }
         }
 
@@ -5778,22 +5764,22 @@ void CLIntercept::checkTimingEvents()
 
                 if( config().ChromePerformanceTiming )
                 {
-                    const SDeviceInfo&  deviceInfo =
-                        m_DeviceInfoMap[node.Device];
-
                     const std::string& name =
                         node.KernelName.empty() ?
                         node.FunctionName :
                         node.KernelName;
 
+                    const SDeviceInfo&  deviceInfo =
+                        m_DeviceInfoMap[node.Device];
+
                     chromeTraceEvent(
                         name,
+                        deviceInfo.UseProfilingDelta,
+                        deviceInfo.ProfilingDeltaNS,
                         node.EnqueueCounter,
                         node.QueueNumber,
                         node.Event,
-                        node.QueuedTime,
-                        deviceInfo.UseProfilingDelta,
-                        deviceInfo.ProfilingDeltaNS );
+                        node.QueuedTime );
                 }
 
 #if defined(USE_MDAPI)
@@ -12729,36 +12715,19 @@ void CLIntercept::chromeRegisterCommandQueue(
 //
 void CLIntercept::chromeTraceEvent(
     const std::string& name,
+    bool useProfilingDelta,
+    int64_t profilingDeltaNS,
     uint64_t enqueueCounter,
     unsigned int queueNumber,
     cl_event event,
-    const clock::time_point queuedTime,
-    bool useProfilingDelta,
-    int64_t profilingDeltaNS )
+    const clock::time_point queuedTime )
 {
     cl_int  errorCode = CL_SUCCESS;
-
-    cl_command_queue    queue = NULL;
-    cl_command_type     type = 0;
 
     cl_ulong    commandQueued = 0;
     cl_ulong    commandSubmit = 0;
     cl_ulong    commandStart = 0;
     cl_ulong    commandEnd = 0;
-
-    errorCode |= dispatch().clGetEventInfo(
-        event,
-        CL_EVENT_COMMAND_QUEUE,
-        sizeof( queue ),
-        &queue,
-        NULL );
-
-    errorCode |= dispatch().clGetEventInfo(
-        event,
-        CL_EVENT_COMMAND_TYPE,
-        sizeof(type),
-        &type,
-        NULL );
 
     errorCode |= dispatch().clGetEventProfilingInfo(
         event,
@@ -12787,8 +12756,6 @@ void CLIntercept::chromeTraceEvent(
 
     if( errorCode == CL_SUCCESS )
     {
-        const int64_t threshold = 1000000000;   // 1s
-
         using ns = std::chrono::nanoseconds;
         const uint64_t  startTimeNS =
             std::chrono::duration_cast<ns>(m_StartTime.time_since_epoch()).count();
@@ -12800,16 +12767,15 @@ void CLIntercept::chromeTraceEvent(
             estimatedQueuedTimeNS > profilingQueuedTimeNS ?
             estimatedQueuedTimeNS - profilingQueuedTimeNS :
             profilingQueuedTimeNS - estimatedQueuedTimeNS;
+
+        // Use the profiling queued time directly if the profiling delta is
+        // valid and if it is within a threshold of the measured queued time.
+        // The threshold is to work around buggy device and host timers.
+        const uint64_t  threshold = 1000000000;   // 1s
         const uint64_t  normalizedQueuedTimeNS =
             useProfilingDelta && deltaNS < threshold ?
             profilingQueuedTimeNS - startTimeNS :
             estimatedQueuedTimeNS - startTimeNS;
-
-        logf("p = %llu, e = %llu, e - p = %lld, deltaNS = %llu\n",
-            profilingQueuedTimeNS,
-            estimatedQueuedTimeNS,
-            estimatedQueuedTimeNS - profilingQueuedTimeNS,
-            deltaNS);
 
         const uint64_t  processId = OS().GetProcessID();
 

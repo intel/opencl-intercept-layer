@@ -799,12 +799,12 @@ public:
                 cl_command_queue queue );
     void    chromeTraceEvent(
                 const std::string& name,
+                bool useProfilingDelta,
+                int64_t profilingDeltaNS,
                 uint64_t enqueueCounter,
                 unsigned int queueNumber,
                 cl_event event,
-                clock::time_point queuedTime,
-                bool useProfilingDelta,
-                int64_t profilingDeltaNS );
+                clock::time_point queuedTime );
 
     // USM Emulation:
     void*   emulatedHostMemAlloc(
