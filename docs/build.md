@@ -135,6 +135,6 @@ See your CMake documentation for more details.
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018-2021, Intel(R) Corporation
+Copyright (c) 2018-2022, Intel(R) Corporation
 
 [CMake]: https://cmake.org

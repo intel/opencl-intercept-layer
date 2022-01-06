@@ -54,4 +54,4 @@ If you encounter other bugs or issues running `cliloader`, including the `--debu
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018-2021, Intel(R) Corporation
+Copyright (c) 2018-2022, Intel(R) Corporation

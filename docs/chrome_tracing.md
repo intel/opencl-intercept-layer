@@ -81,6 +81,6 @@ without it.
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018-2021, Intel(R) Corporation
+Copyright (c) 2018-2022, Intel(R) Corporation
 
 [chrome_tracing_format]: https://docs.google.com/document/d/1CvAClvFfyA5R-PhYUmn5OOQtYMH4h6I0nSsKchNAySU/preview
