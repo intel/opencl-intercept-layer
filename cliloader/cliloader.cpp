@@ -248,6 +248,14 @@ static bool parseArguments(int argc, char *argv[])
         {
             SETENV("CLI_CallLogging", "1");
         }
+        else if( !strcmp(argv[i], "--tid") )
+        {
+            SETENV("CLI_CallLoggingThreadId", "1");
+        }
+        else if( !strcmp(argv[i], "--appendpid") )
+        {
+            SETENV("CLI_AppendPid", "1");
+        }
         else if( !strcmp(argv[i], "-dsrc") || !strcmp(argv[i], "--dump-source") )
         {
             SETENV("CLI_DumpProgramSource", "1");
@@ -274,6 +282,24 @@ static bool parseArguments(int argc, char *argv[])
             SETENV("CLI_DevicePerformanceTimeKernelInfoTracking", "1");
             SETENV("CLI_DevicePerformanceTimeGWSTracking", "1");
             SETENV("CLI_DevicePerformanceTimeLWSTracking", "1");
+        }
+        else if( !strcmp(argv[i], "-ccl") || !strcmp(argv[i], "--chrome-call-logging") )
+        {
+            SETENV("CLI_ChromeCallLogging", "1");
+        }
+        else if( !strcmp(argv[i], "-cdt") || !strcmp(argv[i], "--chrome-device-timeline") )
+        {
+            SETENV("CLI_ChromePerformanceTiming", "1");
+        }
+        else if( !strcmp(argv[i], "-ckt") || !strcmp(argv[i], "--chrome-kernel-timeline") )
+        {
+            SETENV("CLI_ChromePerformanceTiming", "1");
+            SETENV("CLI_ChromePerformanceTimingPerKernel", "1");
+        }
+        else if( !strcmp(argv[i], "-cds") || !strcmp(argv[i], "--chrome-device-stages") )
+        {
+            SETENV("CLI_ChromePerformanceTiming", "1");
+            SETENV("CLI_ChromePerformanceTimingInStages", "1");
         }
         else if( !strcmp(argv[i], "--driver-diagnostics") || !strcmp(argv[i], "-ddiag") )
         {
@@ -354,12 +380,18 @@ static bool parseArguments(int argc, char *argv[])
             "\n"
             "  --quiet [-q]                     Disable Logging\n"
             "  --call-logging [-c]              Trace Host API Calls\n"
+            "  --tid                            Include Thread ID in the API Call Log\n"
+            "  --appendpid                      Include Process ID in the Dump Directory\n"
             "  --dump-source [-dsrc]            Dump Input Program Source\n"
             "  --dump-spirv [-dspv]             Dump Input Program IL (SPIR-V)\n"
             "  --dump-output-binaries           Dump Output Program Binaries\n"
             "  --dump-kernel-isa-binaries       Dump Kernel ISA Binaries (Intel GPU Only)\n"
             "  --device-timing [-d]             Report Device Execution Time\n"
             "  --device-timing-verbose [-dv]    Report More Detailed Device Execution Time\n"
+            "  --chrome-call-logging [-ccl]     Record Host API Calls to a JSON Trace File\n"
+            "  --chrome-device-timeline [-cdt]  Record Per-Queue Device Timeline to a JSON Trace File\n"
+            "  --chrome-kernel-timeline [-ckt]  Record Per-Kernel Device Timeline to a JSON Trace File\n"
+            "  --chrome-device-stages [-cds]    Record Device Timeline Stages to a JSON Trace File\n"
             "  --driver-diagnostics [-ddiag]    Log Driver Diagnostics\n"
             "  --mdapi-ebs                      Report Event-Based MDAPI Counters (Intel GPU Only)\n"
             "  --mdapi-tbs                      Report Time-Based MDAPI Counters (Intel GPU Only)\n"
