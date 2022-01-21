@@ -17,7 +17,7 @@ looks like this one:
 
 ## Configuring Chrome Tracing
 
-There are (currently) three Chrome Tracing-related controls for the Intercept
+There are (currently) four Chrome Tracing-related controls for the Intercept
 Layer for OpenCL Applications:
 
 * `ChromeCallLogging`: This is the control for tracing OpenCL host APIs.
@@ -46,7 +46,7 @@ directory.
 ## Visualizing Chrome Tracing Data
 
 After collecting a "CLIntercept_Trace.json" file, simply click the "load"
-button in the "chrome::tracing" UI, or drag your file into Chrome.
+button in the "chrome://tracing" UI, or drag your file into Chrome.
 
 If all goes well you will see a timegraph like this one:
 
