@@ -255,6 +255,10 @@ static bool parseArguments(int argc, char *argv[])
         {
             SETENV("CLI_CallLogging", "1");
         }
+        else if( !strcmp(argv[i], "-e") || !strcmp(argv[i], "--error-logging") )
+        {
+            SETENV("CLI_ErrorLogging", "1");
+        }
         else if( !strcmp(argv[i], "--tid") )
         {
             SETENV("CLI_CallLoggingThreadId", "1");
@@ -388,6 +392,7 @@ static bool parseArguments(int argc, char *argv[])
             "\n"
             "  --quiet [-q]                     Disable Logging\n"
             "  --call-logging [-c]              Trace Host API Calls\n"
+            "  --error-logging [-e]             Detect and Log API Errors\n"
             "  --tid                            Include Thread ID in the API Call Log\n"
             "  --appendpid                      Include Process ID in the Dump Directory\n"
             "  --dump-source [-dsrc]            Dump Input Program Source\n"
