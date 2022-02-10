@@ -7,6 +7,8 @@
 #include "git_version.h"
 #include <string>
 
+#include "printcontrols.h"
+
 #if defined(_WIN32)
 
 #include <windows.h>
@@ -230,6 +232,11 @@ static bool parseArguments(int argc, char *argv[])
         {
             debug = true;
         }
+        else if (!strcmp(argv[i], "--controls") )
+        {
+            printControls();
+            return false;
+        }
 #if !defined(_WIN32)
         else if( !strcmp(argv[i], "--no-LD_PRELOAD") )
         {
@@ -373,6 +380,7 @@ static bool parseArguments(int argc, char *argv[])
             "\n"
             "Options:\n"
             "  --debug                          Enable cliloader Debug Messages\n"
+            "  --controls                       Print All Controls and Exit\n"
 #if !defined(_WIN32)
             "  --no-LD_PRELOAD                  Do not set LD_PRELOAD\n"
             "  --no-LD_LIBRARY_PATH             Do not set LD_LIBRARY_PATH\n"

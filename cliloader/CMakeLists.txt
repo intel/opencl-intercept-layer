@@ -9,6 +9,7 @@ configure_file(git_version.h.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.h" @ONL
 
 set( CLILOADER_SOURCE_FILES
     cliloader.cpp
+    printcontrols.h
     "${CMAKE_CURRENT_BINARY_DIR}/git_version.h"
 )
 source_group( Source FILES
@@ -19,9 +20,8 @@ add_executable(cliloader
     ${CLILOADER_SOURCE_FILES}
 )
 add_dependencies(cliloader OpenCL)
-target_include_directories(cliloader PRIVATE
-    ${CMAKE_CURRENT_BINARY_DIR}
-)
+target_include_directories(cliloader PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../intercept)
+target_include_directories(cliloader PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
