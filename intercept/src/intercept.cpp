@@ -1215,6 +1215,15 @@ void CLIntercept::cacheDeviceInfo(
                 deviceInfo.ProfilingDeltaNS =
                     (interceptTimeNS - ihostTimeNS) -
                     (deviceTimeNS - dhostTimeNS);
+
+                logf( "Using the profiling delta for device %s:\n"
+                    "\tintercept %llu ns == host %llu ns\n"
+                    "\tdevice %llu ns == host %llu ns\n"
+                    "\tdelta is %llu ns (%.2f us)\n",
+                    deviceName,
+                    interceptTimeNS, ihostTimeNS,
+                    deviceTimeNS, dhostTimeNS,
+                    deviceInfo.ProfilingDeltaNS, deviceInfo.ProfilingDeltaNS / 1000.0 );
             }
         }
 
@@ -12767,6 +12776,19 @@ void CLIntercept::chromeTraceEvent(
             useProfilingDelta && deltaNS < threshold ?
             profilingQueuedTimeNS - startTimeNS :
             estimatedQueuedTimeNS - startTimeNS;
+
+        logf( "For command %s:\n"
+            "\tcommandQueued is %llu ns (%.2f us)\n"
+            "\testimatedQueuedTimeNS is %llu ns (%.2f us)\n"
+            "\tprofilingQueuedTimeNS is %llu ns (%.2f us)\n"
+            "\testimated time is %s than profiling time\n"
+            "\tdeltaNS is %llu ns (%.2f us)\n",
+            name.c_str(),
+            commandQueued, commandQueued / 1000.0,
+            estimatedQueuedTimeNS, estimatedQueuedTimeNS / 1000.0,
+            profilingQueuedTimeNS, profilingQueuedTimeNS / 1000.0,
+            estimatedQueuedTimeNS > profilingQueuedTimeNS ? "GREATER" : "LESS",
+            deltaNS, deltaNS / 1000.0 );
 
         const uint64_t  processId = OS().GetProcessID();
 
