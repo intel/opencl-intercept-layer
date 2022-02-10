@@ -5296,6 +5296,13 @@ void CLIntercept::addTimingEvent(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
+    if( event == NULL )
+    {
+        logf( "Unexpectedly got a NULL timing event for %s, check for OpenCL errors!\n",
+            functionName.c_str() );
+        return;
+    }
+
     m_EventList.emplace_back();
 
     SEventListNode& node = m_EventList.back();
