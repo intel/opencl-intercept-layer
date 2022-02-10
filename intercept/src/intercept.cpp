@@ -1216,13 +1216,16 @@ void CLIntercept::cacheDeviceInfo(
                     (interceptTimeNS - ihostTimeNS) -
                     (deviceTimeNS - dhostTimeNS);
 
+                int64_t iDelta = interceptTimeNS - ihostTimeNS;
+                int64_t dDelta = deviceTimeNS - dhostTimeNS;
+
                 logf( "Using the profiling delta for device %s:\n"
-                    "\tintercept %llu ns == host %llu ns\n"
-                    "\tdevice %llu ns == host %llu ns\n"
-                    "\tdelta is %llu ns (%.2f us)\n",
+                    "\tintercept %llu ns == host %llu ns (delta %lld ns)\n"
+                    "\tdevice %llu ns == host %llu ns (delta %lld ns)\n"
+                    "\tdelta is %lld ns (%.2f us)\n",
                     deviceName,
-                    interceptTimeNS, ihostTimeNS,
-                    deviceTimeNS, dhostTimeNS,
+                    interceptTimeNS, ihostTimeNS, iDelta,
+                    deviceTimeNS, dhostTimeNS, dDelta,
                     deviceInfo.ProfilingDeltaNS, deviceInfo.ProfilingDeltaNS / 1000.0 );
             }
         }
