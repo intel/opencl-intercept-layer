@@ -5374,7 +5374,6 @@ void CLIntercept::addTimingEvent(
                     deviceInfo.Supports_cl_khr_subgroups )
                 {
                     cl_platform_id  platform = getPlatform(device);
-
                     if( dispatchX(platform).clGetKernelSubGroupInfoKHR == NULL )
                     {
                         getExtensionFunctionAddress(
@@ -5382,7 +5381,7 @@ void CLIntercept::addTimingEvent(
                             "clGetKernelSubGroupInfoKHR" );
                     }
 
-                    auto dispatchX = this->dispatchX(platform);
+                    const auto& dispatchX = this->dispatchX(platform);
                     if( dispatchX.clGetKernelSubGroupInfoKHR )
                     {
                         dispatchX.clGetKernelSubGroupInfoKHR(
@@ -5547,7 +5546,7 @@ void CLIntercept::addTimingEvent(
                             "clGetKernelSuggestedLocalWorkSizeKHR" );
                     }
 
-                    auto dispatchX = this->dispatchX(platform);
+                    const auto& dispatchX = this->dispatchX(platform);
                     if( dispatchX.clGetKernelSuggestedLocalWorkSizeKHR )
                     {
                         cl_int testErrorCode = dispatchX.clGetKernelSuggestedLocalWorkSizeKHR(
@@ -5571,7 +5570,7 @@ void CLIntercept::addTimingEvent(
                             "clGetKernelSuggestedLocalWorkSizeINTEL" );
                     }
 
-                    auto dispatchX = this->dispatchX(platform);
+                    const auto& dispatchX = this->dispatchX(platform);
                     if( dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL )
                     {
                         cl_int testErrorCode = dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL(
@@ -5838,15 +5837,15 @@ cl_command_queue CLIntercept::getCommandBufferCommandQueue(
     CCommandBufferInfoMap::iterator iter = m_CommandBufferInfoMap.find( cmdbuf );
     if( iter != m_CommandBufferInfoMap.end() )
     {
-        auto platform = iter->second;
-        auto dispatchX = this->dispatchX(platform);
-        if( dispatchX.clGetCommandBufferInfoKHR == NULL )
+        cl_platform_id  platform = iter->second;
+        if( dispatchX(platform).clGetCommandBufferInfoKHR == NULL )
         {
             getExtensionFunctionAddress(
                 platform,
                 "clGetCommandBufferInfoKHR" );
         }
 
+        const auto& dispatchX = this->dispatchX(platform);
         if( dispatchX.clGetCommandBufferInfoKHR )
         {
             dispatchX.clGetCommandBufferInfoKHR(
@@ -5914,7 +5913,6 @@ cl_command_queue CLIntercept::createCommandQueueWithProperties(
         deviceInfo.Supports_cl_khr_create_command_queue )
     {
         cl_platform_id  platform = getPlatform(device);
-
         if( dispatchX(platform).clCreateCommandQueueWithPropertiesKHR == NULL )
         {
             getExtensionFunctionAddress(
@@ -5922,7 +5920,7 @@ cl_command_queue CLIntercept::createCommandQueueWithProperties(
                 "clCreateCommandQueueWithPropertiesKHR" );
         }
 
-        auto dispatchX = this->dispatchX(platform);
+        const auto& dispatchX = this->dispatchX(platform);
         if( dispatchX.clCreateCommandQueueWithPropertiesKHR )
         {
             retVal = dispatchX.clCreateCommandQueueWithPropertiesKHR(
@@ -6062,15 +6060,15 @@ void CLIntercept::checkRemoveAcceleratorInfo(
     CAcceleratorInfoMap::iterator iter = m_AcceleratorInfoMap.find( accelerator );
     if( iter != m_AcceleratorInfoMap.end() )
     {
-        auto platform = iter->second;
-        auto dispatchX = this->dispatchX(platform);
-        if( dispatchX.clGetAcceleratorInfoINTEL == NULL )
+        cl_platform_id  platform = iter->second;
+        if( dispatchX(platform).clGetAcceleratorInfoINTEL == NULL )
         {
             getExtensionFunctionAddress(
                 platform,
                 "clGetAcceleratorInfoINTEL" );
         }
 
+        const auto& dispatchX = this->dispatchX(platform);
         if( dispatchX.clGetAcceleratorInfoINTEL )
         {
             cl_uint refCount = 0;
@@ -6114,15 +6112,15 @@ void CLIntercept::checkRemoveSemaphoreInfo(
     CSemaphoreInfoMap::iterator iter = m_SemaphoreInfoMap.find( semaphore );
     if( iter != m_SemaphoreInfoMap.end() )
     {
-        auto platform = iter->second;
-        auto dispatchX = this->dispatchX(platform);
-        if( dispatchX.clGetSemaphoreInfoKHR == NULL )
+        cl_platform_id  platform = iter->second;
+        if( dispatchX(platform).clGetSemaphoreInfoKHR == NULL )
         {
             getExtensionFunctionAddress(
                 platform,
                 "clGetSemaphoreInfoKHR" );
         }
 
+        const auto& dispatchX = this->dispatchX(platform);
         if( dispatchX.clGetSemaphoreInfoKHR )
         {
             cl_uint refCount = 0;
@@ -6165,15 +6163,15 @@ void CLIntercept::checkRemoveCommandBufferInfo(
     CCommandBufferInfoMap::iterator iter = m_CommandBufferInfoMap.find( cmdbuf );
     if( iter != m_CommandBufferInfoMap.end() )
     {
-        auto platform = iter->second;
-        auto dispatchX = this->dispatchX(platform);
-        if( dispatchX.clGetCommandBufferInfoKHR == NULL )
+        cl_platform_id  platform = iter->second;
+        if( dispatchX(platform).clGetCommandBufferInfoKHR == NULL )
         {
             getExtensionFunctionAddress(
                 platform,
                 "clGetCommandBufferInfoKHR" );
         }
 
+        const auto& dispatchX = this->dispatchX(platform);
         if( dispatchX.clGetCommandBufferInfoKHR )
         {
             cl_uint refCount = 0;
@@ -6684,7 +6682,7 @@ void CLIntercept::dumpBuffersForKernel(
                     transferBuf.resize(size);
                 }
 
-                auto dispatchX = this->dispatchX(platform);
+                const auto& dispatchX = this->dispatchX(platform);
                 if( dispatchX.clEnqueueMemcpyINTEL &&
                     transferBuf.size() >= size )
                 {
@@ -7250,7 +7248,7 @@ void CLIntercept::checkKernelArgUSMPointer(
             "clGetMemAllocInfoINTEL" );
     }
 
-    auto dispatchX = this->dispatchX(platform);
+    const auto& dispatchX = this->dispatchX(platform);
     if( dispatchX.clGetMemAllocInfoINTEL == NULL )
     {
         logf( "function pointer for clGetMemAllocInfoINTEL is NULL\n" );

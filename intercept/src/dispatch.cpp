@@ -1029,7 +1029,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateBufferNV(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateBufferNV )
         {
             GET_ENQUEUE_COUNTER();
@@ -5327,7 +5327,7 @@ CL_API_ENTRY cl_semaphore_khr CL_API_CALL clCreateSemaphoreWithPropertiesKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateSemaphoreWithPropertiesKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -5385,7 +5385,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueWaitSemaphoresKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(queue);
+        const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clEnqueueWaitSemaphoresKHR )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -5444,7 +5444,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSignalSemaphoresKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(queue);
+        const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clEnqueueSignalSemaphoresKHR )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -5501,7 +5501,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSemaphoreInfoKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(semaphore);
+        const auto& dispatchX = pIntercept->dispatchX(semaphore);
         if( dispatchX.clGetSemaphoreInfoKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -5539,7 +5539,7 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainSemaphoreKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(semaphore);
+        const auto& dispatchX = pIntercept->dispatchX(semaphore);
         if( dispatchX.clRetainSemaphoreKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -5580,7 +5580,7 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseSemaphoreKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(semaphore);
+        const auto& dispatchX = pIntercept->dispatchX(semaphore);
         if( dispatchX.clReleaseSemaphoreKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -5625,7 +5625,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSemaphoreHandleForTypeKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(semaphore);
+        const auto& dispatchX = pIntercept->dispatchX(semaphore);
         if( dispatchX.clGetSemaphoreHandleForTypeKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -6838,7 +6838,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(device);
+        const auto& dispatchX = pIntercept->dispatchX(device);
         if( dispatchX.clCreateCommandQueueWithPropertiesKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -7118,7 +7118,7 @@ CL_API_ENTRY cl_program CL_API_CALL clCreateProgramWithILKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateProgramWithILKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -7246,7 +7246,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(kernel);
+        const auto& dispatchX = pIntercept->dispatchX(kernel);
         if( dispatchX.clGetKernelSubGroupInfoKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -7354,7 +7354,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireExternalMemObjectsKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueAcquireExternalMemObjectsKHR )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -7410,7 +7410,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseExternalMemObjectsKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueReleaseExternalMemObjectsKHR )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -7507,7 +7507,7 @@ CL_API_ENTRY cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateEventFromGLsyncKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -7551,7 +7551,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D10KHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(platform);
+        const auto& dispatchX = pIntercept->dispatchX(platform);
         if( dispatchX.clGetDeviceIDsFromD3D10KHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -7600,7 +7600,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D10BufferKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -7646,7 +7646,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D10Texture2DKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -7693,7 +7693,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D10Texture3DKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -7741,7 +7741,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueAcquireD3D10ObjectsKHR )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -7797,7 +7797,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueReleaseD3D10ObjectsKHR )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -7856,7 +7856,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D11KHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(platform);
+        const auto& dispatchX = pIntercept->dispatchX(platform);
         if( dispatchX.clGetDeviceIDsFromD3D11KHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -7905,7 +7905,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D11BufferKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -7951,7 +7951,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D11Texture2DKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -7998,7 +7998,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromD3D11Texture3DKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -8046,7 +8046,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueAcquireD3D11ObjectsKHR )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -8102,7 +8102,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueReleaseD3D11ObjectsKHR )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -8162,7 +8162,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(platform);
+        const auto& dispatchX = pIntercept->dispatchX(platform);
         if( dispatchX.clGetDeviceIDsFromDX9MediaAdapterKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -8214,7 +8214,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromDX9MediaSurfaceKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -8263,7 +8263,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueAcquireDX9MediaSurfacesKHR )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -8319,7 +8319,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueReleaseDX9MediaSurfacesKHR )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -8380,7 +8380,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9INTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(platform);
+        const auto& dispatchX = pIntercept->dispatchX(platform);
         if( dispatchX.clGetDeviceIDsFromDX9INTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -8431,7 +8431,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromDX9MediaSurfaceINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -8480,7 +8480,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueAcquireDX9ObjectsINTEL )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -8536,7 +8536,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueReleaseDX9ObjectsINTEL )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -8594,7 +8594,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreatePerfCountersCommandQueueINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -8660,7 +8660,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(device);
+        const auto& dispatchX = pIntercept->dispatchX(device);
         if( dispatchX.clSetPerformanceConfigurationINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -8699,7 +8699,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(commandQueue);
+        const auto& dispatchX = pIntercept->dispatchX(commandQueue);
         if( dispatchX.clGetKernelSuggestedLocalWorkSizeKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -8745,7 +8745,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(commandQueue);
+        const auto& dispatchX = pIntercept->dispatchX(commandQueue);
         if( dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -8789,7 +8789,7 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateAcceleratorINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -8855,7 +8855,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetAcceleratorInfoINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(accelerator);
+        const auto& dispatchX = pIntercept->dispatchX(accelerator);
         if( dispatchX.clGetAcceleratorInfoINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -8892,7 +8892,7 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainAcceleratorINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(accelerator);
+        const auto& dispatchX = pIntercept->dispatchX(accelerator);
         if( dispatchX.clRetainAcceleratorINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -8932,7 +8932,7 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseAcceleratorINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(accelerator);
+        const auto& dispatchX = pIntercept->dispatchX(accelerator);
         if( dispatchX.clReleaseAcceleratorINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -8977,7 +8977,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromVA_APIMediaAdapterINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(platform);
+        const auto& dispatchX = pIntercept->dispatchX(platform);
         if( dispatchX.clGetDeviceIDsFromVA_APIMediaAdapterINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9027,7 +9027,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromVA_APIMediaSurfaceINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clCreateFromVA_APIMediaSurfaceINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9075,7 +9075,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireVA_APIMediaSurfacesINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueAcquireVA_APIMediaSurfacesINTEL )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -9131,7 +9131,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_queue);
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
         if( dispatchX.clEnqueueReleaseVA_APIMediaSurfacesINTEL )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -9189,7 +9189,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedGLTextureFormatsINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clGetSupportedGLTextureFormatsINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9236,7 +9236,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedDX9MediaSurfaceFormatsINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clGetSupportedDX9MediaSurfaceFormatsINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9283,7 +9283,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedD3D10TextureFormatsINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clGetSupportedD3D10TextureFormatsINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9329,7 +9329,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedD3D11TextureFormatsINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clGetSupportedD3D11TextureFormatsINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9377,7 +9377,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedVA_APIMediaSurfaceFormatsINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clGetSupportedVA_APIMediaSurfaceFormatsINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9423,7 +9423,7 @@ CL_API_ENTRY void* CL_API_CALL clHostMemAllocINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clHostMemAllocINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9488,7 +9488,7 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clDeviceMemAllocINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9564,7 +9564,7 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clSharedMemAllocINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9636,7 +9636,7 @@ CL_API_ENTRY cl_int CL_API_CALL clMemFreeINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clMemFreeINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9673,7 +9673,7 @@ clMemBlockingFreeINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clMemBlockingFreeINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9713,7 +9713,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetMemAllocInfoINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(context);
+        const auto& dispatchX = pIntercept->dispatchX(context);
         if( dispatchX.clGetMemAllocInfoINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9755,7 +9755,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(kernel);
+        const auto& dispatchX = pIntercept->dispatchX(kernel);
         if( dispatchX.clSetKernelArgMemPointerINTEL )
         {
             GET_ENQUEUE_COUNTER();
@@ -9801,7 +9801,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(queue);
+        const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clEnqueueMemsetINTEL )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -9870,7 +9870,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(queue);
+        const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clEnqueueMemFillINTEL )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -9940,7 +9940,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(queue);
+        const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clEnqueueMemcpyINTEL )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -10010,7 +10010,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(queue);
+        const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clEnqueueMigrateMemINTEL )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -10079,7 +10079,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(queue);
+        const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clEnqueueMemAdviseINTEL )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -10146,7 +10146,7 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clCreateCommandBufferKHR(
     if( pIntercept )
     {
         cl_command_queue queue = num_queues ? queues[0] : NULL;
-        auto dispatchX = pIntercept->dispatchX(queue);
+        const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clCreateCommandBufferKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10199,7 +10199,7 @@ CL_API_ENTRY cl_int CL_API_CALL clFinalizeCommandBufferKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clFinalizeCommandBufferKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10232,7 +10232,7 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainCommandBufferKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clRetainCommandBufferKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10273,7 +10273,7 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseCommandBufferKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clReleaseCommandBufferKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10318,7 +10318,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueCommandBufferKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clEnqueueCommandBufferKHR )
         {
             cl_int  retVal = CL_SUCCESS;
@@ -10383,7 +10383,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clCommandBarrierWithWaitListKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10433,7 +10433,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clCommandCopyBufferKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10492,7 +10492,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clCommandCopyBufferRectKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10551,7 +10551,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clCommandCopyBufferToImageKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10606,7 +10606,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clCommandCopyImageKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10661,7 +10661,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clCommandCopyImageToBufferKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10716,7 +10716,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clCommandFillBufferKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10770,7 +10770,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clCommandFillImageKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10825,7 +10825,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clCommandNDRangeKernelKHR )
         {
             GET_ENQUEUE_COUNTER();
@@ -10876,7 +10876,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetCommandBufferInfoKHR(
 
     if( pIntercept )
     {
-        auto dispatchX = pIntercept->dispatchX(command_buffer);
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
         if( dispatchX.clGetSemaphoreInfoKHR )
         {
             GET_ENQUEUE_COUNTER();

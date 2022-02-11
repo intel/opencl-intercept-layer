@@ -1495,9 +1495,8 @@ inline cl_platform_id CLIntercept::getPlatform( cl_command_buffer_khr cmdbuf ) c
 //
 inline cl_uint CLIntercept::getRefCount( cl_accelerator_intel accelerator )
 {
-    auto platform = this->getPlatform(accelerator);
-    auto dispatchX = this->dispatchX(platform);
-    if( dispatchX.clGetAcceleratorInfoINTEL == NULL )
+    cl_platform_id  platform = this->getPlatform(accelerator);
+    if( dispatchX(platform).clGetAcceleratorInfoINTEL == NULL )
     {
         getExtensionFunctionAddress(
             platform,
@@ -1505,6 +1504,7 @@ inline cl_uint CLIntercept::getRefCount( cl_accelerator_intel accelerator )
     }
 
     cl_uint refCount = 0;
+    const auto& dispatchX = this->dispatchX(platform);
     if( dispatchX.clGetAcceleratorInfoINTEL )
     {
         dispatchX.clGetAcceleratorInfoINTEL(
@@ -1615,9 +1615,8 @@ inline cl_uint CLIntercept::getRefCount( cl_sampler sampler ) const
 
 inline cl_uint CLIntercept::getRefCount( cl_semaphore_khr semaphore )
 {
-    auto platform = this->getPlatform(semaphore);
-    auto dispatchX = this->dispatchX(platform);
-    if( dispatchX.clGetSemaphoreInfoKHR == NULL )
+    cl_platform_id  platform = this->getPlatform(semaphore);
+    if( dispatchX(platform).clGetSemaphoreInfoKHR == NULL )
     {
         getExtensionFunctionAddress(
             platform,
@@ -1625,6 +1624,7 @@ inline cl_uint CLIntercept::getRefCount( cl_semaphore_khr semaphore )
     }
 
     cl_uint refCount = 0;
+    const auto& dispatchX = this->dispatchX(platform);
     if( dispatchX.clGetSemaphoreInfoKHR )
     {
         dispatchX.clGetSemaphoreInfoKHR(
@@ -1639,9 +1639,8 @@ inline cl_uint CLIntercept::getRefCount( cl_semaphore_khr semaphore )
 
 inline cl_uint CLIntercept::getRefCount( cl_command_buffer_khr cmdbuf )
 {
-    auto platform = this->getPlatform(cmdbuf);
-    auto dispatchX = this->dispatchX(platform);
-    if( dispatchX.clGetCommandBufferInfoKHR == NULL )
+    cl_platform_id  platform = this->getPlatform(cmdbuf);
+    if( dispatchX(platform).clGetCommandBufferInfoKHR == NULL )
     {
         getExtensionFunctionAddress(
             platform,
@@ -1649,6 +1648,7 @@ inline cl_uint CLIntercept::getRefCount( cl_command_buffer_khr cmdbuf )
     }
 
     cl_uint refCount = 0;
+    const auto& dispatchX = this->dispatchX(platform);
     if( dispatchX.clGetCommandBufferInfoKHR )
     {
         dispatchX.clGetCommandBufferInfoKHR(

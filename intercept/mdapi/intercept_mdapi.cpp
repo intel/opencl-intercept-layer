@@ -133,10 +133,11 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
     cl_command_queue_properties properties,
     cl_int* errcode_ret )
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     cl_command_queue    retVal = NULL;
 
     cl_platform_id  platform = getPlatform(device);
-
     if( dispatchX(platform).clCreatePerfCountersCommandQueueINTEL == NULL )
     {
         getExtensionFunctionAddress(
@@ -144,9 +145,7 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
             "clCreatePerfCountersCommandQueueINTEL" );
     }
 
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
-    auto dispatchX = this->dispatchX(platform);
+    const auto& dispatchX = this->dispatchX(platform);
     if( dispatchX.clCreatePerfCountersCommandQueueINTEL == NULL )
     {
         log( "Couldn't get pointer to clCreatePerfCountersCommandQueueINTEL!\n" );
