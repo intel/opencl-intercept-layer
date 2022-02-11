@@ -12802,20 +12802,23 @@ void CLIntercept::chromeTraceEvent(
             estimatedQueuedTimeNS - startTimeNS;
 
 #if 1
-        int64_t deltaNS =
-            profilingQueuedTimeNS - estimatedQueuedTimeNS;
-        logf( "For command %s:\n"
-            "\tcommandQueued is %llu ns (%.2f us)\n"
-            "\testimatedQueuedTimeNS is %llu ns (%.2f us)\n"
-            "\tprofilingQueuedTimeNS is %llu ns (%.2f us)\n"
-            "\testimated time is %s than profiling time\n"
-            "\tdeltaNS is %llu ns (%.2f us)\n",
-            name.c_str(),
-            commandQueued, commandQueued / 1000.0,
-            estimatedQueuedTimeNS, estimatedQueuedTimeNS / 1000.0,
-            profilingQueuedTimeNS, profilingQueuedTimeNS / 1000.0,
-            estimatedQueuedTimeNS > profilingQueuedTimeNS ? "GREATER" : "LESS",
-            deltaNS, deltaNS / 1000.0 );
+        if( useProfilingDelta )
+        {
+            int64_t deltaNS =
+                profilingQueuedTimeNS - estimatedQueuedTimeNS;
+            logf( "For command %s:\n"
+                "\tcommandQueued is %llu ns (%.2f us)\n"
+                "\testimatedQueuedTimeNS is %llu ns (%.2f us)\n"
+                "\tprofilingQueuedTimeNS is %llu ns (%.2f us)\n"
+                "\testimated time is %s than profiling time\n"
+                "\tdeltaNS is %llu ns (%.2f us)\n",
+                name.c_str(),
+                commandQueued, commandQueued / 1000.0,
+                estimatedQueuedTimeNS, estimatedQueuedTimeNS / 1000.0,
+                profilingQueuedTimeNS, profilingQueuedTimeNS / 1000.0,
+                estimatedQueuedTimeNS > profilingQueuedTimeNS ? "GREATER" : "LESS",
+                deltaNS, deltaNS / 1000.0 );
+        }
 #endif
 
         const uint64_t  processId = OS().GetProcessID();
