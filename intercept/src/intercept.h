@@ -957,8 +957,8 @@ private:
         cl_uint     NumComputeUnits;
         cl_uint     MaxClockFrequency;
 
-        bool        UseProfilingDelta;
-        int64_t     ProfilingDeltaNS;
+        bool        HasDeviceAndHostTimer;
+        int64_t     DeviceHostTimeDeltaNS;
 
         bool        Supports_cl_khr_create_command_queue;
         bool        Supports_cl_khr_subgroups;
@@ -1030,6 +1030,8 @@ private:
         std::string         KernelName;
         uint64_t            EnqueueCounter;
         clock::time_point   QueuedTime;
+        bool                UseProfilingDelta;
+        int64_t             ProfilingDeltaNS;
         cl_kernel           Kernel;
         cl_event            Event;
     };

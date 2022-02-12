@@ -1178,9 +1178,8 @@ void CLIntercept::cacheDeviceInfo(
         deviceInfo.NumComputeUnits = deviceComputeUnits;
         deviceInfo.MaxClockFrequency = deviceMaxClockFrequency;
 
-        // By default we will not use the profiling delta.
-        deviceInfo.UseProfilingDelta = false;
-        deviceInfo.ProfilingDeltaNS = 0;
+        deviceInfo.HasDeviceAndHostTimer = false;
+        deviceInfo.DeviceHostTimeDeltaNS = 0;
 
         // If the device numeric version is OpenCL 2.1 or newer and we have
         // the device and host timer APIs we might be able to use the device
@@ -1189,32 +1188,16 @@ void CLIntercept::cacheDeviceInfo(
             dispatch().clGetDeviceAndHostTimer &&
             dispatch().clGetHostTimer )
         {
-            cl_int  errorCode = CL_SUCCESS;
-
-            using ns = std::chrono::nanoseconds;
-            uint64_t    interceptTimeNS =
-                std::chrono::duration_cast<ns>(clock::now().time_since_epoch()).count();
-
-            cl_ulong    ihostTimeNS = 0;
-            errorCode |= dispatch().clGetHostTimer(
-                device,
-                &ihostTimeNS);
-
             cl_ulong    deviceTimeNS = 0;
-            cl_ulong    dhostTimeNS = 0;
-            errorCode |= dispatch().clGetDeviceAndHostTimer(
+            cl_ulong    hostTimeNS = 0;
+            cl_int  errorCode = dispatch().clGetDeviceAndHostTimer(
                 device,
                 &deviceTimeNS,
-                &dhostTimeNS);
-
+                &hostTimeNS);
             if( errorCode == CL_SUCCESS )
             {
-                // The profiling delta is what we need to add to a device time
-                // to convert it to the intercept time.
-                deviceInfo.UseProfilingDelta = true;
-                deviceInfo.ProfilingDeltaNS =
-                    (interceptTimeNS - ihostTimeNS) -
-                    (deviceTimeNS - dhostTimeNS);
+                deviceInfo.HasDeviceAndHostTimer = true;
+                deviceInfo.DeviceHostTimeDeltaNS = deviceTimeNS - hostTimeNS;
             }
         }
 
@@ -5324,8 +5307,58 @@ void CLIntercept::addTimingEvent(
     node.FunctionName = functionName;
     node.EnqueueCounter = enqueueCounter;
     node.QueuedTime = queuedTime;
+    node.UseProfilingDelta = false;
+    node.ProfilingDeltaNS = 0;
     node.Kernel = kernel; // Note: no retain, so cannot count on this value...
     node.Event = event;
+
+    if( device )
+    {
+        const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
+
+        // Note: Even though ideally the intercept timer and the host timer should advance
+        // at a consistent rate and hence the delta between the two timers should remain
+        // constant, empirically this does not appear to be the case.  Synchronizing the
+        // two timers is relatively inexpensive, and reduces the timer drift, so compute
+        // the current delta for each event.
+
+        if( deviceInfo.HasDeviceAndHostTimer )
+        {
+            // These conditions should have been checked for HasDeviceAndHostTimer to be true:
+            CLI_ASSERT( deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(2, 1, 0) );
+            CLI_ASSERT( dispatch().clGetHostTimer );
+
+            using ns = std::chrono::nanoseconds;
+            const uint64_t  interceptTimeStartNS =
+                std::chrono::duration_cast<ns>(clock::now().time_since_epoch()).count();
+
+            cl_ulong    hostTimeNS = 0;
+            dispatch().clGetHostTimer(
+                device,
+                &hostTimeNS);
+
+            const uint64_t  interceptTimeEndNS =
+                std::chrono::duration_cast<ns>(clock::now().time_since_epoch()).count();
+
+            const int64_t   interceptHostTimeDeltaNS =
+                ( interceptTimeEndNS - interceptTimeStartNS ) / 2 +
+                ( interceptTimeStartNS - hostTimeNS );
+
+            node.UseProfilingDelta = true;
+            node.ProfilingDeltaNS =
+                interceptHostTimeDeltaNS -
+                deviceInfo.DeviceHostTimeDeltaNS;
+
+            //logf( "Current Profiling Delta is %lld ns (%.2f us, %.2f ms)\n"
+            //    "\tIntercept to Host Timer delta: %lld ns (%.2f us, %.2f ms)\n"
+            //    "\tIntercept Start %llu ns, Intercept End %llu ns (delta %lld ns)\n"
+            //    "\tHost %llu ns\n",
+            //    node.ProfilingDeltaNS, node.ProfilingDeltaNS / 1000.0, node.ProfilingDeltaNS / 1000000.0,
+            //    interceptHostTimeDeltaNS, interceptHostTimeDeltaNS / 1000.0, interceptHostTimeDeltaNS / 1000000.0,
+            //    interceptTimeStartNS, interceptTimeEndNS, interceptTimeEndNS - interceptTimeStartNS,
+            //    hostTimeNS );
+        }
+    }
 
     if( kernel )
     {
@@ -5759,13 +5792,14 @@ void CLIntercept::checkTimingEvents()
                         node.FunctionName :
                         node.KernelName;
 
-                    const SDeviceInfo&  deviceInfo =
-                        m_DeviceInfoMap[node.Device];
+                    bool useProfilingDelta =
+                        node.UseProfilingDelta &&
+                        !config().ChromePerformanceTimingEstimateQueuedTime;
 
                     chromeTraceEvent(
                         name,
-                        deviceInfo.UseProfilingDelta,
-                        deviceInfo.ProfilingDeltaNS,
+                        useProfilingDelta,
+                        node.ProfilingDeltaNS,
                         node.EnqueueCounter,
                         node.QueueNumber,
                         node.Event,
@@ -12752,19 +12786,35 @@ void CLIntercept::chromeTraceEvent(
             std::chrono::duration_cast<ns>(queuedTime.time_since_epoch()).count();
         const uint64_t  profilingQueuedTimeNS =
             commandQueued + profilingDeltaNS;
-        const uint64_t  deltaNS =
-            estimatedQueuedTimeNS > profilingQueuedTimeNS ?
-            estimatedQueuedTimeNS - profilingQueuedTimeNS :
-            profilingQueuedTimeNS - estimatedQueuedTimeNS;
 
         // Use the profiling queued time directly if the profiling delta is
         // valid and if it is within a threshold of the measured queued time.
         // The threshold is to work around buggy device and host timers.
         const uint64_t  threshold = 1000000000;   // 1s
         const uint64_t  normalizedQueuedTimeNS =
-            useProfilingDelta && deltaNS < threshold ?
+            useProfilingDelta &&
+            profilingQueuedTimeNS >= estimatedQueuedTimeNS &&
+            profilingQueuedTimeNS - estimatedQueuedTimeNS < threshold ?
             profilingQueuedTimeNS - startTimeNS :
             estimatedQueuedTimeNS - startTimeNS;
+
+        //if( useProfilingDelta )
+        //{
+        //    int64_t deltaNS =
+        //        profilingQueuedTimeNS - estimatedQueuedTimeNS;
+        //    logf( "For command %s:\n"
+        //        "\tcommandQueued is %llu ns (%.2f us)\n"
+        //        "\testimatedQueuedTimeNS is %llu ns (%.2f us)\n"
+        //        "\tprofilingQueuedTimeNS is %llu ns (%.2f us)\n"
+        //        "\testimated time is %s than profiling time\n"
+        //        "\tdeltaNS is %llu ns (%.2f us)\n",
+        //        name.c_str(),
+        //        commandQueued, commandQueued / 1000.0,
+        //        estimatedQueuedTimeNS, estimatedQueuedTimeNS / 1000.0,
+        //        profilingQueuedTimeNS, profilingQueuedTimeNS / 1000.0,
+        //        estimatedQueuedTimeNS > profilingQueuedTimeNS ? "GREATER" : "LESS",
+        //        deltaNS, deltaNS / 1000.0 );
+        //}
 
         const uint64_t  processId = OS().GetProcessID();
 
