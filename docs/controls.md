@@ -363,6 +363,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will sepa
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will organize the performance information placed in the JSON file on a per kernel name basis. It is only functional when ChromePerformanceTiming is also set. When ChromePerformanceTimingInStages is also set, information about event stages will be retained.
 
+##### `ChromePerformanceTimingEstimateQueuedTime` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will unconditionally estimate the queued time for Chrome Tracing rather than computing it using device and host timers and event profiling data.  The estimated time is less accurate than the computed time, but may be more reliable if the device and host timers or event profiling data is incorrect or imprecise.
+
 ### Controls for Dumping and Injecting Programs and Build Options
 
 ##### `OmitProgramNumber` (bool)

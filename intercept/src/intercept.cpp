@@ -1178,8 +1178,7 @@ void CLIntercept::cacheDeviceInfo(
         deviceInfo.NumComputeUnits = deviceComputeUnits;
         deviceInfo.MaxClockFrequency = deviceMaxClockFrequency;
 
-        // By default we will not use the profiling delta.
-        deviceInfo.UseProfilingDelta = false;
+        deviceInfo.HasDeviceAndHostTimer = false;
         deviceInfo.DeviceHostTimeDeltaNS = 0;
 
         // If the device numeric version is OpenCL 2.1 or newer and we have
@@ -1189,17 +1188,15 @@ void CLIntercept::cacheDeviceInfo(
             dispatch().clGetDeviceAndHostTimer &&
             dispatch().clGetHostTimer )
         {
-            cl_int  errorCode = CL_SUCCESS;
-
             cl_ulong    deviceTimeNS = 0;
             cl_ulong    hostTimeNS = 0;
-            errorCode = dispatch().clGetDeviceAndHostTimer(
+            cl_int  errorCode = dispatch().clGetDeviceAndHostTimer(
                 device,
                 &deviceTimeNS,
                 &hostTimeNS);
             if( errorCode == CL_SUCCESS )
             {
-                deviceInfo.UseProfilingDelta = true;
+                deviceInfo.HasDeviceAndHostTimer = true;
                 deviceInfo.DeviceHostTimeDeltaNS = deviceTimeNS - hostTimeNS;
             }
         }
@@ -5310,6 +5307,8 @@ void CLIntercept::addTimingEvent(
     node.FunctionName = functionName;
     node.EnqueueCounter = enqueueCounter;
     node.QueuedTime = queuedTime;
+    node.UseProfilingDelta = false;
+    node.ProfilingDeltaNS = 0;
     node.Kernel = kernel; // Note: no retain, so cannot count on this value...
     node.Event = event;
 
@@ -5323,9 +5322,9 @@ void CLIntercept::addTimingEvent(
         // two timers is relatively inexpensive, and reduces the timer drift, so compute
         // the current delta for each event.
 
-        if( deviceInfo.UseProfilingDelta )
+        if( deviceInfo.HasDeviceAndHostTimer )
         {
-            // These conditions should have been checked for UseProfilingDelta to be true:
+            // These conditions should have been checked for HasDeviceAndHostTimer to be true:
             CLI_ASSERT( deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(2, 1, 0) );
             CLI_ASSERT( dispatch().clGetHostTimer );
 
@@ -5345,20 +5344,19 @@ void CLIntercept::addTimingEvent(
                 ( interceptTimeEndNS - interceptTimeStartNS ) / 2 +
                 ( interceptTimeStartNS - hostTimeNS );
 
+            node.UseProfilingDelta = true;
             node.ProfilingDeltaNS =
                 interceptHostTimeDeltaNS -
                 deviceInfo.DeviceHostTimeDeltaNS;
 
-#if 1
-            logf( "Current Profiling Delta is %lld ns (%.2f us, %.2f ms)\n"
-                "\tIntercept to Host Timer delta: %lld ns (%.2f us, %.2f ms)\n"
-                "\tIntercept Start %llu ns, Intercept End %llu ns (delta %lld ns)\n"
-                "\tHost %llu ns\n",
-                node.ProfilingDeltaNS, node.ProfilingDeltaNS / 1000.0, node.ProfilingDeltaNS / 1000000.0,
-                interceptHostTimeDeltaNS, interceptHostTimeDeltaNS / 1000.0, interceptHostTimeDeltaNS / 1000000.0,
-                interceptTimeStartNS, interceptTimeEndNS, interceptTimeEndNS - interceptTimeStartNS,
-                hostTimeNS );
-#endif
+            //logf( "Current Profiling Delta is %lld ns (%.2f us, %.2f ms)\n"
+            //    "\tIntercept to Host Timer delta: %lld ns (%.2f us, %.2f ms)\n"
+            //    "\tIntercept Start %llu ns, Intercept End %llu ns (delta %lld ns)\n"
+            //    "\tHost %llu ns\n",
+            //    node.ProfilingDeltaNS, node.ProfilingDeltaNS / 1000.0, node.ProfilingDeltaNS / 1000000.0,
+            //    interceptHostTimeDeltaNS, interceptHostTimeDeltaNS / 1000.0, interceptHostTimeDeltaNS / 1000000.0,
+            //    interceptTimeStartNS, interceptTimeEndNS, interceptTimeEndNS - interceptTimeStartNS,
+            //    hostTimeNS );
         }
     }
 
@@ -5795,12 +5793,13 @@ void CLIntercept::checkTimingEvents()
                         node.FunctionName :
                         node.KernelName;
 
-                    const SDeviceInfo&  deviceInfo =
-                        m_DeviceInfoMap[node.Device];
+                    bool useProfilingDelta =
+                        node.UseProfilingDelta &&
+                        !config().ChromePerformanceTimingEstimateQueuedTime;
 
                     chromeTraceEvent(
                         name,
-                        deviceInfo.UseProfilingDelta,
+                        useProfilingDelta,
                         node.ProfilingDeltaNS,
                         node.EnqueueCounter,
                         node.QueueNumber,
@@ -12801,25 +12800,23 @@ void CLIntercept::chromeTraceEvent(
             profilingQueuedTimeNS - startTimeNS :
             estimatedQueuedTimeNS - startTimeNS;
 
-#if 1
-        if( useProfilingDelta )
-        {
-            int64_t deltaNS =
-                profilingQueuedTimeNS - estimatedQueuedTimeNS;
-            logf( "For command %s:\n"
-                "\tcommandQueued is %llu ns (%.2f us)\n"
-                "\testimatedQueuedTimeNS is %llu ns (%.2f us)\n"
-                "\tprofilingQueuedTimeNS is %llu ns (%.2f us)\n"
-                "\testimated time is %s than profiling time\n"
-                "\tdeltaNS is %llu ns (%.2f us)\n",
-                name.c_str(),
-                commandQueued, commandQueued / 1000.0,
-                estimatedQueuedTimeNS, estimatedQueuedTimeNS / 1000.0,
-                profilingQueuedTimeNS, profilingQueuedTimeNS / 1000.0,
-                estimatedQueuedTimeNS > profilingQueuedTimeNS ? "GREATER" : "LESS",
-                deltaNS, deltaNS / 1000.0 );
-        }
-#endif
+        //if( useProfilingDelta )
+        //{
+        //    int64_t deltaNS =
+        //        profilingQueuedTimeNS - estimatedQueuedTimeNS;
+        //    logf( "For command %s:\n"
+        //        "\tcommandQueued is %llu ns (%.2f us)\n"
+        //        "\testimatedQueuedTimeNS is %llu ns (%.2f us)\n"
+        //        "\tprofilingQueuedTimeNS is %llu ns (%.2f us)\n"
+        //        "\testimated time is %s than profiling time\n"
+        //        "\tdeltaNS is %llu ns (%.2f us)\n",
+        //        name.c_str(),
+        //        commandQueued, commandQueued / 1000.0,
+        //        estimatedQueuedTimeNS, estimatedQueuedTimeNS / 1000.0,
+        //        profilingQueuedTimeNS, profilingQueuedTimeNS / 1000.0,
+        //        estimatedQueuedTimeNS > profilingQueuedTimeNS ? "GREATER" : "LESS",
+        //        deltaNS, deltaNS / 1000.0 );
+        //}
 
         const uint64_t  processId = OS().GetProcessID();
 
