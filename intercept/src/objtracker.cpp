@@ -38,8 +38,10 @@ void CObjectTracker::ReportHelper(
     }
 }
 
-void CObjectTracker::writeReport( std::ostream& os ) const
+void CObjectTracker::writeReport( std::ostream& os )
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     os << std::endl;
     ReportHelper( "cl_device_id",       m_Devices,          os );
     ReportHelper( "cl_context",         m_Contexts,         os );

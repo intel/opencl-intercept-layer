@@ -5302,6 +5302,8 @@ void CLIntercept::addTimingEvent(
     // the device name and other device properties as part of the report.
     cacheDeviceInfo( device );
 
+    dispatch().clRetainEvent( event );
+
     node.Device = device;
     node.QueueNumber = m_QueueNumberMap[ queue ];
     node.FunctionName = functionName;

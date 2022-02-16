@@ -2694,7 +2694,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
 #define DEVICE_PERFORMANCE_TIMING_START( pEvent )                           \
     CLIntercept::clock::time_point   queuedTime;                            \
     cl_event    local_event = NULL;                                         \
-    bool        retainAppEvent = true;                                      \
+    bool        isLocalEvent = false;                                       \
     if( pIntercept->config().DevicePerformanceTiming ||                     \
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
@@ -2704,7 +2704,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         if( pEvent == NULL )                                                \
         {                                                                   \
             pEvent = &local_event;                                          \
-            retainAppEvent = false;                                         \
+            isLocalEvent = true;                                            \
         }                                                                   \
     }
 
@@ -2715,17 +2715,9 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
           pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
         ( pEvent != NULL ) )                                                \
     {                                                                       \
-        if( !pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) ||\
-            ( pIntercept->config().DevicePerformanceTimingSkipUnmap &&      \
-              std::string(__FUNCTION__) == "clEnqueueUnmapMemObject" ) )    \
-        {                                                                   \
-            if( retainAppEvent == false )                                   \
-            {                                                               \
-                pIntercept->dispatch().clReleaseEvent( pEvent[0] );         \
-                pEvent = NULL;                                              \
-            }                                                               \
-        }                                                                   \
-        else                                                                \
+        if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) &&\
+            ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
+              std::string(__FUNCTION__) != "clEnqueueUnmapMemObject" ) )    \
         {                                                                   \
             pIntercept->addTimingEvent(                                     \
                 __FUNCTION__,                                               \
@@ -2735,14 +2727,11 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
                 0, NULL, NULL, NULL,                                        \
                 queue,                                                      \
                 pEvent[0] );                                                \
-            if( retainAppEvent )                                            \
-            {                                                               \
-                pIntercept->dispatch().clRetainEvent( pEvent[0] );          \
-            }                                                               \
-            else                                                            \
-            {                                                               \
-                pEvent = NULL;                                              \
-            }                                                               \
+        }                                                                   \
+        if( isLocalEvent )                                                  \
+        {                                                                   \
+            pIntercept->dispatch().clReleaseEvent( pEvent[0] );             \
+            pEvent = NULL;                                                  \
         }                                                                   \
     }
 
@@ -2753,15 +2742,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
           pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
         ( pEvent != NULL ) )                                                \
     {                                                                       \
-        if( !pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) )\
-        {                                                                   \
-            if( retainAppEvent == false )                                   \
-            {                                                               \
-                pIntercept->dispatch().clReleaseEvent( pEvent[0] );         \
-                pEvent = NULL;                                              \
-            }                                                               \
-        }                                                                   \
-        else                                                                \
+        if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) )\
         {                                                                   \
             pIntercept->addTimingEvent(                                     \
                 __FUNCTION__,                                               \
@@ -2771,14 +2752,11 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
                 wd, gwo, gws, lws,                                          \
                 queue,                                                      \
                 pEvent[0] );                                                \
-            if( retainAppEvent )                                            \
-            {                                                               \
-                pIntercept->dispatch().clRetainEvent( pEvent[0] );          \
-            }                                                               \
-            else                                                            \
-            {                                                               \
-                pEvent = NULL;                                              \
-            }                                                               \
+        }                                                                   \
+        if( isLocalEvent )                                                  \
+        {                                                                   \
+            pIntercept->dispatch().clReleaseEvent( pEvent[0] );             \
+            pEvent = NULL;                                                  \
         }                                                                   \
     }
 
