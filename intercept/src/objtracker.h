@@ -6,6 +6,8 @@
 
 #pragma once
 
+#include <mutex>
+
 #include "common.h"
 
 class CObjectTracker
@@ -13,14 +15,15 @@ class CObjectTracker
 public:
     CObjectTracker() {}
 
-    void    writeReport( std::ostream& os ) const;
+    void    writeReport( std::ostream& os );
 
     template<class T>
     void    AddAllocation( T obj )
     {
         if( obj )
         {
-            GetTracker(obj).NumAllocations++;   // todo: atomic?
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            GetTracker(obj).NumAllocations++;
         }
     }
 
@@ -29,6 +32,7 @@ public:
     {
         if( obj )
         {
+            std::lock_guard<std::mutex> lock(m_Mutex);
             GetTracker(obj).NumRetains++;
         }
     }
@@ -38,6 +42,7 @@ public:
     {
         if( obj )
         {
+            std::lock_guard<std::mutex> lock(m_Mutex);
             GetTracker(obj).NumReleases++;
         }
     }
@@ -54,6 +59,8 @@ private:
         size_t  NumRetains;
         size_t  NumReleases;
     };
+
+    std::mutex  m_Mutex;
 
     CTracker    m_Devices;
     CTracker    m_Contexts;
