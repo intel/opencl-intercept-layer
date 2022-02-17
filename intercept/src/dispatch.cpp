@@ -3173,8 +3173,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFlush)(
         CHECK_ERROR( retVal );
         CALL_LOGGING_EXIT( retVal );
 
-        DEVICE_PERFORMANCE_TIMING_CHECK();
-
         return retVal;
     }
 
