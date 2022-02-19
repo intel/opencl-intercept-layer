@@ -12657,33 +12657,24 @@ void CLIntercept::chromeRegisterCommandQueue(
     cl_device_type              deviceType = 0;
     cl_command_queue_properties properties = 0;
 
-    if( errorCode == CL_SUCCESS )
-    {
-        errorCode = dispatch().clGetCommandQueueInfo(
-            queue,
-            CL_QUEUE_DEVICE,
-            sizeof(device),
-            &device,
-            NULL);
-    }
-    if( errorCode == CL_SUCCESS )
-    {
-        errorCode = dispatch().clGetDeviceInfo(
-            device,
-            CL_DEVICE_TYPE,
-            sizeof(deviceType),
-            &deviceType,
-            NULL );
-    }
-    if( errorCode == CL_SUCCESS )
-    {
-        errorCode = dispatch().clGetCommandQueueInfo(
-            queue,
-            CL_QUEUE_PROPERTIES,
-            sizeof(properties),
-            &properties,
-            NULL );
-    }
+    errorCode |= dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_DEVICE,
+        sizeof(device),
+        &device,
+        NULL);
+    errorCode |= dispatch().clGetDeviceInfo(
+        device,
+        CL_DEVICE_TYPE,
+        sizeof(deviceType),
+        &deviceType,
+        NULL );
+    errorCode |= dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_PROPERTIES,
+        sizeof(properties),
+        &properties,
+        NULL );
 
     if( errorCode == CL_SUCCESS )
     {
@@ -12691,42 +12682,31 @@ void CLIntercept::chromeRegisterCommandQueue(
 
         std::string trackName;
 
-        if( deviceType & CL_DEVICE_TYPE_CPU )
-        {
-            trackName += "CPU";
-        }
-        if( deviceType & CL_DEVICE_TYPE_GPU )
-        {
-            trackName += "GPU";
-        }
-        if( deviceType & CL_DEVICE_TYPE_ACCELERATOR )
-        {
-            trackName += "ACC";
-        }
-        if( deviceType & CL_DEVICE_TYPE_CUSTOM )
-        {
-            trackName += "CUSTOM";
-        }
-
         if( properties & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE )
         {
-            trackName += " OOQ";
+            trackName += "OOQ ";
         }
         else
         {
-            trackName += " IOQ";
+            trackName += "IOQ ";
         }
 
         {
-            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " %p", queue );
+            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%p on ", queue );
             trackName = trackName + m_StringBuffer;
         }
+
+        std::string deviceInfo;
+        getDeviceInfoString(
+            1,
+            &device,
+            deviceInfo );
 
         uint64_t    processId = OS().GetProcessID();
         m_InterceptTrace
             << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << processId
             << ", \"tid\":-" << queueNumber
-            << ", \"args\":{\"name\":\"" << trackName
+            << ", \"args\":{\"name\":\"" << trackName << deviceInfo
             << "\"}},\n";
         m_InterceptTrace
             << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << processId
