@@ -1135,6 +1135,22 @@ void CLIntercept::cacheDeviceInfo(
     {
         SDeviceInfo&    deviceInfo = m_DeviceInfoMap[device];
 
+        CSubDeviceInfoMap::iterator iter = m_SubDeviceInfoMap.find( device );
+        if( iter != m_SubDeviceInfoMap.end() )
+        {
+            deviceInfo.ParentDevice = iter->second.ParentDevice;
+            deviceInfo.DeviceIndex = iter->second.SubDeviceIndex;
+            deviceInfo.DeviceCountInPlatform = 1;
+        }
+        else
+        {
+            deviceInfo.ParentDevice = NULL;
+            getDeviceIndexInPlatform(
+                device,
+                deviceInfo.DeviceIndex,
+                deviceInfo.DeviceCountInPlatform );
+        }
+
         char*   deviceName = NULL;
         cl_uint deviceComputeUnits = 0;
         cl_uint deviceMaxClockFrequency = 0;
@@ -1154,6 +1170,12 @@ void CLIntercept::cacheDeviceInfo(
             CL_DEVICE_MAX_CLOCK_FREQUENCY,
             sizeof(deviceMaxClockFrequency),
             &deviceMaxClockFrequency,
+            NULL );
+        dispatch().clGetDeviceInfo(
+            device,
+            CL_DEVICE_TYPE,
+            sizeof(deviceInfo.Type),
+            &deviceInfo.Type,
             NULL );
         if( deviceName )
         {
@@ -1331,6 +1353,52 @@ bool CLIntercept::checkDeviceForExtension(
     }
 
     return supported;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+bool CLIntercept::getDeviceIndexInPlatform(
+    cl_device_id device,
+    size_t& index,
+    size_t& count ) const
+{
+    cl_int  errorCode = CL_SUCCESS;
+
+    cl_platform_id  platform = getPlatform(device);
+
+    cl_uint numDevices = 0;
+    errorCode = dispatch().clGetDeviceIDs(
+        platform,
+        CL_DEVICE_TYPE_ALL,
+        0,
+        NULL,
+        &numDevices );
+
+    bool    found = false;
+    index = 0;
+    count = numDevices;
+
+    if( errorCode == CL_SUCCESS )
+    {
+        std::vector<cl_device_id>   devices(numDevices);
+        errorCode = dispatch().clGetDeviceIDs(
+            platform,
+            CL_DEVICE_TYPE_ALL,
+            numDevices,
+            devices.data(),
+            NULL );
+        if( errorCode == CL_SUCCESS )
+        {
+            auto it = std::find(devices.begin(), devices.end(), device);
+            if( it != devices.end() )
+            {
+                found = true;
+                index = std::distance(devices.begin(), it);
+            }
+        }
+    }
+
+    return found;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5968,6 +6036,53 @@ cl_command_queue CLIntercept::createCommandQueueWithProperties(
     }
 
     return retVal;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::addSubDeviceInfo(
+    const cl_device_id parentDevice,
+    const cl_device_id* devices,
+    cl_uint numSubDevices )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    while( numSubDevices-- )
+    {
+        cl_device_id    device = devices[ numSubDevices ];
+        if( device )
+        {
+            SSubDeviceInfo& subDeviceInfo = m_SubDeviceInfoMap[ device ];
+
+            subDeviceInfo.ParentDevice = parentDevice;
+            subDeviceInfo.SubDeviceIndex = numSubDevices;
+
+            // Currently, information about a device is assumed to be
+            // invariant, though for sub-device handles the information
+            // about a device can change if sub-device handles are recycled.
+            // Since this is expected to occur rarely, for now simply log a
+            // warning if this occurs.
+            if( m_DeviceInfoMap.find(device) != m_DeviceInfoMap.end() )
+            {
+                logf( "Warning: found a recycled sub-device handle %p!\n",
+                    device );
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::checkRemoveDeviceInfo(
+    cl_device_id device )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_uint refCount = getRefCount( device );
+    if( refCount == 1 )
+    {
+        m_SubDeviceInfoMap.erase( device );
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -12696,17 +12811,40 @@ void CLIntercept::chromeRegisterCommandQueue(
             trackName = trackName + m_StringBuffer;
         }
 
-        std::string deviceInfo;
-        getDeviceInfoString(
-            1,
-            &device,
-            deviceInfo );
+        cacheDeviceInfo( device );
+
+        const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
+
+        if( deviceInfo.ParentDevice == NULL &&
+            deviceInfo.DeviceCountInPlatform <= 1)
+        {
+            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%s (%s)",
+                deviceInfo.Name.c_str(),
+                enumName().name_device_type( deviceInfo.Type ).c_str() );
+            trackName = trackName + m_StringBuffer;
+        }
+        else if( deviceInfo.ParentDevice == NULL )
+        {
+            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%s (%s) [device %zu]",
+                deviceInfo.Name.c_str(),
+                enumName().name_device_type( deviceInfo.Type ).c_str(),
+                deviceInfo.DeviceIndex );
+            trackName = trackName + m_StringBuffer;
+        }
+        else
+        {
+            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%s (%s) [sub-device %zu]",
+                deviceInfo.Name.c_str(),
+                enumName().name_device_type( deviceInfo.Type ).c_str(),
+                deviceInfo.DeviceIndex );
+            trackName = trackName + m_StringBuffer;
+        }
 
         uint64_t    processId = OS().GetProcessID();
         m_InterceptTrace
             << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << processId
             << ", \"tid\":-" << queueNumber
-            << ", \"args\":{\"name\":\"" << trackName << deviceInfo
+            << ", \"args\":{\"name\":\"" << trackName
             << "\"}},\n";
         m_InterceptTrace
             << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << processId

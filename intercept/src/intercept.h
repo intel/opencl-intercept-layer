@@ -99,6 +99,10 @@ public:
     bool    checkDeviceForExtension(
                 cl_device_id device,
                 const char* extensionName ) const;
+    bool    getDeviceIndexInPlatform(
+                cl_device_id device,
+                size_t& index,
+                size_t& count ) const;
 
     cl_int  allocateAndGetPlatformInfoString(
                 cl_platform_id platform,
@@ -393,6 +397,13 @@ public:
                 cl_device_id device,
                 const cl_queue_properties* properties,
                 cl_int* errcode_ret );
+
+    void    addSubDeviceInfo(
+                cl_device_id parentDevice,
+                const cl_device_id* subdevices,
+                cl_uint numSubDevices );
+    void    checkRemoveDeviceInfo(
+                cl_device_id device );
 
     void    addKernelInfo(
                 const cl_kernel kernel,
@@ -912,6 +923,18 @@ private:
 
     unsigned int    m_ProgramNumber;
 
+    // This defines a mapping between a sub-device handle and information
+    // about the sub-device.
+
+    struct SSubDeviceInfo
+    {
+        cl_device_id    ParentDevice;
+        cl_uint         SubDeviceIndex;
+    };
+
+    typedef std::map< const cl_device_id, SSubDeviceInfo >  CSubDeviceInfoMap;
+    CSubDeviceInfoMap   m_SubDeviceInfoMap;
+
     // This defines a mapping between the program handle and information
     // about the program.
 
@@ -924,7 +947,7 @@ private:
         uint64_t        OptionsHash;
     };
 
-    typedef std::map< const cl_program, SProgramInfo>   CProgramInfoMap;
+    typedef std::map< const cl_program, SProgramInfo >  CProgramInfoMap;
     CProgramInfoMap m_ProgramInfoMap;
 
     struct SHostTimingStats
@@ -949,6 +972,12 @@ private:
 
     struct SDeviceInfo
     {
+        cl_device_id    ParentDevice;   // null for root devices
+        size_t      DeviceIndex;        // sub-device index or index in platform
+        size_t      DeviceCountInPlatform;  // one for sub-devices
+
+        cl_device_type  Type;
+
         std::string Name;
         std::string NameForReport;
 
