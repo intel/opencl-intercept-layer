@@ -252,6 +252,12 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateSubDevices)(
     {
         GET_ENQUEUE_COUNTER();
 
+        cl_uint local_num_devices_ret = 0;
+        if( num_devices_ret == NULL )
+        {
+            num_devices_ret = &local_num_devices_ret;
+        }
+
         std::string deviceInfo;
         std::string propsStr;
         if( pIntercept->config().CallLogging )
@@ -289,6 +295,16 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateSubDevices)(
             }
         }
         CALL_LOGGING_EXIT( retVal );
+
+        if( retVal == CL_SUCCESS &&
+            out_devices &&
+            num_devices_ret )
+        {
+            pIntercept->addSubDeviceInfo(
+                in_device,
+                out_devices,
+                num_devices_ret[0] );
+        }
 
         return retVal;
     }
@@ -344,6 +360,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
     if( pIntercept && pIntercept->dispatch().clReleaseDevice )
     {
         GET_ENQUEUE_COUNTER();
+
+        pIntercept->checkRemoveDeviceInfo( device );
 
         cl_uint ref_count =
             pIntercept->config().CallLogging ?
@@ -2612,8 +2630,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateKernelsInProgram)(
         }
         CALL_LOGGING_EXIT( retVal, "%s", retString.c_str() );
 
-        if( ( retVal == CL_SUCCESS ) &&
-            ( kernels != NULL ) )
+        if( retVal == CL_SUCCESS &&
+            kernels &&
+            num_kernels_ret )
         {
             pIntercept->addKernelInfo(
                 kernels,
