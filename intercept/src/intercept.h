@@ -87,6 +87,9 @@ public:
 
     void    cacheDeviceInfo(
                 cl_device_id device );
+    void    getDeviceIndexString(
+                cl_device_id device,
+                std::string& str );
     cl_int  getDeviceMajorMinorVersion(
                 cl_device_id device,
                 size_t& majorVersion,
@@ -96,13 +99,13 @@ public:
                 const char* str,
                 size_t& majorVersion,
                 size_t& minorVersion ) const;
+    bool    getDeviceIndex(
+                cl_device_id device,
+                cl_uint& platformIndex,
+                cl_uint& deviceIndex ) const;
     bool    checkDeviceForExtension(
                 cl_device_id device,
                 const char* extensionName ) const;
-    bool    getDeviceIndexInPlatform(
-                cl_device_id device,
-                size_t& index,
-                size_t& count ) const;
 
     cl_int  allocateAndGetPlatformInfoString(
                 cl_platform_id platform,
@@ -973,8 +976,8 @@ private:
     struct SDeviceInfo
     {
         cl_device_id    ParentDevice;   // null for root devices
-        size_t      DeviceIndex;        // sub-device index or index in platform
-        size_t      DeviceCountInPlatform;  // one for sub-devices
+        cl_uint     PlatformIndex;      // zero for sub-devices
+        cl_uint     DeviceIndex;
 
         cl_device_type  Type;
 
