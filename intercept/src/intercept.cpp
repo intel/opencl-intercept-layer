@@ -1139,16 +1139,16 @@ void CLIntercept::cacheDeviceInfo(
         if( iter != m_SubDeviceInfoMap.end() )
         {
             deviceInfo.ParentDevice = iter->second.ParentDevice;
+            deviceInfo.PlatformIndex = 0;
             deviceInfo.DeviceIndex = iter->second.SubDeviceIndex;
-            deviceInfo.DeviceCountInPlatform = 1;
         }
         else
         {
             deviceInfo.ParentDevice = NULL;
-            getDeviceIndexInPlatform(
+            getDeviceIndex(
                 device,
-                deviceInfo.DeviceIndex,
-                deviceInfo.DeviceCountInPlatform );
+                deviceInfo.PlatformIndex,
+                deviceInfo.DeviceIndex );
         }
 
         char*   deviceName = NULL;
@@ -1234,6 +1234,25 @@ void CLIntercept::cacheDeviceInfo(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getDeviceIndexString(
+    cl_device_id device,
+    std::string& str )
+{
+    cacheDeviceInfo( device );
+    str = std::to_string(m_DeviceInfoMap[device].DeviceIndex);
+
+    while( m_DeviceInfoMap[device].ParentDevice != NULL )
+    {
+        device = m_DeviceInfoMap[device].ParentDevice;
+        cacheDeviceInfo( device );
+        str = std::to_string(m_DeviceInfoMap[device].DeviceIndex) + '.' + str;
+    }
+
+    str = std::to_string(m_DeviceInfoMap[device].PlatformIndex) + '.' + str;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 cl_int CLIntercept::getDeviceMajorMinorVersion(
     cl_device_id device,
     size_t& majorVersion,
@@ -1306,6 +1325,80 @@ bool CLIntercept::getMajorMinorVersionFromString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+bool CLIntercept::getDeviceIndex(
+    cl_device_id device,
+    cl_uint& platformIndex,
+    cl_uint& deviceIndex ) const
+{
+    cl_platform_id  platform = getPlatform(device);
+
+    cl_int  errorCode = CL_SUCCESS;
+    bool    foundPlatform = false;
+    bool    foundDevice = false;
+
+    if( errorCode == CL_SUCCESS )
+    {
+        cl_uint numPlatforms = 0;
+        errorCode = dispatch().clGetPlatformIDs(
+            0,
+            NULL,
+            &numPlatforms );
+
+        if( errorCode == CL_SUCCESS )
+        {
+            std::vector<cl_platform_id> platforms(numPlatforms);
+            errorCode = dispatch().clGetPlatformIDs(
+                numPlatforms,
+                platforms.data(),
+                NULL );
+            if( errorCode == CL_SUCCESS )
+            {
+                auto it = std::find(platforms.begin(), platforms.end(), platform);
+                if( it != platforms.end() )
+                {
+                    foundPlatform = true;
+                    platformIndex = (cl_uint)std::distance(platforms.begin(), it);
+                }
+            }
+        }
+    }
+
+    if( errorCode == CL_SUCCESS )
+    {
+        cl_uint numDevices = 0;
+        errorCode = dispatch().clGetDeviceIDs(
+            platform,
+            CL_DEVICE_TYPE_ALL,
+            0,
+            NULL,
+            &numDevices );
+
+        if( errorCode == CL_SUCCESS )
+        {
+            std::vector<cl_device_id>   devices(numDevices);
+            errorCode = dispatch().clGetDeviceIDs(
+                platform,
+                CL_DEVICE_TYPE_ALL,
+                numDevices,
+                devices.data(),
+                NULL );
+            if( errorCode == CL_SUCCESS )
+            {
+                auto it = std::find(devices.begin(), devices.end(), device);
+                if( it != devices.end() )
+                {
+                    foundDevice = true;
+                    deviceIndex = (cl_uint)std::distance(devices.begin(), it);
+                }
+            }
+        }
+    }
+
+    return foundPlatform && foundDevice;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 bool CLIntercept::checkDeviceForExtension(
     cl_device_id device,
     const char* extensionName ) const
@@ -1353,52 +1446,6 @@ bool CLIntercept::checkDeviceForExtension(
     }
 
     return supported;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-bool CLIntercept::getDeviceIndexInPlatform(
-    cl_device_id device,
-    size_t& index,
-    size_t& count ) const
-{
-    cl_int  errorCode = CL_SUCCESS;
-
-    cl_platform_id  platform = getPlatform(device);
-
-    cl_uint numDevices = 0;
-    errorCode = dispatch().clGetDeviceIDs(
-        platform,
-        CL_DEVICE_TYPE_ALL,
-        0,
-        NULL,
-        &numDevices );
-
-    bool    found = false;
-    index = 0;
-    count = numDevices;
-
-    if( errorCode == CL_SUCCESS )
-    {
-        std::vector<cl_device_id>   devices(numDevices);
-        errorCode = dispatch().clGetDeviceIDs(
-            platform,
-            CL_DEVICE_TYPE_ALL,
-            numDevices,
-            devices.data(),
-            NULL );
-        if( errorCode == CL_SUCCESS )
-        {
-            auto it = std::find(devices.begin(), devices.end(), device);
-            if( it != devices.end() )
-            {
-                found = true;
-                index = std::distance(devices.begin(), it);
-            }
-        }
-    }
-
-    return found;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -12799,45 +12846,55 @@ void CLIntercept::chromeRegisterCommandQueue(
 
         if( properties & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE )
         {
-            trackName += "OOQ ";
+            trackName += "OOQ";
         }
         else
         {
-            trackName += "IOQ ";
-        }
-
-        {
-            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%p on ", queue );
-            trackName = trackName + m_StringBuffer;
+            trackName += "IOQ";
         }
 
         cacheDeviceInfo( device );
 
         const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
 
-        if( deviceInfo.ParentDevice == NULL &&
-            deviceInfo.DeviceCountInPlatform <= 1)
         {
-            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%s (%s)",
+            std::string deviceIndexString;
+            getDeviceIndexString(
+                device,
+                deviceIndexString );
+            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " %p.%s %s (%s)",
+                queue,
+                deviceIndexString.c_str(),
                 deviceInfo.Name.c_str(),
                 enumName().name_device_type( deviceInfo.Type ).c_str() );
             trackName = trackName + m_StringBuffer;
         }
-        else if( deviceInfo.ParentDevice == NULL )
+
         {
-            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%s (%s) [device %zu]",
-                deviceInfo.Name.c_str(),
-                enumName().name_device_type( deviceInfo.Type ).c_str(),
-                deviceInfo.DeviceIndex );
-            trackName = trackName + m_StringBuffer;
-        }
-        else
-        {
-            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, "%s (%s) [sub-device %zu]",
-                deviceInfo.Name.c_str(),
-                enumName().name_device_type( deviceInfo.Type ).c_str(),
-                deviceInfo.DeviceIndex );
-            trackName = trackName + m_StringBuffer;
+            cl_int  testError = CL_SUCCESS;
+
+            cl_uint queueFamily = 0;
+            cl_uint queueIndex = 0;
+
+            testError |= dispatch().clGetCommandQueueInfo(
+                queue,
+                CL_QUEUE_FAMILY_INTEL,
+                sizeof(queueFamily),
+                &queueFamily,
+                NULL );
+            testError |= dispatch().clGetCommandQueueInfo(
+                queue,
+                CL_QUEUE_INDEX_INTEL,
+                sizeof(queueFamily),
+                &queueFamily,
+                NULL );
+            if( testError == CL_SUCCESS )
+            {
+                CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " (F:%u I:%u)",
+                    queueFamily,
+                    queueIndex );
+                trackName = trackName + m_StringBuffer;
+            }
         }
 
         uint64_t    processId = OS().GetProcessID();
