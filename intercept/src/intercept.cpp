@@ -12885,8 +12885,8 @@ void CLIntercept::chromeRegisterCommandQueue(
             testError |= dispatch().clGetCommandQueueInfo(
                 queue,
                 CL_QUEUE_INDEX_INTEL,
-                sizeof(queueFamily),
-                &queueFamily,
+                sizeof(queueIndex),
+                &queueIndex,
                 NULL );
             if( testError == CL_SUCCESS )
             {
