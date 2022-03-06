@@ -5089,20 +5089,44 @@ void CLIntercept::dumpProgramBuildLog(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getTimingTagKernel(
+    const cl_kernel kernel,
+    std::string& str )
+{
+    if( kernel )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        str += getShortKernelNameWithHash(kernel);
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::getTimingTagBlocking(
+    const cl_bool blocking,
+    std::string& str )
+{
+    if( blocking == CL_TRUE )
+    {
+        str += "blocking";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::updateHostTimingStats(
     const std::string& functionName,
-    cl_kernel kernel,
+    const std::string& tag,
     clock::time_point start,
     clock::time_point end )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
     std::string key( functionName );
-    if( kernel )
+    if( !tag.empty() )
     {
-        const std::string& kernelName = getShortKernelNameWithHash(kernel);
         key += "( ";
-        key += kernelName;
+        key += tag;
         key += " )";
     }
 
@@ -12756,9 +12780,9 @@ void CLIntercept::ittTraceEvent(
 //
 void CLIntercept::chromeCallLoggingExit(
     const std::string& functionName,
+    const std::string& tag,
     bool includeId,
     const uint64_t enqueueCounter,
-    const cl_kernel kernel,
     clock::time_point tickStart,
     clock::time_point tickEnd )
 {
@@ -12767,11 +12791,10 @@ void CLIntercept::chromeCallLoggingExit(
     std::string name;
     name += functionName;
 
-    if( kernel )
+    if( !tag.empty() )
     {
-        const std::string& kernelName = getShortKernelNameWithHash(kernel);
         name += "( ";
-        name += kernelName;
+        name += tag;
         name += " )";
     }
 
