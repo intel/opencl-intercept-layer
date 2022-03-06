@@ -6378,6 +6378,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
             ADD_EVENT( event ? event[0] : NULL );
+
+            if( blocking_copy )
+            {
+                DEVICE_PERFORMANCE_TIMING_CHECK();
+            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6512,6 +6517,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
             ADD_EVENT( event ? event[0] : NULL );
+
+            if( blocking_map )
+            {
+                DEVICE_PERFORMANCE_TIMING_CHECK();
+            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -9999,6 +10009,11 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
                 ADD_EVENT( event ? event[0] : NULL );
+
+                if( blocking )
+                {
+                    DEVICE_PERFORMANCE_TIMING_CHECK();
+                }
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
