@@ -5426,7 +5426,6 @@ void CLIntercept::addTimingEvent(
     node.QueuedTime = queuedTime;
     node.UseProfilingDelta = false;
     node.ProfilingDeltaNS = 0;
-    node.Kernel = kernel; // Note: no retain, so cannot count on this value...
     node.Event = event;
 
     if( device )

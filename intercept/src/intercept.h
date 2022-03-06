@@ -1064,7 +1064,6 @@ private:
         clock::time_point   QueuedTime;
         bool                UseProfilingDelta;
         int64_t             ProfilingDeltaNS;
-        cl_kernel           Kernel;
         cl_event            Event;
     };
 
