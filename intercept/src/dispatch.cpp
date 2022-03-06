@@ -3301,7 +3301,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
             DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( retVal, event );
+            CALL_LOGGING_EXIT_BLOCKING_EVENT( retVal, blocking_read, event );
             ADD_EVENT( event ? event[0] : NULL );
 
             if( blocking_read )
@@ -3402,7 +3402,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
             DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( retVal, event );
+            CALL_LOGGING_EXIT_BLOCKING_EVENT( retVal, blocking_read, event );
             ADD_EVENT( event ? event[0] : NULL );
 
             if( blocking_read )
@@ -3495,7 +3495,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
             DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( retVal, event );
+            CALL_LOGGING_EXIT_BLOCKING_EVENT( retVal, blocking_write, event );
             ADD_EVENT( event ? event[0] : NULL );
 
             if( blocking_write )
@@ -3596,7 +3596,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
             DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( retVal, event );
+            CALL_LOGGING_EXIT_BLOCKING_EVENT( retVal, blocking_write, event );
             ADD_EVENT( event ? event[0] : NULL );
 
             if( blocking_write )
@@ -3953,7 +3953,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
             DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( retVal, event );
+            CALL_LOGGING_EXIT_BLOCKING_EVENT( retVal, blocking_read, event );
             ADD_EVENT( event ? event[0] : NULL );
 
             if( blocking_read )
@@ -4050,7 +4050,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
             DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( retVal, event );
+            CALL_LOGGING_EXIT_BLOCKING_EVENT( retVal, blocking_write, event );
             ADD_EVENT( event ? event[0] : NULL );
 
             if( blocking_write )
@@ -4432,7 +4432,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                     &map_count,
                     NULL );
             }
-            CALL_LOGGING_EXIT_EVENT( errcode_ret[0], event, "[ map count = %d ] returned %p",
+            CALL_LOGGING_EXIT_BLOCKING_EVENT( errcode_ret[0], blocking_map, event,
+                "[ map count = %d ] returned %p",
                 map_count,
                 retVal );
             ADD_EVENT( event ? event[0] : NULL );
@@ -4557,7 +4558,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                     &map_count,
                     NULL );
             }
-            CALL_LOGGING_EXIT_EVENT( errcode_ret[0], event, "[ map count = %d ] returned %p",
+            CALL_LOGGING_EXIT_BLOCKING_EVENT( errcode_ret[0], blocking_map, event,
+                "[ map count = %d ] returned %p",
                 map_count,
                 retVal );
             ADD_EVENT( event ? event[0] : NULL );
@@ -6376,7 +6378,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
             DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( retVal, event );
+            CALL_LOGGING_EXIT_BLOCKING_EVENT( retVal, blocking_copy, event );
             ADD_EVENT( event ? event[0] : NULL );
 
             if( blocking_copy )
@@ -6515,7 +6517,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
             DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_EVENT( retVal, event );
+            CALL_LOGGING_EXIT_BLOCKING_EVENT( retVal, blocking_map, event );
             ADD_EVENT( event ? event[0] : NULL );
 
             if( blocking_map )
@@ -10003,11 +10005,11 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
                     event_wait_list,
                     event );
 
-                HOST_PERFORMANCE_TIMING_END_BLOCKING( blocking );
-                DEVICE_PERFORMANCE_TIMING_END( queue, event );
+                HOST_PERFORMANCE_TIMING_END_MEMCPY( queue, blocking, dst_ptr, src_ptr );
+                DEVICE_PERFORMANCE_TIMING_END_MEMCPY( queue, event, dst_ptr, src_ptr );
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-                CALL_LOGGING_EXIT_EVENT( retVal, event );
+                CALL_LOGGING_EXIT_MEMCPY_EVENT( retVal, queue, blocking, dst_ptr, src_ptr, event );
                 ADD_EVENT( event ? event[0] : NULL );
 
                 if( blocking )

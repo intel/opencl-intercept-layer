@@ -5089,7 +5089,99 @@ void CLIntercept::dumpProgramBuildLog(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::getTimingTagKernel(
+void CLIntercept::getHostTimingTagBlocking(
+    const cl_bool blocking,
+    std::string& str )
+{
+    if( blocking == CL_TRUE )
+    {
+        str += "blocking";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::getHostTimingTagMemcpy(
+    const cl_command_queue queue,
+    const cl_bool blocking,
+    const void* dst,
+    const void* src,
+    std::string& str )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_platform_id  platform = getPlatform(queue);
+
+    // If we don't have a function pointer for clGetMemAllocINFO, try to
+    // get one.  It's possible that the function pointer exists but
+    // the application hasn't queried for it yet, in which case it won't
+    // be installed into the dispatch table.
+    if( dispatchX(platform).clGetMemAllocInfoINTEL == NULL )
+    {
+        getExtensionFunctionAddress(
+            platform,
+            "clGetMemAllocInfoINTEL" );
+    }
+
+    const auto& dispatchX = this->dispatchX(platform);
+    if( dispatchX.clGetMemAllocInfoINTEL != NULL )
+    {
+        cl_context  context = NULL;
+        dispatch().clGetCommandQueueInfo(
+            queue,
+            CL_QUEUE_CONTEXT,
+            sizeof( context ),
+            &context,
+            NULL );
+
+        if( context )
+        {
+            cl_unified_shared_memory_type_intel dstType = CL_MEM_TYPE_UNKNOWN_INTEL;
+            dispatchX.clGetMemAllocInfoINTEL(
+                context,
+                dst,
+                CL_MEM_ALLOC_TYPE_INTEL,
+                sizeof(dstType),
+                &dstType,
+                NULL );
+            cl_unified_shared_memory_type_intel srcType = CL_MEM_TYPE_UNKNOWN_INTEL;
+            dispatchX.clGetMemAllocInfoINTEL(
+                context,
+                src,
+                CL_MEM_ALLOC_TYPE_INTEL,
+                sizeof(srcType),
+                &srcType,
+                NULL );
+            switch( srcType )
+            {
+            case CL_MEM_TYPE_DEVICE_INTEL:  str += "Dto"; break;
+            case CL_MEM_TYPE_HOST_INTEL:    str += "Hto"; break;
+            case CL_MEM_TYPE_SHARED_INTEL:  str += "Sto"; break;
+            default:                        str += "Mto"; break;
+            }
+            switch( dstType )
+            {
+            case CL_MEM_TYPE_DEVICE_INTEL:  str += "D"; break;
+            case CL_MEM_TYPE_HOST_INTEL:    str += "H"; break;
+            case CL_MEM_TYPE_SHARED_INTEL:  str += "S"; break;
+            default:                        str += "M"; break;
+            }
+        }
+    }
+
+    if( blocking == CL_TRUE )
+    {
+        if( !str.empty() )
+        {
+            str += ", ";
+        }
+        str += "blocking";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::getHostTimingTagKernel(
     const cl_kernel kernel,
     std::string& str )
 {
@@ -5097,18 +5189,6 @@ void CLIntercept::getTimingTagKernel(
     {
         std::lock_guard<std::mutex> lock(m_Mutex);
         str += getShortKernelNameWithHash(kernel);
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::getTimingTagBlocking(
-    const cl_bool blocking,
-    std::string& str )
-{
-    if( blocking == CL_TRUE )
-    {
-        str += "blocking";
     }
 }
 
@@ -5404,30 +5484,89 @@ void CLIntercept::dummyCommandQueue(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::addTimingEvent(
+void CLIntercept::getDeviceTimingTagMemcpy(
     const std::string& functionName,
-    const uint64_t enqueueCounter,
-    const clock::time_point queuedTime,
+    const cl_command_queue queue,
+    const void* dst,
+    const void* src,
+    std::string& str )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    str = functionName;
+
+    cl_platform_id  platform = getPlatform(queue);
+
+    // If we don't have a function pointer for clGetMemAllocINFO, try to
+    // get one.  It's possible that the function pointer exists but
+    // the application hasn't queried for it yet, in which case it won't
+    // be installed into the dispatch table.
+    if( dispatchX(platform).clGetMemAllocInfoINTEL == NULL )
+    {
+        getExtensionFunctionAddress(
+            platform,
+            "clGetMemAllocInfoINTEL" );
+    }
+
+    const auto& dispatchX = this->dispatchX(platform);
+    if( dispatchX.clGetMemAllocInfoINTEL != NULL )
+    {
+        cl_context  context = NULL;
+        dispatch().clGetCommandQueueInfo(
+            queue,
+            CL_QUEUE_CONTEXT,
+            sizeof( context ),
+            &context,
+            NULL );
+
+        if( context )
+        {
+            cl_unified_shared_memory_type_intel dstType = CL_MEM_TYPE_UNKNOWN_INTEL;
+            dispatchX.clGetMemAllocInfoINTEL(
+                context,
+                dst,
+                CL_MEM_ALLOC_TYPE_INTEL,
+                sizeof(dstType),
+                &dstType,
+                NULL );
+            cl_unified_shared_memory_type_intel srcType = CL_MEM_TYPE_UNKNOWN_INTEL;
+            dispatchX.clGetMemAllocInfoINTEL(
+                context,
+                src,
+                CL_MEM_ALLOC_TYPE_INTEL,
+                sizeof(srcType),
+                &srcType,
+                NULL );
+            switch( srcType )
+            {
+            case CL_MEM_TYPE_DEVICE_INTEL:  str += " Dto"; break;
+            case CL_MEM_TYPE_HOST_INTEL:    str += " Hto"; break;
+            case CL_MEM_TYPE_SHARED_INTEL:  str += " Sto"; break;
+            default:                        str += " Mto"; break;
+            }
+            switch( dstType )
+            {
+            case CL_MEM_TYPE_DEVICE_INTEL:  str += "D"; break;
+            case CL_MEM_TYPE_HOST_INTEL:    str += "H"; break;
+            case CL_MEM_TYPE_SHARED_INTEL:  str += "S"; break;
+            default:                        str += "M"; break;
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::getDeviceTimingTagKernel(
+    const cl_command_queue queue,
     const cl_kernel kernel,
     const cl_uint workDim,
     const size_t* gwo,
     const size_t* gws,
     const size_t* lws,
-    cl_command_queue queue,
-    cl_event event )
+    std::string& str )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-
-    if( event == NULL )
-    {
-        logf( "Unexpectedly got a NULL timing event for %s, check for OpenCL errors!\n",
-            functionName.c_str() );
-        return;
-    }
-
-    m_EventList.emplace_back();
-
-    SEventListNode& node = m_EventList.back();
 
     cl_device_id device = NULL;
     dispatch().clGetCommandQueueInfo(
@@ -5441,68 +5580,9 @@ void CLIntercept::addTimingEvent(
     // the device name and other device properties as part of the report.
     cacheDeviceInfo( device );
 
-    dispatch().clRetainEvent( event );
-
-    node.Device = device;
-    node.QueueNumber = m_QueueNumberMap[ queue ];
-    node.FunctionName = functionName;
-    node.EnqueueCounter = enqueueCounter;
-    node.QueuedTime = queuedTime;
-    node.UseProfilingDelta = false;
-    node.ProfilingDeltaNS = 0;
-    node.Event = event;
-
-    if( device )
-    {
-        const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
-
-        // Note: Even though ideally the intercept timer and the host timer should advance
-        // at a consistent rate and hence the delta between the two timers should remain
-        // constant, empirically this does not appear to be the case.  Synchronizing the
-        // two timers is relatively inexpensive, and reduces the timer drift, so compute
-        // the current delta for each event.
-
-        if( deviceInfo.HasDeviceAndHostTimer )
-        {
-            // These conditions should have been checked for HasDeviceAndHostTimer to be true:
-            CLI_ASSERT( deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(2, 1, 0) );
-            CLI_ASSERT( dispatch().clGetHostTimer );
-
-            using ns = std::chrono::nanoseconds;
-            const uint64_t  interceptTimeStartNS =
-                std::chrono::duration_cast<ns>(clock::now().time_since_epoch()).count();
-
-            cl_ulong    hostTimeNS = 0;
-            dispatch().clGetHostTimer(
-                device,
-                &hostTimeNS);
-
-            const uint64_t  interceptTimeEndNS =
-                std::chrono::duration_cast<ns>(clock::now().time_since_epoch()).count();
-
-            const int64_t   interceptHostTimeDeltaNS =
-                ( interceptTimeEndNS - interceptTimeStartNS ) / 2 +
-                ( interceptTimeStartNS - hostTimeNS );
-
-            node.UseProfilingDelta = true;
-            node.ProfilingDeltaNS =
-                interceptHostTimeDeltaNS -
-                deviceInfo.DeviceHostTimeDeltaNS;
-
-            //logf( "Current Profiling Delta is %lld ns (%.2f us, %.2f ms)\n"
-            //    "\tIntercept to Host Timer delta: %lld ns (%.2f us, %.2f ms)\n"
-            //    "\tIntercept Start %llu ns, Intercept End %llu ns (delta %lld ns)\n"
-            //    "\tHost %llu ns\n",
-            //    node.ProfilingDeltaNS, node.ProfilingDeltaNS / 1000.0, node.ProfilingDeltaNS / 1000000.0,
-            //    interceptHostTimeDeltaNS, interceptHostTimeDeltaNS / 1000.0, interceptHostTimeDeltaNS / 1000000.0,
-            //    interceptTimeStartNS, interceptTimeEndNS, interceptTimeEndNS - interceptTimeStartNS,
-            //    hostTimeNS );
-        }
-    }
-
     if( kernel )
     {
-        node.KernelName = getShortKernelNameWithHash(kernel);
+        str += getShortKernelNameWithHash(kernel);
 
         if( config().DevicePerformanceTimeKernelInfoTracking && device )
         {
@@ -5647,7 +5727,7 @@ void CLIntercept::addTimingEvent(
                     ss << " SPILL=" << spill;
                 }
             }
-            node.KernelName += ss.str();
+            str += ss.str();
         }
 
         if( config().DevicePerformanceTimeGWOTracking )
@@ -5674,7 +5754,7 @@ void CLIntercept::addTimingEvent(
                 ss << "NULL";
             }
             ss << " ]";
-            node.KernelName += ss.str();
+            str += ss.str();
         }
 
         if( config().DevicePerformanceTimeGWSTracking && gws )
@@ -5694,7 +5774,7 @@ void CLIntercept::addTimingEvent(
                 ss << " x " << gws[2];
             }
             ss << " ]";
-            node.KernelName += ss.str();
+            str += ss.str();
         }
 
         if( config().DevicePerformanceTimeLWSTracking )
@@ -5789,8 +5869,108 @@ void CLIntercept::addTimingEvent(
                 ss << "NULL";
             }
             ss << " ]";
-            node.KernelName += ss.str();
+            str += ss.str();
         }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::addTimingEvent(
+    const std::string& functionName,
+    const uint64_t enqueueCounter,
+    const clock::time_point queuedTime,
+    const std::string& tag,
+    const cl_command_queue queue,
+    cl_event event )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    if( event == NULL )
+    {
+        logf( "Unexpectedly got a NULL timing event for %s, check for OpenCL errors!\n",
+            functionName.c_str() );
+        return;
+    }
+
+    m_EventList.emplace_back();
+
+    SEventListNode& node = m_EventList.back();
+
+    cl_device_id device = NULL;
+    dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_DEVICE,
+        sizeof(device),
+        &device,
+        NULL );
+
+    // Cache the device info if it's not cached already, since we'll print
+    // the device name and other device properties as part of the report.
+    cacheDeviceInfo( device );
+
+    dispatch().clRetainEvent( event );
+
+    node.Device = device;
+    node.QueueNumber = m_QueueNumberMap[ queue ];
+    node.Name = functionName;
+    node.EnqueueCounter = enqueueCounter;
+    node.QueuedTime = queuedTime;
+    node.UseProfilingDelta = false;
+    node.ProfilingDeltaNS = 0;
+    node.Event = event;
+
+    if( device )
+    {
+        const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
+
+        // Note: Even though ideally the intercept timer and the host timer should advance
+        // at a consistent rate and hence the delta between the two timers should remain
+        // constant, empirically this does not appear to be the case.  Synchronizing the
+        // two timers is relatively inexpensive, and reduces the timer drift, so compute
+        // the current delta for each event.
+
+        if( deviceInfo.HasDeviceAndHostTimer )
+        {
+            // These conditions should have been checked for HasDeviceAndHostTimer to be true:
+            CLI_ASSERT( deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(2, 1, 0) );
+            CLI_ASSERT( dispatch().clGetHostTimer );
+
+            using ns = std::chrono::nanoseconds;
+            const uint64_t  interceptTimeStartNS =
+                std::chrono::duration_cast<ns>(clock::now().time_since_epoch()).count();
+
+            cl_ulong    hostTimeNS = 0;
+            dispatch().clGetHostTimer(
+                device,
+                &hostTimeNS);
+
+            const uint64_t  interceptTimeEndNS =
+                std::chrono::duration_cast<ns>(clock::now().time_since_epoch()).count();
+
+            const int64_t   interceptHostTimeDeltaNS =
+                ( interceptTimeEndNS - interceptTimeStartNS ) / 2 +
+                ( interceptTimeStartNS - hostTimeNS );
+
+            node.UseProfilingDelta = true;
+            node.ProfilingDeltaNS =
+                interceptHostTimeDeltaNS -
+                deviceInfo.DeviceHostTimeDeltaNS;
+
+            //logf( "Current Profiling Delta is %lld ns (%.2f us, %.2f ms)\n"
+            //    "\tIntercept to Host Timer delta: %lld ns (%.2f us, %.2f ms)\n"
+            //    "\tIntercept Start %llu ns, Intercept End %llu ns (delta %lld ns)\n"
+            //    "\tHost %llu ns\n",
+            //    node.ProfilingDeltaNS, node.ProfilingDeltaNS / 1000.0, node.ProfilingDeltaNS / 1000000.0,
+            //    interceptHostTimeDeltaNS, interceptHostTimeDeltaNS / 1000.0, interceptHostTimeDeltaNS / 1000000.0,
+            //    interceptTimeStartNS, interceptTimeEndNS, interceptTimeEndNS - interceptTimeStartNS,
+            //    hostTimeNS );
+        }
+    }
+
+    if( !tag.empty() )
+    {
+        node.Name = tag;
     }
 }
 
@@ -5862,12 +6042,7 @@ void CLIntercept::checkTimingEvents()
                     {
                         cl_ulong delta = commandEnd - commandStart;
 
-                        const std::string&  name =
-                            node.KernelName.empty() ?
-                            node.FunctionName :
-                            node.KernelName;
-
-                        SDeviceTimingStats& deviceTimingStats = m_DeviceTimingStatsMap[node.Device][name];
+                        SDeviceTimingStats& deviceTimingStats = m_DeviceTimingStatsMap[node.Device][node.Name];
 
                         deviceTimingStats.NumberOfCalls++;
                         deviceTimingStats.TotalNS += delta;
@@ -5885,7 +6060,7 @@ void CLIntercept::checkTimingEvents()
 
                             ss << "Device Time for "
                                 //<< "call " << numberOfCalls << " to "
-                                << name << " (enqueue " << node.EnqueueCounter << ") = "
+                                << node.Name << " (enqueue " << node.EnqueueCounter << ") = "
                                 << queuedDelta << " ns (queued -> submit), "
                                 << submitDelta << " ns (submit -> start), "
                                 << delta << " ns (start -> end)\n";
@@ -5899,7 +6074,7 @@ void CLIntercept::checkTimingEvents()
 
                             ss << "Device Timeline for "
                                 //<< "call " << numberOfCalls << " to "
-                                << name << " (enqueue " << node.EnqueueCounter << ") = "
+                                << node.Name << " (enqueue " << node.EnqueueCounter << ") = "
                                 << commandQueued << " ns (queued), "
                                 << commandSubmit << " ns (submit), "
                                 << commandStart << " ns (start), "
@@ -5913,13 +6088,8 @@ void CLIntercept::checkTimingEvents()
 #if defined(USE_ITT)
                 if( config().ITTPerformanceTiming )
                 {
-                    const std::string& name =
-                        node.KernelName.empty() ?
-                        node.FunctionName :
-                        node.KernelName;
-
                     ittTraceEvent(
-                        name,
+                        node.Name,
                         node.Event,
                         node.QueuedTime );
                 }
@@ -5927,17 +6097,12 @@ void CLIntercept::checkTimingEvents()
 
                 if( config().ChromePerformanceTiming )
                 {
-                    const std::string& name =
-                        node.KernelName.empty() ?
-                        node.FunctionName :
-                        node.KernelName;
-
                     bool useProfilingDelta =
                         node.UseProfilingDelta &&
                         !config().ChromePerformanceTimingEstimateQueuedTime;
 
                     chromeTraceEvent(
-                        name,
+                        node.Name,
                         useProfilingDelta,
                         node.ProfilingDeltaNS,
                         node.EnqueueCounter,
@@ -5949,13 +6114,8 @@ void CLIntercept::checkTimingEvents()
 #if defined(USE_MDAPI)
                 if( config().DevicePerfCounterEventBasedSampling )
                 {
-                    const std::string& name =
-                        node.KernelName.empty() ?
-                        node.FunctionName :
-                        node.KernelName;
-
                     getMDAPICountersFromEvent(
-                        name,
+                        node.Name,
                         node.Event );
                 }
 #endif
@@ -5971,7 +6131,7 @@ void CLIntercept::checkTimingEvents()
                 // added it to the list.  Remove the event from the
                 // list.
                 logf( "Unexpectedly got CL_INVALID_EVENT for an event from %s!\n",
-                    node.FunctionName.c_str() );
+                    node.Name.c_str() );
 
                 m_EventList.erase( current );
             }
