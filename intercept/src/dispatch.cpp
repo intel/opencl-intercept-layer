@@ -3218,7 +3218,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFinish)(
         CHECK_ERROR( retVal );
         CALL_LOGGING_EXIT( retVal );
 
+        TOOL_OVERHEAD_TIMING_START();
         DEVICE_PERFORMANCE_TIMING_CHECK();
+        TOOL_OVERHEAD_TIMING_END();
 
         return retVal;
     }

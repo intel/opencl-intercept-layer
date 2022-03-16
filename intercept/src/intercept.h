@@ -2851,6 +2851,47 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
         }                                                                   \
     }
 
+#define TOOL_OVERHEAD_TIMING_START()                                        \
+    CLIntercept::clock::time_point   toolStart, toolEnd;                    \
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        toolStart = CLIntercept::clock::now();                              \
+    }
+
+#define TOOL_OVERHEAD_TIMING_RESET()                                        \
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        toolStart = CLIntercept::clock::now();                              \
+    }
+
+#define TOOL_OVERHEAD_TIMING_END()                                          \
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        toolEnd = CLIntercept::clock::now();                                \
+        if( pIntercept->config().HostPerformanceTiming &&                   \
+            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+        {                                                                   \
+            pIntercept->updateHostTimingStats(                              \
+                "(tool overhead)",                                          \
+                "",                                                         \
+                toolStart,                                                  \
+                toolEnd );                                                  \
+        }                                                                   \
+        if( pIntercept->config().ChromeCallLogging )                        \
+        {                                                                   \
+            pIntercept->chromeCallLoggingExit(                              \
+                "(tool overhead)",                                          \
+                "",                                                         \
+                false,                                                      \
+                0,                                                          \
+                toolStart,                                                  \
+                toolEnd );                                                  \
+        }                                                                   \
+    }
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
