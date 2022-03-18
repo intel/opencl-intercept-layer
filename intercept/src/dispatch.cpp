@@ -9864,11 +9864,11 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
                     event_wait_list,
                     event );
 
-                HOST_PERFORMANCE_TIMING_END();
-                DEVICE_PERFORMANCE_TIMING_END( queue, event );
+                HOST_PERFORMANCE_TIMING_END_MEMFILL( queue, dst_ptr );
+                DEVICE_PERFORMANCE_TIMING_END_MEMFILL( queue, event, dst_ptr );
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-                CALL_LOGGING_EXIT_EVENT( retVal, event );
+                CALL_LOGGING_EXIT_MEMFILL_EVENT( retVal, queue, dst_ptr, event );
                 ADD_EVENT( event ? event[0] : NULL );
             }
 
@@ -9934,11 +9934,11 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
                     event_wait_list,
                     event );
 
-                HOST_PERFORMANCE_TIMING_END();
-                DEVICE_PERFORMANCE_TIMING_END( queue, event );
+                HOST_PERFORMANCE_TIMING_END_MEMFILL( queue, dst_ptr );
+                DEVICE_PERFORMANCE_TIMING_END_MEMFILL( queue, event, dst_ptr );
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-                CALL_LOGGING_EXIT_EVENT( retVal, event );
+                CALL_LOGGING_EXIT_MEMFILL_EVENT( retVal, queue, dst_ptr, event );
                 ADD_EVENT( event ? event[0] : NULL );
             }
 
