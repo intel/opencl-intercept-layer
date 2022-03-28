@@ -354,9 +354,25 @@ public:
                 const cl_program program,
                 const char* options );
 
-    void    updateHostTimingStats(
-                const std::string& functionName ,
+    void    getHostTimingTagBlocking(
+                const cl_bool blocking,
+                std::string& str );
+    void    getHostTimingTagMemfill(
+                const cl_command_queue queue,
+                const void* dst,
+                std::string& str );
+    void    getHostTimingTagMemcpy(
+                const cl_command_queue queue,
+                const cl_bool blocking,
+                const void* dst,
+                const void* src,
+                std::string& str );
+    void    getHostTimingTagKernel(
                 const cl_kernel kernel,
+                std::string& str );
+    void    updateHostTimingStats(
+                const std::string& functionName,
+                const std::string& tag,
                 clock::time_point start,
                 clock::time_point end );
 
@@ -377,16 +393,32 @@ public:
     void    dummyCommandQueue(
                 cl_context context,
                 cl_device_id device );
-    void    addTimingEvent(
+
+    void    getDeviceTimingTagMemfill(
                 const std::string& functionName,
-                const uint64_t enqueueCounter,
-                const clock::time_point queuedTime,
+                const cl_command_queue queue,
+                const void* dst,
+                std::string& str );
+    void    getDeviceTimingTagMemcpy(
+                const std::string& functionName,
+                const cl_command_queue queue,
+                const void* dst,
+                const void* src,
+                std::string& str );
+    void    getDeviceTimingTagKernel(
+                const cl_command_queue queue,
                 const cl_kernel kernel,
                 const cl_uint workDim,
                 const size_t* gwo,
                 const size_t* gws,
                 const size_t* lws,
-                cl_command_queue queue,
+                std::string& str );
+    void    addTimingEvent(
+                const std::string& functionName,
+                const uint64_t enqueueCounter,
+                const clock::time_point queuedTime,
+                const std::string& tag,
+                const cl_command_queue queue,
                 cl_event event );
     void    checkTimingEvents();
 
@@ -788,9 +820,9 @@ public:
 
     void    chromeCallLoggingExit(
                 const std::string& functionName,
+                const std::string& tag,
                 bool includeId,
                 const uint64_t enqueueCounter,
-                const cl_kernel kernel,
                 clock::time_point start,
                 clock::time_point end );
     void    chromeRegisterCommandQueue(
@@ -1058,13 +1090,11 @@ private:
     {
         cl_device_id        Device;
         unsigned int        QueueNumber;
-        std::string         FunctionName;
-        std::string         KernelName;
+        std::string         Name;
         uint64_t            EnqueueCounter;
         clock::time_point   QueuedTime;
         bool                UseProfilingDelta;
         int64_t             ProfilingDeltaNS;
-        cl_kernel           Kernel;
         cl_event            Event;
     };
 
@@ -1824,9 +1854,9 @@ inline CObjectTracker& CLIntercept::objectTracker()
     {                                                                       \
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
+            "",                                                             \
             false,                                                          \
             0,                                                              \
-            NULL,                                                           \
             cpuStart,                                                       \
             cpuEnd );                                                       \
     }                                                                       \
@@ -1845,9 +1875,88 @@ inline CObjectTracker& CLIntercept::objectTracker()
     {                                                                       \
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
+            "",                                                             \
             true,                                                           \
             enqueueCounter,                                                 \
-            NULL,                                                           \
+            cpuStart,                                                       \
+            cpuEnd );                                                       \
+    }                                                                       \
+    ITT_CALL_LOGGING_EXIT();
+
+#define CALL_LOGGING_EXIT_BLOCKING_EVENT(errorCode, _blocking, _event, ...) \
+    if( pIntercept->config().CallLogging )                                  \
+    {                                                                       \
+        pIntercept->callLoggingExit(                                        \
+            __FUNCTION__,                                                   \
+            errorCode,                                                      \
+            _event,                                                         \
+            ##__VA_ARGS__ );                                                \
+    }                                                                       \
+    if( pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        std::string tag;                                                    \
+        pIntercept->getHostTimingTagBlocking(                               \
+            _blocking,                                                      \
+             tag );                                                         \
+        pIntercept->chromeCallLoggingExit(                                  \
+            __FUNCTION__,                                                   \
+            tag,                                                            \
+            true,                                                           \
+            enqueueCounter,                                                 \
+            cpuStart,                                                       \
+            cpuEnd );                                                       \
+    }                                                                       \
+    ITT_CALL_LOGGING_EXIT();
+
+#define CALL_LOGGING_EXIT_MEMFILL_EVENT(errorCode, _queue, _dst, _event, ...)\
+    if( pIntercept->config().CallLogging )                                  \
+    {                                                                       \
+        pIntercept->callLoggingExit(                                        \
+            __FUNCTION__,                                                   \
+            errorCode,                                                      \
+            _event,                                                         \
+            ##__VA_ARGS__ );                                                \
+    }                                                                       \
+    if( pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        std::string tag;                                                    \
+        pIntercept->getHostTimingTagMemfill(                                \
+            _queue,                                                         \
+            _dst,                                                           \
+            tag );                                                          \
+        pIntercept->chromeCallLoggingExit(                                  \
+            __FUNCTION__,                                                   \
+            tag,                                                            \
+            true,                                                           \
+            enqueueCounter,                                                 \
+            cpuStart,                                                       \
+            cpuEnd );                                                       \
+    }                                                                       \
+    ITT_CALL_LOGGING_EXIT();
+
+#define CALL_LOGGING_EXIT_MEMCPY_EVENT(errorCode, _queue, _blocking, _dst, _src, _event, ...) \
+    if( pIntercept->config().CallLogging )                                  \
+    {                                                                       \
+        pIntercept->callLoggingExit(                                        \
+            __FUNCTION__,                                                   \
+            errorCode,                                                      \
+            _event,                                                         \
+            ##__VA_ARGS__ );                                                \
+    }                                                                       \
+    if( pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        std::string tag;                                                    \
+        pIntercept->getHostTimingTagMemcpy(                                 \
+            _queue,                                                         \
+            _blocking,                                                      \
+            _dst,                                                           \
+            _src,                                                           \
+            tag );                                                          \
+        pIntercept->chromeCallLoggingExit(                                  \
+            __FUNCTION__,                                                   \
+            tag,                                                            \
+            true,                                                           \
+            enqueueCounter,                                                 \
             cpuStart,                                                       \
             cpuEnd );                                                       \
     }                                                                       \
@@ -1864,11 +1973,15 @@ inline CObjectTracker& CLIntercept::objectTracker()
     }                                                                       \
     if( pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
+        std::string tag;                                                    \
+        pIntercept->getHostTimingTagKernel(                                     \
+            kernel,                                                         \
+            tag );                                                          \
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
+            tag,                                                            \
             true,                                                           \
             enqueueCounter,                                                 \
-            kernel,                                                         \
             cpuStart,                                                       \
             cpuEnd );                                                       \
     }                                                                       \
@@ -2630,7 +2743,7 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
            ( enqueueCounter <= m_Config.HostPerformanceTimingMaxEnqueue );
 }
 
-#define CPU_PERFORMANCE_TIMING_START()                                      \
+#define HOST_PERFORMANCE_TIMING_START()                                     \
     CLIntercept::clock::time_point   cpuStart, cpuEnd;                      \
     if( pIntercept->config().HostPerformanceTiming ||                       \
         pIntercept->config().ChromeCallLogging )                            \
@@ -2638,7 +2751,7 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
         cpuStart = CLIntercept::clock::now();                               \
     }
 
-#define CPU_PERFORMANCE_TIMING_END()                                        \
+#define HOST_PERFORMANCE_TIMING_END()                                       \
     if( pIntercept->config().HostPerformanceTiming ||                       \
         pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
@@ -2648,13 +2761,13 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
                 __FUNCTION__,                                               \
-                NULL,                                                       \
+                "",                                                         \
                 cpuStart,                                                   \
                 cpuEnd );                                                   \
         }                                                                   \
     }
 
-#define CPU_PERFORMANCE_TIMING_END_KERNEL( _kernel )                        \
+#define HOST_PERFORMANCE_TIMING_END_BLOCKING( _blocking )                   \
     if( pIntercept->config().HostPerformanceTiming ||                       \
         pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
@@ -2662,9 +2775,77 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
         if( pIntercept->config().HostPerformanceTiming &&                   \
             pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
         {                                                                   \
+            std::string tag;                                                \
+            pIntercept->getHostTimingTagBlocking(                           \
+                _blocking,                                                  \
+                 tag );                                                     \
             pIntercept->updateHostTimingStats(                              \
                 __FUNCTION__,                                               \
+                tag,                                                        \
+                cpuStart,                                                   \
+                cpuEnd );                                                   \
+        }                                                                   \
+    }
+
+#define HOST_PERFORMANCE_TIMING_END_MEMFILL( _queue, _dst )                 \
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        cpuEnd = CLIntercept::clock::now();                                 \
+        if( pIntercept->config().HostPerformanceTiming &&                   \
+            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+        {                                                                   \
+            std::string tag;                                                \
+            pIntercept->getHostTimingTagMemfill(                            \
+                _queue,                                                     \
+                _dst,                                                       \
+                tag );                                                      \
+            pIntercept->updateHostTimingStats(                              \
+                __FUNCTION__,                                               \
+                tag,                                                        \
+                cpuStart,                                                   \
+                cpuEnd );                                                   \
+        }                                                                   \
+    }
+
+#define HOST_PERFORMANCE_TIMING_END_MEMCPY( _queue, _blocking, _dst, _src ) \
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        cpuEnd = CLIntercept::clock::now();                                 \
+        if( pIntercept->config().HostPerformanceTiming &&                   \
+            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+        {                                                                   \
+            std::string tag;                                                \
+            pIntercept->getHostTimingTagMemcpy(                             \
+                _queue,                                                     \
+                _blocking,                                                  \
+                _dst,                                                       \
+                _src,                                                       \
+                 tag );                                                     \
+            pIntercept->updateHostTimingStats(                              \
+                __FUNCTION__,                                               \
+                tag,                                                        \
+                cpuStart,                                                   \
+                cpuEnd );                                                   \
+        }                                                                   \
+    }
+
+#define HOST_PERFORMANCE_TIMING_END_KERNEL( _kernel )                       \
+    if( pIntercept->config().HostPerformanceTiming ||                       \
+        pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        cpuEnd = CLIntercept::clock::now();                                 \
+        if( pIntercept->config().HostPerformanceTiming &&                   \
+            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+        {                                                                   \
+            std::string tag;                                                \
+            pIntercept->getHostTimingTagKernel(                             \
                 _kernel,                                                    \
+                 tag );                                                     \
+            pIntercept->updateHostTimingStats(                              \
+                __FUNCTION__,                                               \
+                tag,                                                        \
                 cpuStart,                                                   \
                 cpuEnd );                                                   \
         }                                                                   \
@@ -2755,8 +2936,68 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
                 __FUNCTION__,                                               \
                 enqueueCounter,                                             \
                 queuedTime,                                                 \
-                NULL,                                                       \
-                0, NULL, NULL, NULL,                                        \
+                "",                                                         \
+                queue,                                                      \
+                pEvent[0] );                                                \
+        }                                                                   \
+        if( isLocalEvent )                                                  \
+        {                                                                   \
+            pIntercept->dispatch().clReleaseEvent( pEvent[0] );             \
+            pEvent = NULL;                                                  \
+        }                                                                   \
+    }
+
+#define DEVICE_PERFORMANCE_TIMING_END_MEMFILL( queue, pEvent, dst_ptr )     \
+    if( ( pIntercept->config().DevicePerformanceTiming ||                   \
+          pIntercept->config().ITTPerformanceTiming ||                      \
+          pIntercept->config().ChromePerformanceTiming ||                   \
+          pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
+        ( pEvent != NULL ) )                                                \
+    {                                                                       \
+        if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) )\
+        {                                                                   \
+            std::string tag;                                                \
+            pIntercept->getDeviceTimingTagMemfill(                          \
+                __FUNCTION__,                                               \
+                queue,                                                      \
+                dst_ptr,                                                    \
+                tag );                                                      \
+            pIntercept->addTimingEvent(                                     \
+                __FUNCTION__,                                               \
+                enqueueCounter,                                             \
+                queuedTime,                                                 \
+                tag,                                                        \
+                queue,                                                      \
+                pEvent[0] );                                                \
+        }                                                                   \
+        if( isLocalEvent )                                                  \
+        {                                                                   \
+            pIntercept->dispatch().clReleaseEvent( pEvent[0] );             \
+            pEvent = NULL;                                                  \
+        }                                                                   \
+    }
+
+#define DEVICE_PERFORMANCE_TIMING_END_MEMCPY( queue, pEvent, dst_ptr, src_ptr )\
+    if( ( pIntercept->config().DevicePerformanceTiming ||                   \
+          pIntercept->config().ITTPerformanceTiming ||                      \
+          pIntercept->config().ChromePerformanceTiming ||                   \
+          pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
+        ( pEvent != NULL ) )                                                \
+    {                                                                       \
+        if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) )\
+        {                                                                   \
+            std::string tag;                                                \
+            pIntercept->getDeviceTimingTagMemcpy(                           \
+                __FUNCTION__,                                               \
+                queue,                                                      \
+                dst_ptr,                                                    \
+                src_ptr,                                                    \
+                tag );                                                      \
+            pIntercept->addTimingEvent(                                     \
+                __FUNCTION__,                                               \
+                enqueueCounter,                                             \
+                queuedTime,                                                 \
+                tag,                                                        \
                 queue,                                                      \
                 pEvent[0] );                                                \
         }                                                                   \
@@ -2776,12 +3017,17 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     {                                                                       \
         if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) )\
         {                                                                   \
+            std::string tag;                                                \
+            pIntercept->getDeviceTimingTagKernel(                           \
+                queue,                                                      \
+                kernel,                                                     \
+                wd, gwo, gws, lws,                                          \
+                tag );                                                      \
             pIntercept->addTimingEvent(                                     \
                 __FUNCTION__,                                               \
                 enqueueCounter,                                             \
                 queuedTime,                                                 \
-                kernel,                                                     \
-                wd, gwo, gws, lws,                                          \
+                tag,                                                        \
                 queue,                                                      \
                 pEvent[0] );                                                \
         }                                                                   \
