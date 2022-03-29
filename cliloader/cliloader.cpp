@@ -9,6 +9,10 @@
 
 #include "printcontrols.h"
 
+bool debug = false;
+
+#define DEBUG(_s, ...) if(debug) fprintf(stderr, "[cliloader debug] " _s, ##__VA_ARGS__ );
+
 #if defined(_WIN32)
 
 #include <windows.h>
@@ -51,6 +55,40 @@ static void die(const char *op)
         op,
         description );
     exit(1);
+}
+
+static void getCommandLine(char *argv[], int startArg)
+{
+    std::string rawCommandLine(GetCommandLineA());
+    std::string::size_type startPos = 0;
+
+    // Skip all cliloader arguments.
+    for( int i = 0; i < startArg; i++ )
+    {
+        std::string arg(argv[i]);
+
+        std::string::size_type pos = rawCommandLine.find(arg, startPos);
+        if( pos == std::string::npos )
+        {
+            die("creating child process command line");
+        }
+        else
+        {
+            startPos = pos + arg.length();
+            DEBUG("position after parsing arg '%s' is %zu\n", arg.c_str(), startPos);
+        }
+    }
+
+    // Skip any remaining non-whitespace characters.
+    startPos = rawCommandLine.find_first_of("\t ", startPos);
+    DEBUG("position after skipping non-whitespace characters is %zu\n", startPos);
+
+    // Skip any remaining whitespace characters.
+    startPos = rawCommandLine.find_first_not_of("\t ", startPos);
+    DEBUG("position after skipping whitespace characters is %zu\n", startPos);
+
+    // Everything else should be considered the command line for the child process.
+    commandLine = rawCommandLine.substr(startPos);
 }
 
 #define SETENV( _name, _value ) _putenv_s( _name, _value )
@@ -140,10 +178,6 @@ bool set_LD_LIBRARY_PATH = true;
 bool set_LD_PRELOAD = true;
 
 #endif
-
-bool debug = false;
-
-#define DEBUG(_s, ...) if(debug) fprintf(stderr, "[cliloader debug] " _s, ##__VA_ARGS__ );
 
 // Note: This assumes that the CLIntercept DLL/so is in the same directory
 // as the executable!
@@ -348,12 +382,7 @@ static bool parseArguments(int argc, char *argv[])
         else
         {
 #if defined(_WIN32)
-            // Build command-line string for target application:
-            for (; i < argc; i++)
-            {
-                commandLine += argv[i];
-                commandLine += " ";
-            }
+            getCommandLine(argv, i);
 #else // not Windows
             // Build command line argv for target application:
             appArgs = (char**)malloc((argc - i + 1) * sizeof(char*));
@@ -478,6 +507,7 @@ int main(int argc, char *argv[])
     // The DLL exists and we're able to get the initialization function.
 
     // Create child process in suspended state:
+    DEBUG("creating child process with command line: %s\n", commandLine.c_str());
     PROCESS_INFORMATION pinfo = { 0 };
     STARTUPINFOA sinfo = { 0 };
     sinfo.cb = sizeof(sinfo);
