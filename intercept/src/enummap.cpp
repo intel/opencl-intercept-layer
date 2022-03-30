@@ -1130,6 +1130,10 @@ CEnumNameMap::CEnumNameMap()
     // cl_qcom_ion_host_ptr extension
     ADD_ENUM_NAME( m_cl_int, CL_MEM_ION_HOST_PTR_QCOM );
 
+    // Unofficial MDAPI extension:
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_MDAPI_PROPERTIES_INTEL );
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_MDAPI_CONFIGURATION_INTEL );
+
     // Unofficial kernel profiling extension:
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_KERNEL_PROFILING_MODES_COUNT_INTEL );
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_KERNEL_PROFILING_MODE_INFO_INTEL );
