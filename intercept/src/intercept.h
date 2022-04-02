@@ -2080,15 +2080,23 @@ inline CObjectTracker& CLIntercept::objectTracker()
 #define FINISH_OR_FLUSH_AFTER_ENQUEUE( _command_queue )                     \
     if( pIntercept->config().FinishAfterEnqueue )                           \
     {                                                                       \
-        pIntercept->logFlushOrFinishAfterEnqueueStart(                      \
-            "clFinish",                                                     \
-            __FUNCTION__ );                                                 \
-        cl_int  e = pIntercept->dispatch().clFinish( _command_queue );      \
-        pIntercept->logFlushOrFinishAfterEnqueueEnd(                        \
-            "clFinish",                                                     \
-            __FUNCTION__,                                                   \
-            e );                                                            \
-        pIntercept->checkTimingEvents();                                    \
+        {                                                                   \
+            TOOL_OVERHEAD_TIMING_START();                                   \
+            pIntercept->logFlushOrFinishAfterEnqueueStart(                  \
+                "clFinish",                                                 \
+                __FUNCTION__ );                                             \
+            cl_int  e = pIntercept->dispatch().clFinish( _command_queue );  \
+            pIntercept->logFlushOrFinishAfterEnqueueEnd(                    \
+                "clFinish",                                                 \
+                __FUNCTION__,                                               \
+                e );                                                        \
+            TOOL_OVERHEAD_TIMING_END( "(finish after enqueue)" );           \
+        }                                                                   \
+        {                                                                   \
+            TOOL_OVERHEAD_TIMING_START();                                   \
+            pIntercept->checkTimingEvents();                                \
+            TOOL_OVERHEAD_TIMING_END( "(device timing overhead)" );         \
+        }                                                                   \
     }                                                                       \
     else if( pIntercept->config().FlushAfterEnqueue )                       \
     {                                                                       \
@@ -2859,14 +2867,7 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
         toolStart = CLIntercept::clock::now();                              \
     }
 
-#define TOOL_OVERHEAD_TIMING_RESET()                                        \
-    if( pIntercept->config().HostPerformanceTiming ||                       \
-        pIntercept->config().ChromeCallLogging )                            \
-    {                                                                       \
-        toolStart = CLIntercept::clock::now();                              \
-    }
-
-#define TOOL_OVERHEAD_TIMING_END()                                          \
+#define TOOL_OVERHEAD_TIMING_END( _tag )                                    \
     if( pIntercept->config().HostPerformanceTiming ||                       \
         pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
@@ -2875,7 +2876,7 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
             pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
-                "(tool overhead)",                                          \
+                _tag,                                                       \
                 "",                                                         \
                 toolStart,                                                  \
                 toolEnd );                                                  \
@@ -2883,7 +2884,7 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
         if( pIntercept->config().ChromeCallLogging )                        \
         {                                                                   \
             pIntercept->chromeCallLoggingExit(                              \
-                "(tool overhead)",                                          \
+                _tag,                                                       \
                 "",                                                         \
                 false,                                                      \
                 0,                                                          \
@@ -3086,7 +3087,9 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
         pIntercept->config().DevicePerfCounterTimeBasedSampling )           \
     {                                                                       \
+        TOOL_OVERHEAD_TIMING_START();                                       \
         pIntercept->checkTimingEvents();                                    \
+        TOOL_OVERHEAD_TIMING_END( "(device timing overhead)" );             \
     }
 
 ///////////////////////////////////////////////////////////////////////////////
