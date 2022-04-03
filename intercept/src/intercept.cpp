@@ -2210,6 +2210,8 @@ void CLIntercept::getCommandQueuePropertiesString(
             case CL_QUEUE_SIZE:
             case CL_QUEUE_FAMILY_INTEL:
             case CL_QUEUE_INDEX_INTEL:
+            case CL_QUEUE_MDAPI_PROPERTIES_INTEL:
+            case CL_QUEUE_MDAPI_CONFIGURATION_INTEL:
                 {
                     const cl_uint*  pu = (const cl_uint*)( properties + 1);
                     CLI_SPRINTF( s, 256, "%u", pu[0] );
@@ -3457,7 +3459,7 @@ void CLIntercept::contextCallbackOverrideInit(
         // the context properties for the performance hint enum.  We need to
         // do this anyways to count the number of property pairs.
         bool    foundPerformanceHintEnum = false;
-        int     numProperties = 0;
+        size_t  numProperties = 0;
         if( properties )
         {
             while( properties[ numProperties ] != 0 )
@@ -5321,7 +5323,7 @@ void CLIntercept::createCommandQueueProperties(
                 config().DefaultQueueThrottleHint != 0 &&
                 checkDeviceForExtension( device, "cl_khr_throttle_hints" );
 
-    int numProperties = 0;
+    size_t  numProperties = 0;
     if( addCommandQueuePropertiesEnum )
     {
         numProperties += 2;
@@ -5394,7 +5396,7 @@ void CLIntercept::createCommandQueuePropertiesOverride(
                 config().DefaultQueueThrottleHint != 0 &&
                 checkDeviceForExtension( device, "cl_khr_throttle_hints" );
 
-    int     numProperties = 0;
+    size_t  numProperties = 0;
     if( properties )
     {
         while( properties[ numProperties ] != 0 )
@@ -8001,7 +8003,7 @@ void CLIntercept::usmAllocPropertiesOverride(
 
     bool    addMemFlagsEnum = config().RelaxAllocationLimits != 0;
 
-    int     numProperties = 0;
+    size_t  numProperties = 0;
     if( properties )
     {
         while( properties[ numProperties ] != 0 )

@@ -14,13 +14,12 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-static bool convertPropertiesToOCL1_2(
+static bool convertPropertiesArrayToBitfield(
     const cl_queue_properties* properties,
-    cl_command_queue_properties& ocl1_2_properties )
+    cl_command_queue_properties& propertiesBits )
 {
     if( properties )
     {
-        // Convert properties from array of pairs (OCL2.0) to bitfield (OCL1.2)
         for( int i = 0; properties[ i ] != 0; i += 2 )
         {
             switch( properties[ i ] )
@@ -32,15 +31,11 @@ static bool convertPropertiesToOCL1_2(
                 case CL_QUEUE_PROFILING_ENABLE:
                 case CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE:
                 case CL_QUEUE_PROFILING_ENABLE | CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE:
-                    ocl1_2_properties |= properties[ i + 1 ];
+                    propertiesBits |= properties[ i + 1 ];
                     break;
                 default:
                     return false;
                 }
-                break;
-            case CL_QUEUE_PRIORITY_KHR:
-            case CL_QUEUE_THROTTLE_KHR:
-                // Skip / ignore these properties.
                 break;
             default:
                 return false;
@@ -49,6 +44,95 @@ static bool convertPropertiesToOCL1_2(
     }
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+static void createMDAPICommandQueueProperties(
+    cl_uint configuration,
+    const cl_queue_properties* properties,
+    cl_queue_properties*& pLocalQueueProperties )
+{
+    bool    addMDAPIProperties = true;
+    bool    addMDAPIConfiguration = true;
+
+    size_t  numProperties = 0;
+    if( properties )
+    {
+        while( properties[ numProperties ] != 0 )
+        {
+            switch( properties[ numProperties ] )
+            {
+            case CL_QUEUE_MDAPI_PROPERTIES_INTEL:
+                addMDAPIProperties = false;
+                break;
+            case CL_QUEUE_MDAPI_CONFIGURATION_INTEL:
+                addMDAPIConfiguration = false;
+                break;
+            default:
+                break;
+            }
+            numProperties += 2;
+        }
+    }
+
+    if( addMDAPIProperties )
+    {
+        numProperties += 2;
+    }
+    if( addMDAPIConfiguration )
+    {
+        numProperties += 2;
+    }
+
+    // Allocate a new array of properties.  We need to allocate two
+    // properties for each pair, plus one property for the terminating
+    // zero.
+    pLocalQueueProperties = new cl_queue_properties[ numProperties + 1 ];
+    if( pLocalQueueProperties )
+    {
+        // Copy the old properties array to the new properties array,
+        // if the new properties array exists.
+        numProperties = 0;
+        if( properties )
+        {
+            while( properties[ numProperties ] != 0 )
+            {
+                pLocalQueueProperties[ numProperties ] = properties[ numProperties ];
+                if( properties[ numProperties ] == CL_QUEUE_MDAPI_PROPERTIES_INTEL )
+                {
+                    CLI_ASSERT( addMDAPIProperties == false );
+                    pLocalQueueProperties[ numProperties + 1 ] = CL_QUEUE_MDAPI_ENABLE_INTEL;
+                }
+                else if( properties[ numProperties ] == CL_QUEUE_MDAPI_CONFIGURATION_INTEL )
+                {
+                    CLI_ASSERT( addMDAPIConfiguration == false );
+                    pLocalQueueProperties[ numProperties + 1 ] = configuration;
+                }
+                else
+                {
+                    pLocalQueueProperties[ numProperties + 1 ] =
+                        properties[ numProperties + 1 ];
+                }
+                numProperties += 2;
+            }
+        }
+        if( addMDAPIProperties )
+        {
+            pLocalQueueProperties[ numProperties] = CL_QUEUE_MDAPI_PROPERTIES_INTEL;
+            pLocalQueueProperties[ numProperties + 1 ] = CL_QUEUE_MDAPI_ENABLE_INTEL;
+            numProperties += 2;
+        }
+        if( addMDAPIConfiguration )
+        {
+            pLocalQueueProperties[ numProperties] = CL_QUEUE_MDAPI_CONFIGURATION_INTEL;
+            pLocalQueueProperties[ numProperties + 1 ] = configuration;
+            numProperties += 2;
+        }
+
+        // Add the terminating zero.
+        pLocalQueueProperties[ numProperties ] = 0;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -154,40 +238,37 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
     {
         log( "Metrics discovery is not initialized!\n" );
     }
-    else
+    else if( m_pMDHelper->ActivateMetricSet() )
     {
-        if( m_pMDHelper->ActivateMetricSet() )
-        {
-            cl_int  errorCode = CL_SUCCESS;
-            cl_uint configuration = m_pMDHelper->GetMetricsConfiguration();
-            logf( "Calling clCreatePerfCountersCommandQueueINTEL with configuration %u....\n",
-                configuration);
+        cl_int  errorCode = CL_SUCCESS;
+        cl_uint configuration = m_pMDHelper->GetMetricsConfiguration();
+        logf( "Calling clCreatePerfCountersCommandQueueINTEL with configuration %u....\n",
+            configuration);
 
-            retVal = dispatchX.clCreatePerfCountersCommandQueueINTEL(
-                context,
-                device,
-                properties,
-                configuration,
-                &errorCode );
-            if( retVal == NULL )
-            {
-                logf( "clCreatePerfCountersCommandQueueINTEL returned %s (%d)!\n",
-                    enumName().name( errorCode ).c_str(),
-                    errorCode );
-            }
-            else
-            {
-                log( "clCreatePerfCountersCommandQueueINTEL succeeded.\n" );
-            }
-            if( errcode_ret )
-            {
-                errcode_ret[0] = errorCode;
-            }
+        retVal = dispatchX.clCreatePerfCountersCommandQueueINTEL(
+            context,
+            device,
+            properties,
+            configuration,
+            &errorCode );
+        if( retVal == NULL )
+        {
+            logf( "clCreatePerfCountersCommandQueueINTEL returned %s (%d)!\n",
+                enumName().name( errorCode ).c_str(),
+                errorCode );
         }
         else
         {
-            log( "Metric Discovery: Couldn't activate metric set!\n" );
+            log( "clCreatePerfCountersCommandQueueINTEL succeeded.\n" );
         }
+        if( errcode_ret )
+        {
+            errcode_ret[0] = errorCode;
+        }
+    }
+    else
+    {
+        log( "Metric Discovery: Couldn't activate metric set!\n" );
     }
 
     return retVal;
@@ -203,22 +284,69 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
 {
     cl_command_queue    retVal = NULL;
 
-    // This is a temporary workaround until we have a
-    // clCreatePerfCountersCommandQueueWithPropertiesINTEL API.
-    // It converts the OpenCL 2.0 command queue properties to
-    // OpenCL 1.2 command queue properties, unless an unsupported
-    // command queue property is specified.  If an unsupported
-    // property is specified then we cannot create an MDAPI command
-    // queue.
+    // Some drivers only support creating MDAPI command queues via
+    // clCreatePerfCountersCommandQueueINTEL.  So, for maximum compatibility,
+    // first try to convert the passed-in properties array to a properties
+    // bitfield and use clCreatePerfCountersCommandQueueINTEL.  If this
+    // fails, we will instead try a newer codepath that creates an MDAPI
+    // command queue using new property-value pairs.
 
-    cl_command_queue_properties ocl1_2_properties = 0;
-    if( convertPropertiesToOCL1_2( properties, ocl1_2_properties ) )
+    cl_command_queue_properties propertiesBits = 0;
+    if( convertPropertiesArrayToBitfield( properties, propertiesBits ) )
     {
         retVal = createMDAPICommandQueue(
             context,
             device,
-            ocl1_2_properties,
+            propertiesBits,
             errcode_ret );
+    }
+
+    if( retVal == NULL )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        if( m_pMDHelper == NULL )
+        {
+            log( "Metrics discovery is not initialized!\n" );
+        }
+        else if( m_pMDHelper->ActivateMetricSet() )
+        {
+            cl_int  errorCode = CL_SUCCESS;
+            cl_uint configuration = m_pMDHelper->GetMetricsConfiguration();
+
+            logf( "Creating MDAPI command queue properties for configuration %u....\n",
+                configuration);
+
+            cl_queue_properties*    newProperties = NULL;
+            createMDAPICommandQueueProperties(
+                configuration,
+                properties,
+                newProperties );
+
+            retVal = createCommandQueueWithProperties(
+                context,
+                device,
+                newProperties,
+                &errorCode );
+            if( retVal == NULL )
+            {
+                logf( "MDAPI clCreateCommandQueueWithProperties returned %s (%d)!\n",
+                    enumName().name( errorCode ).c_str(),
+                    errorCode );
+            }
+            else
+            {
+                log( "MDAPI clCreateCommandQueueWithProperties succeeded.\n" );
+            }
+            if( errcode_ret )
+            {
+                errcode_ret[0] = errorCode;
+            }
+        }
+        else
+        {
+            log( "Metric Discovery: Couldn't activate metric set!\n" );
+        }
     }
 
     return retVal;

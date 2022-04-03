@@ -1542,6 +1542,11 @@ cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
     cl_uint*        offsets,
     cl_uint*        values );
 
+#define CL_QUEUE_MDAPI_PROPERTIES_INTEL             0x425E
+#define CL_QUEUE_MDAPI_CONFIGURATION_INTEL          0x425F
+
+#define CL_QUEUE_MDAPI_ENABLE_INTEL                 (1 << 0)
+
 ///////////////////////////////////////////////////////////////////////////////
 // Unofficial kernel profiling extension:
 
