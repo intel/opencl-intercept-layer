@@ -925,6 +925,7 @@ private:
     void    writeReport(
                 std::ostream& os );
 
+    uint64_t        m_ProcessId;
     std::mutex      m_Mutex;
 
     typedef std::map< cl_platform_id, CLdispatchX > CLdispatchXMap;
@@ -3209,14 +3210,13 @@ inline unsigned int CLIntercept::getThreadNumber( uint64_t threadId )
 
         if( m_Config.ChromeCallLogging )
         {
-            uint64_t    processId = OS().GetProcessID();
             m_InterceptTrace
-                << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << processId
+                << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << m_ProcessId
                 << ", \"tid\":" << threadId
                 << ", \"args\":{\"name\":\"Host Thread " << threadId
                 << "\"}},\n";
             m_InterceptTrace
-                << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << processId
+                << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << m_ProcessId
                 << ", \"tid\":" << threadId
                 << ", \"args\":{\"sort_index\":\"" << threadNumber + 10000
                 << "\"}},\n";

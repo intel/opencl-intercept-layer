@@ -104,6 +104,8 @@ void CLIntercept::Delete( CLIntercept*& pIntercept )
 CLIntercept::CLIntercept( void* pGlobalData )
     : m_OS( pGlobalData )
 {
+    m_ProcessId = m_OS.GetProcessID();
+
     m_Dispatch = {0};
     m_DispatchX[NULL] = {0};
 
@@ -392,11 +394,10 @@ bool CLIntercept::init()
         m_InterceptTrace.open( fileName.c_str(), std::ios::out );
         m_InterceptTrace << "[\n";
 
-        uint64_t    processId = OS().GetProcessID();
         uint64_t    threadId = OS().GetThreadID();
         std::string processName = OS().GetProcessName();
         m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"process_name\", \"pid\":" << processId
+            << "{\"ph\":\"M\", \"name\":\"process_name\", \"pid\":" << m_ProcessId
             << ", \"tid\":" << threadId
             << ", \"args\":{\"name\":\"" << processName
             << "\"}},\n";
@@ -581,14 +582,13 @@ bool CLIntercept::init()
     if( m_Config.ChromeCallLogging ||
         m_Config.ChromePerformanceTiming )
     {
-        uint64_t    processId = OS().GetProcessID();
         uint64_t    threadId = OS().GetThreadID();
 
         using us = std::chrono::microseconds;
         uint64_t    usStartTime =
             std::chrono::duration_cast<us>(m_StartTime.time_since_epoch()).count();
         m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"clintercept_start_time\", \"pid\":" << processId
+            << "{\"ph\":\"M\", \"name\":\"clintercept_start_time\", \"pid\":" << m_ProcessId
             << ", \"tid\":" << threadId
             << ", \"args\":{\"start_time\":" << usStartTime
             << "}},\n";
@@ -13075,10 +13075,7 @@ void CLIntercept::chromeCallLoggingExit(
         args << ", \"args\":{\"id\":" << enqueueCounter << "}";
     }
 
-    uint64_t    processId =
-        OS().GetProcessID();
-    uint64_t    threadId =
-        OS().GetThreadID();
+    uint64_t    threadId = OS().GetThreadID();
 
     // This will name the thread if it is not named already.
     getThreadNumber( threadId );
@@ -13090,7 +13087,7 @@ void CLIntercept::chromeCallLoggingExit(
         std::chrono::duration_cast<us>(tickEnd - tickStart).count();
 
     m_InterceptTrace
-        << "{\"ph\":\"X\", \"pid\":" << processId
+        << "{\"ph\":\"X\", \"pid\":" << m_ProcessId
         << ", \"tid\":" << threadId
         << ", \"name\":\"" << name
         << "\", \"ts\":" << usStart
@@ -13190,14 +13187,13 @@ void CLIntercept::chromeRegisterCommandQueue(
             }
         }
 
-        uint64_t    processId = OS().GetProcessID();
         m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << processId
+            << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << m_ProcessId
             << ", \"tid\":-" << queueNumber
             << ", \"args\":{\"name\":\"" << trackName
             << "\"}},\n";
         m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << processId
+            << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << m_ProcessId
             << ", \"tid\":-" << queueNumber
             << ", \"args\":{\"sort_index\":\"" << queueNumber
             << "\"}},\n";
@@ -13286,8 +13282,6 @@ void CLIntercept::chromeTraceEvent(
         //        deltaNS, deltaNS / 1000.0 );
         //}
 
-        const uint64_t  processId = OS().GetProcessID();
-
         if( m_Config.ChromePerformanceTimingInStages )
         {
             const size_t cNumStates = 3;
@@ -13318,7 +13312,7 @@ void CLIntercept::chromeTraceEvent(
                 {
                     m_InterceptTrace
                         << "{\"name\":\"" << name << " " << suffixes[state]
-                        << "\", \"ph\":\"X\", \"pid\":" << processId
+                        << "\", \"ph\":\"X\", \"pid\":" << m_ProcessId
                         << ", \"tid\":\"" << name
                         << "\", \"ts\":" << usStarts[state]
                         << ", \"dur\":" << usDeltas[state]
@@ -13330,7 +13324,7 @@ void CLIntercept::chromeTraceEvent(
                 {
                     m_InterceptTrace
                         << "{\"name\":\"" << name << " " << suffixes[state]
-                        << "\", \"ph\":\"X\", \"pid\":" << processId
+                        << "\", \"ph\":\"X\", \"pid\":" << m_ProcessId
                         << ", \"tid\":" << m_EventsChromeTraced << "." << queueNumber
                         << ", \"ts\":" << usStarts[state]
                         << ", \"dur\":" << usDeltas[state]
@@ -13349,7 +13343,7 @@ void CLIntercept::chromeTraceEvent(
             if( m_Config.ChromePerformanceTimingPerKernel )
             {
                 m_InterceptTrace
-                    << "{\"ph\":\"X\", \"pid\":" << processId
+                    << "{\"ph\":\"X\", \"pid\":" << m_ProcessId
                     << ", \"tid\":\"" << name
                     << "\", \"name\":\"" << name
                     << "\", \"ts\":" << usStart
@@ -13360,7 +13354,7 @@ void CLIntercept::chromeTraceEvent(
             else
             {
                 m_InterceptTrace
-                    << "{\"ph\":\"X\", \"pid\":" << processId
+                    << "{\"ph\":\"X\", \"pid\":" << m_ProcessId
                     << ", \"tid\":-" << queueNumber
                     << ", \"name\":\"" << name
                     << "\", \"ts\":" << usStart
