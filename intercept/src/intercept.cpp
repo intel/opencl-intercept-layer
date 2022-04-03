@@ -13086,18 +13086,9 @@ void CLIntercept::chromeCallLoggingExit(
     uint64_t    usDelta =
         std::chrono::duration_cast<us>(tickEnd - tickStart).count();
 
-#if 1
-    m_InterceptTrace
-        << "{\"ph\":\"X\", \"pid\":" << m_ProcessId
-        << ", \"tid\":" << threadId
-        << ", \"name\":\"" << name
-        << "\", \"ts\":" << usStart
-        << ", \"dur\":" << usDelta
-        << args.str()
-        << "},\n";
-#else
     int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "%s},\n",
+        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
+        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "%s},\n",
         m_ProcessId,
         threadId,
         name.c_str(),
@@ -13105,7 +13096,6 @@ void CLIntercept::chromeCallLoggingExit(
         usDelta,
         args.str().c_str() );
     m_InterceptTrace.write(m_StringBuffer, size);
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
