@@ -6,6 +6,7 @@
 #pragma once
 
 #include <chrono>
+#include <cinttypes>
 #include <fstream>
 #include <list>
 #include <vector>
