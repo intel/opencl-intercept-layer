@@ -259,6 +259,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will writ
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will track the minimum, maximum, and average host CPU time for each OpenCL entry point.  When the process exits, this information will be included in the file "clIntercept\_report.txt".
 
+##### `ToolOverheadTiming` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will include some types of tool overhead in timing reports and some types of logging.
+
 ##### `DevicePerformanceTiming` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will add event profiling to track the minimum, maximum, and average device time for each OpenCL command. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. When the process exits, this information will be included in the file "clIntercept\_report.txt".

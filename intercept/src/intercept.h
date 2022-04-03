@@ -2863,15 +2863,17 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
 
 #define TOOL_OVERHEAD_TIMING_START()                                        \
     CLIntercept::clock::time_point   toolStart, toolEnd;                    \
-    if( pIntercept->config().HostPerformanceTiming ||                       \
-        pIntercept->config().ChromeCallLogging )                            \
+    if( pIntercept->config().ToolOverheadTiming &&                          \
+        ( pIntercept->config().HostPerformanceTiming ||                     \
+          pIntercept->config().ChromeCallLogging ) )                        \
     {                                                                       \
         toolStart = CLIntercept::clock::now();                              \
     }
 
 #define TOOL_OVERHEAD_TIMING_END( _tag )                                    \
-    if( pIntercept->config().HostPerformanceTiming ||                       \
-        pIntercept->config().ChromeCallLogging )                            \
+    if( pIntercept->config().ToolOverheadTiming &&                          \
+        ( pIntercept->config().HostPerformanceTiming ||                     \
+          pIntercept->config().ChromeCallLogging ) )                        \
     {                                                                       \
         toolEnd = CLIntercept::clock::now();                                \
         if( pIntercept->config().HostPerformanceTiming &&                   \
