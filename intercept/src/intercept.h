@@ -2976,6 +2976,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
             ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
               std::string(__FUNCTION__) != "clEnqueueUnmapMemObject" ) )    \
         {                                                                   \
+            TOOL_OVERHEAD_TIMING_START();                                   \
             pIntercept->addTimingEvent(                                     \
                 __FUNCTION__,                                               \
                 enqueueCounter,                                             \
@@ -2983,6 +2984,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
                 "",                                                         \
                 queue,                                                      \
                 pEvent[0] );                                                \
+            TOOL_OVERHEAD_TIMING_END( "(timing event overhead)" );          \
         }                                                                   \
         if( isLocalEvent )                                                  \
         {                                                                   \
@@ -3000,6 +3002,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     {                                                                       \
         if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) )\
         {                                                                   \
+            TOOL_OVERHEAD_TIMING_START();                                   \
             std::string tag;                                                \
             pIntercept->getDeviceTimingTagMemfill(                          \
                 __FUNCTION__,                                               \
@@ -3013,6 +3016,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
                 tag,                                                        \
                 queue,                                                      \
                 pEvent[0] );                                                \
+            TOOL_OVERHEAD_TIMING_END( "(timing event overhead)" );          \
         }                                                                   \
         if( isLocalEvent )                                                  \
         {                                                                   \
@@ -3030,6 +3034,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     {                                                                       \
         if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) )\
         {                                                                   \
+            TOOL_OVERHEAD_TIMING_START();                                   \
             std::string tag;                                                \
             pIntercept->getDeviceTimingTagMemcpy(                           \
                 __FUNCTION__,                                               \
@@ -3044,6 +3049,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
                 tag,                                                        \
                 queue,                                                      \
                 pEvent[0] );                                                \
+            TOOL_OVERHEAD_TIMING_END( "(timing event overhead)" );          \
         }                                                                   \
         if( isLocalEvent )                                                  \
         {                                                                   \
@@ -3061,6 +3067,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     {                                                                       \
         if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) )\
         {                                                                   \
+            TOOL_OVERHEAD_TIMING_START();                                   \
             std::string tag;                                                \
             pIntercept->getDeviceTimingTagKernel(                           \
                 queue,                                                      \
@@ -3074,6 +3081,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
                 tag,                                                        \
                 queue,                                                      \
                 pEvent[0] );                                                \
+            TOOL_OVERHEAD_TIMING_END( "(timing event overhead)" );          \
         }                                                                   \
         if( isLocalEvent )                                                  \
         {                                                                   \

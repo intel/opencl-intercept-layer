@@ -13086,7 +13086,7 @@ void CLIntercept::chromeCallLoggingExit(
     uint64_t    usDelta =
         std::chrono::duration_cast<us>(tickEnd - tickStart).count();
 
-#if 0
+#if 1
     m_InterceptTrace
         << "{\"ph\":\"X\", \"pid\":" << m_ProcessId
         << ", \"tid\":" << threadId
@@ -13322,19 +13322,9 @@ void CLIntercept::chromeTraceEvent(
             {
                 if( m_Config.ChromePerformanceTimingPerKernel )
                 {
-#if 0
-                    m_InterceptTrace
-                        << "{\"name\":\"" << name << " " << suffixes[state]
-                        << "\", \"ph\":\"X\", \"pid\":" << m_ProcessId
-                        << ", \"tid\":\"" << name
-                        << "\", \"ts\":" << usStarts[state]
-                        << ", \"dur\":" << usDeltas[state]
-                        << ", \"cname\":\"" << colours[state]
-                        << "\", \"args\":{\"id\":" << enqueueCounter
-                        << "}},\n";
-#else
                     int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-                        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s %s\",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
+                        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s %s\""
+                        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
                         m_ProcessId,
                         name.c_str(),
                         name.c_str(),
@@ -13344,23 +13334,12 @@ void CLIntercept::chromeTraceEvent(
                         colours[state].c_str(),
                         enqueueCounter );
                     m_InterceptTrace.write(m_StringBuffer, size);
-#endif
                 }
                 else
                 {
-#if 0
-                    m_InterceptTrace
-                        << "{\"name\":\"" << name << " " << suffixes[state]
-                        << "\", \"ph\":\"X\", \"pid\":" << m_ProcessId
-                        << ", \"tid\":" << m_EventsChromeTraced << "." << queueNumber
-                        << ", \"ts\":" << usStarts[state]
-                        << ", \"dur\":" << usDeltas[state]
-                        << ", \"cname\":\"" << colours[state]
-                        << "\", \"args\":{\"id\":" << enqueueCounter
-                        << "}},\n";
-#else
                     int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-                        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%u.%u,\"name\":\"%s %s\",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
+                        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%u.%u,\"name\":\"%s %s\""
+                        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
                         m_ProcessId,
                         m_EventsChromeTraced,
                         queueNumber,
@@ -13371,7 +13350,6 @@ void CLIntercept::chromeTraceEvent(
                         colours[state].c_str(),
                         enqueueCounter );
                     m_InterceptTrace.write(m_StringBuffer, size);
-#endif
                 }
             }
             m_EventsChromeTraced++;
@@ -13383,18 +13361,9 @@ void CLIntercept::chromeTraceEvent(
             const uint64_t  usDelta = ( commandEnd - commandStart ) / 1000;
             if( m_Config.ChromePerformanceTimingPerKernel )
             {
-#if 0
-                m_InterceptTrace
-                    << "{\"ph\":\"X\", \"pid\":" << m_ProcessId
-                    << ", \"tid\":\"" << name
-                    << "\", \"name\":\"" << name
-                    << "\", \"ts\":" << usStart
-                    << ", \"dur\":" << usDelta
-                    << ", \"args\":{\"id\":" << enqueueCounter
-                    << "}},\n";
-#else
                 int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-                    "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s\",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+                    "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s\""
+                    ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
                     m_ProcessId,
                     name.c_str(),
                     name.c_str(),
@@ -13402,22 +13371,12 @@ void CLIntercept::chromeTraceEvent(
                     usDelta,
                     enqueueCounter );
                 m_InterceptTrace.write(m_StringBuffer, size);
-#endif
             }
             else
             {
-#if 0
-                m_InterceptTrace
-                    << "{\"ph\":\"X\", \"pid\":" << m_ProcessId
-                    << ", \"tid\":-" << queueNumber
-                    << ", \"name\":\"" << name
-                    << "\", \"ts\":" << usStart
-                    << ", \"dur\":" << usDelta
-                    << ", \"args\":{\"id\":" << enqueueCounter
-                    << "}},\n";
-#else
                 int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-                    "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"%s\",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+                    "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"%s\""
+                    ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
                     m_ProcessId,
                     queueNumber,
                     name.c_str(),
@@ -13425,7 +13384,6 @@ void CLIntercept::chromeTraceEvent(
                     usDelta,
                     enqueueCounter );
                 m_InterceptTrace.write(m_StringBuffer, size);
-#endif
             }
         }
     }
