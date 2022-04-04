@@ -1976,7 +1976,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
     if( pIntercept->config().ChromeCallLogging )                            \
     {                                                                       \
         std::string tag;                                                    \
-        pIntercept->getHostTimingTagKernel(                                     \
+        pIntercept->getHostTimingTagKernel(                                 \
             kernel,                                                         \
             tag );                                                          \
         pIntercept->chromeCallLoggingExit(                                  \

@@ -13080,6 +13080,13 @@ void CLIntercept::chromeCallLoggingExit(
     uint64_t    usDelta =
         std::chrono::duration_cast<us>(tickEnd - tickStart).count();
 
+    // Notes for the future:
+    // Printing into a pre-allocated string buffer and then writing is
+    // measured to be faster than calling fprintf or stream insertion
+    // operators.
+    // Handling each of these four cases separately eliminates the need
+    // to concatenate strings and reduces overhead.
+
     if( !tag.empty() && includeId )
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
