@@ -13059,22 +13059,6 @@ void CLIntercept::chromeCallLoggingExit(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    std::string name;
-    name += functionName;
-
-    if( !tag.empty() )
-    {
-        name += "( ";
-        name += tag;
-        name += " )";
-    }
-
-    std::ostringstream  args;
-    if( includeId )
-    {
-        args << ",\"args\":{\"id\":" << enqueueCounter << "}";
-    }
-
     uint64_t    threadId = OS().GetThreadID();
 
     // This will name the thread if it is not named already.
@@ -13086,16 +13070,58 @@ void CLIntercept::chromeCallLoggingExit(
     uint64_t    usDelta =
         std::chrono::duration_cast<us>(tickEnd - tickStart).count();
 
-    int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
-        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "%s},\n",
-        m_ProcessId,
-        threadId,
-        name.c_str(),
-        usStart,
-        usDelta,
-        args.str().c_str() );
-    m_InterceptTrace.write(m_StringBuffer, size);
+    if( !tag.empty() && includeId )
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s( %s )\""
+            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+            m_ProcessId,
+            threadId,
+            functionName.c_str(),
+            tag.c_str(),
+            usStart,
+            usDelta,
+            enqueueCounter );
+        m_InterceptTrace.write(m_StringBuffer, size);
+    }
+    else if( !tag.empty() )
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s( %s )\""
+            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
+            m_ProcessId,
+            threadId,
+            functionName.c_str(),
+            tag.c_str(),
+            usStart,
+            usDelta );
+        m_InterceptTrace.write(m_StringBuffer, size);
+    }
+    else if( includeId )
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
+            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+            m_ProcessId,
+            threadId,
+            functionName.c_str(),
+            usStart,
+            usDelta,
+            enqueueCounter );
+        m_InterceptTrace.write(m_StringBuffer, size);
+    }
+    else
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
+            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
+            m_ProcessId,
+            threadId,
+            functionName.c_str(),
+            usStart,
+            usDelta );
+        m_InterceptTrace.write(m_StringBuffer, size);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
