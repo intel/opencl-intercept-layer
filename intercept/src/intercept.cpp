@@ -373,11 +373,15 @@ bool CLIntercept::init()
 
         if( m_Config.AppendFiles )
         {
-            m_InterceptLog.open( fileName.c_str(), std::ios::out | std::ios::app );
+            m_InterceptLog.open(
+                fileName.c_str(),
+                std::ios::out | std::ios::binary | std::ios::app );
         }
         else
         {
-            m_InterceptLog.open( fileName.c_str(), std::ios::out );
+            m_InterceptLog.open(
+                fileName.c_str(),
+                std::ios::out | std::ios::binary );
         }
     }
 
@@ -391,7 +395,9 @@ bool CLIntercept::init()
         fileName += sc_TraceFileName;
 
         OS().MakeDumpDirectories( fileName );
-        m_InterceptTrace.open( fileName.c_str(), std::ios::out );
+        m_InterceptTrace.open(
+            fileName.c_str(),
+            std::ios::out | std::ios::binary );
         m_InterceptTrace << "[\n";
 
         uint64_t    threadId = OS().GetThreadID();
@@ -714,11 +720,15 @@ void CLIntercept::report()
         std::ofstream os;
         if( m_Config.AppendFiles )
         {
-            os.open( filepath, std::ios::out | std::ios::binary | std::ios::app );
+            os.open(
+                filepath,
+                std::ios::out | std::ios::binary | std::ios::app );
         }
         else
         {
-            os.open( filepath, std::ios::out | std::ios::binary );
+            os.open(
+                filepath,
+                std::ios::out | std::ios::binary );
         }
         if( os.good() )
         {
