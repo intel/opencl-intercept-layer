@@ -4417,8 +4417,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                 event,
                 errcode_ret );
 
-            HOST_PERFORMANCE_TIMING_END_BLOCKING( blocking_map );
-            DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
+            HOST_PERFORMANCE_TIMING_END_MAP( blocking_map, map_flags );
+            DEVICE_PERFORMANCE_TIMING_END_MAP( command_queue, event, map_flags );
             DUMP_BUFFER_AFTER_MAP( command_queue, buffer, blocking_map, map_flags, retVal, offset, cb );
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
@@ -4432,7 +4432,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                     &map_count,
                     NULL );
             }
-            CALL_LOGGING_EXIT_BLOCKING_EVENT( errcode_ret[0], blocking_map, event,
+            CALL_LOGGING_EXIT_MAP_EVENT( errcode_ret[0], blocking_map, map_flags, event,
                 "[ map count = %d ] returned %p",
                 map_count,
                 retVal );
@@ -4544,8 +4544,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                 event,
                 errcode_ret );
 
-            HOST_PERFORMANCE_TIMING_END_BLOCKING( blocking_map );
-            DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
+            HOST_PERFORMANCE_TIMING_END_MAP( blocking_map, map_flags );
+            DEVICE_PERFORMANCE_TIMING_END_MAP( command_queue, event, map_flags );
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             if( pIntercept->config().CallLogging )
@@ -4558,7 +4558,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                     &map_count,
                     NULL );
             }
-            CALL_LOGGING_EXIT_BLOCKING_EVENT( errcode_ret[0], blocking_map, event,
+            CALL_LOGGING_EXIT_MAP_EVENT( errcode_ret[0], blocking_map, map_flags, event,
                 "[ map count = %d ] returned %p",
                 map_count,
                 retVal );
@@ -6513,11 +6513,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
                 event_wait_list,
                 event );
 
-            HOST_PERFORMANCE_TIMING_END_BLOCKING( blocking_map );
-            DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
+            HOST_PERFORMANCE_TIMING_END_MAP( blocking_map, map_flags );
+            DEVICE_PERFORMANCE_TIMING_END_MAP( command_queue, event, map_flags );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-            CALL_LOGGING_EXIT_BLOCKING_EVENT( retVal, blocking_map, event );
+            CALL_LOGGING_EXIT_MAP_EVENT( retVal, blocking_map, map_flags, event );
             ADD_EVENT( event ? event[0] : NULL );
 
             if( blocking_map )

@@ -5113,6 +5113,43 @@ void CLIntercept::getHostTimingTagBlocking(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getHostTimingTagMap(
+    const cl_map_flags flags,
+    const cl_bool blocking,
+    std::string& str )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    if( flags & CL_MAP_WRITE_INVALIDATE_REGION )
+    {
+        str += "WI";
+    }
+    else if( flags & CL_MAP_WRITE )
+    {
+        str += "RW";
+    }
+    else if( flags & CL_MAP_READ )
+    {
+        str += "R";
+    }
+
+    if( flags & ~(CL_MAP_READ | CL_MAP_WRITE | CL_MAP_WRITE_INVALIDATE_REGION) )
+    {
+        str += "?";
+    }
+
+    if( blocking == CL_TRUE )
+    {
+        if( !str.empty() )
+        {
+            str += ", ";
+        }
+        str += "blocking";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::getHostTimingTagMemfill(
     const cl_command_queue queue,
     const void* dst,
@@ -5545,6 +5582,40 @@ void CLIntercept::dummyCommandQueue(
                     errorCode );
             }
         }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::getDeviceTimingTagMap(
+    const std::string& functionName,
+    const cl_map_flags flags,
+    std::string& str )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    str = functionName;
+
+    if( flags & CL_MAP_WRITE_INVALIDATE_REGION )
+    {
+        str += "( WI";
+    }
+    else if( flags & CL_MAP_WRITE )
+    {
+        str += "( RW";
+    }
+    else if( flags & CL_MAP_READ )
+    {
+        str += "( R";
+    }
+
+    if( flags & ~(CL_MAP_READ | CL_MAP_WRITE | CL_MAP_WRITE_INVALIDATE_REGION) )
+    {
+        str += "? )";
+    }
+    else
+    {
+        str += " )";
     }
 }
 
