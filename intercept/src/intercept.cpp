@@ -104,6 +104,8 @@ void CLIntercept::Delete( CLIntercept*& pIntercept )
 CLIntercept::CLIntercept( void* pGlobalData )
     : m_OS( pGlobalData )
 {
+    m_ProcessId = m_OS.GetProcessID();
+
     m_Dispatch = {0};
     m_DispatchX[NULL] = {0};
 
@@ -371,11 +373,15 @@ bool CLIntercept::init()
 
         if( m_Config.AppendFiles )
         {
-            m_InterceptLog.open( fileName.c_str(), std::ios::out | std::ios::app );
+            m_InterceptLog.open(
+                fileName.c_str(),
+                std::ios::out | std::ios::binary | std::ios::app );
         }
         else
         {
-            m_InterceptLog.open( fileName.c_str(), std::ios::out );
+            m_InterceptLog.open(
+                fileName.c_str(),
+                std::ios::out | std::ios::binary );
         }
     }
 
@@ -389,14 +395,15 @@ bool CLIntercept::init()
         fileName += sc_TraceFileName;
 
         OS().MakeDumpDirectories( fileName );
-        m_InterceptTrace.open( fileName.c_str(), std::ios::out );
+        m_InterceptTrace.open(
+            fileName.c_str(),
+            std::ios::out | std::ios::binary );
         m_InterceptTrace << "[\n";
 
-        uint64_t    processId = OS().GetProcessID();
         uint64_t    threadId = OS().GetThreadID();
         std::string processName = OS().GetProcessName();
         m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"process_name\", \"pid\":" << processId
+            << "{\"ph\":\"M\", \"name\":\"process_name\", \"pid\":" << m_ProcessId
             << ", \"tid\":" << threadId
             << ", \"args\":{\"name\":\"" << processName
             << "\"}},\n";
@@ -581,14 +588,13 @@ bool CLIntercept::init()
     if( m_Config.ChromeCallLogging ||
         m_Config.ChromePerformanceTiming )
     {
-        uint64_t    processId = OS().GetProcessID();
         uint64_t    threadId = OS().GetThreadID();
 
         using us = std::chrono::microseconds;
         uint64_t    usStartTime =
             std::chrono::duration_cast<us>(m_StartTime.time_since_epoch()).count();
         m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"clintercept_start_time\", \"pid\":" << processId
+            << "{\"ph\":\"M\", \"name\":\"clintercept_start_time\", \"pid\":" << m_ProcessId
             << ", \"tid\":" << threadId
             << ", \"args\":{\"start_time\":" << usStartTime
             << "}},\n";
@@ -714,11 +720,15 @@ void CLIntercept::report()
         std::ofstream os;
         if( m_Config.AppendFiles )
         {
-            os.open( filepath, std::ios::out | std::ios::binary | std::ios::app );
+            os.open(
+                filepath,
+                std::ios::out | std::ios::binary | std::ios::app );
         }
         else
         {
-            os.open( filepath, std::ios::out | std::ios::binary );
+            os.open(
+                filepath,
+                std::ios::out | std::ios::binary );
         }
         if( os.good() )
         {
@@ -13061,26 +13071,7 @@ void CLIntercept::chromeCallLoggingExit(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    std::string name;
-    name += functionName;
-
-    if( !tag.empty() )
-    {
-        name += "( ";
-        name += tag;
-        name += " )";
-    }
-
-    std::ostringstream  args;
-    if( includeId )
-    {
-        args << ", \"args\":{\"id\":" << enqueueCounter << "}";
-    }
-
-    uint64_t    processId =
-        OS().GetProcessID();
-    uint64_t    threadId =
-        OS().GetThreadID();
+    uint64_t    threadId = OS().GetThreadID();
 
     // This will name the thread if it is not named already.
     getThreadNumber( threadId );
@@ -13091,14 +13082,65 @@ void CLIntercept::chromeCallLoggingExit(
     uint64_t    usDelta =
         std::chrono::duration_cast<us>(tickEnd - tickStart).count();
 
-    m_InterceptTrace
-        << "{\"ph\":\"X\", \"pid\":" << processId
-        << ", \"tid\":" << threadId
-        << ", \"name\":\"" << name
-        << "\", \"ts\":" << usStart
-        << ", \"dur\":" << usDelta
-        << args.str()
-        << "},\n";
+    // Notes for the future:
+    // Printing into a pre-allocated string buffer and then writing is
+    // measured to be faster than calling fprintf or stream insertion
+    // operators.
+    // Handling each of these four cases separately eliminates the need
+    // to concatenate strings and reduces overhead.
+
+    if( !tag.empty() && includeId )
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s( %s )\""
+            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+            m_ProcessId,
+            threadId,
+            functionName.c_str(),
+            tag.c_str(),
+            usStart,
+            usDelta,
+            enqueueCounter );
+        m_InterceptTrace.write(m_StringBuffer, size);
+    }
+    else if( !tag.empty() )
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s( %s )\""
+            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
+            m_ProcessId,
+            threadId,
+            functionName.c_str(),
+            tag.c_str(),
+            usStart,
+            usDelta );
+        m_InterceptTrace.write(m_StringBuffer, size);
+    }
+    else if( includeId )
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
+            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+            m_ProcessId,
+            threadId,
+            functionName.c_str(),
+            usStart,
+            usDelta,
+            enqueueCounter );
+        m_InterceptTrace.write(m_StringBuffer, size);
+    }
+    else
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
+            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
+            m_ProcessId,
+            threadId,
+            functionName.c_str(),
+            usStart,
+            usDelta );
+        m_InterceptTrace.write(m_StringBuffer, size);
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -13192,14 +13234,13 @@ void CLIntercept::chromeRegisterCommandQueue(
             }
         }
 
-        uint64_t    processId = OS().GetProcessID();
         m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << processId
+            << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << m_ProcessId
             << ", \"tid\":-" << queueNumber
             << ", \"args\":{\"name\":\"" << trackName
             << "\"}},\n";
         m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << processId
+            << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << m_ProcessId
             << ", \"tid\":-" << queueNumber
             << ", \"args\":{\"sort_index\":\"" << queueNumber
             << "\"}},\n";
@@ -13288,8 +13329,6 @@ void CLIntercept::chromeTraceEvent(
         //        deltaNS, deltaNS / 1000.0 );
         //}
 
-        const uint64_t  processId = OS().GetProcessID();
-
         if( m_Config.ChromePerformanceTimingInStages )
         {
             const size_t cNumStates = 3;
@@ -13318,27 +13357,34 @@ void CLIntercept::chromeTraceEvent(
             {
                 if( m_Config.ChromePerformanceTimingPerKernel )
                 {
-                    m_InterceptTrace
-                        << "{\"name\":\"" << name << " " << suffixes[state]
-                        << "\", \"ph\":\"X\", \"pid\":" << processId
-                        << ", \"tid\":\"" << name
-                        << "\", \"ts\":" << usStarts[state]
-                        << ", \"dur\":" << usDeltas[state]
-                        << ", \"cname\":\"" << colours[state]
-                        << "\", \"args\":{\"id\":" << enqueueCounter
-                        << "}},\n";
+                    int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+                        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s %s\""
+                        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
+                        m_ProcessId,
+                        name.c_str(),
+                        name.c_str(),
+                        suffixes[state].c_str(),
+                        usStarts[state],
+                        usDeltas[state],
+                        colours[state].c_str(),
+                        enqueueCounter );
+                    m_InterceptTrace.write(m_StringBuffer, size);
                 }
                 else
                 {
-                    m_InterceptTrace
-                        << "{\"name\":\"" << name << " " << suffixes[state]
-                        << "\", \"ph\":\"X\", \"pid\":" << processId
-                        << ", \"tid\":" << m_EventsChromeTraced << "." << queueNumber
-                        << ", \"ts\":" << usStarts[state]
-                        << ", \"dur\":" << usDeltas[state]
-                        << ", \"cname\":\"" << colours[state]
-                        << "\", \"args\":{\"id\":" << enqueueCounter
-                        << "}},\n";
+                    int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+                        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%u.%u,\"name\":\"%s %s\""
+                        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
+                        m_ProcessId,
+                        m_EventsChromeTraced,
+                        queueNumber,
+                        name.c_str(),
+                        suffixes[state].c_str(),
+                        usStarts[state],
+                        usDeltas[state],
+                        colours[state].c_str(),
+                        enqueueCounter );
+                    m_InterceptTrace.write(m_StringBuffer, size);
                 }
             }
             m_EventsChromeTraced++;
@@ -13350,25 +13396,29 @@ void CLIntercept::chromeTraceEvent(
             const uint64_t  usDelta = ( commandEnd - commandStart ) / 1000;
             if( m_Config.ChromePerformanceTimingPerKernel )
             {
-                m_InterceptTrace
-                    << "{\"ph\":\"X\", \"pid\":" << processId
-                    << ", \"tid\":\"" << name
-                    << "\", \"name\":\"" << name
-                    << "\", \"ts\":" << usStart
-                    << ", \"dur\":" << usDelta
-                    << ", \"args\":{\"id\":" << enqueueCounter
-                    << "}},\n";
+                int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+                    "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s\""
+                    ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+                    m_ProcessId,
+                    name.c_str(),
+                    name.c_str(),
+                    usStart,
+                    usDelta,
+                    enqueueCounter );
+                m_InterceptTrace.write(m_StringBuffer, size);
             }
             else
             {
-                m_InterceptTrace
-                    << "{\"ph\":\"X\", \"pid\":" << processId
-                    << ", \"tid\":-" << queueNumber
-                    << ", \"name\":\"" << name
-                    << "\", \"ts\":" << usStart
-                    << ", \"dur\":" << usDelta
-                    << ", \"args\":{\"id\":" << enqueueCounter
-                    << "}},\n";
+                int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+                    "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"%s\""
+                    ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+                    m_ProcessId,
+                    queueNumber,
+                    name.c_str(),
+                    usStart,
+                    usDelta,
+                    enqueueCounter );
+                m_InterceptTrace.write(m_StringBuffer, size);
             }
         }
     }

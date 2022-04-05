@@ -201,7 +201,7 @@ void CLIntercept::initCustomPerfCounters()
 
             OS().MakeDumpDirectories( fileName );
 
-            m_MetricDump.open( fileName.c_str(), std::ios::out );
+            m_MetricDump.open( fileName.c_str(), std::ios::out | std::ios::binary );
 
             m_pMDHelper->PrintMetricNames( m_MetricDump );
             m_pMDHelper->PrintMetricUnits( m_MetricDump );
