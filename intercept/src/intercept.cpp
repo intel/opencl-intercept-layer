@@ -2293,15 +2293,23 @@ void CLIntercept::getMemPropertiesString(
                 {
                     ++properties;
                     str += "{ ";
-                    do
+                    while( true )
                     {
                         if( *properties == CL_DEVICE_HANDLE_LIST_END_KHR )
                         {
                             str += "CL_DEVICE_HANDLE_LIST_END_KHR";
+                            properties++;
+                            break;
+                        }
+                        else if( *properties == 0x2052 )
+                        {
+                            str += "CL_DEVICE_HANDLE_LIST_END_KHR_0x2502";
+                            properties++;
+                            break;
                         }
                         else
                         {
-                            auto pDevice = (const cl_device_id*)properties;
+                            auto pDevice = (const cl_device_id*)properties++;
                             std::string deviceInfo;
                             getDeviceInfoString(
                                 1,
@@ -2309,10 +2317,8 @@ void CLIntercept::getMemPropertiesString(
                                 deviceInfo );
                             str += deviceInfo;
                             str += ", ";
-
                         }
                     }
-                    while( *properties++ != CL_DEVICE_HANDLE_LIST_END_KHR );
                     str += " }";
                 }
                 break;
@@ -2392,15 +2398,23 @@ void CLIntercept::getSemaphorePropertiesString(
                 {
                     ++properties;
                     str += "{ ";
-                    do
+                    while( true )
                     {
                         if( *properties == CL_DEVICE_HANDLE_LIST_END_KHR )
                         {
                             str += "CL_DEVICE_HANDLE_LIST_END_KHR";
+                            properties++;
+                            break;
+                        }
+                        else if( *properties == 0x2052 )
+                        {
+                            str += "CL_DEVICE_HANDLE_LIST_END_KHR_0x2502";
+                            properties++;
+                            break;
                         }
                         else
                         {
-                            auto pDevice = (const cl_device_id*)properties;
+                            auto pDevice = (const cl_device_id*)properties++;
                             std::string deviceInfo;
                             getDeviceInfoString(
                                 1,
@@ -2408,10 +2422,8 @@ void CLIntercept::getSemaphorePropertiesString(
                                 deviceInfo );
                             str += deviceInfo;
                             str += ", ";
-
                         }
                     }
-                    while( *properties++ != CL_DEVICE_HANDLE_LIST_END_KHR );
                     str += " }";
                 }
                 break;
