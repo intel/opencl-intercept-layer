@@ -4401,6 +4401,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CHECK_ERROR_INIT( errcode_ret );
+            GET_TIMING_TAGS_MAP( blocking_map, map_flags );
             HOST_PERFORMANCE_TIMING_START();
 
             ITT_ADD_PARAM_AS_METADATA( blocking_map );
@@ -4417,8 +4418,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                 event,
                 errcode_ret );
 
-            HOST_PERFORMANCE_TIMING_END_MAP( blocking_map, map_flags );
-            DEVICE_PERFORMANCE_TIMING_END_MAP( command_queue, event, map_flags );
+            HOST_PERFORMANCE_TIMING_END_WITH_TAG();
+            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, event );
             DUMP_BUFFER_AFTER_MAP( command_queue, buffer, blocking_map, map_flags, retVal, offset, cb );
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
@@ -4526,6 +4527,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
             CHECK_ERROR_INIT( errcode_ret );
+            GET_TIMING_TAGS_MAP( blocking_map, map_flags );
             HOST_PERFORMANCE_TIMING_START();
 
             ITT_ADD_PARAM_AS_METADATA( blocking_map );
@@ -4544,8 +4546,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                 event,
                 errcode_ret );
 
-            HOST_PERFORMANCE_TIMING_END_MAP( blocking_map, map_flags );
-            DEVICE_PERFORMANCE_TIMING_END_MAP( command_queue, event, map_flags );
+            HOST_PERFORMANCE_TIMING_END_WITH_TAG();
+            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, event );
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             if( pIntercept->config().CallLogging )
@@ -6501,6 +6503,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
                 eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             DEVICE_PERFORMANCE_TIMING_START( event );
+            GET_TIMING_TAGS_MAP( blocking_map, map_flags );
             HOST_PERFORMANCE_TIMING_START();
 
             retVal = pIntercept->dispatch().clEnqueueSVMMap(
@@ -6513,8 +6516,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
                 event_wait_list,
                 event );
 
-            HOST_PERFORMANCE_TIMING_END_MAP( blocking_map, map_flags );
-            DEVICE_PERFORMANCE_TIMING_END_MAP( command_queue, event, map_flags );
+            HOST_PERFORMANCE_TIMING_END_WITH_TAG();
+            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_MAP_EVENT( retVal, blocking_map, map_flags, event );

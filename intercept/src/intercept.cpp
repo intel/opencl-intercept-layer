@@ -5113,40 +5113,48 @@ void CLIntercept::getHostTimingTagBlocking(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::getHostTimingTagMap(
+void CLIntercept::getTimingTagsMap(
+    const std::string& functionName,
     const cl_map_flags flags,
     const cl_bool blocking,
-    std::string& str )
+    std::string& hostTag,
+    std::string& deviceTag )
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
+    // Note: we do not currently need a lock for this function.
 
     if( flags & CL_MAP_WRITE_INVALIDATE_REGION )
     {
-        str += "WI";
+        hostTag += "WI";
     }
     else if( flags & CL_MAP_WRITE )
     {
-        str += "RW";
+        hostTag += "RW";
     }
     else if( flags & CL_MAP_READ )
     {
-        str += "R";
+        hostTag += "R";
     }
 
     if( flags & ~(CL_MAP_READ | CL_MAP_WRITE | CL_MAP_WRITE_INVALIDATE_REGION) )
     {
-        str += "?";
+        hostTag += "?";
     }
+
+    deviceTag = functionName;
+    deviceTag += "( ";
+    deviceTag += hostTag;
+    deviceTag += " )";
 
     if( blocking == CL_TRUE )
     {
-        if( !str.empty() )
+        if( !hostTag.empty() )
         {
-            str += ", ";
+            hostTag += ", ";
         }
-        str += "blocking";
+        hostTag += "blocking";
     }
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -5582,40 +5590,6 @@ void CLIntercept::dummyCommandQueue(
                     errorCode );
             }
         }
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::getDeviceTimingTagMap(
-    const std::string& functionName,
-    const cl_map_flags flags,
-    std::string& str )
-{
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
-    str = functionName;
-
-    if( flags & CL_MAP_WRITE_INVALIDATE_REGION )
-    {
-        str += "( WI";
-    }
-    else if( flags & CL_MAP_WRITE )
-    {
-        str += "( RW";
-    }
-    else if( flags & CL_MAP_READ )
-    {
-        str += "( R";
-    }
-
-    if( flags & ~(CL_MAP_READ | CL_MAP_WRITE | CL_MAP_WRITE_INVALIDATE_REGION) )
-    {
-        str += "? )";
-    }
-    else
-    {
-        str += " )";
     }
 }
 
