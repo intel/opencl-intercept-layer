@@ -9997,6 +9997,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
                     size,
                     eventWaitListString.c_str() );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+                GET_TIMING_TAGS_MEMCPY( queue, blocking, dst_ptr, src_ptr );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 HOST_PERFORMANCE_TIMING_START();
 
@@ -10010,11 +10011,11 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
                     event_wait_list,
                     event );
 
-                HOST_PERFORMANCE_TIMING_END_MEMCPY( queue, blocking, dst_ptr, src_ptr );
-                DEVICE_PERFORMANCE_TIMING_END_MEMCPY( queue, event, dst_ptr, src_ptr );
+                HOST_PERFORMANCE_TIMING_END_WITH_TAG();
+                DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( queue, event );
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
-                CALL_LOGGING_EXIT_MEMCPY_EVENT( retVal, queue, blocking, dst_ptr, src_ptr, event );
+                CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
                 ADD_EVENT( event ? event[0] : NULL );
 
                 if( blocking )

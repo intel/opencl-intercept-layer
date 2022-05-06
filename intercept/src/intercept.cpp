@@ -5218,12 +5218,14 @@ void CLIntercept::getTimingTagsMemfill(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::getHostTimingTagMemcpy(
+void CLIntercept::getTimingTagsMemcpy(
+    const std::string& functionName,
     const cl_command_queue queue,
     const cl_bool blocking,
     const void* dst,
     const void* src,
-    std::string& str )
+    std::string& hostTag,
+    std::string& deviceTag )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -5271,28 +5273,33 @@ void CLIntercept::getHostTimingTagMemcpy(
                 NULL );
             switch( srcType )
             {
-            case CL_MEM_TYPE_DEVICE_INTEL:  str += "Dto"; break;
-            case CL_MEM_TYPE_HOST_INTEL:    str += "Hto"; break;
-            case CL_MEM_TYPE_SHARED_INTEL:  str += "Sto"; break;
-            default:                        str += "Mto"; break;
+            case CL_MEM_TYPE_DEVICE_INTEL:  hostTag += "Dto"; break;
+            case CL_MEM_TYPE_HOST_INTEL:    hostTag += "Hto"; break;
+            case CL_MEM_TYPE_SHARED_INTEL:  hostTag += "Sto"; break;
+            default:                        hostTag += "Mto"; break;
             }
             switch( dstType )
             {
-            case CL_MEM_TYPE_DEVICE_INTEL:  str += "D"; break;
-            case CL_MEM_TYPE_HOST_INTEL:    str += "H"; break;
-            case CL_MEM_TYPE_SHARED_INTEL:  str += "S"; break;
-            default:                        str += "M"; break;
+            case CL_MEM_TYPE_DEVICE_INTEL:  hostTag += "D"; break;
+            case CL_MEM_TYPE_HOST_INTEL:    hostTag += "H"; break;
+            case CL_MEM_TYPE_SHARED_INTEL:  hostTag += "S"; break;
+            default:                        hostTag += "M"; break;
             }
+
+            deviceTag = functionName;
+            deviceTag += "( ";
+            deviceTag += hostTag;
+            deviceTag += " )";
         }
     }
 
     if( blocking == CL_TRUE )
     {
-        if( !str.empty() )
+        if( !hostTag.empty() )
         {
-            str += ", ";
+            hostTag += ", ";
         }
-        str += "blocking";
+        hostTag += "blocking";
     }
 }
 
@@ -5594,79 +5601,6 @@ void CLIntercept::dummyCommandQueue(
                 logf( "Error creating dummy command queue!  %s (%i)\n",
                     enumName().name( errorCode ).c_str(),
                     errorCode );
-            }
-        }
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::getDeviceTimingTagMemcpy(
-    const std::string& functionName,
-    const cl_command_queue queue,
-    const void* dst,
-    const void* src,
-    std::string& str )
-{
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
-    str = functionName;
-
-    cl_platform_id  platform = getPlatform(queue);
-
-    // If we don't have a function pointer for clGetMemAllocINFO, try to
-    // get one.  It's possible that the function pointer exists but
-    // the application hasn't queried for it yet, in which case it won't
-    // be installed into the dispatch table.
-    if( dispatchX(platform).clGetMemAllocInfoINTEL == NULL )
-    {
-        getExtensionFunctionAddress(
-            platform,
-            "clGetMemAllocInfoINTEL" );
-    }
-
-    const auto& dispatchX = this->dispatchX(platform);
-    if( dispatchX.clGetMemAllocInfoINTEL != NULL )
-    {
-        cl_context  context = NULL;
-        dispatch().clGetCommandQueueInfo(
-            queue,
-            CL_QUEUE_CONTEXT,
-            sizeof( context ),
-            &context,
-            NULL );
-
-        if( context )
-        {
-            cl_unified_shared_memory_type_intel dstType = CL_MEM_TYPE_UNKNOWN_INTEL;
-            dispatchX.clGetMemAllocInfoINTEL(
-                context,
-                dst,
-                CL_MEM_ALLOC_TYPE_INTEL,
-                sizeof(dstType),
-                &dstType,
-                NULL );
-            cl_unified_shared_memory_type_intel srcType = CL_MEM_TYPE_UNKNOWN_INTEL;
-            dispatchX.clGetMemAllocInfoINTEL(
-                context,
-                src,
-                CL_MEM_ALLOC_TYPE_INTEL,
-                sizeof(srcType),
-                &srcType,
-                NULL );
-            switch( srcType )
-            {
-            case CL_MEM_TYPE_DEVICE_INTEL:  str += "( Dto"; break;
-            case CL_MEM_TYPE_HOST_INTEL:    str += "( Hto"; break;
-            case CL_MEM_TYPE_SHARED_INTEL:  str += "( Sto"; break;
-            default:                        str += "( Mto"; break;
-            }
-            switch( dstType )
-            {
-            case CL_MEM_TYPE_DEVICE_INTEL:  str += "D )"; break;
-            case CL_MEM_TYPE_HOST_INTEL:    str += "H )"; break;
-            case CL_MEM_TYPE_SHARED_INTEL:  str += "S )"; break;
-            default:                        str += "M )"; break;
             }
         }
     }
