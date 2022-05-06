@@ -361,13 +361,15 @@ public:
                 const cl_bool blocking,
                 std::string& hostTag,
                 std::string& deviceTag );
+    void    getTimingTagsMemfill(
+                const std::string& functionName,
+                const cl_command_queue queue,
+                const void* dst,
+                std::string& hostTag,
+                std::string& deviceTag );
 
     void    getHostTimingTagBlocking(
                 const cl_bool blocking,
-                std::string& str );
-    void    getHostTimingTagMemfill(
-                const cl_command_queue queue,
-                const void* dst,
                 std::string& str );
     void    getHostTimingTagMemcpy(
                 const cl_command_queue queue,
@@ -402,11 +404,6 @@ public:
                 cl_context context,
                 cl_device_id device );
 
-    void    getDeviceTimingTagMemfill(
-                const std::string& functionName,
-                const cl_command_queue queue,
-                const void* dst,
-                std::string& str );
     void    getDeviceTimingTagMemcpy(
                 const std::string& functionName,
                 const cl_command_queue queue,
@@ -1917,7 +1914,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
     }                                                                       \
     ITT_CALL_LOGGING_EXIT();
 
-#define CALL_LOGGING_EXIT_MAP_EVENT(errorCode, _blocking, _flags, _event, ...) \
+#define CALL_LOGGING_EXIT_EVENT_WITH_TAG(errorCode, _event, ...)            \
     if( pIntercept->config().CallLogging )                                  \
     {                                                                       \
         pIntercept->callLoggingExit(                                        \
@@ -2789,6 +2786,25 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
             __FUNCTION__,                                                   \
             _map_flags,                                                     \
             _blocking_map,                                                  \
+            hostTag,                                                        \
+            deviceTag );                                                    \
+    }                                                                       \
+
+#define GET_TIMING_TAGS_MEMFILL( _queue, _dst_ptr )                         \
+    std::string hostTag, deviceTag;                                         \
+    if( pIntercept->config().ChromeCallLogging ||                           \
+        ( pIntercept->config().HostPerformanceTiming &&                     \
+          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) ) ||\
+        ( ( pIntercept->config().DevicePerformanceTiming ||                   \
+            pIntercept->config().ITTPerformanceTiming ||                      \
+            pIntercept->config().ChromePerformanceTiming ||                   \
+            pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
+          pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) ) )\
+    {                                                                       \
+        pIntercept->getTimingTagsMemfill(                                   \
+            __FUNCTION__,                                                   \
+            _queue,                                                         \
+            _dst_ptr,                                                       \
             hostTag,                                                        \
             deviceTag );                                                    \
     }                                                                       \
