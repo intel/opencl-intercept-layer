@@ -5101,7 +5101,7 @@ void CLIntercept::dumpProgramBuildLog(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::getHostTimingTagBlocking(
+void CLIntercept::getTimingTagBlocking(
     const cl_bool blocking,
     std::string& str )
 {
@@ -5305,14 +5305,324 @@ void CLIntercept::getTimingTagsMemcpy(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::getHostTimingTagKernel(
+void CLIntercept::getTimingTagsKernel(
+    const cl_command_queue queue,
     const cl_kernel kernel,
-    std::string& str )
+    const cl_uint workDim,
+    const size_t* gwo,
+    const size_t* gws,
+    const size_t* lws,
+    std::string& hostTag,
+    std::string& deviceTag )
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_device_id device = NULL;
+    dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_DEVICE,
+        sizeof(device),
+        &device,
+        NULL );
+
+    // Cache the device info if it's not cached already, since we'll print
+    // the device name and other device properties as part of the report.
+    cacheDeviceInfo( device );
+
     if( kernel )
     {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-        str += getShortKernelNameWithHash(kernel);
+        hostTag += getShortKernelNameWithHash(kernel);
+
+        deviceTag += hostTag;
+
+        if( config().DevicePerformanceTimeKernelInfoTracking && device )
+        {
+            const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
+
+            std::ostringstream  ss;
+            {
+                size_t  maxsgs = 0;
+                size_t  pwgsm = 0;
+                size_t  simd = 0;
+
+                // Use the kernel "max subgroup size" and "preferred work
+                // group size multiple" to get a reasonable estimate of
+                // the kernel "SIMD size".  We'll try to query both values,
+                // and if both queries are successful, we'll pick the
+                // smallest one.  Empirically, this is reasonably accurate.
+
+                // First, query the "max subgroup size":
+
+                // The query for the max subgroup size requires passing in
+                // a local work size.  We'll use the local work size provided
+                // by the app if there is one, otherwise we will query the
+                // max local work size for this kernel and use it.
+                const size_t*   queryLWS = lws;
+                cl_uint queryWorkDim = workDim;
+
+                size_t  kwgs = 0;
+                if( queryLWS == NULL )
+                {
+                    dispatch().clGetKernelWorkGroupInfo(
+                        kernel,
+                        device,
+                        CL_KERNEL_WORK_GROUP_SIZE,
+                        sizeof(kwgs),
+                        &kwgs,
+                        NULL );
+                    queryLWS = &kwgs;
+                    queryWorkDim = 1;
+                }
+
+                if( maxsgs == 0 &&
+                    deviceInfo.Supports_cl_khr_subgroups )
+                {
+                    cl_platform_id  platform = getPlatform(device);
+                    if( dispatchX(platform).clGetKernelSubGroupInfoKHR == NULL )
+                    {
+                        getExtensionFunctionAddress(
+                            platform,
+                            "clGetKernelSubGroupInfoKHR" );
+                    }
+
+                    const auto& dispatchX = this->dispatchX(platform);
+                    if( dispatchX.clGetKernelSubGroupInfoKHR )
+                    {
+                        dispatchX.clGetKernelSubGroupInfoKHR(
+                            kernel,
+                            device,
+                            CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR,
+                            queryWorkDim * sizeof(queryLWS[0]),
+                            queryLWS,
+                            sizeof(maxsgs),
+                            &maxsgs,
+                            NULL );
+                    }
+                }
+                if( maxsgs == 0 &&
+                    deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(2, 1, 0) &&
+                    dispatch().clGetKernelSubGroupInfo )
+                {
+                    dispatch().clGetKernelSubGroupInfo(
+                        kernel,
+                        device,
+                        CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE,
+                        queryWorkDim * sizeof(queryLWS[0]),
+                        queryLWS,
+                        sizeof(maxsgs),
+                        &maxsgs,
+                        NULL );
+                }
+
+                // Next, query the "preferred work group size multiple":
+
+                dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    device,
+                    CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
+                    sizeof(pwgsm),
+                    &pwgsm,
+                    NULL );
+
+                // If either query is zero, use the other query.
+                // Otherwise, use the smallest query.
+
+                maxsgs = ( maxsgs == 0 ) ? pwgsm : maxsgs;
+                pwgsm = ( pwgsm == 0 ) ? maxsgs : pwgsm;
+                simd = ( maxsgs < pwgsm ) ? maxsgs : pwgsm;
+
+                if( simd )
+                {
+                    ss << " SIMD" << simd;
+                }
+            }
+            {
+                cl_ulong slm = 0;
+                dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    device,
+                    CL_KERNEL_LOCAL_MEM_SIZE,
+                    sizeof(slm),
+                    &slm,
+                    NULL );
+                if( slm )
+                {
+                    ss << " SLM=" << slm;
+                }
+            }
+            {
+                cl_ulong tpm = 0;
+                dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    device,
+                    CL_KERNEL_PRIVATE_MEM_SIZE,
+                    sizeof(tpm),
+                    &tpm,
+                    NULL );
+                if( tpm )
+                {
+                    ss << " TPM=" << tpm;
+                }
+            }
+            {
+                cl_ulong spill = 0;
+                dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    device,
+                    CL_KERNEL_SPILL_MEM_SIZE_INTEL,
+                    sizeof(spill),
+                    &spill,
+                    NULL );
+                if( spill )
+                {
+                    ss << " SPILL=" << spill;
+                }
+            }
+            deviceTag += ss.str();
+        }
+
+        if( config().DevicePerformanceTimeGWOTracking )
+        {
+            std::ostringstream  ss;
+            ss << " GWO[ ";
+            if( gwo )
+            {
+                if( workDim >= 1 )
+                {
+                    ss << gwo[0];
+                }
+                if( workDim >= 2 )
+                {
+                    ss << ", " << gwo[1];
+                }
+                if( workDim >= 3 )
+                {
+                    ss << ", " << gwo[2];
+                }
+            }
+            else
+            {
+                ss << "NULL";
+            }
+            ss << " ]";
+            deviceTag += ss.str();
+        }
+
+        if( config().DevicePerformanceTimeGWSTracking && gws )
+        {
+            std::ostringstream  ss;
+            ss << " GWS[ ";
+            if( workDim >= 1 )
+            {
+                ss << gws[0];
+            }
+            if( workDim >= 2 )
+            {
+                ss << " x " << gws[1];
+            }
+            if( workDim >= 3 )
+            {
+                ss << " x " << gws[2];
+            }
+            ss << " ]";
+            deviceTag += ss.str();
+        }
+
+        if( config().DevicePerformanceTimeLWSTracking )
+        {
+            bool    useSuggestedLWS = false;
+            size_t  suggestedLWS[3] = { 0, 0, 0 };
+            size_t  emptyGWO[3] = { 0, 0, 0 };
+
+            if( lws == NULL &&
+                workDim <= 3 &&
+                config().DevicePerformanceTimeSuggestedLWSTracking )
+            {
+                cl_platform_id  platform = getPlatform(device);
+
+                // Try the cl_khr_suggested_local_work_size version first.
+                if( useSuggestedLWS == false )
+                {
+                    if( dispatchX(platform).clGetKernelSuggestedLocalWorkSizeKHR == NULL )
+                    {
+                        getExtensionFunctionAddress(
+                            platform,
+                            "clGetKernelSuggestedLocalWorkSizeKHR" );
+                    }
+
+                    const auto& dispatchX = this->dispatchX(platform);
+                    if( dispatchX.clGetKernelSuggestedLocalWorkSizeKHR )
+                    {
+                        cl_int testErrorCode = dispatchX.clGetKernelSuggestedLocalWorkSizeKHR(
+                            queue,
+                            kernel,
+                            workDim,
+                            gwo,
+                            gws,
+                            suggestedLWS );
+                        useSuggestedLWS = ( testErrorCode == CL_SUCCESS );
+                    }
+                }
+
+                // If this fails, try the unofficial Intel version next.
+                if( useSuggestedLWS == false )
+                {
+                    if( dispatchX(platform).clGetKernelSuggestedLocalWorkSizeINTEL == NULL )
+                    {
+                        getExtensionFunctionAddress(
+                            platform,
+                            "clGetKernelSuggestedLocalWorkSizeINTEL" );
+                    }
+
+                    const auto& dispatchX = this->dispatchX(platform);
+                    if( dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL )
+                    {
+                        cl_int testErrorCode = dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL(
+                            queue,
+                            kernel,
+                            workDim,
+                            gwo == NULL ? emptyGWO : gwo,
+                            gws,
+                            suggestedLWS );
+                        useSuggestedLWS = ( testErrorCode == CL_SUCCESS );
+                    }
+                }
+            }
+
+            std::ostringstream  ss;
+            if( useSuggestedLWS )
+            {
+                ss << " SLWS[ ";
+                lws = suggestedLWS;
+            }
+            else
+            {
+                ss << " LWS[ ";
+            }
+
+            if( lws )
+            {
+                if( workDim >= 1 )
+                {
+                    ss << lws[0];
+                }
+                if( workDim >= 2 )
+                {
+                    ss << " x " << lws[1];
+                }
+                if( workDim >= 3 )
+                {
+                    ss << " x " << lws[2];
+                }
+            }
+            else
+            {
+                ss << "NULL";
+            }
+
+            ss << " ]";
+            deviceTag += ss.str();
+        }
     }
 }
 
@@ -5602,325 +5912,6 @@ void CLIntercept::dummyCommandQueue(
                     enumName().name( errorCode ).c_str(),
                     errorCode );
             }
-        }
-    }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::getDeviceTimingTagKernel(
-    const cl_command_queue queue,
-    const cl_kernel kernel,
-    const cl_uint workDim,
-    const size_t* gwo,
-    const size_t* gws,
-    const size_t* lws,
-    std::string& str )
-{
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
-    cl_device_id device = NULL;
-    dispatch().clGetCommandQueueInfo(
-        queue,
-        CL_QUEUE_DEVICE,
-        sizeof(device),
-        &device,
-        NULL );
-
-    // Cache the device info if it's not cached already, since we'll print
-    // the device name and other device properties as part of the report.
-    cacheDeviceInfo( device );
-
-    if( kernel )
-    {
-        str += getShortKernelNameWithHash(kernel);
-
-        if( config().DevicePerformanceTimeKernelInfoTracking && device )
-        {
-            const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
-
-            std::ostringstream  ss;
-            {
-                size_t  maxsgs = 0;
-                size_t  pwgsm = 0;
-                size_t  simd = 0;
-
-                // Use the kernel "max subgroup size" and "preferred work
-                // group size multiple" to get a reasonable estimate of
-                // the kernel "SIMD size".  We'll try to query both values,
-                // and if both queries are successful, we'll pick the
-                // smallest one.  Empirically, this is reasonably accurate.
-
-                // First, query the "max subgroup size":
-
-                // The query for the max subgroup size requires passing in
-                // a local work size.  We'll use the local work size provided
-                // by the app if there is one, otherwise we will query the
-                // max local work size for this kernel and use it.
-                const size_t*   queryLWS = lws;
-                cl_uint queryWorkDim = workDim;
-
-                size_t  kwgs = 0;
-                if( queryLWS == NULL )
-                {
-                    dispatch().clGetKernelWorkGroupInfo(
-                        kernel,
-                        device,
-                        CL_KERNEL_WORK_GROUP_SIZE,
-                        sizeof(kwgs),
-                        &kwgs,
-                        NULL );
-                    queryLWS = &kwgs;
-                    queryWorkDim = 1;
-                }
-
-                if( maxsgs == 0 &&
-                    deviceInfo.Supports_cl_khr_subgroups )
-                {
-                    cl_platform_id  platform = getPlatform(device);
-                    if( dispatchX(platform).clGetKernelSubGroupInfoKHR == NULL )
-                    {
-                        getExtensionFunctionAddress(
-                            platform,
-                            "clGetKernelSubGroupInfoKHR" );
-                    }
-
-                    const auto& dispatchX = this->dispatchX(platform);
-                    if( dispatchX.clGetKernelSubGroupInfoKHR )
-                    {
-                        dispatchX.clGetKernelSubGroupInfoKHR(
-                            kernel,
-                            device,
-                            CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR,
-                            queryWorkDim * sizeof(queryLWS[0]),
-                            queryLWS,
-                            sizeof(maxsgs),
-                            &maxsgs,
-                            NULL );
-                    }
-                }
-                if( maxsgs == 0 &&
-                    deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(2, 1, 0) &&
-                    dispatch().clGetKernelSubGroupInfo )
-                {
-                    dispatch().clGetKernelSubGroupInfo(
-                        kernel,
-                        device,
-                        CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE,
-                        queryWorkDim * sizeof(queryLWS[0]),
-                        queryLWS,
-                        sizeof(maxsgs),
-                        &maxsgs,
-                        NULL );
-                }
-
-                // Next, query the "preferred work group size multiple":
-
-                dispatch().clGetKernelWorkGroupInfo(
-                    kernel,
-                    device,
-                    CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
-                    sizeof(pwgsm),
-                    &pwgsm,
-                    NULL );
-
-                // If either query is zero, use the other query.
-                // Otherwise, use the smallest query.
-
-                maxsgs = ( maxsgs == 0 ) ? pwgsm : maxsgs;
-                pwgsm = ( pwgsm == 0 ) ? maxsgs : pwgsm;
-                simd = ( maxsgs < pwgsm ) ? maxsgs : pwgsm;
-
-                if( simd )
-                {
-                    ss << " SIMD" << simd;
-                }
-            }
-            {
-                cl_ulong slm = 0;
-                dispatch().clGetKernelWorkGroupInfo(
-                    kernel,
-                    device,
-                    CL_KERNEL_LOCAL_MEM_SIZE,
-                    sizeof(slm),
-                    &slm,
-                    NULL );
-                if( slm )
-                {
-                    ss << " SLM=" << slm;
-                }
-            }
-            {
-                cl_ulong tpm = 0;
-                dispatch().clGetKernelWorkGroupInfo(
-                    kernel,
-                    device,
-                    CL_KERNEL_PRIVATE_MEM_SIZE,
-                    sizeof(tpm),
-                    &tpm,
-                    NULL );
-                if( tpm )
-                {
-                    ss << " TPM=" << tpm;
-                }
-            }
-            {
-                cl_ulong spill = 0;
-                dispatch().clGetKernelWorkGroupInfo(
-                    kernel,
-                    device,
-                    CL_KERNEL_SPILL_MEM_SIZE_INTEL,
-                    sizeof(spill),
-                    &spill,
-                    NULL );
-                if( spill )
-                {
-                    ss << " SPILL=" << spill;
-                }
-            }
-            str += ss.str();
-        }
-
-        if( config().DevicePerformanceTimeGWOTracking )
-        {
-            std::ostringstream  ss;
-            ss << " GWO[ ";
-            if( gwo )
-            {
-                if( workDim >= 1 )
-                {
-                    ss << gwo[0];
-                }
-                if( workDim >= 2 )
-                {
-                    ss << ", " << gwo[1];
-                }
-                if( workDim >= 3 )
-                {
-                    ss << ", " << gwo[2];
-                }
-            }
-            else
-            {
-                ss << "NULL";
-            }
-            ss << " ]";
-            str += ss.str();
-        }
-
-        if( config().DevicePerformanceTimeGWSTracking && gws )
-        {
-            std::ostringstream  ss;
-            ss << " GWS[ ";
-            if( workDim >= 1 )
-            {
-                ss << gws[0];
-            }
-            if( workDim >= 2 )
-            {
-                ss << " x " << gws[1];
-            }
-            if( workDim >= 3 )
-            {
-                ss << " x " << gws[2];
-            }
-            ss << " ]";
-            str += ss.str();
-        }
-
-        if( config().DevicePerformanceTimeLWSTracking )
-        {
-            bool    useSuggestedLWS = false;
-            size_t  suggestedLWS[3] = { 0, 0, 0 };
-            size_t  emptyGWO[3] = { 0, 0, 0 };
-
-            if( lws == NULL &&
-                workDim <= 3 &&
-                config().DevicePerformanceTimeSuggestedLWSTracking )
-            {
-                cl_platform_id  platform = getPlatform(device);
-
-                // Try the cl_khr_suggested_local_work_size version first.
-                if( useSuggestedLWS == false )
-                {
-                    if( dispatchX(platform).clGetKernelSuggestedLocalWorkSizeKHR == NULL )
-                    {
-                        getExtensionFunctionAddress(
-                            platform,
-                            "clGetKernelSuggestedLocalWorkSizeKHR" );
-                    }
-
-                    const auto& dispatchX = this->dispatchX(platform);
-                    if( dispatchX.clGetKernelSuggestedLocalWorkSizeKHR )
-                    {
-                        cl_int testErrorCode = dispatchX.clGetKernelSuggestedLocalWorkSizeKHR(
-                            queue,
-                            kernel,
-                            workDim,
-                            gwo,
-                            gws,
-                            suggestedLWS );
-                        useSuggestedLWS = ( testErrorCode == CL_SUCCESS );
-                    }
-                }
-
-                // If this fails, try the unofficial Intel version next.
-                if( useSuggestedLWS == false )
-                {
-                    if( dispatchX(platform).clGetKernelSuggestedLocalWorkSizeINTEL == NULL )
-                    {
-                        getExtensionFunctionAddress(
-                            platform,
-                            "clGetKernelSuggestedLocalWorkSizeINTEL" );
-                    }
-
-                    const auto& dispatchX = this->dispatchX(platform);
-                    if( dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL )
-                    {
-                        cl_int testErrorCode = dispatchX.clGetKernelSuggestedLocalWorkSizeINTEL(
-                            queue,
-                            kernel,
-                            workDim,
-                            gwo == NULL ? emptyGWO : gwo,
-                            gws,
-                            suggestedLWS );
-                        useSuggestedLWS = ( testErrorCode == CL_SUCCESS );
-                    }
-                }
-            }
-
-            std::ostringstream  ss;
-            if( useSuggestedLWS )
-            {
-                ss << " SLWS[ ";
-                lws = suggestedLWS;
-            }
-            else
-            {
-                ss << " LWS[ ";
-            }
-
-            if( lws )
-            {
-                if( workDim >= 1 )
-                {
-                    ss << lws[0];
-                }
-                if( workDim >= 2 )
-                {
-                    ss << " x " << lws[1];
-                }
-                if( workDim >= 3 )
-                {
-                    ss << " x " << lws[2];
-                }
-            }
-            else
-            {
-                ss << "NULL";
-            }
-            ss << " ]";
-            str += ss.str();
         }
     }
 }
