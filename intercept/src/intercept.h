@@ -449,6 +449,9 @@ public:
                 const cl_kernel* kernels,
                 const cl_program program,
                 cl_uint numKernels );
+    void    addKernelInfo(
+                const cl_kernel kernel,
+                const cl_kernel source_kernel );
     void    checkRemoveKernelInfo(
                 const cl_kernel kernel );
 
