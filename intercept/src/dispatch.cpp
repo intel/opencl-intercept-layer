@@ -7210,6 +7210,11 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCloneKernel) (
         CHECK_ERROR( errcode_ret[0] );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
+        if( retVal != NULL )
+        {
+            pIntercept->addKernelInfo( retVal, source_kernel );
+        }
+
         return retVal;
     }
 
