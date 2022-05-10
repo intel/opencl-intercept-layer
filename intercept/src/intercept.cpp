@@ -6459,7 +6459,7 @@ void CLIntercept::addKernelInfo(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    m_KernelInfoMap[ kernel ] = m_KernelInfoMap.at( source_kernel );
+    m_KernelInfoMap[ kernel ] = m_KernelInfoMap[ source_kernel ];
 }
 
 ///////////////////////////////////////////////////////////////////////////////
