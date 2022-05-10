@@ -4,20 +4,15 @@
 
 include(GNUInstallDirs)
 
-if(CLINTERCEPT_CPACK_GENERATOR)
-    set(CPACK_GENERATOR "${CLINTERCEPT_CPACK_GENERATOR}")
-else()
-    # If generators list was not define build native package for current distro
+if(NOT CPACK_GENERATOR)
     if(WIN32)
         set(CPACK_GENERATOR "ZIP")
-    elseif(EXISTS "/etc/debian_version")
-        set(CPACK_GENERATOR "DEB")
-    elseif(EXISTS "/etc/redhat-release")
-        set(CPACK_GENERATOR "RPM")
     else()
-        set(CPACK_GENERATOR "TXZ")
+        set(CPACK_GENERATOR "TGZ")
     endif()
 endif()
+
+set(CPACK_SOURCE_IGNORE_FILES "/\\\\.git/;/\\\\.vscode/;build*/;_bin*/;_test*/")
 
 set(CPACK_PACKAGE_NAME "clintercept")
 set(CPACK_PACKAGE_VENDOR "Intel(R) Corporation")
@@ -29,16 +24,11 @@ set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_PACKAGE_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
 
-if(NOT WIN32)
-    set(CPACK_SET_DESTDIR TRUE)
-endif()
-
-set(CPACK_PACKAGE_RELOCATABLE FALSE)
-
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Intel")
 set(CPACK_DEBIAN_COMPRESSION_TYPE "xz")
 
+set(CPACK_PACKAGE_RELOCATABLE FALSE)
 set(CPACK_RPM_PACKAGE_RELEASE 1)
 set(CPACK_RPM_COMPRESSION_TYPE "xz")
 
