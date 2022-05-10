@@ -1,0 +1,42 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+env:
+  BUILD_TYPE: RelWithDebInfo
+
+jobs:
+  windows-zip:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Get Variables
+      shell: bash
+      id: vars
+      run: echo ::set-output name=version::${GITHUB_REF#refs/tags/v}
+
+    - name: Create Build Directory
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Run CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE $GITHUB_WORKSPACE
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --config $BUILD_TYPE --target PACKAGE
+
+    - name: Release
+      uses: softprops/action-gh-release@v1
+      if: startsWith(github.ref, 'refs/tags/')
+      with:
+        draft: true
+        files: |
+          ${{runner.workspace}}/build/clintercept-${{steps.vars.outputs.version}}-win64.zip
