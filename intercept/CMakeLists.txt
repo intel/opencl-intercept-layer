@@ -86,7 +86,8 @@ add_library(OpenCL SHARED
     ${CLINTERCEPT_SOURCE_FILES}
     ${CLINTERCEPT_MDAPI_FILES}
 )
-set_target_properties(OpenCL PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION ${PROJECT_VERSION_MAJOR})
+# The OpenCL ICD loader is currently always version 1.2 and soversion 1:
+set_target_properties(OpenCL PROPERTIES VERSION "1.2" SOVERSION "1")
 target_link_libraries(OpenCL ${CMAKE_DL_LIBS})
 
 # This uses modules from: https://github.com/rpavlik/cmake-modules
