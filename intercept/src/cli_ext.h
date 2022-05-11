@@ -830,6 +830,22 @@ cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
 #define CL_PARTITION_BY_NAMES_LIST_END_EXT          -1
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_ext_float_atomics
+
+typedef cl_bitfield         cl_device_fp_atomic_capabilities_ext;
+
+#define CL_DEVICE_GLOBAL_FP_ATOMIC_LOAD_STORE_EXT       (1 << 0)
+#define CL_DEVICE_GLOBAL_FP_ATOMIC_ADD_EXT              (1 << 1)
+#define CL_DEVICE_GLOBAL_FP_ATOMIC_MIN_MAX_EXT          (1 << 2)
+#define CL_DEVICE_LOCAL_FP_ATOMIC_LOAD_STORE_EXT        (1 << 16)
+#define CL_DEVICE_LOCAL_FP_ATOMIC_ADD_EXT               (1 << 17)
+#define CL_DEVICE_LOCAL_FP_ATOMIC_MIN_MAX_EXT           (1 << 18)
+
+#define CL_DEVICE_SINGLE_FP_ATOMIC_CAPABILITIES_EXT     0x4231
+#define CL_DEVICE_DOUBLE_FP_ATOMIC_CAPABILITIES_EXT     0x4232
+#define CL_DEVICE_HALF_FP_ATOMIC_CAPABILITIES_EXT       0x4233
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_ext_image_from_buffer
 
 #define CL_IMAGE_REQUIREMENTS_SLICE_PITCH_ALIGNMENT_EXT 0x1291
