@@ -6,7 +6,7 @@ on:
       - 'v*'
 
 env:
-  BUILD_TYPE: RelWithDebInfo
+  BUILD_TYPE: Release
 
 jobs:
   release:
@@ -30,7 +30,7 @@ jobs:
     - name: Build
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: cmake --build . --config $BUILD_TYPE --target package
+      run: cmake --build . --parallel --config $BUILD_TYPE --target package
 
     - name: Release (Windows zip)
       if: |
