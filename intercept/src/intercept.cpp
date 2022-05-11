@@ -12097,6 +12097,9 @@ void* CLIntercept::getExtensionFunctionAddress(
     // cl_khr_suggested_local_work_size
     CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeKHR );
 
+    // cl_ext_image_requirements_info
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetImageRequirementsInfoEXT );
+
     // Unofficial MDAPI extension:
     CHECK_RETURN_EXTENSION_FUNCTION( clCreatePerfCountersCommandQueueINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clSetPerformanceConfigurationINTEL );
