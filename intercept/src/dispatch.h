@@ -426,6 +426,18 @@ struct CLdispatchX
         const size_t* global_work_size,
         size_t* suggested_local_work_size);
 
+    // cl_ext_image_requirements_info
+    cl_int  (CL_API_CALL *clGetImageRequirementsInfoEXT) (
+        cl_context context,
+        const cl_mem_properties* properties,
+        cl_mem_flags flags,
+        const cl_image_format* image_format,
+        const cl_image_desc* image_desc,
+        cl_image_requirements_info_ext param_name,
+        size_t param_value_size,
+        void* param_value,
+        size_t* param_value_size_ret);
+
     // Unofficial MDAPI extension:
     cl_command_queue    (CL_API_CALL *clCreatePerfCountersCommandQueueINTEL) (
         cl_context context,

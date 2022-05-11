@@ -8769,6 +8769,102 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_ext_image_requirements_info
+CL_API_ENTRY cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
+    cl_context context,
+    const cl_mem_properties* properties,
+    cl_mem_flags flags,
+    const cl_image_format* image_format,
+    const cl_image_desc* image_desc,
+    cl_image_requirements_info_ext param_name,
+    size_t param_value_size,
+    void* param_value,
+    size_t* param_value_size_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clGetImageRequirementsInfoEXT )
+        {
+            GET_ENQUEUE_COUNTER();
+            if( image_desc && image_format )
+            {
+                std::string propsStr;
+                if( pIntercept->config().CallLogging )
+                {
+                    pIntercept->getMemPropertiesString(
+                        properties,
+                        propsStr );
+                }
+                CALL_LOGGING_ENTER(
+                    "context = %p, "
+                    "properties = [ %s ], "
+                    "flags = %s (%llX), "
+                    "format->channel_order = %s, "
+                    "format->channel_data_type = %s, "
+                    "desc->type = %s, "
+                    "desc->width = %zu, "
+                    "desc->height = %zu, "
+                    "desc->depth = %zu, "
+                    "desc->array_size = %zu, "
+                    "desc->row_pitch = %zu, "
+                    "desc->slice_pitch = %zu, "
+                    "desc->num_mip_levels = %u, "
+                    "desc->num_samples = %u, "
+                    "desc->mem_object = %p, "
+                    "param_name = %s (%08X)",
+                    context,
+                    propsStr.c_str(),
+                    pIntercept->enumName().name_mem_flags( flags ).c_str(),
+                    flags,
+                    pIntercept->enumName().name( image_format->image_channel_order ).c_str(),
+                    pIntercept->enumName().name( image_format->image_channel_data_type ).c_str(),
+                    pIntercept->enumName().name( image_desc->image_type ).c_str(),
+                    image_desc->image_width,
+                    image_desc->image_height,
+                    image_desc->image_depth,
+                    image_desc->image_array_size,
+                    image_desc->image_row_pitch,
+                    image_desc->image_slice_pitch,
+                    image_desc->num_mip_levels,
+                    image_desc->num_samples,
+                    image_desc->mem_object,
+                    pIntercept->enumName().name( param_name ).c_str(),
+                    param_name );
+            }
+            else
+            {
+                CALL_LOGGING_ENTER();
+            }
+
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_int retVal = dispatchX.clGetImageRequirementsInfoEXT(
+                context,
+                properties,
+                flags,
+                image_format,
+                image_desc,
+                param_name,
+                param_value_size,
+                param_value,
+                param_value_size_ret);
+
+            HOST_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // Unofficial cl_get_kernel_suggested_local_work_size extension:
 // This function should stay in sync with clGetKernelSuggestedLocalWorkSizeKHR, above.
 CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeINTEL(
