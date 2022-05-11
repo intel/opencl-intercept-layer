@@ -39,4 +39,4 @@ jobs:
       with:
         draft: true
         files: |
-          ${{runner.workspace}}/build/clintercept-${{steps.vars.outputs.version}}-win64.zip
+          ${{runner.workspace}}/build/clintercept-*.zip
