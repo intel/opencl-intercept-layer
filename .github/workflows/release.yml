@@ -50,4 +50,4 @@ jobs:
       with:
         draft: true
         files: |
-          ${{runner.workspace}}/build/clintercept-*.tgz
+          ${{runner.workspace}}/build/clintercept-*.tar.gz
