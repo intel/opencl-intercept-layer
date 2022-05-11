@@ -31,7 +31,7 @@ jobs:
     - name: Build
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: cmake --build . --config $BUILD_TYPE --target PACKAGE
+      run: cmake --build . --config $BUILD_TYPE --target package
 
     - name: Release (Windows zip)
       if: |
