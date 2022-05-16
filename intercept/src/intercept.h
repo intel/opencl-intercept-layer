@@ -603,14 +603,14 @@ public:
                 size_t param_value_size,
                 void* param_value,
                 size_t* param_value_size_ret,
-                cl_int& errorCode );
+                cl_int& errorCode ) const;
     bool    overrideGetDeviceInfo(
                 cl_device_id device,
                 cl_platform_info param_name,
                 size_t param_value_size,
                 void* param_value,
                 size_t* param_value_size_ret,
-                cl_int& errorCode );
+                cl_int& errorCode ) const;
 
     cl_int  ReadBuffer(
                 cl_command_queue commandQueue,
