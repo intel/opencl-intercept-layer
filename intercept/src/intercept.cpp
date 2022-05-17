@@ -9840,10 +9840,8 @@ bool CLIntercept::overrideGetPlatformInfo(
     size_t param_value_size,
     void* param_value,
     size_t* param_value_size_ret,
-    cl_int& errorCode )
+    cl_int& errorCode ) const
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
     bool    override = false;
 
     switch( param_name )
@@ -9987,10 +9985,8 @@ bool CLIntercept::overrideGetDeviceInfo(
     size_t param_value_size,
     void* param_value,
     size_t* param_value_size_ret,
-    cl_int& errorCode )
+    cl_int& errorCode ) const
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
     bool    override = false;
 
     switch( param_name )
