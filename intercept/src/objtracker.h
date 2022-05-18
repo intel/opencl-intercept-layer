@@ -6,7 +6,7 @@
 
 #pragma once
 
-#include <mutex>
+#include <atomic>
 
 #include "common.h"
 
@@ -56,8 +56,6 @@ private:
         std::atomic<size_t> NumRetains;
         std::atomic<size_t> NumReleases;
     };
-
-    std::mutex  m_Mutex;
 
     CTracker    m_Devices;
     CTracker    m_Contexts;
