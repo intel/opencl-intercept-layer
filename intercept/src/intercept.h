@@ -5,6 +5,7 @@
 */
 #pragma once
 
+#include <atomic>
 #include <chrono>
 #include <cinttypes>
 #include <fstream>
@@ -947,7 +948,7 @@ private:
 
     bool        m_LoggedCLInfo;
 
-    uint64_t    m_EnqueueCounter;
+    std::atomic<uint64_t>   m_EnqueueCounter;
 
     clock::time_point   m_StartTime;
 
@@ -1753,13 +1754,12 @@ inline const CLIntercept::Config& CLIntercept::config() const
 //
 inline uint64_t CLIntercept::getEnqueueCounter() const
 {
-    return m_EnqueueCounter;
+    return m_EnqueueCounter.load(std::memory_order_relaxed);
 }
 
 inline uint64_t CLIntercept::incrementEnqueueCounter()
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    return m_EnqueueCounter++;
+    return m_EnqueueCounter.fetch_add(1, std::memory_order_relaxed);
 }
 
 #define GET_ENQUEUE_COUNTER()                                               \

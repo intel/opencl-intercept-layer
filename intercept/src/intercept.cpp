@@ -113,7 +113,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
 
     m_LoggedCLInfo = false;
 
-    m_EnqueueCounter = 0;
+    m_EnqueueCounter.store(0, std::memory_order::memory_order_relaxed);
 
     m_EventsChromeTraced = 0;
     m_ProgramNumber = 0;
@@ -760,7 +760,7 @@ void CLIntercept::writeReport(
         os << "*** WARNING *** NullEnqueue Enabled!" << std::endl << std::endl;
     }
 
-    os << "Total Enqueues: " << m_EnqueueCounter << std::endl << std::endl;
+    os << "Total Enqueues: " << m_EnqueueCounter.load(std::memory_order_relaxed) << std::endl << std::endl;
 
     if( config().LeakChecking )
     {

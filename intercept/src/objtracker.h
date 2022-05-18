@@ -22,8 +22,7 @@ public:
     {
         if( obj )
         {
-            std::lock_guard<std::mutex> lock(m_Mutex);
-            GetTracker(obj).NumAllocations++;
+            GetTracker(obj).NumAllocations.fetch_add(1, std::memory_order_relaxed);
         }
     }
 
@@ -32,8 +31,7 @@ public:
     {
         if( obj )
         {
-            std::lock_guard<std::mutex> lock(m_Mutex);
-            GetTracker(obj).NumRetains++;
+            GetTracker(obj).NumRetains.fetch_add(1, std::memory_order_relaxed);
         }
     }
 
@@ -42,8 +40,7 @@ public:
     {
         if( obj )
         {
-            std::lock_guard<std::mutex> lock(m_Mutex);
-            GetTracker(obj).NumReleases++;
+            GetTracker(obj).NumReleases.fetch_add(1, std::memory_order_relaxed);
         }
     }
 
@@ -55,9 +52,9 @@ private:
             NumRetains(0),
             NumReleases(0) {};
 
-        size_t  NumAllocations;
-        size_t  NumRetains;
-        size_t  NumReleases;
+        std::atomic<size_t> NumAllocations;
+        std::atomic<size_t> NumRetains;
+        std::atomic<size_t> NumReleases;
     };
 
     std::mutex  m_Mutex;
