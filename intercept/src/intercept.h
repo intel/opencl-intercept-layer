@@ -61,11 +61,11 @@ public:
     void    report();
 
     void    callLoggingEnter(
-                const std::string& functionName,
+                const char* functionName,
                 const uint64_t enqueueCounter,
                 const cl_kernel kernel );
     void    callLoggingEnter(
-                const std::string& functionName,
+                const char* functionName,
                 const uint64_t enqueueCounter,
                 const cl_kernel kernel,
                 const char* formatStr,
@@ -78,11 +78,11 @@ public:
                 ... );
 
     void    callLoggingExit(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_int errorCode,
                 const cl_event* event );
     void    callLoggingExit(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_int errorCode,
                 const cl_event* event,
                 const char* formatStr,
@@ -192,14 +192,14 @@ public:
                 cl_uint num_devices,
                 const cl_device_id* device_list );
     void    logError(
-                const std::string& functionName,
+                const char* functionName,
                 cl_int errorCode );
     void    logFlushOrFinishAfterEnqueueStart(
-                const std::string& flushOrFinish,
-                const std::string& functionName );
+                const char* flushOrFinish,
+                const char* functionName );
     void    logFlushOrFinishAfterEnqueueEnd(
-                const std::string& flushOrFinish,
-                const std::string& functionName,
+                const char* flushOrFinish,
+                const char* functionName,
                 cl_int errorCode );
     void    logKernelInfo(
                 const cl_kernel* kernels,
@@ -361,19 +361,19 @@ public:
                 const cl_bool blocking,
                 std::string& hostTag );
     void    getTimingTagsMap(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_map_flags flags,
                 const cl_bool blocking,
                 std::string& hostTag,
                 std::string& deviceTag );
     void    getTimingTagsMemfill(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_command_queue queue,
                 const void* dst,
                 std::string& hostTag,
                 std::string& deviceTag );
     void    getTimingTagsMemcpy(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_command_queue queue,
                 const cl_bool blocking,
                 const void* dst,
@@ -391,7 +391,7 @@ public:
                 std::string& deviceTag );
 
     void    updateHostTimingStats(
-                const std::string& functionName,
+                const char* functionName,
                 const std::string& tag,
                 clock::time_point start,
                 clock::time_point end );
@@ -415,7 +415,7 @@ public:
                 cl_device_id device );
 
     void    addTimingEvent(
-                const std::string& functionName,
+                const char* functionName,
                 const uint64_t enqueueCounter,
                 const clock::time_point queuedTime,
                 const std::string& tag,
@@ -548,7 +548,7 @@ public:
                 size_t size );
 
     void    checkEventList(
-                const std::string& functionName,
+                const char* functionName,
                 cl_uint numEvents,
                 const cl_event* eventList,
                 cl_event* event );
@@ -566,7 +566,7 @@ public:
                 cl_mem_properties_intel*& pLocalAllocProperties ) const;
 
     void    startAubCapture(
-                const std::string& functionName,
+                const char* functionName,
                 const uint64_t enqueueCounter,
                 const cl_kernel kernel,
                 const cl_uint workDim,
@@ -807,7 +807,7 @@ public:
     void    ittInit();
 
     void    ittCallLoggingEnter(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_kernel kernel );
     void    ittCallLoggingExit();
 
@@ -823,7 +823,7 @@ public:
 #endif
 
     void    chromeCallLoggingExit(
-                const std::string& functionName,
+                const char* functionName,
                 const std::string& tag,
                 bool includeId,
                 const uint64_t enqueueCounter,
