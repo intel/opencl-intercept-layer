@@ -791,6 +791,9 @@ void CLIntercept::writeReport(
     {
         os << std::endl << "Host Performance Timing Results:" << std::endl;
 
+        std::vector<std::string> keys;
+        keys.reserve(m_HostTimingStatsMap.size());
+
         uint64_t    totalTotalNS = 0;
         size_t      longestName = 32;
 
@@ -802,12 +805,15 @@ void CLIntercept::writeReport(
 
             if( !name.empty() )
             {
+                keys.push_back(name);
                 totalTotalNS += hostTimingStats.TotalNS;
                 longestName = std::max< size_t >( name.length(), longestName );
             }
 
             ++i;
         }
+
+        std::sort(keys.begin(), keys.end());
 
         os << std::endl << "Total Time (ns): " << totalTotalNS << std::endl;
 
@@ -820,24 +826,17 @@ void CLIntercept::writeReport(
             << std::right << std::setw(13) << "Min (ns)" << ", "
             << std::right << std::setw(13) << "Max (ns)" << std::endl;
 
-        i = m_HostTimingStatsMap.begin();
-        while( i != m_HostTimingStatsMap.end() )
+        for( const auto& name : keys )
         {
-            const std::string& name = (*i).first;
-            const SHostTimingStats& hostTimingStats = (*i).second;
+            const SHostTimingStats& hostTimingStats = m_HostTimingStatsMap.at(name);
 
-            if( !name.empty() )
-            {
-                os << std::right << std::setw(longestName) << name << ", "
-                    << std::right << std::setw( 6) << hostTimingStats.NumberOfCalls << ", "
-                    << std::right << std::setw(13) << hostTimingStats.TotalNS << ", "
-                    << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << hostTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
-                    << std::right << std::setw(13) << hostTimingStats.TotalNS / hostTimingStats.NumberOfCalls << ", "
-                    << std::right << std::setw(13) << hostTimingStats.MinNS << ", "
-                    << std::right << std::setw(13) << hostTimingStats.MaxNS << std::endl;
-            }
-
-            ++i;
+            os << std::right << std::setw(longestName) << name << ", "
+                << std::right << std::setw( 6) << hostTimingStats.NumberOfCalls << ", "
+                << std::right << std::setw(13) << hostTimingStats.TotalNS << ", "
+                << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << hostTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
+                << std::right << std::setw(13) << hostTimingStats.TotalNS / hostTimingStats.NumberOfCalls << ", "
+                << std::right << std::setw(13) << hostTimingStats.MinNS << ", "
+                << std::right << std::setw(13) << hostTimingStats.MaxNS << std::endl;
         }
     }
 
@@ -854,6 +853,9 @@ void CLIntercept::writeReport(
 
             os << std::endl << "Device Performance Timing Results for " << deviceInfo.NameForReport << ":" << std::endl;
 
+            std::vector<std::string> keys;
+            keys.reserve(dtsm.size());
+
             cl_ulong    totalTotalNS = 0;
             size_t      longestName = 32;
 
@@ -865,12 +867,15 @@ void CLIntercept::writeReport(
 
                 if( !name.empty() )
                 {
+                    keys.push_back(name);
                     totalTotalNS += deviceTimingStats.TotalNS;
                     longestName = std::max< size_t >( name.length(), longestName );
                 }
 
                 ++i;
             }
+
+            std::sort(keys.begin(), keys.end());
 
             os << std::endl << "Total Time (ns): " << totalTotalNS << std::endl;
 
@@ -883,24 +888,17 @@ void CLIntercept::writeReport(
                 << std::right << std::setw(13) << "Min (ns)" << ", "
                 << std::right << std::setw(13) << "Max (ns)" << std::endl;
 
-            i = dtsm.begin();
-            while( i != dtsm.end() )
+            for( const auto& name : keys )
             {
-                const std::string& name = (*i).first;
-                const SDeviceTimingStats& deviceTimingStats = (*i).second;
+                const SDeviceTimingStats& deviceTimingStats = dtsm.at(name);
 
-                if( !name.empty() )
-                {
-                    os << std::right << std::setw(longestName) << name << ", "
-                        << std::right << std::setw( 6) << deviceTimingStats.NumberOfCalls << ", "
-                        << std::right << std::setw(13) << deviceTimingStats.TotalNS << ", "
-                        << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << deviceTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
-                        << std::right << std::setw(13) << deviceTimingStats.TotalNS / deviceTimingStats.NumberOfCalls << ", "
-                        << std::right << std::setw(13) << deviceTimingStats.MinNS << ", "
-                        << std::right << std::setw(13) << deviceTimingStats.MaxNS << std::endl;
-                }
-
-                ++i;
+                os << std::right << std::setw(longestName) << name << ", "
+                    << std::right << std::setw( 6) << deviceTimingStats.NumberOfCalls << ", "
+                    << std::right << std::setw(13) << deviceTimingStats.TotalNS << ", "
+                    << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << deviceTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
+                    << std::right << std::setw(13) << deviceTimingStats.TotalNS / deviceTimingStats.NumberOfCalls << ", "
+                    << std::right << std::setw(13) << deviceTimingStats.MinNS << ", "
+                    << std::right << std::setw(13) << deviceTimingStats.MaxNS << std::endl;
             }
 
             ++id;
