@@ -180,11 +180,14 @@ void CLIntercept::initCustomPerfCounters()
         // Open the metric stream for time based sampling, if needed.
         if( config().DevicePerfCounterTimeBasedSampling )
         {
-            uint32_t    timerMS = 10;
+            uint32_t    timerNS =
+                config().DevicePerfCounterTimeBasedSamplingPeriod * 1000;
+            uint32_t    bufferSizeBytes =
+                config().DevicePerfCounterTimeBasedBufferSize;
             m_pMDHelper->OpenStream(
-                timerMS * 1000000,  // timer period, in nanoseconds
-                0,                  // buffer size in bytes -> device maximum
-                0 );                // pid -> sample all processes
+                timerNS,        // timer period, in nanoseconds
+                bufferSizeBytes,// buffer size in bytes, 0 = device maximum
+                0 );            // pid -> sample all processes
         }
 
         // Get the dump directory name and create the dump file for
