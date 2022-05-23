@@ -347,6 +347,14 @@ If set to a nonzero value and DevicePerfCounterEventBasedSampling is set, the In
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will collect also max values of target platform to .csv with MDAPI counters as a column next to each metric.
 
+##### `DevicePerfCounterTimeBasedSamplingPeriod` (uint32_t)
+
+The sampling period for Intel GPU Performance Counter Time-based Sampling, in microseconds.  A smaller sampling period increases overhead and the likelihood dropped samples but can be more precise.  Note that some devices do not support very small sampling periods.
+
+##### `DevicePerfCounterTimeBasedBufferSize` (uint32_t)
+
+The buffer size for Intel GPU Performance Counter Time-based Sampling, in bytes.  When set to zero, automatically chooses the device maximum buffer size.  A larger buffer size will decrease the likelihood of dropped samples.
+
 ##### `ITTPerformanceTiming` (bool)
 
 [Note: This control makes ITT calls, but they appear to do nothing!]  If set to a nonzero value, the Intercept Layer for OpenCL Applications will generate ITT-compatible performance timing data.  Similar to DevicePerformanceTiming, this operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events.  ITTPerformanceTiming will also silently create OpenCL command queues that support advanced performance counters if this functionality is available.  This feature will only function if the Intercept Layer for OpenCL Applications is built with ITT support.
