@@ -5,6 +5,7 @@
 */
 #pragma once
 
+#include <atomic>
 #include <chrono>
 #include <cinttypes>
 #include <fstream>
@@ -12,9 +13,10 @@
 #include <vector>
 #include <map>
 #include <mutex>
+#include <queue>
 #include <set>
 #include <sstream>
-#include <queue>
+#include <unordered_map>
 
 #include <stdint.h>
 
@@ -59,11 +61,11 @@ public:
     void    report();
 
     void    callLoggingEnter(
-                const std::string& functionName,
+                const char* functionName,
                 const uint64_t enqueueCounter,
                 const cl_kernel kernel );
     void    callLoggingEnter(
-                const std::string& functionName,
+                const char* functionName,
                 const uint64_t enqueueCounter,
                 const cl_kernel kernel,
                 const char* formatStr,
@@ -76,11 +78,11 @@ public:
                 ... );
 
     void    callLoggingExit(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_int errorCode,
                 const cl_event* event );
     void    callLoggingExit(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_int errorCode,
                 const cl_event* event,
                 const char* formatStr,
@@ -190,14 +192,14 @@ public:
                 cl_uint num_devices,
                 const cl_device_id* device_list );
     void    logError(
-                const std::string& functionName,
+                const char* functionName,
                 cl_int errorCode );
     void    logFlushOrFinishAfterEnqueueStart(
-                const std::string& flushOrFinish,
-                const std::string& functionName );
+                const char* flushOrFinish,
+                const char* functionName );
     void    logFlushOrFinishAfterEnqueueEnd(
-                const std::string& flushOrFinish,
-                const std::string& functionName,
+                const char* flushOrFinish,
+                const char* functionName,
                 cl_int errorCode );
     void    logKernelInfo(
                 const cl_kernel* kernels,
@@ -359,19 +361,19 @@ public:
                 const cl_bool blocking,
                 std::string& hostTag );
     void    getTimingTagsMap(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_map_flags flags,
                 const cl_bool blocking,
                 std::string& hostTag,
                 std::string& deviceTag );
     void    getTimingTagsMemfill(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_command_queue queue,
                 const void* dst,
                 std::string& hostTag,
                 std::string& deviceTag );
     void    getTimingTagsMemcpy(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_command_queue queue,
                 const cl_bool blocking,
                 const void* dst,
@@ -389,7 +391,7 @@ public:
                 std::string& deviceTag );
 
     void    updateHostTimingStats(
-                const std::string& functionName,
+                const char* functionName,
                 const std::string& tag,
                 clock::time_point start,
                 clock::time_point end );
@@ -413,7 +415,7 @@ public:
                 cl_device_id device );
 
     void    addTimingEvent(
-                const std::string& functionName,
+                const char* functionName,
                 const uint64_t enqueueCounter,
                 const clock::time_point queuedTime,
                 const std::string& tag,
@@ -546,7 +548,7 @@ public:
                 size_t size );
 
     void    checkEventList(
-                const std::string& functionName,
+                const char* functionName,
                 cl_uint numEvents,
                 const cl_event* eventList,
                 cl_event* event );
@@ -564,7 +566,7 @@ public:
                 cl_mem_properties_intel*& pLocalAllocProperties ) const;
 
     void    startAubCapture(
-                const std::string& functionName,
+                const char* functionName,
                 const uint64_t enqueueCounter,
                 const cl_kernel kernel,
                 const cl_uint workDim,
@@ -805,7 +807,7 @@ public:
     void    ittInit();
 
     void    ittCallLoggingEnter(
-                const std::string& functionName,
+                const char* functionName,
                 const cl_kernel kernel );
     void    ittCallLoggingExit();
 
@@ -821,7 +823,7 @@ public:
 #endif
 
     void    chromeCallLoggingExit(
-                const std::string& functionName,
+                const char* functionName,
                 const std::string& tag,
                 bool includeId,
                 const uint64_t enqueueCounter,
@@ -947,7 +949,7 @@ private:
 
     bool        m_LoggedCLInfo;
 
-    uint64_t    m_EnqueueCounter;
+    std::atomic<uint64_t>   m_EnqueueCounter;
 
     clock::time_point   m_StartTime;
 
@@ -970,7 +972,7 @@ private:
         cl_uint         SubDeviceIndex;
     };
 
-    typedef std::map< const cl_device_id, SSubDeviceInfo >  CSubDeviceInfoMap;
+    typedef std::map< cl_device_id, SSubDeviceInfo >    CSubDeviceInfoMap;
     CSubDeviceInfoMap   m_SubDeviceInfoMap;
 
     // This defines a mapping between the program handle and information
@@ -985,7 +987,7 @@ private:
         uint64_t        OptionsHash;
     };
 
-    typedef std::map< const cl_program, SProgramInfo >  CProgramInfoMap;
+    typedef std::map< cl_program, SProgramInfo >    CProgramInfoMap;
     CProgramInfoMap m_ProgramInfoMap;
 
     struct SHostTimingStats
@@ -1002,7 +1004,7 @@ private:
         uint64_t    TotalNS;
     };
 
-    typedef std::map< std::string, SHostTimingStats >   CHostTimingStatsMap;
+    typedef std::unordered_map< std::string, SHostTimingStats > CHostTimingStatsMap;
     CHostTimingStatsMap  m_HostTimingStatsMap;
 
     // These structures define a mapping between a device ID handle and
@@ -1056,7 +1058,7 @@ private:
         cl_ulong    TotalNS;
     };
 
-    typedef std::map< std::string, SDeviceTimingStats > CDeviceTimingStatsMap;
+    typedef std::unordered_map< std::string, SDeviceTimingStats >   CDeviceTimingStatsMap;
     typedef std::map< cl_device_id, CDeviceTimingStatsMap > CDeviceDeviceTimingStatsMap;
     CDeviceDeviceTimingStatsMap m_DeviceTimingStatsMap;
 
@@ -1074,7 +1076,7 @@ private:
         unsigned int    CompileCount;
     };
 
-    typedef std::map< const cl_kernel, SKernelInfo >    CKernelInfoMap;
+    typedef std::map< cl_kernel, SKernelInfo >  CKernelInfoMap;
     CKernelInfoMap  m_KernelInfoMap;
 
     // This defines a mapping between the "real" kernel name and a kernel
@@ -1083,7 +1085,7 @@ private:
 
     unsigned int    m_KernelID;
 
-    typedef std::map< const std::string, std::string >  CLongKernelNameMap;
+    typedef std::unordered_map< std::string, std::string >  CLongKernelNameMap;
     CLongKernelNameMap  m_LongKernelNameMap;
 
     // This is a list of pending events that haven't been added to the
@@ -1138,13 +1140,13 @@ private:
     typedef std::map< cl_sampler, std::string > CSamplerDataMap;
     CSamplerDataMap m_SamplerDataMap;
 
-    typedef std::map< const cl_mem, size_t >   CBufferInfoMap;
+    typedef std::map< cl_mem, size_t >  CBufferInfoMap;
     CBufferInfoMap      m_BufferInfoMap;
 
-    typedef std::map< const void*, size_t >    CSVMAllocInfoMap;
+    typedef std::map< const void*, size_t > CSVMAllocInfoMap;
     CSVMAllocInfoMap    m_SVMAllocInfoMap;
 
-    typedef std::map< const void*, size_t >    CUSMAllocInfoMap;
+    typedef std::map< const void*, size_t > CUSMAllocInfoMap;
     CUSMAllocInfoMap    m_USMAllocInfoMap;
 
     struct SImageInfo
@@ -1153,11 +1155,11 @@ private:
         size_t  ElementSize;
     };
 
-    typedef std::map< const cl_mem, SImageInfo >    CImageInfoMap;
+    typedef std::map< cl_mem, SImageInfo >  CImageInfoMap;
     CImageInfoMap   m_ImageInfoMap;
 
-    typedef std::map< cl_uint, const void* >                CKernelArgMemMap;
-    typedef std::map< const cl_kernel, CKernelArgMemMap >   CKernelArgMap;
+    typedef std::map< cl_uint, const void* >        CKernelArgMemMap;
+    typedef std::map< cl_kernel, CKernelArgMemMap > CKernelArgMap;
     CKernelArgMap   m_KernelArgMap;
 
     bool    m_AubCaptureStarted;
@@ -1167,7 +1169,7 @@ private:
     typedef std::set<std::string>   CAubCaptureSet;
     CAubCaptureSet  m_AubCaptureSet;
 
-    typedef std::map< const cl_context, SContextCallbackInfo* >  CContextCallbackInfoMap;
+    typedef std::map< cl_context, SContextCallbackInfo* >   CContextCallbackInfoMap;
     CContextCallbackInfoMap m_ContextCallbackInfoMap;
 
     struct SPrecompiledKernelOverrides
@@ -1184,7 +1186,7 @@ private:
         cl_kernel   Kernel_CopyImage2Dto2DUInt;
     };
 
-    typedef std::map< const cl_context, SPrecompiledKernelOverrides* >  CPrecompiledKernelOverridesMap;
+    typedef std::map< cl_context, SPrecompiledKernelOverrides* >    CPrecompiledKernelOverridesMap;
     CPrecompiledKernelOverridesMap  m_PrecompiledKernelOverridesMap;
 
     struct SBuiltinKernelOverrides
@@ -1194,16 +1196,16 @@ private:
         cl_kernel   Kernel_block_motion_estimate_intel;
     };
 
-    typedef std::map< const cl_context, SBuiltinKernelOverrides* >  CBuiltinKernelOverridesMap;
+    typedef std::map< cl_context, SBuiltinKernelOverrides* >    CBuiltinKernelOverridesMap;
     CBuiltinKernelOverridesMap  m_BuiltinKernelOverridesMap;
 
-    typedef std::map< const cl_accelerator_intel, cl_platform_id >  CAcceleratorInfoMap;
+    typedef std::map< cl_accelerator_intel, cl_platform_id >    CAcceleratorInfoMap;
     CAcceleratorInfoMap     m_AcceleratorInfoMap;
 
-    typedef std::map< const cl_semaphore_khr, cl_platform_id >  CSemaphoreInfoMap;
+    typedef std::map< cl_semaphore_khr, cl_platform_id >    CSemaphoreInfoMap;
     CSemaphoreInfoMap   m_SemaphoreInfoMap;
 
-    typedef std::map< const cl_command_buffer_khr, cl_platform_id > CCommandBufferInfoMap;
+    typedef std::map< cl_command_buffer_khr, cl_platform_id >   CCommandBufferInfoMap;
     CCommandBufferInfoMap   m_CommandBufferInfoMap;
 
     struct Config
@@ -1753,13 +1755,12 @@ inline const CLIntercept::Config& CLIntercept::config() const
 //
 inline uint64_t CLIntercept::getEnqueueCounter() const
 {
-    return m_EnqueueCounter;
+    return m_EnqueueCounter.load(std::memory_order_relaxed);
 }
 
 inline uint64_t CLIntercept::incrementEnqueueCounter()
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    return m_EnqueueCounter++;
+    return m_EnqueueCounter.fetch_add(1, std::memory_order_relaxed);
 }
 
 #define GET_ENQUEUE_COUNTER()                                               \
@@ -2283,8 +2284,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     }
 
 #define DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue )                \
-    if( pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&       \
-        pIntercept->config().DumpBuffersBeforeEnqueue &&                    \
+    if( pIntercept->config().DumpBuffersBeforeEnqueue &&                    \
+        pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&       \
         pIntercept->dumpBufferForKernel( kernel ) )                         \
     {                                                                       \
         pIntercept->dumpBuffersForKernel(                                   \
@@ -2292,8 +2293,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     }
 
 #define DUMP_BUFFERS_AFTER_ENQUEUE( kernel, command_queue )                 \
-    if( pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&       \
-        pIntercept->config().DumpBuffersAfterEnqueue &&                     \
+    if( pIntercept->config().DumpBuffersAfterEnqueue &&                     \
+        pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&       \
         pIntercept->dumpBufferForKernel( kernel ) )                         \
     {                                                                       \
         pIntercept->dumpBuffersForKernel(                                   \
@@ -2301,8 +2302,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     }
 
 #define DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue )                 \
-    if( pIntercept->checkDumpImageEnqueueLimits( enqueueCounter ) &&        \
-        pIntercept->config().DumpImagesBeforeEnqueue &&                     \
+    if( pIntercept->config().DumpImagesBeforeEnqueue &&                     \
+        pIntercept->checkDumpImageEnqueueLimits( enqueueCounter ) &&        \
         pIntercept->dumpImagesForKernel( kernel ) )                         \
     {                                                                       \
         pIntercept->dumpImagesForKernel(                                    \
@@ -2310,8 +2311,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     }
 
 #define DUMP_IMAGES_AFTER_ENQUEUE( kernel, command_queue )                  \
-    if( pIntercept->checkDumpImageEnqueueLimits( enqueueCounter ) &&        \
-        pIntercept->config().DumpImagesAfterEnqueue &&                      \
+    if( pIntercept->config().DumpImagesAfterEnqueue &&                      \
+        pIntercept->checkDumpImageEnqueueLimits( enqueueCounter ) &&        \
         pIntercept->dumpImagesForKernel( kernel ) )                         \
     {                                                                       \
         pIntercept->dumpImagesForKernel(                                    \

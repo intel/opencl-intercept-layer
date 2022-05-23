@@ -113,7 +113,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
 
     m_LoggedCLInfo = false;
 
-    m_EnqueueCounter = 0;
+    m_EnqueueCounter.store(0, std::memory_order::memory_order_relaxed);
 
     m_EventsChromeTraced = 0;
     m_ProgramNumber = 0;
@@ -760,7 +760,7 @@ void CLIntercept::writeReport(
         os << "*** WARNING *** NullEnqueue Enabled!" << std::endl << std::endl;
     }
 
-    os << "Total Enqueues: " << m_EnqueueCounter << std::endl << std::endl;
+    os << "Total Enqueues: " << m_EnqueueCounter.load(std::memory_order_relaxed) << std::endl << std::endl;
 
     if( config().LeakChecking )
     {
@@ -791,6 +791,9 @@ void CLIntercept::writeReport(
     {
         os << std::endl << "Host Performance Timing Results:" << std::endl;
 
+        std::vector<std::string> keys;
+        keys.reserve(m_HostTimingStatsMap.size());
+
         uint64_t    totalTotalNS = 0;
         size_t      longestName = 32;
 
@@ -802,12 +805,15 @@ void CLIntercept::writeReport(
 
             if( !name.empty() )
             {
+                keys.push_back(name);
                 totalTotalNS += hostTimingStats.TotalNS;
                 longestName = std::max< size_t >( name.length(), longestName );
             }
 
             ++i;
         }
+
+        std::sort(keys.begin(), keys.end());
 
         os << std::endl << "Total Time (ns): " << totalTotalNS << std::endl;
 
@@ -820,24 +826,17 @@ void CLIntercept::writeReport(
             << std::right << std::setw(13) << "Min (ns)" << ", "
             << std::right << std::setw(13) << "Max (ns)" << std::endl;
 
-        i = m_HostTimingStatsMap.begin();
-        while( i != m_HostTimingStatsMap.end() )
+        for( const auto& name : keys )
         {
-            const std::string& name = (*i).first;
-            const SHostTimingStats& hostTimingStats = (*i).second;
+            const SHostTimingStats& hostTimingStats = m_HostTimingStatsMap.at(name);
 
-            if( !name.empty() )
-            {
-                os << std::right << std::setw(longestName) << name << ", "
-                    << std::right << std::setw( 6) << hostTimingStats.NumberOfCalls << ", "
-                    << std::right << std::setw(13) << hostTimingStats.TotalNS << ", "
-                    << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << hostTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
-                    << std::right << std::setw(13) << hostTimingStats.TotalNS / hostTimingStats.NumberOfCalls << ", "
-                    << std::right << std::setw(13) << hostTimingStats.MinNS << ", "
-                    << std::right << std::setw(13) << hostTimingStats.MaxNS << std::endl;
-            }
-
-            ++i;
+            os << std::right << std::setw(longestName) << name << ", "
+                << std::right << std::setw( 6) << hostTimingStats.NumberOfCalls << ", "
+                << std::right << std::setw(13) << hostTimingStats.TotalNS << ", "
+                << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << hostTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
+                << std::right << std::setw(13) << hostTimingStats.TotalNS / hostTimingStats.NumberOfCalls << ", "
+                << std::right << std::setw(13) << hostTimingStats.MinNS << ", "
+                << std::right << std::setw(13) << hostTimingStats.MaxNS << std::endl;
         }
     }
 
@@ -854,6 +853,9 @@ void CLIntercept::writeReport(
 
             os << std::endl << "Device Performance Timing Results for " << deviceInfo.NameForReport << ":" << std::endl;
 
+            std::vector<std::string> keys;
+            keys.reserve(dtsm.size());
+
             cl_ulong    totalTotalNS = 0;
             size_t      longestName = 32;
 
@@ -865,12 +867,15 @@ void CLIntercept::writeReport(
 
                 if( !name.empty() )
                 {
+                    keys.push_back(name);
                     totalTotalNS += deviceTimingStats.TotalNS;
                     longestName = std::max< size_t >( name.length(), longestName );
                 }
 
                 ++i;
             }
+
+            std::sort(keys.begin(), keys.end());
 
             os << std::endl << "Total Time (ns): " << totalTotalNS << std::endl;
 
@@ -883,24 +888,17 @@ void CLIntercept::writeReport(
                 << std::right << std::setw(13) << "Min (ns)" << ", "
                 << std::right << std::setw(13) << "Max (ns)" << std::endl;
 
-            i = dtsm.begin();
-            while( i != dtsm.end() )
+            for( const auto& name : keys )
             {
-                const std::string& name = (*i).first;
-                const SDeviceTimingStats& deviceTimingStats = (*i).second;
+                const SDeviceTimingStats& deviceTimingStats = dtsm.at(name);
 
-                if( !name.empty() )
-                {
-                    os << std::right << std::setw(longestName) << name << ", "
-                        << std::right << std::setw( 6) << deviceTimingStats.NumberOfCalls << ", "
-                        << std::right << std::setw(13) << deviceTimingStats.TotalNS << ", "
-                        << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << deviceTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
-                        << std::right << std::setw(13) << deviceTimingStats.TotalNS / deviceTimingStats.NumberOfCalls << ", "
-                        << std::right << std::setw(13) << deviceTimingStats.MinNS << ", "
-                        << std::right << std::setw(13) << deviceTimingStats.MaxNS << std::endl;
-                }
-
-                ++i;
+                os << std::right << std::setw(longestName) << name << ", "
+                    << std::right << std::setw( 6) << deviceTimingStats.NumberOfCalls << ", "
+                    << std::right << std::setw(13) << deviceTimingStats.TotalNS << ", "
+                    << std::right << std::setw( 7) << std::fixed << std::setprecision(2) << deviceTimingStats.TotalNS * 100.0f / totalTotalNS << "%, "
+                    << std::right << std::setw(13) << deviceTimingStats.TotalNS / deviceTimingStats.NumberOfCalls << ", "
+                    << std::right << std::setw(13) << deviceTimingStats.MinNS << ", "
+                    << std::right << std::setw(13) << deviceTimingStats.MaxNS << std::endl;
             }
 
             ++id;
@@ -981,13 +979,13 @@ void CLIntercept::getCallLoggingPrefix(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::callLoggingEnter(
-    const std::string& functionName,
+    const char* functionName,
     const uint64_t enqueueCounter,
     const cl_kernel kernel )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    std::string str;
+    std::string str(">>>> ");
     getCallLoggingPrefix( str );
 
     str += functionName;
@@ -1008,24 +1006,29 @@ void CLIntercept::callLoggingEnter(
         str += ss.str();
     }
 
-    log( ">>>> " + str + "\n" );
+    str += "\n";
+
+    log( str );
 }
 void CLIntercept::callLoggingEnter(
-    const std::string& functionName,
+    const char* functionName,
     const uint64_t enqueueCounter,
     const cl_kernel kernel,
     const char* formatStr,
     ... )
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     va_list args;
     va_start( args, formatStr );
 
-    std::string str = functionName;
+    std::string str(">>>> ");
+    getCallLoggingPrefix( str );
+
+    str += functionName;
 
     if( kernel )
     {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-
         const std::string& kernelName = getShortKernelNameWithHash(kernel);
         str += "( ";
         str += kernelName;
@@ -1042,7 +1045,18 @@ void CLIntercept::callLoggingEnter(
     {
         str += ": too long";
     }
-    callLoggingEnter( str, enqueueCounter, NULL );
+
+    if( m_Config.CallLoggingEnqueueCounter )
+    {
+        std::ostringstream  ss;
+        ss << "; EnqueueCounter: ";
+        ss << enqueueCounter;
+        str += ss.str();
+    }
+
+    str += "\n";
+
+    log( str );
 
     va_end( args );
 }
@@ -1080,13 +1094,13 @@ void CLIntercept::callLoggingInfo(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::callLoggingExit(
-    const std::string& functionName,
+    const char* functionName,
     const cl_int errorCode,
     const cl_event* event )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    std::string str;
+    std::string str("<<<< ");
     getCallLoggingPrefix( str );
 
     str += functionName;
@@ -1099,20 +1113,26 @@ void CLIntercept::callLoggingExit(
 
     str += " -> ";
     str += m_EnumNameMap.name( errorCode );
+    str += "\n";
 
-    log( "<<<< " + str + "\n" );
+    log( str );
 }
 void CLIntercept::callLoggingExit(
-    const std::string& functionName,
+    const char* functionName,
     const cl_int errorCode,
     const cl_event* event,
     const char* formatStr,
     ... )
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     va_list args;
     va_start( args, formatStr );
 
-    std::string str = functionName;
+    std::string str;
+    getCallLoggingPrefix( str );
+
+    str += functionName;
 
     if( event )
     {
@@ -1131,7 +1151,10 @@ void CLIntercept::callLoggingExit(
         str += ": too long";
     }
 
-    callLoggingExit( str, errorCode, NULL );
+    str += " -> ";
+    str += m_EnumNameMap.name( errorCode );
+
+    log( "<<<< " + str + "\n" );
 
     va_end( args );
 }
@@ -3002,7 +3025,7 @@ void CLIntercept::logBuild(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::logError(
-    const std::string& functionName,
+    const char* functionName,
     cl_int errorCode )
 {
     std::ostringstream  ss;
@@ -3015,18 +3038,18 @@ void CLIntercept::logError(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::logFlushOrFinishAfterEnqueueStart(
-    const std::string& flushOrFinish,
-    const std::string& functionName )
+    const char* flushOrFinish,
+    const char* functionName )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-    log( "Calling " + flushOrFinish + " after " + functionName + "...\n" );
+    log( "Calling " + std::string(flushOrFinish) + " after " + std::string(functionName) + "...\n" );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::logFlushOrFinishAfterEnqueueEnd(
-    const std::string& flushOrFinish,
-    const std::string& functionName,
+    const char* flushOrFinish,
+    const char* functionName,
     cl_int errorCode )
 {
     std::ostringstream  ss;
@@ -5126,7 +5149,7 @@ void CLIntercept::getTimingTagBlocking(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::getTimingTagsMap(
-    const std::string& functionName,
+    const char* functionName,
     const cl_map_flags flags,
     const cl_bool blocking,
     std::string& hostTag,
@@ -5152,6 +5175,7 @@ void CLIntercept::getTimingTagsMap(
         hostTag += "?";
     }
 
+    deviceTag.reserve(128);
     deviceTag = functionName;
     deviceTag += "( ";
     deviceTag += hostTag;
@@ -5170,7 +5194,7 @@ void CLIntercept::getTimingTagsMap(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::getTimingTagsMemfill(
-    const std::string& functionName,
+    const char* functionName,
     const cl_command_queue queue,
     const void* dst,
     std::string& hostTag,
@@ -5220,6 +5244,7 @@ void CLIntercept::getTimingTagsMemfill(
             default:                        hostTag += "M"; break;
             }
 
+            deviceTag.reserve(128);
             deviceTag = functionName;
             deviceTag += "( ";
             deviceTag += hostTag;
@@ -5231,7 +5256,7 @@ void CLIntercept::getTimingTagsMemfill(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::getTimingTagsMemcpy(
-    const std::string& functionName,
+    const char* functionName,
     const cl_command_queue queue,
     const cl_bool blocking,
     const void* dst,
@@ -5298,6 +5323,7 @@ void CLIntercept::getTimingTagsMemcpy(
             default:                        hostTag += "M"; break;
             }
 
+            deviceTag.reserve(128);
             deviceTag = functionName;
             deviceTag += "( ";
             deviceTag += hostTag;
@@ -5641,7 +5667,7 @@ void CLIntercept::getTimingTagsKernel(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::updateHostTimingStats(
-    const std::string& functionName,
+    const char* functionName,
     const std::string& tag,
     clock::time_point start,
     clock::time_point end )
@@ -5931,7 +5957,7 @@ void CLIntercept::dummyCommandQueue(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::addTimingEvent(
-    const std::string& functionName,
+    const char* functionName,
     const uint64_t enqueueCounter,
     const clock::time_point queuedTime,
     const std::string& tag,
@@ -5943,7 +5969,7 @@ void CLIntercept::addTimingEvent(
     if( event == NULL )
     {
         logf( "Unexpectedly got a NULL timing event for %s, check for OpenCL errors!\n",
-            functionName.c_str() );
+            functionName );
         return;
     }
 
@@ -5967,7 +5993,7 @@ void CLIntercept::addTimingEvent(
 
     node.Device = device;
     node.QueueNumber = m_QueueNumberMap[ queue ];
-    node.Name = functionName;
+    node.Name = !tag.empty() ? tag : functionName;
     node.EnqueueCounter = enqueueCounter;
     node.QueuedTime = queuedTime;
     node.UseProfilingDelta = false;
@@ -6020,11 +6046,6 @@ void CLIntercept::addTimingEvent(
             //    interceptTimeStartNS, interceptTimeEndNS, interceptTimeEndNS - interceptTimeStartNS,
             //    hostTimeNS );
         }
-    }
-
-    if( !tag.empty() )
-    {
-        node.Name = tag;
     }
 }
 
@@ -7618,7 +7639,7 @@ void CLIntercept::dumpBuffer(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::checkEventList(
-    const std::string& functionName,
+    const char* functionName,
     cl_uint numEvents,
     const cl_event* eventList,
     cl_event* event )
@@ -7627,7 +7648,7 @@ void CLIntercept::checkEventList(
     {
         std::lock_guard<std::mutex> lock(m_Mutex);
         logf( "Check Events for %s: Num Events is %u, but Event List is NULL!\n",
-            functionName.c_str(),
+            functionName,
             numEvents );
     }
     else
@@ -7638,7 +7659,7 @@ void CLIntercept::checkEventList(
             {
                 std::lock_guard<std::mutex> lock(m_Mutex);
                 logf( "Check Events for %s: outgoing event %p is also in the event wait list!\n",
-                    functionName.c_str(),
+                    functionName,
                     eventList[i] );
                 continue;
             }
@@ -7654,7 +7675,7 @@ void CLIntercept::checkEventList(
             {
                 std::lock_guard<std::mutex> lock(m_Mutex);
                 logf( "Check Events for %s: clGetEventInfo for wait event %p returned %s (%d)!\n",
-                    functionName.c_str(),
+                    functionName,
                     eventList[i],
                     enumName().name(errorCode).c_str(),
                     errorCode );
@@ -7663,7 +7684,7 @@ void CLIntercept::checkEventList(
             {
                 std::lock_guard<std::mutex> lock(m_Mutex);
                 logf( "Check Events for %s: wait event %p is in an error state (%d)!\n",
-                    functionName.c_str(),
+                    functionName,
                     eventList[i],
                     eventCommandExecutionStatus );
             }
@@ -8033,7 +8054,7 @@ void CLIntercept::usmAllocPropertiesOverride(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::startAubCapture(
-    const std::string& functionName,
+    const char* functionName,
     const uint64_t enqueueCounter,
     const cl_kernel kernel,
     const cl_uint workDim,
@@ -12698,7 +12719,7 @@ void CLIntercept::ittInit()
 }
 
 void CLIntercept::ittCallLoggingEnter(
-    const std::string& functionName,
+    const char* functionName,
     const cl_kernel kernel )
 {
     std::string str( functionName );
@@ -13003,7 +13024,7 @@ void CLIntercept::ittTraceEvent(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::chromeCallLoggingExit(
-    const std::string& functionName,
+    const char* functionName,
     const std::string& tag,
     bool includeId,
     const uint64_t enqueueCounter,
@@ -13037,7 +13058,7 @@ void CLIntercept::chromeCallLoggingExit(
             ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
             m_ProcessId,
             threadId,
-            functionName.c_str(),
+            functionName,
             tag.c_str(),
             usStart,
             usDelta,
@@ -13051,7 +13072,7 @@ void CLIntercept::chromeCallLoggingExit(
             ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
             m_ProcessId,
             threadId,
-            functionName.c_str(),
+            functionName,
             tag.c_str(),
             usStart,
             usDelta );
@@ -13064,7 +13085,7 @@ void CLIntercept::chromeCallLoggingExit(
             ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
             m_ProcessId,
             threadId,
-            functionName.c_str(),
+            functionName,
             usStart,
             usDelta,
             enqueueCounter );
@@ -13077,7 +13098,7 @@ void CLIntercept::chromeCallLoggingExit(
             ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
             m_ProcessId,
             threadId,
-            functionName.c_str(),
+            functionName,
             usStart,
             usDelta );
         m_InterceptTrace.write(m_StringBuffer, size);

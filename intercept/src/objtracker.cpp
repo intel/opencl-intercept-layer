@@ -14,25 +14,29 @@ void CObjectTracker::ReportHelper(
     const CObjectTracker::CTracker& tracker,
     std::ostream& os )
 {
-    if( tracker.NumReleases < tracker.NumAllocations + tracker.NumRetains )
+    size_t  numAllocations = tracker.NumAllocations.load(std::memory_order_relaxed);
+    size_t  numRetains = tracker.NumRetains.load(std::memory_order_relaxed);
+    size_t  numReleases = tracker.NumReleases.load(std::memory_order_relaxed);
+
+    if( numReleases < numAllocations + numRetains )
     {
         os << "Possible leak of type " << label << "!" << std::endl;
-        os << "    Number of Allocations: " << tracker.NumAllocations << std::endl;
-        os << "    Number of Retains:     " << tracker.NumRetains << std::endl;
-        os << "    Number of Releases:    " << tracker.NumReleases << std::endl;
+        os << "    Number of Allocations: " << numAllocations << std::endl;
+        os << "    Number of Retains:     " << numRetains << std::endl;
+        os << "    Number of Releases:    " << numReleases << std::endl;
     }
-    else if( tracker.NumReleases > tracker.NumAllocations + tracker.NumRetains )
+    else if( numReleases > numAllocations + numRetains )
     {
         // If there are more releases than allocations or retains then this
         // is an unexpected situation.  It usually means that some allocations
         // aren't tracked correctly, or that a retain or release returned
         // an error.
         os << "Unexpected counts for type " << label << "!" << std::endl;
-        os << "    Number of Allocations: " << tracker.NumAllocations << std::endl;
-        os << "    Number of Retains:     " << tracker.NumRetains << std::endl;
-        os << "    Number of Releases:    " << tracker.NumReleases << std::endl;
+        os << "    Number of Allocations: " << numAllocations << std::endl;
+        os << "    Number of Retains:     " << numRetains << std::endl;
+        os << "    Number of Releases:    " << numReleases << std::endl;
     }
-    else if( tracker.NumAllocations )
+    else if( numAllocations )
     {
         os << "No " << label << " leaks detected." << std::endl;
     }
@@ -40,8 +44,6 @@ void CObjectTracker::ReportHelper(
 
 void CObjectTracker::writeReport( std::ostream& os )
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
     os << std::endl;
     ReportHelper( "cl_device_id",       m_Devices,          os );
     ReportHelper( "cl_context",         m_Contexts,         os );
