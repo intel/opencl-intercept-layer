@@ -45,6 +45,9 @@ public:
     bool    StopAubCaptureKDC(
                 uint64_t delay ) const;
 
+    bool    CheckMDAPIPermissions(
+                std::string& str ) const;
+
 private:
     HINSTANCE   m_hInstance;
 
@@ -299,6 +302,12 @@ inline bool Services::StopAubCaptureKDC(
     bool success = SetAubCaptureRegistryKeys( "", 0 );
 
     return res != -1;
+}
+
+inline bool Services::CheckMDAPIPermissions(
+    std::string& str ) const
+{
+    return true;
 }
 
 }

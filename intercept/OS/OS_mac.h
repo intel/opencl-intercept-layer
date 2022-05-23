@@ -39,6 +39,9 @@ public:
     bool    StopAubCapture(
                 uint64_t delay ) const;
 
+    bool    CheckMDAPIPermissions(
+                std::string& str ) const;
+
 private:
     DISALLOW_COPY_AND_ASSIGN( Services );
 };
@@ -93,6 +96,12 @@ inline bool Services::StopAubCapture(
     uint64_t delay ) const
 {
     return false;
+}
+
+inline bool Services::CheckMDAPIPermissions(
+    std::string& str ) const
+{
+    return true;
 }
 
 }

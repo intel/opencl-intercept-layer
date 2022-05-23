@@ -145,7 +145,12 @@ void CLIntercept::initCustomPerfCounters()
 
     if( m_pMDHelper == NULL )
     {
-        if( config().DevicePerfCounterEventBasedSampling )
+        std::string permissionString;
+        if( OS().CheckMDAPIPermissions(permissionString) == false )
+        {
+            log( permissionString );
+        }
+        else if( config().DevicePerfCounterEventBasedSampling )
         {
             m_pMDHelper = MetricsDiscovery::MDHelper::CreateEBS(
                 config().DevicePerfCounterLibName,
