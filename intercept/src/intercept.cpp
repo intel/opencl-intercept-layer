@@ -5175,6 +5175,7 @@ void CLIntercept::getTimingTagsMap(
         hostTag += "?";
     }
 
+    deviceTag.reserve(128);
     deviceTag = functionName;
     deviceTag += "( ";
     deviceTag += hostTag;
@@ -5243,6 +5244,7 @@ void CLIntercept::getTimingTagsMemfill(
             default:                        hostTag += "M"; break;
             }
 
+            deviceTag.reserve(128);
             deviceTag = functionName;
             deviceTag += "( ";
             deviceTag += hostTag;
@@ -5321,6 +5323,7 @@ void CLIntercept::getTimingTagsMemcpy(
             default:                        hostTag += "M"; break;
             }
 
+            deviceTag.reserve(128);
             deviceTag = functionName;
             deviceTag += "( ";
             deviceTag += hostTag;
@@ -5990,7 +5993,7 @@ void CLIntercept::addTimingEvent(
 
     node.Device = device;
     node.QueueNumber = m_QueueNumberMap[ queue ];
-    node.Name = functionName;
+    node.Name = !tag.empty() ? tag : functionName;
     node.EnqueueCounter = enqueueCounter;
     node.QueuedTime = queuedTime;
     node.UseProfilingDelta = false;
@@ -6043,11 +6046,6 @@ void CLIntercept::addTimingEvent(
             //    interceptTimeStartNS, interceptTimeEndNS, interceptTimeEndNS - interceptTimeStartNS,
             //    hostTimeNS );
         }
-    }
-
-    if( !tag.empty() )
-    {
-        node.Name = tag;
     }
 }
 
