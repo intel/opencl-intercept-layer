@@ -2616,7 +2616,7 @@ void CLIntercept::getKernelArgString(
              ( arg_size == sizeof(cl_ulong) ) )
     {
         cl_ulong*   pData = (cl_ulong*)arg_value;
-        CLI_SPRINTF( s, 256, "index = %u, size = %zu, value = 0x%jx",
+        CLI_SPRINTF( s, 256, "index = %u, size = %zu, value = 0x%" PRIx64,
             arg_index,
             arg_size,
             pData[0] );
