@@ -45,6 +45,9 @@ public:
     bool    StopAubCapture(
                 uint64_t delay ) const;
 
+    bool    CheckMDAPIPermissions(
+                std::string& str ) const;
+
 private:
     DISALLOW_COPY_AND_ASSIGN( Services );
 };
@@ -167,6 +170,44 @@ inline bool Services::StopAubCapture(
     }
 
     return SetAubCaptureEnvironmentVariables( "", false );
+}
+
+inline bool Services::CheckMDAPIPermissions(
+    std::string& str ) const
+{
+    const char* path = "/proc/sys/dev/i915/perf_stream_paranoid";
+    bool available = false;
+
+    struct stat sb;
+    if( stat(path, &sb) == 0 )
+    {
+        uint64_t value = 1;
+        int fd = open(path, 0);
+        if( fd > 0 )
+        {
+            char buf[32];
+            int n = read(fd, buf, sizeof(buf) - 1);
+            close(fd);
+            if( n > 0 )
+            {
+                buf[n] = 0;
+                value = strtoull(buf, NULL, 0);
+            }
+        }
+
+        if( value == 0 || geteuid() == 0 )
+        {
+            available = true;
+        }
+    }
+
+    if( available == false )
+    {
+        str = "Insufficient permissions for MDAPI!"
+            "  Consider: sysctl dev.i915.perf_stream_paranoid=0\n";
+    }
+
+    return available;
 }
 
 }

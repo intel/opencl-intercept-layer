@@ -104,6 +104,12 @@ by setting `/proc/sys/dev/i915/perf_stream_paranoid` to `0`:
     $ echo 0 > /proc/sys/dev/i915/perf_stream_paranoid
     ```
 
+    or:
+
+    ```sh
+    $ sysctl dev.i915.perf_stream_paranoid=0
+    ```
+
     For more information, see:
     * https://software.intel.com/en-us/vtune-cookbook-real-time-monitoring-with-system-analyzer
 * MDAPI metrics are logged to CSV files in the usual log directory.
