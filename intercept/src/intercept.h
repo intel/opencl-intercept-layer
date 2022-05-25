@@ -819,7 +819,11 @@ public:
     void    ittTraceEvent(
                 const std::string& name,
                 cl_event event,
-                const clock::time_point queuedTime );
+                clock::time_point queuedTime,
+                cl_ulong commandQueued,
+                cl_ulong commandSubmit,
+                cl_ulong commandStart,
+                cl_ulong commandEnd );
 #endif
 
     void    chromeCallLoggingExit(
@@ -827,6 +831,10 @@ public:
                 const std::string& tag,
                 bool includeId,
                 const uint64_t enqueueCounter,
+                clock::time_point start,
+                clock::time_point end );
+    void    chromeCallLoggingSubset(
+                const char* name,
                 clock::time_point start,
                 clock::time_point end );
     void    chromeRegisterCommandQueue(
@@ -837,8 +845,11 @@ public:
                 int64_t profilingDeltaNS,
                 uint64_t enqueueCounter,
                 unsigned int queueNumber,
-                cl_event event,
-                clock::time_point queuedTime );
+                clock::time_point queuedTime,
+                cl_ulong commandQueued,
+                cl_ulong commandSubmit,
+                cl_ulong commandStart,
+                cl_ulong commandEnd );
 
     // USM Emulation:
     void*   emulatedHostMemAlloc(

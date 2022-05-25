@@ -5964,7 +5964,13 @@ void CLIntercept::addTimingEvent(
     const cl_command_queue queue,
     cl_event event )
 {
+    clock::time_point mutexStart = clock::now();
     std::lock_guard<std::mutex> lock(m_Mutex);
+    clock::time_point mutexEnd = clock::now();
+    chromeCallLoggingSubset(
+        "Waiting For Lock",
+        mutexStart,
+        mutexEnd );
 
     if( event == NULL )
     {
@@ -6053,7 +6059,13 @@ void CLIntercept::addTimingEvent(
 //
 void CLIntercept::checkTimingEvents()
 {
+    clock::time_point mutexStart = clock::now();
     std::lock_guard<std::mutex> lock(m_Mutex);
+    clock::time_point mutexEnd = clock::now();
+    chromeCallLoggingSubset(
+        "Waiting For Lock",
+        mutexStart,
+        mutexEnd );
 
     CEventList::iterator    current = m_EventList.begin();
     CEventList::iterator    next;
@@ -6080,6 +6092,8 @@ void CLIntercept::checkTimingEvents()
         case CL_SUCCESS:
             if( eventStatus == CL_COMPLETE )
             {
+                clock::time_point completeEventStart = clock::now();
+
                 if( config().DevicePerformanceTiming ||
                     config().ITTPerformanceTiming ||
                     config().ChromePerformanceTiming )
@@ -6157,33 +6171,40 @@ void CLIntercept::checkTimingEvents()
 
                             log( ss.str() );
                         }
-                    }
-                }
 
 #if defined(USE_ITT)
-                if( config().ITTPerformanceTiming )
-                {
-                    ittTraceEvent(
-                        node.Name,
-                        node.Event,
-                        node.QueuedTime );
-                }
+                        if( config().ITTPerformanceTiming )
+                        {
+                            ittTraceEvent(
+                                node.Name,
+                                node.Event,
+                                node.QueuedTime,
+                                commandQueued,
+                                commandSubmit,
+                                commandStart,
+                                commandEnd );
+                        }
 #endif
 
-                if( config().ChromePerformanceTiming )
-                {
-                    bool useProfilingDelta =
-                        node.UseProfilingDelta &&
-                        !config().ChromePerformanceTimingEstimateQueuedTime;
+                        if( config().ChromePerformanceTiming )
+                        {
+                            bool useProfilingDelta =
+                                node.UseProfilingDelta &&
+                                !config().ChromePerformanceTimingEstimateQueuedTime;
 
-                    chromeTraceEvent(
-                        node.Name,
-                        useProfilingDelta,
-                        node.ProfilingDeltaNS,
-                        node.EnqueueCounter,
-                        node.QueueNumber,
-                        node.Event,
-                        node.QueuedTime );
+                            chromeTraceEvent(
+                                node.Name,
+                                useProfilingDelta,
+                                node.ProfilingDeltaNS,
+                                node.EnqueueCounter,
+                                node.QueueNumber,
+                                node.QueuedTime,
+                                commandQueued,
+                                commandSubmit,
+                                commandStart,
+                                commandEnd );
+                        }
+                    }
                 }
 
 #if defined(USE_MDAPI)
@@ -6198,6 +6219,12 @@ void CLIntercept::checkTimingEvents()
                 dispatch().clReleaseEvent( node.Event );
 
                 m_EventList.erase( current );
+
+                clock::time_point completeEventEnd = clock::now();
+                chromeCallLoggingSubset(
+                    "Processing Completed Event",
+                    completeEventStart,
+                    completeEventEnd );
             }
             break;
         case CL_INVALID_EVENT:
@@ -12887,17 +12914,16 @@ void ITTAPI CLIntercept::ittClockInfoCallback(
 void CLIntercept::ittTraceEvent(
     const std::string& name,
     cl_event event,
-    clock::time_point queuedTime )
+    clock::time_point queuedTime,
+    cl_ulong commandQueued,
+    cl_ulong commandSubmit,
+    cl_ulong commandStart,
+    cl_ulong commandEnd )
 {
     cl_int  errorCode = CL_SUCCESS;
 
     cl_command_queue    queue = NULL;
     cl_command_type     type = 0;
-
-    cl_ulong    commandQueued = 0;
-    cl_ulong    commandSubmit = 0;
-    cl_ulong    commandStart = 0;
-    cl_ulong    commandEnd = 0;
 
     errorCode |= dispatch().clGetEventInfo(
         event,
@@ -12911,31 +12937,6 @@ void CLIntercept::ittTraceEvent(
         CL_EVENT_COMMAND_TYPE,
         sizeof(type),
         &type,
-        NULL );
-
-    errorCode |= dispatch().clGetEventProfilingInfo(
-        event,
-        CL_PROFILING_COMMAND_QUEUED,
-        sizeof( commandQueued ),
-        &commandQueued,
-        NULL );
-    errorCode |= dispatch().clGetEventProfilingInfo(
-        event,
-        CL_PROFILING_COMMAND_SUBMIT,
-        sizeof( commandSubmit ),
-        &commandSubmit,
-        NULL );
-    errorCode |= dispatch().clGetEventProfilingInfo(
-        event,
-        CL_PROFILING_COMMAND_START,
-        sizeof( commandStart ),
-        &commandStart,
-        NULL );
-    errorCode |= dispatch().clGetEventProfilingInfo(
-        event,
-        CL_PROFILING_COMMAND_END,
-        sizeof( commandEnd ),
-        &commandEnd,
         NULL );
 
     if( errorCode == CL_SUCCESS )
@@ -13107,6 +13108,35 @@ void CLIntercept::chromeCallLoggingExit(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::chromeCallLoggingSubset(
+    const char* name,
+    clock::time_point tickStart,
+    clock::time_point tickEnd )
+{
+    uint64_t    threadId = OS().GetThreadID();
+
+    // This will name the thread if it is not named already.
+    getThreadNumber( threadId );
+
+    using us = std::chrono::microseconds;
+    uint64_t    usStart =
+        std::chrono::duration_cast<us>(tickStart - m_StartTime).count();
+    uint64_t    usDelta =
+        std::chrono::duration_cast<us>(tickEnd - tickStart).count();
+
+    int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
+        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
+        m_ProcessId,
+        threadId,
+        name,
+        usStart + 1,
+        usDelta );
+    m_InterceptTrace.write(m_StringBuffer, size);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::chromeRegisterCommandQueue(
     cl_command_queue queue )
 {
@@ -13217,176 +13247,140 @@ void CLIntercept::chromeTraceEvent(
     int64_t profilingDeltaNS,
     uint64_t enqueueCounter,
     unsigned int queueNumber,
-    cl_event event,
-    const clock::time_point queuedTime )
+    clock::time_point queuedTime,
+    cl_ulong commandQueued,
+    cl_ulong commandSubmit,
+    cl_ulong commandStart,
+    cl_ulong commandEnd )
 {
-    cl_int  errorCode = CL_SUCCESS;
+    using ns = std::chrono::nanoseconds;
+    const uint64_t  startTimeNS =
+        std::chrono::duration_cast<ns>(m_StartTime.time_since_epoch()).count();
+    const uint64_t  estimatedQueuedTimeNS =
+        std::chrono::duration_cast<ns>(queuedTime.time_since_epoch()).count();
+    const uint64_t  profilingQueuedTimeNS =
+        commandQueued + profilingDeltaNS;
 
-    cl_ulong    commandQueued = 0;
-    cl_ulong    commandSubmit = 0;
-    cl_ulong    commandStart = 0;
-    cl_ulong    commandEnd = 0;
+    // Use the profiling queued time directly if the profiling delta is
+    // valid and if it is within a threshold of the measured queued time.
+    // The threshold is to work around buggy device and host timers.
+    const uint64_t  threshold = 1000000000;   // 1s
+    const uint64_t  normalizedQueuedTimeNS =
+        useProfilingDelta &&
+        profilingQueuedTimeNS >= estimatedQueuedTimeNS &&
+        profilingQueuedTimeNS - estimatedQueuedTimeNS < threshold ?
+        profilingQueuedTimeNS - startTimeNS :
+        estimatedQueuedTimeNS - startTimeNS;
 
-    errorCode |= dispatch().clGetEventProfilingInfo(
-        event,
-        CL_PROFILING_COMMAND_QUEUED,
-        sizeof( commandQueued ),
-        &commandQueued,
-        NULL );
-    errorCode |= dispatch().clGetEventProfilingInfo(
-        event,
-        CL_PROFILING_COMMAND_SUBMIT,
-        sizeof( commandSubmit ),
-        &commandSubmit,
-        NULL );
-    errorCode |= dispatch().clGetEventProfilingInfo(
-        event,
-        CL_PROFILING_COMMAND_START,
-        sizeof( commandStart ),
-        &commandStart,
-        NULL );
-    errorCode |= dispatch().clGetEventProfilingInfo(
-        event,
-        CL_PROFILING_COMMAND_END,
-        sizeof( commandEnd ),
-        &commandEnd,
-        NULL );
+    //if( useProfilingDelta )
+    //{
+    //    int64_t deltaNS =
+    //        profilingQueuedTimeNS - estimatedQueuedTimeNS;
+    //    logf( "For command %s:\n"
+    //        "\tcommandQueued is %llu ns (%.2f us)\n"
+    //        "\testimatedQueuedTimeNS is %llu ns (%.2f us)\n"
+    //        "\tprofilingQueuedTimeNS is %llu ns (%.2f us)\n"
+    //        "\testimated time is %s than profiling time\n"
+    //        "\tdeltaNS is %llu ns (%.2f us)\n",
+    //        name.c_str(),
+    //        commandQueued, commandQueued / 1000.0,
+    //        estimatedQueuedTimeNS, estimatedQueuedTimeNS / 1000.0,
+    //        profilingQueuedTimeNS, profilingQueuedTimeNS / 1000.0,
+    //        estimatedQueuedTimeNS > profilingQueuedTimeNS ? "GREATER" : "LESS",
+    //        deltaNS, deltaNS / 1000.0 );
+    //}
 
-    if( errorCode == CL_SUCCESS )
+    if( m_Config.ChromePerformanceTimingInStages )
     {
-        using ns = std::chrono::nanoseconds;
-        const uint64_t  startTimeNS =
-            std::chrono::duration_cast<ns>(m_StartTime.time_since_epoch()).count();
-        const uint64_t  estimatedQueuedTimeNS =
-            std::chrono::duration_cast<ns>(queuedTime.time_since_epoch()).count();
-        const uint64_t  profilingQueuedTimeNS =
-            commandQueued + profilingDeltaNS;
+        const size_t cNumStates = 3;
+        const std::string   colours[cNumStates] = {
+            "thread_state_runnable",
+            "cq_build_running",
+            "thread_state_iowait"
+        };
+        const std::string   suffixes[cNumStates] = {
+            "(Queued)",
+            "(Submitted)",
+            "(Execution)"
+        };
+        const uint64_t  usStarts[cNumStates] = {
+            normalizedQueuedTimeNS / 1000,
+            (commandSubmit - commandQueued + normalizedQueuedTimeNS) / 1000,
+            (commandStart - commandQueued + normalizedQueuedTimeNS) / 1000
+        };
+        const uint64_t  usDeltas[cNumStates] = {
+            (commandSubmit - commandQueued) / 1000,
+            (commandStart - commandSubmit) / 1000,
+            (commandEnd - commandStart) / 1000
+        };
 
-        // Use the profiling queued time directly if the profiling delta is
-        // valid and if it is within a threshold of the measured queued time.
-        // The threshold is to work around buggy device and host timers.
-        const uint64_t  threshold = 1000000000;   // 1s
-        const uint64_t  normalizedQueuedTimeNS =
-            useProfilingDelta &&
-            profilingQueuedTimeNS >= estimatedQueuedTimeNS &&
-            profilingQueuedTimeNS - estimatedQueuedTimeNS < threshold ?
-            profilingQueuedTimeNS - startTimeNS :
-            estimatedQueuedTimeNS - startTimeNS;
-
-        //if( useProfilingDelta )
-        //{
-        //    int64_t deltaNS =
-        //        profilingQueuedTimeNS - estimatedQueuedTimeNS;
-        //    logf( "For command %s:\n"
-        //        "\tcommandQueued is %llu ns (%.2f us)\n"
-        //        "\testimatedQueuedTimeNS is %llu ns (%.2f us)\n"
-        //        "\tprofilingQueuedTimeNS is %llu ns (%.2f us)\n"
-        //        "\testimated time is %s than profiling time\n"
-        //        "\tdeltaNS is %llu ns (%.2f us)\n",
-        //        name.c_str(),
-        //        commandQueued, commandQueued / 1000.0,
-        //        estimatedQueuedTimeNS, estimatedQueuedTimeNS / 1000.0,
-        //        profilingQueuedTimeNS, profilingQueuedTimeNS / 1000.0,
-        //        estimatedQueuedTimeNS > profilingQueuedTimeNS ? "GREATER" : "LESS",
-        //        deltaNS, deltaNS / 1000.0 );
-        //}
-
-        if( m_Config.ChromePerformanceTimingInStages )
+        for( size_t state = 0; state < cNumStates; state++ )
         {
-            const size_t cNumStates = 3;
-            const std::string   colours[cNumStates] = {
-                "thread_state_runnable",
-                "cq_build_running",
-                "thread_state_iowait"
-            };
-            const std::string   suffixes[cNumStates] = {
-                "(Queued)",
-                "(Submitted)",
-                "(Execution)"
-            };
-            const uint64_t  usStarts[cNumStates] = {
-                normalizedQueuedTimeNS / 1000,
-                (commandSubmit - commandQueued + normalizedQueuedTimeNS) / 1000,
-                (commandStart - commandQueued + normalizedQueuedTimeNS) / 1000
-            };
-            const uint64_t  usDeltas[cNumStates] = {
-                (commandSubmit - commandQueued) / 1000,
-                (commandStart - commandSubmit) / 1000,
-                (commandEnd - commandStart) / 1000
-            };
-
-            for( size_t state = 0; state < cNumStates; state++ )
-            {
-                if( m_Config.ChromePerformanceTimingPerKernel )
-                {
-                    int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-                        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s %s\""
-                        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
-                        m_ProcessId,
-                        name.c_str(),
-                        name.c_str(),
-                        suffixes[state].c_str(),
-                        usStarts[state],
-                        usDeltas[state],
-                        colours[state].c_str(),
-                        enqueueCounter );
-                    m_InterceptTrace.write(m_StringBuffer, size);
-                }
-                else
-                {
-                    int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-                        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%u.%u,\"name\":\"%s %s\""
-                        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
-                        m_ProcessId,
-                        m_EventsChromeTraced,
-                        queueNumber,
-                        name.c_str(),
-                        suffixes[state].c_str(),
-                        usStarts[state],
-                        usDeltas[state],
-                        colours[state].c_str(),
-                        enqueueCounter );
-                    m_InterceptTrace.write(m_StringBuffer, size);
-                }
-            }
-            m_EventsChromeTraced++;
-        }
-        else
-        {
-            const uint64_t  usStart =
-                (commandStart - commandQueued + normalizedQueuedTimeNS) / 1000;
-            const uint64_t  usDelta = ( commandEnd - commandStart ) / 1000;
             if( m_Config.ChromePerformanceTimingPerKernel )
             {
                 int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-                    "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s\""
-                    ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+                    "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s %s\""
+                    ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
                     m_ProcessId,
                     name.c_str(),
                     name.c_str(),
-                    usStart,
-                    usDelta,
+                    suffixes[state].c_str(),
+                    usStarts[state],
+                    usDeltas[state],
+                    colours[state].c_str(),
                     enqueueCounter );
                 m_InterceptTrace.write(m_StringBuffer, size);
             }
             else
             {
                 int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-                    "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"%s\""
-                    ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+                    "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%u.%u,\"name\":\"%s %s\""
+                    ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
                     m_ProcessId,
+                    m_EventsChromeTraced,
                     queueNumber,
                     name.c_str(),
-                    usStart,
-                    usDelta,
+                    suffixes[state].c_str(),
+                    usStarts[state],
+                    usDeltas[state],
+                    colours[state].c_str(),
                     enqueueCounter );
                 m_InterceptTrace.write(m_StringBuffer, size);
             }
         }
+        m_EventsChromeTraced++;
     }
     else
     {
-        log( "chromeTraceEvent(): OpenCL error\n" );
+        const uint64_t  usStart =
+            (commandStart - commandQueued + normalizedQueuedTimeNS) / 1000;
+        const uint64_t  usDelta = ( commandEnd - commandStart ) / 1000;
+        if( m_Config.ChromePerformanceTimingPerKernel )
+        {
+            int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+                "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s\""
+                ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+                m_ProcessId,
+                name.c_str(),
+                name.c_str(),
+                usStart,
+                usDelta,
+                enqueueCounter );
+            m_InterceptTrace.write(m_StringBuffer, size);
+        }
+        else
+        {
+            int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+                "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"%s\""
+                ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+                m_ProcessId,
+                queueNumber,
+                name.c_str(),
+                usStart,
+                usDelta,
+                enqueueCounter );
+            m_InterceptTrace.write(m_StringBuffer, size);
+        }
     }
 }
 
