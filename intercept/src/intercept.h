@@ -833,10 +833,6 @@ public:
                 const uint64_t enqueueCounter,
                 clock::time_point start,
                 clock::time_point end );
-    void    chromeCallLoggingSubset(
-                const char* name,
-                clock::time_point start,
-                clock::time_point end );
     void    chromeRegisterCommandQueue(
                 cl_command_queue queue );
     void    chromeTraceEvent(

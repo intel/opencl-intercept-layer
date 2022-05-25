@@ -5964,13 +5964,7 @@ void CLIntercept::addTimingEvent(
     const cl_command_queue queue,
     cl_event event )
 {
-    clock::time_point mutexStart = clock::now();
     std::lock_guard<std::mutex> lock(m_Mutex);
-    clock::time_point mutexEnd = clock::now();
-    chromeCallLoggingSubset(
-        "Waiting For Lock",
-        mutexStart,
-        mutexEnd );
 
     if( event == NULL )
     {
@@ -6059,13 +6053,7 @@ void CLIntercept::addTimingEvent(
 //
 void CLIntercept::checkTimingEvents()
 {
-    clock::time_point mutexStart = clock::now();
     std::lock_guard<std::mutex> lock(m_Mutex);
-    clock::time_point mutexEnd = clock::now();
-    chromeCallLoggingSubset(
-        "Waiting For Lock",
-        mutexStart,
-        mutexEnd );
 
     CEventList::iterator    current = m_EventList.begin();
     CEventList::iterator    next;
@@ -6092,8 +6080,6 @@ void CLIntercept::checkTimingEvents()
         case CL_SUCCESS:
             if( eventStatus == CL_COMPLETE )
             {
-                clock::time_point completeEventStart = clock::now();
-
                 if( config().DevicePerformanceTiming ||
                     config().ITTPerformanceTiming ||
                     config().ChromePerformanceTiming )
@@ -6219,12 +6205,6 @@ void CLIntercept::checkTimingEvents()
                 dispatch().clReleaseEvent( node.Event );
 
                 m_EventList.erase( current );
-
-                clock::time_point completeEventEnd = clock::now();
-                chromeCallLoggingSubset(
-                    "Processing Completed Event",
-                    completeEventStart,
-                    completeEventEnd );
             }
             break;
         case CL_INVALID_EVENT:
@@ -13104,35 +13084,6 @@ void CLIntercept::chromeCallLoggingExit(
             usDelta );
         m_InterceptTrace.write(m_StringBuffer, size);
     }
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::chromeCallLoggingSubset(
-    const char* name,
-    clock::time_point tickStart,
-    clock::time_point tickEnd )
-{
-    uint64_t    threadId = OS().GetThreadID();
-
-    // This will name the thread if it is not named already.
-    getThreadNumber( threadId );
-
-    using us = std::chrono::microseconds;
-    uint64_t    usStart =
-        std::chrono::duration_cast<us>(tickStart - m_StartTime).count();
-    uint64_t    usDelta =
-        std::chrono::duration_cast<us>(tickEnd - tickStart).count();
-
-    int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
-        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
-        m_ProcessId,
-        threadId,
-        name,
-        usStart + 1,
-        usDelta );
-    m_InterceptTrace.write(m_StringBuffer, size);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
