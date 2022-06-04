@@ -11019,7 +11019,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetCommandBufferInfoKHR(
     if( pIntercept )
     {
         const auto& dispatchX = pIntercept->dispatchX(command_buffer);
-        if( dispatchX.clGetSemaphoreInfoKHR )
+        if( dispatchX.clGetCommandBufferInfoKHR )
         {
             GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER( "command_buffer = %p, param_name = %s (%08X)",
