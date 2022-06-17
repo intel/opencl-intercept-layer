@@ -38,7 +38,7 @@ static void* OpenLibrary( const std::string& metricsLibraryName )
 
 #elif defined(__linux__) || defined(__APPLE__)
 #ifdef __linux__
-static const char* cMDLibFileName = "libmd.so";
+static const char* cMDLibFileName = "libigdmd.so";
 #else
 static const char* cMDLibFileName = "libigdmd.dylib";
 #endif
@@ -49,9 +49,26 @@ static const char* cMDLibFileName = "libigdmd.dylib";
 
 static void* OpenLibrary( const std::string& metricsLibraryName )
 {
-    return !metricsLibraryName.empty() ?
-        dlopen(metricsLibraryName.c_str(), RTLD_LAZY | RTLD_LOCAL) :
-        dlopen(cMDLibFileName, RTLD_LAZY | RTLD_LOCAL);
+    void* ret = NULL;
+    if( !metricsLibraryName.empty() )
+    {
+        ret = dlopen(metricsLibraryName.c_str(), RTLD_LAZY | RTLD_LOCAL);
+    }
+    else
+    {
+        if( ret == NULL )
+        {
+            ret = dlopen(cMDLibFileName, RTLD_LAZY | RTLD_LOCAL);
+        }
+#if !defined(__APPLE__)
+        if( ret == NULL )
+        {
+            // old alternate name, may eventually be removed
+            ret = dlopen("libmd.so", RTLD_LAZY | RTLD_LOCAL);
+        }
+#endif
+    }
+    return ret;
 }
 
 #define GetFunctionAddress(_handle, _name)  dlsym(_handle, _name)
