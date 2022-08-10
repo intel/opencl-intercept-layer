@@ -112,6 +112,7 @@ public:
     GENERATE_MAP_AND_FUNC(          name_semaphore_type,             cl_semaphore_type_khr           );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_device_command_buffer_capabilities, cl_device_command_buffer_capabilities_khr );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_command_buffer_flags,       cl_command_buffer_flags_khr     );
+    GENERATE_MAP_AND_BITFIELD_FUNC( name_mutable_dispatch_fields,    cl_mutable_dispatch_fields_khr  );
 
     #undef GENERATE_MAP_AND_FUNC
     #undef GENERATE_MAP_AND_BITFIELD_FUNC

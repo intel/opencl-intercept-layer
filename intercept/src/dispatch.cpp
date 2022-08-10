@@ -10571,6 +10571,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
+            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
         }
@@ -10626,6 +10627,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
+            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
         }
@@ -10689,6 +10691,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
+            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
         }
@@ -10744,6 +10747,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
+            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
         }
@@ -10799,6 +10803,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
+            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
         }
@@ -10854,6 +10859,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
+            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
         }
@@ -10909,6 +10915,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
+            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
         }
@@ -10962,6 +10969,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
+            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
         }
@@ -11020,6 +11028,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
+            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
         }
@@ -11054,6 +11063,83 @@ CL_API_ENTRY cl_int CL_API_CALL clGetCommandBufferInfoKHR(
 
             cl_int  retVal = dispatchX.clGetCommandBufferInfoKHR(
                 command_buffer,
+                param_name,
+                param_value_size,
+                param_value,
+                param_value_size_ret );
+
+            HOST_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer_mutable_dispatch
+CL_API_ENTRY cl_int CL_API_CALL clUpdateMutableCommandsKHR(
+    cl_command_buffer_khr command_buffer,
+    const cl_mutable_base_config_khr* mutable_config)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clUpdateMutableCommandsKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER( "command_buffer = %p, mutable_config = %p",
+                command_buffer,
+                mutable_config );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clUpdateMutableCommandsKHR(
+                command_buffer,
+                mutable_config );
+
+            HOST_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer_mutable_dispatch
+CL_API_ENTRY cl_int CL_API_CALL clGetMutableCommandInfoKHR(
+    cl_mutable_command_khr command,
+    cl_mutable_command_info_khr param_name,
+    size_t param_value_size,
+    void* param_value,
+    size_t* param_value_size_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(command);
+        if( dispatchX.clGetMutableCommandInfoKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER( "command_buffer = %p, param_name = %s (%08X)",
+                command,
+                pIntercept->enumName().name( param_name ).c_str(),
+                param_name );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clGetMutableCommandInfoKHR(
+                command,
                 param_name,
                 param_value_size,
                 param_value,
