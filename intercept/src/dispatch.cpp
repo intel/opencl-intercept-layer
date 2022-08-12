@@ -5416,9 +5416,21 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueWaitSemaphoresKHR(
 
             if( pIntercept->config().NullEnqueue == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, num_sema_objects = %u",
+                std::string semaphoreString;
+                if( pIntercept->config().CallLogging &&
+                    num_sema_objects )
+                {
+                    std::string str;
+                    pIntercept->getSemaphoreListString(
+                        num_sema_objects,
+                        sema_objects,
+                        str );
+                    semaphoreString += ", sema_objects = ";
+                    semaphoreString += str;
+                }
+                CALL_LOGGING_ENTER( "queue = %p%s",
                     queue,
-                    num_sema_objects );
+                    semaphoreString.c_str() );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 HOST_PERFORMANCE_TIMING_START();
@@ -5475,9 +5487,21 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSignalSemaphoresKHR(
 
             if( pIntercept->config().NullEnqueue == false )
             {
-                CALL_LOGGING_ENTER( "queue = %p, num_sema_objects = %u",
+                std::string semaphoreString;
+                if( pIntercept->config().CallLogging &&
+                    num_sema_objects )
+                {
+                    std::string str;
+                    pIntercept->getSemaphoreListString(
+                        num_sema_objects,
+                        sema_objects,
+                        str );
+                    semaphoreString += ", sema_objects = ";
+                    semaphoreString += str;
+                }
+                CALL_LOGGING_ENTER( "queue = %p%s",
                     queue,
-                    num_sema_objects );
+                    semaphoreString.c_str() );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 HOST_PERFORMANCE_TIMING_START();
