@@ -146,6 +146,10 @@ public:
                 cl_uint num_events,
                 const cl_event* event_list,
                 std::string& str ) const;
+    void    getSemaphoreListString(
+                cl_uint num_semaphores,
+                const cl_semaphore_khr* semaphore_list,
+                std::string& str ) const;
     void    getContextPropertiesString(
                 const cl_context_properties* properties,
                 std::string& str ) const;

@@ -2070,6 +2070,39 @@ void CLIntercept::getEventListString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getSemaphoreListString(
+    cl_uint numSemaphores,
+    const cl_semaphore_khr* semaphoreList,
+    std::string& str ) const
+{
+    {
+        std::ostringstream  ss;
+        ss << "( size = ";
+        ss << numSemaphores;
+        ss << " )[ ";
+        str += ss.str();
+    }
+    if( semaphoreList )
+    {
+        for( cl_uint i = 0; i < numSemaphores; i++ )
+        {
+            if( i > 0 )
+            {
+                str += ", ";
+            }
+            {
+                char    s[256];
+                CLI_SPRINTF( s, 256, "%p", semaphoreList[i] );
+                str += s;
+            }
+        }
+    }
+    str += " ]";
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::getContextPropertiesString(
     const cl_context_properties* properties,
     std::string& str ) const
@@ -2406,7 +2439,15 @@ void CLIntercept::getSemaphorePropertiesString(
         while( properties[0] != 0 )
         {
             cl_int  property = (cl_int)properties[0];
-            str += enumName().name( property ) + " = ";
+            if( property == 0x2455 ) // workaround
+            {
+                str += "CL_SEMAPHORE_TYPE_KHR_0x2455 = ";
+                property = CL_SEMAPHORE_TYPE_KHR;
+            }
+            else
+            {
+                str += enumName().name( property ) + " = ";
+            }
 
             switch( property )
             {
@@ -2429,7 +2470,7 @@ void CLIntercept::getSemaphorePropertiesString(
                             properties++;
                             break;
                         }
-                        else if( *properties == 0x2052 )
+                        else if( *properties == 0x2052 ) // workaround
                         {
                             str += "CL_DEVICE_HANDLE_LIST_END_KHR_0x2502";
                             properties++;

@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-// cl_khr_create_command_queue
+// cl_khr_command_buffer
 
 // Note: This implements the provisional extension v0.9.0.
 
