@@ -45,7 +45,7 @@ Detailed instructions:
 
 ## Tutorial
 
-A tutorial demonstrating common usages of the Intercept Layer for OpenCL Applications can be found [here](https://github.com/bashbaug/SimpleOpenCLSamples/tree/master/tutorials/interceptlayer).
+A tutorial demonstrating common usages of the Intercept Layer for OpenCL Applications can be found [here](https://github.com/bashbaug/SimpleOpenCLSamples/tree/main/tutorials/interceptlayer).
 
 ## License
 
@@ -94,5 +94,5 @@ OpenCL and the OpenCL logo are trademarks of Apple Inc. used by permission by Kh
 
 Copyright (c) 2018-2022, Intel(R) Corporation
 
-[khronos_cl_license]: https://github.com/KhronosGroup/OpenCL-Headers/blob/master/LICENSE
+[khronos_cl_license]: https://github.com/KhronosGroup/OpenCL-Headers/blob/main/LICENSE
 [boost_license]: http://www.boost.org/LICENSE_1_0.txt

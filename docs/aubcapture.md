@@ -57,7 +57,7 @@ via the config file `igdrcl.config`, if preferred.
 Suggested Intercept Layer for OpenCL Applications controls to test AUB file capture are:
 
 ```c
-AubCapture=1                    // This is the "master" control for AUB Capture.
+AubCapture=1                    // This is the top-level control for AUB Capture.
 AubCaptureIndividualEnqueues=1  // One file per enqueue.
 AubCaptureMaxEnqueue=10         // No more than 10 files.
 ```
