@@ -15,4 +15,4 @@
 * The OpenCL implementation and device you tested on.
 * Your operating system, and any other relevant system information.
 
-Some of this information may automatically be included if you attach your Intercept Layer for OpenCL Applications log, particularly if you set [CLInfoLogging](https://github.com/intel/opencl-intercept-layer/blob/master/docs/controls.md#clinfologging-bool).)
+Some of this information may automatically be included if you attach your Intercept Layer for OpenCL Applications log, particularly if you set [CLInfoLogging](https://github.com/intel/opencl-intercept-layer/blob/main/docs/controls.md#clinfologging-bool).)

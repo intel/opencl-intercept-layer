@@ -8,7 +8,7 @@ on:
     paths-ignore:
       - '**/*.md'
     branches:
-      - master
+      - main
 
 env:
   BUILD_TYPE: RelWithDebInfo

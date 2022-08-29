@@ -569,7 +569,7 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will try 
 
 ##### `AubCapture` (bool)
 
-This is the master control for aub capture.  The Intercept Layer for OpenCL Applications doesn't implement aub capture itself, but can be used to selectively enable and disable aub capture via other methods.
+This is the top-level control for aub capture.  The Intercept Layer for OpenCL Applications doesn't implement aub capture itself, but can be used to selectively enable and disable aub capture via other methods.
 
 ##### `AubCaptureKDC` (bool)
 
