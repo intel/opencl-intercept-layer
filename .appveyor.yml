@@ -1,0 +1,23 @@
+branches:
+  only:
+    - main
+
+os:
+  - Visual Studio 2017
+  - Visual Studio 2015
+
+platform:
+  - Win32
+  - x64
+
+configuration:
+  - Debug
+  - Release
+
+before_build:
+  - cmake -H. -Bbuild -A%PLATFORM% -DENABLE_CLILOADER=1
+
+build:
+  project: build\CLIntercept.sln
+  parallel: true
+  verbosity: normal
