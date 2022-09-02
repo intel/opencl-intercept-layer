@@ -126,6 +126,8 @@ CLI_CONTROL( cl_uint,       DumpBuffersMinEnqueue,                  0,     "The 
 CLI_CONTROL( cl_uint,       DumpBuffersMaxEnqueue,                  UINT_MAX, "The Intercept Layer for OpenCL Applications will only dump buffer, SVM, and USM kernel arguments when the enqueue counter is less than this value, inclusive." )
 CLI_CONTROL( cl_uint,       DumpImagesMinEnqueue,                   0,     "The Intercept Layer for OpenCL Applications will only dump image kernel arguments when the enqueue counter is greater than this value, inclusive." )
 CLI_CONTROL( cl_uint,       DumpImagesMaxEnqueue,                   UINT_MAX, "The Intercept Layer for OpenCL Applications will only dump image kernel arguments when the enqueue counter is less than this value, inclusive." )
+CLI_CONTROL( cl_uint,       DumpArgumentsOnSetMinEnqueue,           0,     "The Intercept Layer for OpenCL Applications will only dump argument values when the enqueue counter is greater than this value, inclusive." )
+CLI_CONTROL( cl_uint,       DumpArgumentsOnSetMaxEnqueue,           UINT_MAX, "The Intercept Layer for OpenCL Applications will only dump kernel arguments when the enqueue counter is less than this value, inclusive." )
 
 CLI_CONTROL_SEPARATOR( Device Partitioning Controls: )
 CLI_CONTROL( bool,          AutoPartitionAllDevices,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically partition parent devices and return all parent devices and all sub-devices." )
