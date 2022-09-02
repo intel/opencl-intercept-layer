@@ -543,6 +543,14 @@ The Intercept Layer for OpenCL Applications will only dump image kernel argument
 
 The Intercept Layer for OpenCL Applications will only dump image kernel arguments when the enqueue counter is less than this value, inclusive.
 
+##### `DumpArgumentsOnSetMinEnqueue` (cl_uint)
+
+The Intercept Layer for OpenCL Applications will only dump argument values when the enqueue counter is greater than this value, inclusive.
+
+##### `DumpArgumentsOnSetMaxEnqueue` (cl_uint)
+
+The Intercept Layer for OpenCL Applications will only dump kernel arguments when the enqueue counter is less than this value, inclusive.
+
 ### Device Partitioning Controls
 
 ##### `AutoPartitionAllDevices` (bool)
