@@ -92,6 +92,8 @@ static void getCommandLine(char *argv[], int startArg)
 }
 
 #define SETENV( _name, _value ) _putenv_s( _name, _value )
+#define GETENV( _name, _value ) _dupenv_s( &_value, NULL, _name )
+#define FREEENV( _value ) free( _value )
 
 #else
 
@@ -172,12 +174,34 @@ static bool getEnvVars(
     return found;
 }
 
-#define SETENV( _name, _value ) setenv( _name, _value, 1 );
+#define SETENV( _name, _value ) setenv( _name, _value, 1 )
+#define GETENV( _name, _value ) _value = getenv(_name)
+#define FREEENV( _value ) (void)_value
 
 bool set_LD_LIBRARY_PATH = true;
 bool set_LD_PRELOAD = true;
 
 #endif
+
+static void checkSetEnv(const char* name, const char* value)
+{
+    char* oldValue = NULL;
+
+    GETENV(name, oldValue);
+
+    if (oldValue != NULL && value != NULL && strcmp(value, oldValue)) {
+        fprintf(stderr, "cliloader warning: forcing environment variable %s from %s to %s\n",
+            name,
+            oldValue,
+            value);
+    } else {
+        DEBUG("setting environment variable %s to %s\n", name, value);
+    }
+
+    SETENV(name, value);
+
+    FREEENV( oldValue );
+}
 
 // Note: This assumes that the CLIntercept DLL/so is in the same directory
 // as the executable!
@@ -283,97 +307,97 @@ static bool parseArguments(int argc, char *argv[])
 #endif
         else if( !strcmp(argv[i], "-q") || !strcmp(argv[i], "--quiet") )
         {
-            SETENV("CLI_SuppressLogging", "1");
+            checkSetEnv("CLI_SuppressLogging", "1");
         }
         else if( !strcmp(argv[i], "-c") || !strcmp(argv[i], "--call-logging") )
         {
-            SETENV("CLI_CallLogging", "1");
+            checkSetEnv("CLI_CallLogging", "1");
         }
         else if( !strcmp(argv[i], "-e") || !strcmp(argv[i], "--error-logging") )
         {
-            SETENV("CLI_ErrorLogging", "1");
+            checkSetEnv("CLI_ErrorLogging", "1");
         }
         else if( !strcmp(argv[i], "--tid") )
         {
-            SETENV("CLI_CallLoggingThreadId", "1");
+            checkSetEnv("CLI_CallLoggingThreadId", "1");
         }
         else if( !strcmp(argv[i], "--appendpid") )
         {
-            SETENV("CLI_AppendPid", "1");
+            checkSetEnv("CLI_AppendPid", "1");
         }
         else if( !strcmp(argv[i], "-dsrc") || !strcmp(argv[i], "--dump-source") )
         {
-            SETENV("CLI_DumpProgramSource", "1");
+            checkSetEnv("CLI_DumpProgramSource", "1");
         }
         else if( !strcmp(argv[i], "-dspv") || !strcmp(argv[i], "--dump-spirv") )
         {
-            SETENV("CLI_DumpProgramSPIRV", "1");
+            checkSetEnv("CLI_DumpProgramSPIRV", "1");
         }
         else if( !strcmp(argv[i], "--dump-output-binaries") )
         {
-            SETENV("CLI_DumpProgramBinaries", "1");
+            checkSetEnv("CLI_DumpProgramBinaries", "1");
         }
         else if( !strcmp(argv[i], "--dump-kernel-isa-binaries") )
         {
-            SETENV("CLI_DumpKernelISABinaries", "1");
+            checkSetEnv("CLI_DumpKernelISABinaries", "1");
         }
         else if( !strcmp(argv[i], "-d") || !strcmp(argv[i], "--device-timing") )
         {
-            SETENV("CLI_DevicePerformanceTiming", "1");
+            checkSetEnv("CLI_DevicePerformanceTiming", "1");
         }
         else if( !strcmp(argv[i], "-dv") || !strcmp(argv[i], "--device-timing-verbose") )
         {
-            SETENV("CLI_DevicePerformanceTiming", "1");
-            SETENV("CLI_DevicePerformanceTimeKernelInfoTracking", "1");
-            SETENV("CLI_DevicePerformanceTimeGWSTracking", "1");
-            SETENV("CLI_DevicePerformanceTimeLWSTracking", "1");
+            checkSetEnv("CLI_DevicePerformanceTiming", "1");
+            checkSetEnv("CLI_DevicePerformanceTimeKernelInfoTracking", "1");
+            checkSetEnv("CLI_DevicePerformanceTimeGWSTracking", "1");
+            checkSetEnv("CLI_DevicePerformanceTimeLWSTracking", "1");
         }
         else if( !strcmp(argv[i], "-ccl") || !strcmp(argv[i], "--chrome-call-logging") )
         {
-            SETENV("CLI_ChromeCallLogging", "1");
+            checkSetEnv("CLI_ChromeCallLogging", "1");
         }
         else if( !strcmp(argv[i], "-cdt") || !strcmp(argv[i], "--chrome-device-timeline") )
         {
-            SETENV("CLI_ChromePerformanceTiming", "1");
+            checkSetEnv("CLI_ChromePerformanceTiming", "1");
         }
         else if( !strcmp(argv[i], "-ckt") || !strcmp(argv[i], "--chrome-kernel-timeline") )
         {
-            SETENV("CLI_ChromePerformanceTiming", "1");
-            SETENV("CLI_ChromePerformanceTimingPerKernel", "1");
+            checkSetEnv("CLI_ChromePerformanceTiming", "1");
+            checkSetEnv("CLI_ChromePerformanceTimingPerKernel", "1");
         }
         else if( !strcmp(argv[i], "-cds") || !strcmp(argv[i], "--chrome-device-stages") )
         {
-            SETENV("CLI_ChromePerformanceTiming", "1");
-            SETENV("CLI_ChromePerformanceTimingInStages", "1");
+            checkSetEnv("CLI_ChromePerformanceTiming", "1");
+            checkSetEnv("CLI_ChromePerformanceTimingInStages", "1");
         }
         else if( !strcmp(argv[i], "--driver-diagnostics") || !strcmp(argv[i], "-ddiag") )
         {
-            SETENV("CLI_ContextCallbackLogging", "1");
-            SETENV("CLI_ContextHintLevel", "7");    // GOOD, BAD, and NEUTRAL
+            checkSetEnv("CLI_ContextCallbackLogging", "1");
+            checkSetEnv("CLI_ContextHintLevel", "7");    // GOOD, BAD, and NEUTRAL
         }
         else if( !strcmp(argv[i], "--mdapi-ebs") )
         {
-            SETENV("CLI_DevicePerfCounterCustom", "ComputeBasic");
-            SETENV("CLI_DevicePerfCounterEventBasedSampling", "1" );
-            SETENV("CLI_DevicePerfCounterTiming", "1");
+            checkSetEnv("CLI_DevicePerfCounterCustom", "ComputeBasic");
+            checkSetEnv("CLI_DevicePerfCounterEventBasedSampling", "1" );
+            checkSetEnv("CLI_DevicePerfCounterTiming", "1");
         }
         else if( !strcmp(argv[i], "--mdapi-tbs") )
         {
-            SETENV("CLI_DevicePerfCounterCustom", "ComputeBasic");
-            SETENV("CLI_DevicePerfCounterTimeBasedSampling", "1" );
+            checkSetEnv("CLI_DevicePerfCounterCustom", "ComputeBasic");
+            checkSetEnv("CLI_DevicePerfCounterTimeBasedSampling", "1" );
         }
         else if( !strcmp(argv[i], "-h") || !strcmp(argv[i], "--host-timing") )
         {
-            SETENV("CLI_HostPerformanceTiming", "1");
+            checkSetEnv("CLI_HostPerformanceTiming", "1");
         }
         else if( !strcmp(argv[i], "-l") || !strcmp(argv[i], "--leak-checking") )
         {
-            SETENV("CLI_LeakChecking", "1");
+            checkSetEnv("CLI_LeakChecking", "1");
         }
         else if( !strcmp(argv[i], "-f") || !strcmp(argv[i], "--output-to-file") )
         {
-            SETENV("CLI_LogToFile", "1");
-            SETENV("CLI_ReportToStderr", "0");
+            checkSetEnv("CLI_LogToFile", "1");
+            checkSetEnv("CLI_ReportToStderr", "0");
         }
         else if (argv[i][0] == '-')
         {
