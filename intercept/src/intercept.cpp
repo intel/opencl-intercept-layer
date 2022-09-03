@@ -6700,8 +6700,36 @@ void CLIntercept::checkRemoveCommandBufferInfo(
             if( errorCode == CL_SUCCESS && refCount == 1 )
             {
                 m_CommandBufferInfoMap.erase( iter );
+
+                CCommandBufferMutableCommandsMap::iterator cmditer =
+                    m_CommandBufferMutableCommandsMap.find( cmdbuf );
+                if( cmditer != m_CommandBufferMutableCommandsMap.end() )
+                {
+                    CMutableCommandList&    cmdList = cmditer->second;
+                    for( auto cmd : cmdList )
+                    {
+                        m_MutableCommandInfoMap.erase(cmd);
+                    }
+
+                    m_CommandBufferMutableCommandsMap.erase(cmditer);
+                }
             }
         }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::addMutableCommandInfo(
+    cl_mutable_command_khr cmd,
+    cl_command_buffer_khr cmdbuf )
+{
+    if( cmd && cmdbuf )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        m_MutableCommandInfoMap[cmd] = getPlatform(cmdbuf);
+        m_CommandBufferMutableCommandsMap[cmdbuf].push_back(cmd);
     }
 }
 
@@ -12119,6 +12147,10 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillImageKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clCommandNDRangeKernelKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clGetCommandBufferInfoKHR );
+
+    // cl_khr_command_buffer_mutable_dispatch
+    CHECK_RETURN_EXTENSION_FUNCTION( clUpdateMutableCommandsKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetMutableCommandInfoKHR );
 
     // cl_khr_create_command_queue
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandQueueWithPropertiesKHR );

@@ -477,6 +477,10 @@ public:
     void    checkRemoveCommandBufferInfo(
                 cl_command_buffer_khr cmdbuf );
 
+    void    addMutableCommandInfo(
+                cl_mutable_command_khr cmd,
+                cl_command_buffer_khr cmdbuf );
+
     void    addSamplerString(
                 cl_sampler sampler,
                 const std::string& str );
@@ -753,6 +757,7 @@ public:
     const CLdispatchX&  dispatchX( cl_platform_id platform ) const;
     const CLdispatchX&  dispatchX( cl_semaphore_khr semaphore ) const;
     const CLdispatchX&  dispatchX( cl_command_buffer_khr cmdbuf ) const;
+    const CLdispatchX&  dispatchX( cl_mutable_command_khr cmd ) const;
 
     cl_platform_id  getPlatform( cl_accelerator_intel accelerator ) const;
     cl_platform_id  getPlatform( cl_command_queue queue ) const;
@@ -762,6 +767,7 @@ public:
     cl_platform_id  getPlatform( cl_mem memobj ) const;
     cl_platform_id  getPlatform( cl_semaphore_khr semaphore ) const;
     cl_platform_id  getPlatform( cl_command_buffer_khr cmdbuf ) const;
+    cl_platform_id  getPlatform( cl_mutable_command_khr cmd ) const;
 
     cl_uint getRefCount( cl_accelerator_intel accelerator );
     cl_uint getRefCount( cl_command_queue queue ) const;
@@ -1219,6 +1225,13 @@ private:
     typedef std::map< cl_command_buffer_khr, cl_platform_id >   CCommandBufferInfoMap;
     CCommandBufferInfoMap   m_CommandBufferInfoMap;
 
+    typedef std::map< cl_mutable_command_khr, cl_platform_id >  CMutableCommandInfoMap;
+    CMutableCommandInfoMap  m_MutableCommandInfoMap;
+
+    typedef std::list< cl_mutable_command_khr > CMutableCommandList;
+    typedef std::map< cl_command_buffer_khr, CMutableCommandList >  CCommandBufferMutableCommandsMap;
+    CCommandBufferMutableCommandsMap    m_CommandBufferMutableCommandsMap;
+
     struct Config
     {
 #define CLI_CONTROL( _type, _name, _init, _desc )   _type _name;
@@ -1446,6 +1459,12 @@ inline const CLdispatchX& CLIntercept::dispatchX( cl_command_buffer_khr cmdbuf )
     return dispatchX( platform );
 }
 
+inline const CLdispatchX& CLIntercept::dispatchX( cl_mutable_command_khr cmd ) const
+{
+    cl_platform_id  platform = getPlatform( cmd );
+    return dispatchX( platform );
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 inline cl_platform_id CLIntercept::getPlatform( cl_accelerator_intel accelerator ) const
@@ -1562,6 +1581,19 @@ inline cl_platform_id CLIntercept::getPlatform( cl_command_buffer_khr cmdbuf ) c
 {
     CCommandBufferInfoMap::const_iterator iter = m_CommandBufferInfoMap.find(cmdbuf);
     if( iter != m_CommandBufferInfoMap.end() )
+    {
+        return iter->second;
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+inline cl_platform_id CLIntercept::getPlatform( cl_mutable_command_khr cmd ) const
+{
+    CMutableCommandInfoMap::const_iterator iter = m_MutableCommandInfoMap.find(cmd);
+    if( iter != m_MutableCommandInfoMap.end() )
     {
         return iter->second;
     }
@@ -2201,6 +2233,12 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
     {                                                                       \
         pIntercept->removeUSMAllocation( usmPtr );                          \
+    }
+
+#define ADD_MUTABLE_COMMAND( pCmd, cmdbuf )                                 \
+    if( pCmd && pCmd[0] )                                                   \
+    {                                                                       \
+        pIntercept->addMutableCommandInfo( pCmd[0], cmdbuf );               \
     }
 
 #define SET_KERNEL_ARG( kernel, arg_index, arg_size, arg_value )            \
