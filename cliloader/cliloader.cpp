@@ -280,6 +280,10 @@ static std::string getProcessDirectory()
 
 static bool parseArguments(int argc, char *argv[])
 {
+    // Defer setting the MDAPI group, since it may be overridden via an
+    // explicit option.
+    const char* mdapiGroup = NULL;
+
     bool    unknownOption = false;
 
     SETENV("CLI_ReportToStderr", "1");
@@ -377,14 +381,28 @@ static bool parseArguments(int argc, char *argv[])
         }
         else if( !strcmp(argv[i], "--mdapi-ebs") )
         {
-            checkSetEnv("CLI_DevicePerfCounterCustom", "ComputeBasic");
+            if( mdapiGroup == NULL )
+            {
+                mdapiGroup = "ComputeBasic";
+            }
             checkSetEnv("CLI_DevicePerfCounterEventBasedSampling", "1" );
             checkSetEnv("CLI_DevicePerfCounterTiming", "1");
         }
         else if( !strcmp(argv[i], "--mdapi-tbs") )
         {
-            checkSetEnv("CLI_DevicePerfCounterCustom", "ComputeBasic");
+            if( mdapiGroup == NULL )
+            {
+                mdapiGroup = "ComputeBasic";
+            }
             checkSetEnv("CLI_DevicePerfCounterTimeBasedSampling", "1" );
+        }
+        else if( !strcmp(argv[i], "--mdapi-group") )
+        {
+            ++i;
+            if( i < argc )
+            {
+                mdapiGroup = argv[i];
+            }
         }
         else if( !strcmp(argv[i], "-h") || !strcmp(argv[i], "--host-timing") )
         {
@@ -405,6 +423,11 @@ static bool parseArguments(int argc, char *argv[])
         }
         else
         {
+            if( mdapiGroup != NULL )
+            {
+                checkSetEnv("CLI_DevicePerfCounterCustom", mdapiGroup);
+            }
+
 #if defined(_WIN32)
             getCommandLine(argv, i);
 #else // not Windows
@@ -461,6 +484,7 @@ static bool parseArguments(int argc, char *argv[])
             "  --driver-diagnostics [-ddiag]    Log Driver Diagnostics\n"
             "  --mdapi-ebs                      Report Event-Based MDAPI Counters (Intel GPU Only)\n"
             "  --mdapi-tbs                      Report Time-Based MDAPI Counters (Intel GPU Only)\n"
+            "  --mdapi-group <NAME>             Choose MDAPI Counters to Collect (Intel GPU Only)\n"
             "  --host-timing [-h]               Report Host API Execution Time\n"
             "  --leak-checking [-l]             Track and Report OpenCL Leaks\n"
             "  --output-to-file [-f]            Log and Report to Files vs. stderr\n"
