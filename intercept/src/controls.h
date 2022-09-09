@@ -42,6 +42,7 @@ CLI_CONTROL( std::string,   DumpDir,                                "",    "If s
 CLI_CONTROL( bool,          AppendPid,                              false, "If set, the Intercept Layer for OpenCL Applications will append process ID to the log directory name." )
 CLI_CONTROL( bool,          KernelNameHashTracking,                 false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will append the program and build option hashes to the kernel name in logs and reports." )
 CLI_CONTROL( cl_uint,       LongKernelNameCutoff,                   UINT_MAX, "If an OpenCL application uses kernels with very long names, the Intercept Layer for OpenCL Applications can substitute a \"short\" kernel identifier for a \"long\" kernel name in logs and reports.  This control defines how long a kernel name must be (in characters) before it is replaced by a \"short\" kernel identifier." )
+CLI_CONTROL( bool,          DemangleKernelNames,                    false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will track kernel names that are demangled according to C++ ABI rules.  This setting requires compiler support for demangling and may not be available in all configurations." )
 
 CLI_CONTROL_SEPARATOR( Reporting Controls: )
 CLI_CONTROL( bool,          ReportToStderr,                         false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emit reports to stderr." )

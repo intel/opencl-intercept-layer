@@ -14,6 +14,7 @@
 #include <time.h>       // strdate
 
 #include "common.h"
+#include "demangle.h"
 #include "emulate.h"
 #include "intercept.h"
 
@@ -453,6 +454,11 @@ bool CLIntercept::init()
         "    MDAPI(supported)\n"
 #else
         "    MDAPI(NOT supported)\n"
+#endif
+#if defined(USE_DEMANGLE)
+        "    Demangling(supported)\n"
+#else
+        "    Demangling(NOT supported)\n"
 #endif
 #if defined(CLINTERCEPT_HIGH_RESOLUTON_CLOCK)
         "    clock(high_resolution_clock)\n"
@@ -6450,8 +6456,11 @@ void CLIntercept::addKernelInfo(
     const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
     SKernelInfo& kernelInfo = m_KernelInfoMap[ kernel ];
+    std::string demangledName = config().DemangleKernelNames ?
+        demangle(kernelName) :
+        kernelName;
 
-    kernelInfo.KernelName = kernelName;
+    kernelInfo.KernelName = demangledName;
 
     kernelInfo.ProgramHash = programInfo.ProgramHash;
     kernelInfo.OptionsHash = programInfo.OptionsHash;
@@ -6459,7 +6468,7 @@ void CLIntercept::addKernelInfo(
     kernelInfo.ProgramNumber = programInfo.ProgramNumber;
     kernelInfo.CompileCount = programInfo.CompileCount - 1;
 
-    addShortKernelName( kernelName );
+    addShortKernelName( demangledName );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6502,8 +6511,11 @@ void CLIntercept::addKernelInfo(
                     kernelName[ kernelNameSize ] = 0;
 
                     SKernelInfo& kernelInfo = m_KernelInfoMap[ kernel ];
+                    std::string demangledName = config().DemangleKernelNames ?
+                        demangle(kernelName) :
+                        kernelName;
 
-                    kernelInfo.KernelName = kernelName;
+                    kernelInfo.KernelName = demangledName;
 
                     kernelInfo.ProgramHash = programInfo.ProgramHash;
                     kernelInfo.OptionsHash = programInfo.OptionsHash;
@@ -6511,7 +6523,7 @@ void CLIntercept::addKernelInfo(
                     kernelInfo.ProgramNumber = programInfo.ProgramNumber;
                     kernelInfo.CompileCount = programInfo.CompileCount - 1;
 
-                    addShortKernelName( kernelName );
+                    addShortKernelName( demangledName );
                 }
 
                 delete [] kernelName;

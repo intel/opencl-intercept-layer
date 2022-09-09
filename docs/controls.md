@@ -243,6 +243,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will appe
 
 If an OpenCL application uses kernels with very long names, the Intercept Layer for OpenCL Applications can substitute a "short" kernel identifier for a "long" kernel name in logs and reports.  This control defines how long a kernel name must be (in characters) before it is replaced by a "short" kernel identifier.
 
+##### `DemangleKernelNames` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will track kernel names that are demangled according to C++ ABI rules.  This setting requires compiler support for demangling and may not be available in all configurations.
+
 ### Reporting Controls
 
 ##### `ReportToStderr` (bool)

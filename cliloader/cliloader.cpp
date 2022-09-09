@@ -329,6 +329,10 @@ static bool parseArguments(int argc, char *argv[])
         {
             checkSetEnv("CLI_AppendPid", "1");
         }
+        else if( !strcmp(argv[i], "--demangle") )
+        {
+            checkSetEnv("CLI_DemangleKernelNames", "1");
+        }
         else if( !strcmp(argv[i], "-dsrc") || !strcmp(argv[i], "--dump-source") )
         {
             checkSetEnv("CLI_DumpProgramSource", "1");
@@ -471,6 +475,7 @@ static bool parseArguments(int argc, char *argv[])
             "  --error-logging [-e]             Detect and Log API Errors\n"
             "  --tid                            Include Thread ID in the API Call Log\n"
             "  --appendpid                      Include Process ID in the Dump Directory\n"
+            "  --demangle                       Demangle Kernel Names\n"
             "  --dump-source [-dsrc]            Dump Input Program Source\n"
             "  --dump-spirv [-dspv]             Dump Input Program IL (SPIR-V)\n"
             "  --dump-output-binaries           Dump Output Program Binaries\n"
