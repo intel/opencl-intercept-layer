@@ -23,7 +23,11 @@ static inline std::string demangle(const std::string& in)
     }
     else
     {
+        const std::string skip("typeinfo name for ");
         ret = demangled;
+        if (ret.rfind(skip, 0) == 0) {
+            ret.erase(0, skip.length());
+        }
     }
     free(demangled);
     return ret;
