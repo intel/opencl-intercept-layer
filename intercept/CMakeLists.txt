@@ -2,6 +2,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+include(CheckIncludeFileCXX)
+
 set(CLINTERCEPT_CL_HEADERS
     CL/cl.h
     CL/cl_gl.h
@@ -61,6 +63,7 @@ set(CLINTERCEPT_SOURCE_FILES
     src/cliprof_init.cpp
     src/common.h
     src/controls.h
+    src/demangle.h
     src/dispatch.cpp
     src/dispatch.h
     src/emulate.cpp
@@ -167,6 +170,12 @@ if(ENABLE_MDAPI)
     target_sources(OpenCL PRIVATE
         ${CLINTERCEPT_MDAPI_FILES}
     )
+endif()
+
+# Demangling Support (optional)
+CHECK_INCLUDE_FILE_CXX(cxxabi.h HAS_CXXABI)
+if(HAS_CXXABI)
+    target_compile_definitions(OpenCL PRIVATE USE_DEMANGLE)
 endif()
 
 if(WIN32)
