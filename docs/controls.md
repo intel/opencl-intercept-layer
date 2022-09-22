@@ -291,6 +291,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dist
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will attempt to query and track the suggested local work size when the passed-in local work size is NULL.
 
+##### `DevicePerformanceTimeTransferTracking` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between transfer operations of different sizes for the purpose of device performance timing.
+
 ##### `DevicePerformanceTimingSkipUnmap` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will skip device performance timing for unmap operations.  This is a workaround for a bug in some OpenCL implementations, where querying events created from unmap operations results in driver crashes.
