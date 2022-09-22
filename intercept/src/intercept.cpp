@@ -5184,12 +5184,25 @@ void CLIntercept::dumpProgramBuildLog(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::getTimingTagBlocking(
+    const char* functionName,
     const cl_bool blocking,
-    std::string& str )
+    const size_t size,
+    std::string& hostTag,
+    std::string& deviceTag )
 {
+    deviceTag.reserve(128);
+    deviceTag = functionName;
+
+    if( size && config().DevicePerformanceTimeTransferTracking )
+    {
+        char    s[256];
+        CLI_SPRINTF( s, 256, "( %zu bytes )", size );
+        deviceTag += s;
+    }
+
     if( blocking == CL_TRUE )
     {
-        str += "blocking";
+        hostTag += "blocking";
     }
 }
 
@@ -5199,6 +5212,7 @@ void CLIntercept::getTimingTagsMap(
     const char* functionName,
     const cl_map_flags flags,
     const cl_bool blocking,
+    const size_t size,
     std::string& hostTag,
     std::string& deviceTag )
 {
@@ -5226,15 +5240,17 @@ void CLIntercept::getTimingTagsMap(
     deviceTag = functionName;
     deviceTag += "( ";
     deviceTag += hostTag;
+    if( size && config().DevicePerformanceTimeTransferTracking )
+    {
+        char    s[256];
+        CLI_SPRINTF( s, 256, "; %zu bytes", size );
+        deviceTag += s;
+    }
     deviceTag += " )";
 
     if( blocking == CL_TRUE )
     {
-        if( !hostTag.empty() )
-        {
-            hostTag += ", ";
-        }
-        hostTag += "blocking";
+        hostTag += "; blocking";
     }
 }
 
@@ -5244,6 +5260,7 @@ void CLIntercept::getTimingTagsMemfill(
     const char* functionName,
     const cl_command_queue queue,
     const void* dst,
+    const size_t size,
     std::string& hostTag,
     std::string& deviceTag )
 {
@@ -5295,6 +5312,12 @@ void CLIntercept::getTimingTagsMemfill(
             deviceTag = functionName;
             deviceTag += "( ";
             deviceTag += hostTag;
+            if( size && config().DevicePerformanceTimeTransferTracking )
+            {
+                char    s[256];
+                CLI_SPRINTF( s, 256, "; %zu bytes", size );
+                deviceTag += s;
+            }
             deviceTag += " )";
         }
     }
@@ -5308,6 +5331,7 @@ void CLIntercept::getTimingTagsMemcpy(
     const cl_bool blocking,
     const void* dst,
     const void* src,
+    const size_t size,
     std::string& hostTag,
     std::string& deviceTag )
 {
@@ -5374,17 +5398,19 @@ void CLIntercept::getTimingTagsMemcpy(
             deviceTag = functionName;
             deviceTag += "( ";
             deviceTag += hostTag;
+            if( size && config().DevicePerformanceTimeTransferTracking )
+            {
+                char    s[256];
+                CLI_SPRINTF( s, 256, "; %zu bytes", size );
+                deviceTag += s;
+            }
             deviceTag += " )";
         }
     }
 
     if( blocking == CL_TRUE )
     {
-        if( !hostTag.empty() )
-        {
-            hostTag += ", ";
-        }
-        hostTag += "blocking";
+        hostTag += "; blocking";
     }
 }
 
