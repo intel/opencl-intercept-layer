@@ -5256,6 +5256,57 @@ void CLIntercept::getTimingTagsMap(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getTimingTagsUnmap(
+    const char* functionName,
+    const void* ptr,
+    std::string& hostTag,
+    std::string& deviceTag )
+{
+    if( ptr )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        CMapPointerInfoMap::iterator iter = m_MapPointerInfoMap.find( ptr );
+        if( iter != m_MapPointerInfoMap.end() )
+        {
+            const cl_map_flags flags = iter->second.Flags;
+            const size_t size = iter->second.Size;
+
+            if( flags & CL_MAP_WRITE_INVALIDATE_REGION )
+            {
+                hostTag += "WI";
+            }
+            else if( flags & CL_MAP_WRITE )
+            {
+                hostTag += "RW";
+            }
+            else if( flags & CL_MAP_READ )
+            {
+                hostTag += "R";
+            }
+
+            if( flags & ~(CL_MAP_READ | CL_MAP_WRITE | CL_MAP_WRITE_INVALIDATE_REGION) )
+            {
+                hostTag += "?";
+            }
+
+            deviceTag.reserve(128);
+            deviceTag = functionName;
+            deviceTag += "( ";
+            deviceTag += hostTag;
+            if( size && config().DevicePerformanceTimeTransferTracking )
+            {
+                char    s[256];
+                CLI_SPRINTF( s, 256, "; %zu bytes", size );
+                deviceTag += s;
+            }
+            deviceTag += " )";
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::getTimingTagsMemfill(
     const char* functionName,
     const cl_command_queue queue,
@@ -7747,6 +7798,43 @@ void CLIntercept::dumpBuffer(
                     NULL );
             }
         }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::addMapPointer(
+    const void* ptr,
+    const cl_map_flags flags,
+    const size_t size )
+{
+    if( ptr )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        if( m_MapPointerInfoMap.find(ptr) != m_MapPointerInfoMap.end() )
+        {
+            log( "Ignoring duplicate mapped pointer.\n" );
+        }
+        else
+        {
+            SMapPointerInfo&    mapPointerInfo = m_MapPointerInfoMap[ptr];
+
+            mapPointerInfo.Flags = flags;
+            mapPointerInfo.Size = size;
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::removeMapPointer(
+    const void* ptr )
+{
+    if( ptr )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_MapPointerInfoMap.erase(ptr);
     }
 }
 

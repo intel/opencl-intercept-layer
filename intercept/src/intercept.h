@@ -374,6 +374,11 @@ public:
                 const size_t size,
                 std::string& hostTag,
                 std::string& deviceTag );
+    void    getTimingTagsUnmap(
+                const char* functionName,
+                const void* ptr,
+                std::string& hostTag,
+                std::string& deviceTag );
     void    getTimingTagsMemfill(
                 const char* functionName,
                 const cl_command_queue queue,
@@ -560,6 +565,13 @@ public:
                 void* ptr,
                 size_t offset,
                 size_t size );
+
+    void    addMapPointer(
+                const void* ptr,
+                const cl_map_flags flags,
+                const size_t size );
+    void    removeMapPointer(
+                const void* ptr );
 
     void    checkEventList(
                 const char* functionName,
@@ -1184,6 +1196,15 @@ private:
     typedef std::map< cl_uint, const void* >        CKernelArgMemMap;
     typedef std::map< cl_kernel, CKernelArgMemMap > CKernelArgMap;
     CKernelArgMap   m_KernelArgMap;
+
+    struct SMapPointerInfo
+    {
+        cl_map_flags    Flags;
+        size_t          Size;
+    };
+
+    typedef std::map< const void*, SMapPointerInfo >    CMapPointerInfoMap;
+    CMapPointerInfoMap  m_MapPointerInfoMap;
 
     bool    m_AubCaptureStarted;
     cl_uint m_AubCaptureKernelEnqueueSkipCounter;
@@ -2376,6 +2397,30 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
             "Post", enqueueCounter, kernel, command_queue );                \
     }
 
+#define ADD_MAP_POINTER( _ptr, _flags, _sz )                                \
+    if( _ptr &&                                                             \
+        ( pIntercept->config().ChromeCallLogging ||                         \
+          pIntercept->config().HostPerformanceTiming ||                     \
+          pIntercept->config().DevicePerformanceTiming ||                   \
+          pIntercept->config().ITTPerformanceTiming ||                      \
+          pIntercept->config().ChromePerformanceTiming ||                   \
+          pIntercept->config().DevicePerfCounterEventBasedSampling ) )      \
+    {                                                                       \
+        pIntercept->addMapPointer( _ptr, _flags, _sz );                     \
+    }
+
+#define REMOVE_MAP_PTR( _ptr )                                              \
+    if( _ptr &&                                                             \
+        ( pIntercept->config().ChromeCallLogging ||                         \
+          pIntercept->config().HostPerformanceTiming ||                     \
+          pIntercept->config().DevicePerformanceTiming ||                   \
+          pIntercept->config().ITTPerformanceTiming ||                      \
+          pIntercept->config().ChromePerformanceTiming ||                   \
+          pIntercept->config().DevicePerfCounterEventBasedSampling ) )      \
+    {                                                                       \
+        pIntercept->removeMapPointer( _ptr );                               \
+    }
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 inline bool CLIntercept::checkAubCaptureEnqueueLimits(
@@ -2752,6 +2797,24 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
             _map_flags,                                                     \
             _blocking_map,                                                  \
             _sz,                                                            \
+            hostTag,                                                        \
+            deviceTag );                                                    \
+    }
+
+#define GET_TIMING_TAGS_UNMAP( _ptr )                                       \
+    std::string hostTag, deviceTag;                                         \
+    if( pIntercept->config().ChromeCallLogging ||                           \
+        ( pIntercept->config().HostPerformanceTiming &&                     \
+          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) ) ||\
+        ( ( pIntercept->config().DevicePerformanceTiming ||                   \
+            pIntercept->config().ITTPerformanceTiming ||                      \
+            pIntercept->config().ChromePerformanceTiming ||                   \
+            pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
+          pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) ) )\
+    {                                                                       \
+        pIntercept->getTimingTagsUnmap(                                     \
+            __FUNCTION__,                                                   \
+            _ptr,                                                           \
             hostTag,                                                        \
             deviceTag );                                                    \
     }
