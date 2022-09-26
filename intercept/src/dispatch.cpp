@@ -4430,6 +4430,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
             DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, event );
             DUMP_BUFFER_AFTER_MAP( command_queue, buffer, blocking_map, map_flags, retVal, offset, cb );
             CHECK_ERROR( errcode_ret[0] );
+            ADD_MAP_POINTER( retVal, map_flags, cb );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             if( pIntercept->config().CallLogging )
             {
@@ -4635,6 +4636,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueUnmapMemObject)(
                 mapped_ptr,
                 eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+            GET_TIMING_TAGS_UNMAP( mapped_ptr );
             DEVICE_PERFORMANCE_TIMING_START( event );
             HOST_PERFORMANCE_TIMING_START();
 
@@ -4646,9 +4648,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueUnmapMemObject)(
                 event_wait_list,
                 event );
 
-            HOST_PERFORMANCE_TIMING_END();
-            DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
+            HOST_PERFORMANCE_TIMING_END_WITH_TAG();
+            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, event );
             CHECK_ERROR( retVal );
+            REMOVE_MAP_PTR( mapped_ptr );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             if( pIntercept->config().CallLogging )
             {
@@ -6547,6 +6550,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
             HOST_PERFORMANCE_TIMING_END_WITH_TAG();
             DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, event );
             CHECK_ERROR( retVal );
+            ADD_MAP_POINTER( svm_ptr, map_flags, size );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
             ADD_EVENT( event ? event[0] : NULL );
@@ -6610,6 +6614,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMUnmap) (
             HOST_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
             CHECK_ERROR( retVal );
+            REMOVE_MAP_PTR( svm_ptr );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
             ADD_EVENT( event ? event[0] : NULL );
