@@ -2862,7 +2862,17 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelWorkGroupInfo)(
     if( pIntercept && pIntercept->dispatch().clGetKernelWorkGroupInfo )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%X)",
+
+        std::string deviceInfo;
+        if( pIntercept->config().CallLogging )
+        {
+            pIntercept->getDeviceInfoString(
+                1,
+                &device,
+                deviceInfo );
+        }
+        CALL_LOGGING_ENTER_KERNEL( kernel, "device = %s, param_name = %s (%X)",
+            deviceInfo.c_str(),
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
         HOST_PERFORMANCE_TIMING_START();
@@ -7275,7 +7285,19 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelSubGroupInfo) (
     if( pIntercept && pIntercept->dispatch().clGetKernelSubGroupInfo )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER();
+
+        std::string deviceInfo;
+        if( pIntercept->config().CallLogging )
+        {
+            pIntercept->getDeviceInfoString(
+                1,
+                &device,
+                deviceInfo );
+        }
+        CALL_LOGGING_ENTER_KERNEL( kernel, "device = %s, param_name = %s (%08X)",
+            deviceInfo.c_str(),
+            pIntercept->enumName().name( param_name ).c_str(),
+            param_name );
         HOST_PERFORMANCE_TIMING_START();
 
         cl_int retVal = pIntercept->dispatch().clGetKernelSubGroupInfo(
@@ -7320,7 +7342,19 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
         if( dispatchX.clGetKernelSubGroupInfoKHR )
         {
             GET_ENQUEUE_COUNTER();
-            CALL_LOGGING_ENTER();
+
+            std::string deviceInfo;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getDeviceInfoString(
+                    1,
+                    &device,
+                    deviceInfo );
+            }
+            CALL_LOGGING_ENTER_KERNEL( kernel, "device = %s, param_name = %s (%08X)",
+                deviceInfo.c_str(),
+                pIntercept->enumName().name( param_name ).c_str(),
+                param_name );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int retVal = dispatchX.clGetKernelSubGroupInfoKHR(
