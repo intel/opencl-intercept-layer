@@ -181,7 +181,7 @@ endif()
 if(WIN32)
     target_compile_options(OpenCL PRIVATE /EHsc)
     target_link_libraries(OpenCL SetupAPI Shlwapi)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
     target_compile_options(OpenCL PRIVATE -Wall)
     # TODO: Move this to target_link_libraries?
     set_target_properties(OpenCL PROPERTIES LINK_FLAGS "-Wl,--version-script -Wl,${CMAKE_CURRENT_SOURCE_DIR}/src/clIntercept.map")
