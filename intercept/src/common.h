@@ -16,7 +16,7 @@
 
 #if defined(__ANDROID__)
 #include <GLES/gl.h>
-#elif defined(_WIN32) || defined(__linux__)
+#elif defined(_WIN32) || defined(__linux__) || defined(__FreeBSD__)
 #include "GL/glcorearb.h"
 #elif defined(__APPLE__)
 #include <OpenGL/GL.h>
@@ -33,7 +33,7 @@
 
 #if defined(_WIN32)
     #define CLI_DEBUG_BREAK()   __debugbreak();
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
     #include <limits.h>
     #include <signal.h>
     #define CLI_DEBUG_BREAK()   raise(SIGTRAP);
@@ -53,7 +53,7 @@
     #define CLI_ASSERT(x)
 #endif
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(__FreeBSD__)
     #define CLIRN( _funcname )  _funcname
 #elif defined(__APPLE__)
     #define CLIRN( _funcname )  i ## _funcname
