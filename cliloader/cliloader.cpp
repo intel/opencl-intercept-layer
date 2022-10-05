@@ -106,6 +106,11 @@ static void getCommandLine(char *argv[], int startArg)
 #include <libproc.h>
 #include <mach-o/dyld.h>
 #endif
+#ifdef __FreeBSD__
+#include <pthread_np.h>
+#include <sys/user.h>
+#include <libutil.h>
+#endif
 
 #ifdef __APPLE__
 // Note: OSX has not been tested and may not work!
@@ -229,6 +234,7 @@ static std::string getProcessDirectory()
 
 #elif defined(__APPLE__)
 
+    // Get full path to executable:
     char    processName[ 1024 ];
     pid_t   pid = getpid();
     int     ret = proc_pidpath( pid, processName, sizeof(processName) );
@@ -262,6 +268,33 @@ static std::string getProcessDirectory()
     }
 
     processName[ bytes] = '\0';
+    DEBUG("full path to executable is: %s\n", processName);
+
+    char*   pProcessName = processName;
+    pProcessName = strrchr( processName, '/' );
+    if( pProcessName != NULL )
+    {
+        DEBUG("pProcessName is non-NULL: %s\n", pProcessName);
+        *pProcessName = '\0';
+    }
+
+    DEBUG("process directory is %s\n", processName);
+    return std::string(processName);
+
+#elif defined(__FreeBSD__)
+
+    // Get full path to executable:
+    char    processName[ 1024 ];
+    struct kinfo_proc* proc = kinfo_getproc(getpid());
+    if( proc == NULL )
+    {
+        die("Couldn't get the path to the cliloader executable");
+    }
+
+    strncpy( processName, proc->ki_comm, sizeof( processName ) );
+    free( proc);
+
+    processName[ sizeof( processName ) - 1 ] = '\0';
     DEBUG("full path to executable is: %s\n", processName);
 
     char*   pProcessName = processName;
