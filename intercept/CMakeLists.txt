@@ -26,6 +26,7 @@ if(WIN32)
         OS/OS_windows_common.h
     )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
+       ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
        ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
     list(APPEND CLINTERCEPT_OS_FILES
         OS/OS_linux.cpp
