@@ -27,6 +27,7 @@
 #ifdef __FreeBSD__
 #include <pthread_np.h>
 #include <sys/user.h>
+#include <libutil.h>
 #endif
 
 /*****************************************************************************\
