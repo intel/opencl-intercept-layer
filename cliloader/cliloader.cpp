@@ -248,7 +248,7 @@ static std::string getProcessDirectory()
     DEBUG("process directory is %s\n", pProcessName);
     return std::string(processName);
 
-#else // Linux
+#elif defined(__linux__)
 
     // Get full path to executable:
     char    processName[ 1024 ];
@@ -275,6 +275,9 @@ static std::string getProcessDirectory()
     DEBUG("process directory is %s\n", processName);
     return std::string(processName);
 
+#else
+#pragma message("Need to implement getProcessDirectory()")
+    return std::string();
 #endif
 }
 
