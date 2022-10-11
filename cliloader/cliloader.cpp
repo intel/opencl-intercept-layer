@@ -108,7 +108,9 @@ static void getCommandLine(char *argv[], int startArg)
 #endif
 #ifdef __FreeBSD__
 #include <pthread_np.h>
+#include <sys/sysctl.h>
 #include <sys/user.h>
+#include <libprocstat.h>
 #include <libutil.h>
 #endif
 
@@ -285,14 +287,22 @@ static std::string getProcessDirectory()
 
     // Get full path to executable:
     char    processName[ 1024 ];
-    struct kinfo_proc* proc = kinfo_getproc(getpid());
-    if( proc == NULL )
+    struct procstat *prstat = procstat_open_sysctl();
+    if( prstat == NULL )
     {
-        die("Couldn't get the path to the cliloader executable");
+        die("procstat_open_sysctl returned NULL");
     }
-
-    strncpy( processName, proc->ki_comm, sizeof( processName ) );
-    free( proc);
+    unsigned int count = 0;
+    struct kinfo_proc *kp = procstat_getprocs(prstat, KERN_PROC_PID, getpid(), &count);
+    if( count != 1 )
+    {
+        die("Unexpected count returned from procstat_getprocs");
+    }
+    int ret = procstat_getpathname(prstat, kp, processName, sizeof(processName));
+    if (ret != 0) {
+        die("procstat_getpathname returned an error");
+    }
+    procstat_close(prstat);
 
     processName[ sizeof( processName ) - 1 ] = '\0';
     DEBUG("full path to executable is: %s\n", processName);

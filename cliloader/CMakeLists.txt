@@ -23,6 +23,10 @@ add_dependencies(cliloader OpenCL)
 target_include_directories(cliloader PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../intercept)
 target_include_directories(cliloader PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
+    target_link_libraries(cliloader PRIVATE procstat util)
+endif()
+
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
         install(TARGETS cliloader DESTINATION ${OUTPUTCONFIG} CONFIGURATIONS ${OUTPUTCONFIG})
