@@ -153,9 +153,6 @@ inline std::string Services_Common::GetProcessName() const
         strncpy( processName, proc->ki_comm, sizeof( processName ) );
         processName[ sizeof( processName ) - 1 ] = '\0';
 
-        pProcessName = strrchr( processName, '/' );
-        pProcessName++;
-
         free(proc);
     }
 #else
