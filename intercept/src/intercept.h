@@ -33,7 +33,7 @@
 
 #if defined(_WIN32)
 
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
 
 #include <string.h>
 #define strcpy_s( _dst, _size, _src )   strncpy( _dst, _src, _size )
@@ -943,7 +943,7 @@ private:
     void    logPlatformInfo( cl_platform_id platform );
     void    logDeviceInfo( cl_device_id device );
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(__FreeBSD__)
     bool    initDispatch( const std::string& libName );
 #elif defined(__APPLE__)
     bool    initDispatch( void );

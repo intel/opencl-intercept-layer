@@ -322,7 +322,7 @@ bool CLIntercept::init()
 #if defined(_WIN32)
     OS::Services_Common::ENV_PREFIX = "CLI_";
     OS::Services_Common::REGISTRY_KEY = "SOFTWARE\\INTEL\\IGFX\\CLINTERCEPT";
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
     OS::Services_Common::ENV_PREFIX = "CLI_";
     OS::Services_Common::CONFIG_FILE = "clintercept.conf";
     OS::Services_Common::SYSTEM_DIR = "/etc/OpenCL";
@@ -352,7 +352,7 @@ bool CLIntercept::init()
 #include "controls.h"
 #undef CLI_CONTROL
 
-#if defined(_WIN32) || defined(__linux__) || defined(__APPLE__)
+#if defined(_WIN32) || defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
     if( !m_Config.DumpDir.empty() )
     {
         std::replace( m_Config.DumpDir.begin(), m_Config.DumpDir.end(), '\\', '/' );
@@ -469,14 +469,14 @@ bool CLIntercept::init()
 #if defined(_WIN32)
     log( "CLIntercept environment variable prefix: " + std::string( OS::Services_Common::ENV_PREFIX ) + "\n"  );
     log( "CLIntercept registry key: " + std::string( OS::Services_Common::REGISTRY_KEY ) + "\n" );
-#elif defined(__linux__) || defined(__APPLE__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
     log( "CLIntercept environment variable prefix: " + std::string( OS::Services_Common::ENV_PREFIX ) + "\n"  );
     log( "CLIntercept config file: " + std::string( OS::Services_Common::CONFIG_FILE ) + "\n" );
 #endif
 
     // Windows and Linux load the real OpenCL library and retrieve
     // the OpenCL entry points from the real library dynamically.
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(__FreeBSD__)
     if( libName != "" )
     {
         log( "Read OpenCL file name from user parameters: " + libName + "\n" );
@@ -516,7 +516,7 @@ bool CLIntercept::init()
             "real_libOpenCL.so",
         };
 
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__FreeBSD__)
 
         const std::string libNames[] =
         {
@@ -12221,7 +12221,7 @@ void* CLIntercept::getExtensionFunctionAddress(
     // don't need to look it up per-platform.
     CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clGetGLContextInfoKHR );
 
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(__FreeBSD__)
     CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clCreateFromGLBuffer );
     CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clCreateFromGLTexture );
     CHECK_RETURN_ICD_LOADER_EXTENSION_FUNCTION( clCreateFromGLTexture2D );
@@ -12586,7 +12586,7 @@ void CLIntercept::logDeviceInfo( cl_device_id device )
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(__FreeBSD__)
 #define INIT_EXPORTED_FUNC(funcname)                                        \
 {                                                                           \
     void* func = OS().GetFunctionPointer(m_OpenCLLibraryHandle, #funcname); \
@@ -12691,7 +12691,7 @@ bool CLIntercept::initDispatch( const std::string& libName )
         // The entry points for this extension are exported from the ICD
         // loader even though they are extension APIs.
         INIT_EXPORTED_FUNC( clGetGLContextInfoKHR );
-#if defined(_WIN32) || defined(__linux__)
+#if defined(_WIN32) || defined(__linux__) || defined(__FreeBSD__)
         INIT_EXPORTED_FUNC( clCreateFromGLBuffer );
         INIT_EXPORTED_FUNC( clCreateFromGLTexture );
         INIT_EXPORTED_FUNC( clCreateFromGLTexture2D );

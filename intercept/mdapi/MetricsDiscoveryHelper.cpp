@@ -36,8 +36,8 @@ static void* OpenLibrary( const std::string& metricsLibraryName )
 
 #define GetFunctionAddress(_handle, _name)  GetProcAddress((HMODULE)_handle, _name)
 
-#elif defined(__linux__) || defined(__APPLE__)
-#ifdef __linux__
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+#if defined(__linux__) || defined(__FreeBSD__)
 static const char* cMDLibFileName = "libigdmd.so";
 #else
 static const char* cMDLibFileName = "libigdmd.dylib";
@@ -146,7 +146,7 @@ MDHelper* MDHelper::CreateEBS(
     const std::string& metricsFileName,
     const bool includeMaxValues )
 {
-#if defined(__linux__)
+#if defined(__linux__) || defined(__FreeBSD__)
     // This is a temporary workaround until the Linux MDAPI is updated
     // to expose metrics for OpenCL.
     MDHelper*   pMDHelper = new MDHelper(API_TYPE_OCL|API_TYPE_OGL4_X);

@@ -106,6 +106,13 @@ static void getCommandLine(char *argv[], int startArg)
 #include <libproc.h>
 #include <mach-o/dyld.h>
 #endif
+#ifdef __FreeBSD__
+#include <pthread_np.h>
+#include <sys/sysctl.h>
+#include <sys/user.h>
+#include <libprocstat.h>
+#include <libutil.h>
+#endif
 
 #ifdef __APPLE__
 // Note: OSX has not been tested and may not work!
@@ -229,6 +236,7 @@ static std::string getProcessDirectory()
 
 #elif defined(__APPLE__)
 
+    // Get full path to executable:
     char    processName[ 1024 ];
     pid_t   pid = getpid();
     int     ret = proc_pidpath( pid, processName, sizeof(processName) );
@@ -248,7 +256,7 @@ static std::string getProcessDirectory()
     DEBUG("process directory is %s\n", pProcessName);
     return std::string(processName);
 
-#else // Linux
+#elif defined(__linux__)
 
     // Get full path to executable:
     char    processName[ 1024 ];
@@ -275,6 +283,44 @@ static std::string getProcessDirectory()
     DEBUG("process directory is %s\n", processName);
     return std::string(processName);
 
+#elif defined(__FreeBSD__)
+
+    // Get full path to executable:
+    char    processName[ 1024 ];
+    struct procstat *prstat = procstat_open_sysctl();
+    if( prstat == NULL )
+    {
+        die("procstat_open_sysctl returned NULL");
+    }
+    unsigned int count = 0;
+    struct kinfo_proc *kp = procstat_getprocs(prstat, KERN_PROC_PID, getpid(), &count);
+    if( count != 1 )
+    {
+        die("Unexpected count returned from procstat_getprocs");
+    }
+    int ret = procstat_getpathname(prstat, kp, processName, sizeof(processName));
+    if (ret != 0) {
+        die("procstat_getpathname returned an error");
+    }
+    procstat_close(prstat);
+
+    processName[ sizeof( processName ) - 1 ] = '\0';
+    DEBUG("full path to executable is: %s\n", processName);
+
+    char*   pProcessName = processName;
+    pProcessName = strrchr( processName, '/' );
+    if( pProcessName != NULL )
+    {
+        DEBUG("pProcessName is non-NULL: %s\n", pProcessName);
+        *pProcessName = '\0';
+    }
+
+    DEBUG("process directory is %s\n", processName);
+    return std::string(processName);
+
+#else
+#pragma message("Need to implement getProcessDirectory()")
+    return std::string();
 #endif
 }
 
