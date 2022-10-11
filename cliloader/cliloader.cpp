@@ -405,6 +405,7 @@ static bool parseArguments(int argc, char *argv[])
             checkSetEnv("CLI_DevicePerformanceTimeKernelInfoTracking", "1");
             checkSetEnv("CLI_DevicePerformanceTimeGWSTracking", "1");
             checkSetEnv("CLI_DevicePerformanceTimeLWSTracking", "1");
+            checkSetEnv("CLI_DevicePerformanceTimeTransferTracking", "1");
         }
         else if( !strcmp(argv[i], "-ccl") || !strcmp(argv[i], "--chrome-call-logging") )
         {

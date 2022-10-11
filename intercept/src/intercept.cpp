@@ -5184,12 +5184,25 @@ void CLIntercept::dumpProgramBuildLog(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::getTimingTagBlocking(
+    const char* functionName,
     const cl_bool blocking,
-    std::string& str )
+    const size_t size,
+    std::string& hostTag,
+    std::string& deviceTag )
 {
+    deviceTag.reserve(128);
+    deviceTag = functionName;
+
+    if( size && config().DevicePerformanceTimeTransferTracking )
+    {
+        char    s[256];
+        CLI_SPRINTF( s, 256, "( %zu bytes )", size );
+        deviceTag += s;
+    }
+
     if( blocking == CL_TRUE )
     {
-        str += "blocking";
+        hostTag += "blocking";
     }
 }
 
@@ -5199,6 +5212,7 @@ void CLIntercept::getTimingTagsMap(
     const char* functionName,
     const cl_map_flags flags,
     const cl_bool blocking,
+    const size_t size,
     std::string& hostTag,
     std::string& deviceTag )
 {
@@ -5226,15 +5240,68 @@ void CLIntercept::getTimingTagsMap(
     deviceTag = functionName;
     deviceTag += "( ";
     deviceTag += hostTag;
+    if( size && config().DevicePerformanceTimeTransferTracking )
+    {
+        char    s[256];
+        CLI_SPRINTF( s, 256, "; %zu bytes", size );
+        deviceTag += s;
+    }
     deviceTag += " )";
 
     if( blocking == CL_TRUE )
     {
-        if( !hostTag.empty() )
+        hostTag += "; blocking";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::getTimingTagsUnmap(
+    const char* functionName,
+    const void* ptr,
+    std::string& hostTag,
+    std::string& deviceTag )
+{
+    if( ptr )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        CMapPointerInfoMap::iterator iter = m_MapPointerInfoMap.find( ptr );
+        if( iter != m_MapPointerInfoMap.end() )
         {
-            hostTag += ", ";
+            const cl_map_flags flags = iter->second.Flags;
+            const size_t size = iter->second.Size;
+
+            if( flags & CL_MAP_WRITE_INVALIDATE_REGION )
+            {
+                hostTag += "WI";
+            }
+            else if( flags & CL_MAP_WRITE )
+            {
+                hostTag += "RW";
+            }
+            else if( flags & CL_MAP_READ )
+            {
+                hostTag += "R";
+            }
+
+            if( flags & ~(CL_MAP_READ | CL_MAP_WRITE | CL_MAP_WRITE_INVALIDATE_REGION) )
+            {
+                hostTag += "?";
+            }
+
+            deviceTag.reserve(128);
+            deviceTag = functionName;
+            deviceTag += "( ";
+            deviceTag += hostTag;
+            if( size && config().DevicePerformanceTimeTransferTracking )
+            {
+                char    s[256];
+                CLI_SPRINTF( s, 256, "; %zu bytes", size );
+                deviceTag += s;
+            }
+            deviceTag += " )";
         }
-        hostTag += "blocking";
     }
 }
 
@@ -5244,6 +5311,7 @@ void CLIntercept::getTimingTagsMemfill(
     const char* functionName,
     const cl_command_queue queue,
     const void* dst,
+    const size_t size,
     std::string& hostTag,
     std::string& deviceTag )
 {
@@ -5295,6 +5363,12 @@ void CLIntercept::getTimingTagsMemfill(
             deviceTag = functionName;
             deviceTag += "( ";
             deviceTag += hostTag;
+            if( size && config().DevicePerformanceTimeTransferTracking )
+            {
+                char    s[256];
+                CLI_SPRINTF( s, 256, "; %zu bytes", size );
+                deviceTag += s;
+            }
             deviceTag += " )";
         }
     }
@@ -5308,6 +5382,7 @@ void CLIntercept::getTimingTagsMemcpy(
     const cl_bool blocking,
     const void* dst,
     const void* src,
+    const size_t size,
     std::string& hostTag,
     std::string& deviceTag )
 {
@@ -5374,17 +5449,19 @@ void CLIntercept::getTimingTagsMemcpy(
             deviceTag = functionName;
             deviceTag += "( ";
             deviceTag += hostTag;
+            if( size && config().DevicePerformanceTimeTransferTracking )
+            {
+                char    s[256];
+                CLI_SPRINTF( s, 256, "; %zu bytes", size );
+                deviceTag += s;
+            }
             deviceTag += " )";
         }
     }
 
     if( blocking == CL_TRUE )
     {
-        if( !hostTag.empty() )
-        {
-            hostTag += ", ";
-        }
-        hostTag += "blocking";
+        hostTag += "; blocking";
     }
 }
 
@@ -7721,6 +7798,43 @@ void CLIntercept::dumpBuffer(
                     NULL );
             }
         }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::addMapPointer(
+    const void* ptr,
+    const cl_map_flags flags,
+    const size_t size )
+{
+    if( ptr )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        if( m_MapPointerInfoMap.find(ptr) != m_MapPointerInfoMap.end() )
+        {
+            log( "Ignoring duplicate mapped pointer.\n" );
+        }
+        else
+        {
+            SMapPointerInfo&    mapPointerInfo = m_MapPointerInfoMap[ptr];
+
+            mapPointerInfo.Flags = flags;
+            mapPointerInfo.Size = size;
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::removeMapPointer(
+    const void* ptr )
+{
+    if( ptr )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_MapPointerInfoMap.erase(ptr);
     }
 }
 
