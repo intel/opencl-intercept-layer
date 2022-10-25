@@ -220,7 +220,7 @@ bool MDHelper::InitMetricsDiscovery(
 
     if (m_APIMask & API_TYPE_IOSTREAM && m_APIMask != API_TYPE_IOSTREAM)
     {
-        DebugPrint("API type IOSTREAM cannot be combined with any other API type.");
+        DebugPrint("API type IOSTREAM cannot be combined with any other API type.\n");
         return false;
     }
 
@@ -229,28 +229,28 @@ bool MDHelper::InitMetricsDiscovery(
     void* pLibrary = OpenLibrary(metricsLibraryName);
     if (pLibrary == NULL)
     {
-        DebugPrint("Couldn't load metrics discovery library!");
+        DebugPrint("Couldn't load metrics discovery library!\n");
         return false;
     }
 
     CloseMetricsDevice = (CloseMetricsDevice_fn)GetFunctionAddress(pLibrary, "CloseMetricsDevice");
     if (CloseMetricsDevice == NULL)
     {
-        DebugPrint("CloseMetricsDevice NULL, error: %d", GetLastError());
+        DebugPrint("CloseMetricsDevice NULL, error: %d\n", GetLastError());
         return false;
     }
 
     OpenMetricsDevice = (OpenMetricsDevice_fn)GetFunctionAddress(pLibrary, "OpenMetricsDevice");
     if (OpenMetricsDevice == NULL)
     {
-        DebugPrint("OpenMetricsDevice NULL, error: %d", GetLastError());
+        DebugPrint("OpenMetricsDevice NULL, error: %d\n", GetLastError());
         return false;
     }
 
     OpenMetricsDeviceFromFile = (OpenMetricsDeviceFromFile_fn)GetFunctionAddress(pLibrary, "OpenMetricsDeviceFromFile");
     if (OpenMetricsDeviceFromFile == NULL)
     {
-        DebugPrint("OpenMetricsDeviceFromFile NULL, error: %d", GetLastError());
+        DebugPrint("OpenMetricsDeviceFromFile NULL, error: %d\n", GetLastError());
         return false;
     }
 
@@ -263,7 +263,7 @@ bool MDHelper::InitMetricsDiscovery(
         }
         if (res != CC_OK)
         {
-            DebugPrint("OpenMetricsDeviceFromFile failed, res: %d", res);
+            DebugPrint("OpenMetricsDeviceFromFile failed, res: %d\n", res);
             return false;
         }
     }
@@ -272,7 +272,7 @@ bool MDHelper::InitMetricsDiscovery(
         res = OpenMetricsDevice(&m_MetricsDevice);
         if (res != CC_OK)
         {
-            DebugPrint("OpenMetricsDevice failed, res: %d", res);
+            DebugPrint("OpenMetricsDevice failed, res: %d\n", res);
             return false;
         }
     }
@@ -280,7 +280,7 @@ bool MDHelper::InitMetricsDiscovery(
     TMetricsDeviceParams_1_0* deviceParams = m_MetricsDevice->GetParams();
     if (NULL == deviceParams)
     {
-        DebugPrint("DeviceParams null");
+        DebugPrint("DeviceParams null\n");
         return false;
     }
 
