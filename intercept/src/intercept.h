@@ -2771,7 +2771,12 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
     std::string hostTag, deviceTag;                                         \
     if( pIntercept->config().ChromeCallLogging ||                           \
         ( pIntercept->config().HostPerformanceTiming &&                     \
-          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) ) )\
+          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) ) ||\
+        ( ( pIntercept->config().DevicePerformanceTiming ||                   \
+            pIntercept->config().ITTPerformanceTiming ||                      \
+            pIntercept->config().ChromePerformanceTiming ||                   \
+            pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
+          pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) ) )\
     {                                                                       \
         pIntercept->getTimingTagBlocking(                                   \
             __FUNCTION__,                                                   \
