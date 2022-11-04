@@ -3388,7 +3388,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
                     eventWaitListString.c_str() );
             }
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
-            GET_TIMING_TAGS_BLOCKING( blocking_read, 0 );
+            GET_TIMING_TAGS_BLOCKING( blocking_read, region ? region[0] * region[1] * region[2] : 0 );
             DEVICE_PERFORMANCE_TIMING_START( event );
             HOST_PERFORMANCE_TIMING_START();
 
@@ -3584,7 +3584,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
                     eventWaitListString.c_str() );
             }
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
-            GET_TIMING_TAGS_BLOCKING( blocking_write, 0 );
+            GET_TIMING_TAGS_BLOCKING( blocking_write, region ? region[0] * region[1] * region[2] : 0 );
             DEVICE_PERFORMANCE_TIMING_START( event );
             HOST_PERFORMANCE_TIMING_START();
 
