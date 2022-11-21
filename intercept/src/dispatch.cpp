@@ -361,14 +361,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
     {
         GET_ENQUEUE_COUNTER();
 
-        pIntercept->checkRemoveDeviceInfo( device );
-
         cl_uint ref_count =
             pIntercept->config().CallLogging ?
             pIntercept->getRefCount( device ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] device = %p",
             ref_count,
             device );
+        pIntercept->checkRemoveDeviceInfo( device );
         HOST_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = pIntercept->dispatch().clReleaseDevice(
@@ -2700,14 +2699,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseKernel)(
     {
         GET_ENQUEUE_COUNTER();
 
-        pIntercept->checkRemoveKernelInfo( kernel );
-
         cl_uint ref_count =
             pIntercept->config().CallLogging ?
             pIntercept->getRefCount( kernel ) : 0;
         CALL_LOGGING_ENTER( "[ ref count = %d ] kernel = %p",
             ref_count,
             kernel );
+        pIntercept->checkRemoveKernelInfo( kernel );
         HOST_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = pIntercept->dispatch().clReleaseKernel(
@@ -5646,14 +5644,13 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseSemaphoreKHR(
         {
             GET_ENQUEUE_COUNTER();
 
-            pIntercept->checkRemoveSemaphoreInfo( semaphore );
-
             cl_uint ref_count =
                 pIntercept->config().CallLogging ?
                 pIntercept->getRefCount( semaphore ) : 0;
             CALL_LOGGING_ENTER( "[ ref count = %d ] semaphore = %p",
                 ref_count,
                 semaphore );
+            pIntercept->checkRemoveSemaphoreInfo( semaphore );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clReleaseSemaphoreKHR(
@@ -9138,14 +9135,13 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseAcceleratorINTEL(
         {
             GET_ENQUEUE_COUNTER();
 
-            pIntercept->checkRemoveAcceleratorInfo( accelerator );
-
             cl_uint ref_count =
                 pIntercept->config().CallLogging ?
                 pIntercept->getRefCount( accelerator ) : 0;
             CALL_LOGGING_ENTER( "[ ref count = %d ] accelerator = %p",
                 ref_count,
                 accelerator );
+            pIntercept->checkRemoveAcceleratorInfo( accelerator );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clReleaseAcceleratorINTEL(
@@ -10487,14 +10483,13 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseCommandBufferKHR(
         {
             GET_ENQUEUE_COUNTER();
 
-            pIntercept->checkRemoveCommandBufferInfo( command_buffer );
-
             cl_uint ref_count =
                 pIntercept->config().CallLogging ?
                 pIntercept->getRefCount( command_buffer ) : 0;
             CALL_LOGGING_ENTER( "[ ref count = %d ] command_buffer = %p",
                 ref_count,
                 command_buffer );
+            pIntercept->checkRemoveCommandBufferInfo( command_buffer );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clReleaseCommandBufferKHR(
