@@ -12408,7 +12408,10 @@ void CLIntercept::log( const std::string& s )
         if( m_Config.LogToFile )
         {
             m_InterceptLog << logString;
-            m_InterceptLog.flush();
+            if( m_Config.FlushFiles )
+            {
+                m_InterceptLog.flush();
+            }
         }
         if( m_Config.LogToDebugger )
         {
@@ -13282,6 +13285,11 @@ void CLIntercept::chromeCallLoggingExit(
             usStart,
             usDelta );
         m_InterceptTrace.write(m_StringBuffer, size);
+    }
+
+    if( m_Config.FlushFiles )
+    {
+        m_InterceptTrace.flush();
     }
 }
 
