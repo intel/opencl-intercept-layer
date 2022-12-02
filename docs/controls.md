@@ -227,6 +227,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will chec
 
 If set to a nonzero value, logs information about the platforms and devices in the system on the first call to clGetPlatformIDs().
 
+##### `FlushFiles` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will flush files after ever write.  This slows down performance but can help to avoid truncated files if the Intercept Layer for OpenCL Applications does not exit cleanly.
+
 ##### `DumpDir` (string)
 
 If set, the Intercept Layer for OpenCL Applications will emit logs and dumps to this directory instead of the default directory.  The default log and dump directory is "%SYSTEMDRIVE%\\Intel\\CLIntercept\_Dump\\\<Process Name\>" on Windows and "~/CLIntercept\_Dump/\<Process Name\>" on other operating systems.  The log and dump directory must be writeable, otherwise the Intercept Layer for OpenCL Applications will not be able to create or modify log or dump files.
