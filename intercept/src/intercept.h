@@ -1830,6 +1830,15 @@ inline uint64_t CLIntercept::getEnqueueCounter() const
 
 inline uint64_t CLIntercept::incrementEnqueueCounter()
 {
+    uint64_t reportInterval = m_Config.ReportInterval;
+    if( reportInterval != 0 )
+    {
+        uint64_t enqueueCounter = m_EnqueueCounter.load();
+        if( enqueueCounter != 0 && enqueueCounter % reportInterval == 0 )
+        {
+            report();
+        }
+    }
     return m_EnqueueCounter.fetch_add(1, std::memory_order_relaxed);
 }
 
@@ -2615,10 +2624,14 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 // Note: This does not currently combine program binaries before computing
 // the hash.  This will work fine for single-device binaries, but may be
 // incomplete or incorrect for multi-device binaries.
+// Note: This checks for more than just dumping input program binaries and
+// program binaries so we have a hash when we dump program options, also.
 #define COMPUTE_BINARY_HASH( _num, _lengths, _binaries, _hash )             \
     if( _lengths && _binaries &&                                            \
-        ( pIntercept->config().DumpInputProgramBinaries ||                  \
-          pIntercept->config().DumpProgramBinaries ) )                      \
+        ( pIntercept->config().DumpProgramSource ||                         \
+          pIntercept->config().DumpInputProgramBinaries ||                  \
+          pIntercept->config().DumpProgramBinaries ||                       \
+          pIntercept->config().DumpProgramSPIRV ) )                         \
     {                                                                       \
         _hash = pIntercept->hashString(                                     \
             (const char*)_binaries[0],                                      \
