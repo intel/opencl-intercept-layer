@@ -48,6 +48,7 @@ CLI_CONTROL( bool,          DemangleKernelNames,                    false, "If s
 CLI_CONTROL_SEPARATOR( Reporting Controls: )
 CLI_CONTROL( bool,          ReportToStderr,                         false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emit reports to stderr." )
 CLI_CONTROL( bool,          ReportToFile,                           true,  "If set to a nonzero value, the Intercept Layer for OpenCL Applications will write results to the file \"clintercept_report.txt\"." )
+CLI_CONTROL( cl_uint,       ReportInterval,                         0,     "If set to a nonzero value, the Intercept Layer for OpenCL Applications will generate a report at regular intervals (based on the enqueue counter).  This can be useful to generate report data while a long-running application is executing, or if an application does not exit cleanly." )
 
 CLI_CONTROL_SEPARATOR( Performance Timing Controls: )
 CLI_CONTROL( bool,          HostPerformanceTiming,                  false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will track the minimum, maximum, and average host CPU time for each OpenCL entry point.  When the process exits, this information will be included in the file \"clIntercept_report.txt\"." )

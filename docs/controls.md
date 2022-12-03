@@ -261,6 +261,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will emit
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will write results to the file "clintercept\_report.txt".
 
+##### `ReportInterval` (cl_uint)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will generate a report at regular intervals (based on the enqueue counter).  This can be useful to generate report data while a long-running application is executing, or if an application does not exit cleanly.
+
 ### Performance Timing Controls
 
 ##### `HostPerformanceTiming` (bool)
