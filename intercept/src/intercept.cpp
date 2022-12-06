@@ -4614,8 +4614,9 @@ void CLIntercept::dumpProgramSourceScript(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::dumpProgramSource(
-    uint64_t hash,
     cl_program program,
+    uint64_t hash,
+    bool modified,
     const char* singleString )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
@@ -4628,6 +4629,11 @@ void CLIntercept::dumpProgramSource(
     {
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
     }
+    if( modified )
+    {
+        fileName += "/Modified";
+    }
+
     // Make the filename.  It will have the form:
     //   CLI_<program number>_<hash>_source.cl
     {
@@ -4685,8 +4691,9 @@ void CLIntercept::dumpProgramSource(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::dumpInputProgramBinaries(
-    uint64_t hash,
     const cl_program program,
+    uint64_t hash,
+    bool modified,
     cl_uint num_devices,
     const cl_device_id* device_list,
     const size_t* lengths,
@@ -4701,6 +4708,10 @@ void CLIntercept::dumpInputProgramBinaries(
     // Get the dump directory name.
     {
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+    }
+    if( modified )
+    {
+        fileName += "/Modified";
     }
 
     // Make the filename.  It will have the form:
@@ -4794,8 +4805,9 @@ void CLIntercept::dumpInputProgramBinaries(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::dumpProgramSPIRV(
-    uint64_t hash,
     cl_program program,
+    uint64_t hash,
+    bool modified,
     const size_t length,
     const void* il )
 {
@@ -4808,6 +4820,10 @@ void CLIntercept::dumpProgramSPIRV(
     // Get the dump directory name.
     {
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+    }
+    if( modified )
+    {
+        fileName += "/Modified";
     }
 
     // Make the filename.  It will have the form:
@@ -4837,7 +4853,7 @@ void CLIntercept::dumpProgramSPIRV(
         OS().MakeDumpDirectories( fileName );
     }
 
-    // Dump the program source to a .cl file.
+    // Dump the program source to a .spv file.
     {
         std::ofstream os;
         os.open(
@@ -5004,6 +5020,7 @@ void CLIntercept::dumpProgramOptionsScript(
 //
 void CLIntercept::dumpProgramOptions(
     const cl_program program,
+    bool modified,
     cl_bool isCompile,
     cl_bool isLink,
     const char* options )
@@ -5026,6 +5043,11 @@ void CLIntercept::dumpProgramOptions(
         {
             OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
         }
+        if( modified )
+        {
+            fileName += "/Modified";
+        }
+
         // Make the filename.  It will have the form:
         //   CLI_<program number>_<program hash>_<compile count>_<options hash>
         // Leave off the extension for now.
@@ -5051,6 +5073,12 @@ void CLIntercept::dumpProgramOptions(
             fileName += "/CLI_";
             fileName += numberString;
         }
+
+        // Now make directories as appropriate.
+        {
+            OS().MakeDumpDirectories( fileName );
+        }
+
         // Dump the program options to a .txt file.
         {
             fileName +=

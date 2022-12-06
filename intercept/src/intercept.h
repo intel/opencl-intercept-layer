@@ -314,19 +314,22 @@ public:
                 const cl_program program,
                 const char* singleString );
     void    dumpProgramSource(
-                uint64_t hash,
                 const cl_program program,
+                uint64_t hash,
+                bool modified,
                 const char* singleString );
     void    dumpInputProgramBinaries(
-                uint64_t hash,
                 const cl_program program,
+                uint64_t hash,
+                bool modified,
                 cl_uint num_devices,
                 const cl_device_id* device_list,
                 const size_t* lengths,
                 const unsigned char** binaries );
     void    dumpProgramSPIRV(
-                uint64_t hash,
                 const cl_program program,
+                uint64_t hash,
+                bool modified,
                 const size_t length,
                 const void* il );
     void    dumpProgramOptionsScript(
@@ -334,6 +337,7 @@ public:
                 const char* options );
     void    dumpProgramOptions(
                 const cl_program program,
+                bool modified,
                 cl_bool isCompile,
                 cl_bool isLink,
                 const char* options );
@@ -2506,14 +2510,14 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
     }
 
 #define DUMP_PROGRAM_OPTIONS( program, options, isCompile, isLink )         \
-    if( ( modified == false ) &&                                            \
-        ( pIntercept->config().DumpProgramSource ||                         \
-          pIntercept->config().DumpInputProgramBinaries ||                  \
-          pIntercept->config().DumpProgramBinaries ||                       \
-          pIntercept->config().DumpProgramSPIRV ) )                         \
+    if( pIntercept->config().DumpProgramSource ||                           \
+        pIntercept->config().DumpInputProgramBinaries ||                    \
+        pIntercept->config().DumpProgramBinaries ||                         \
+        pIntercept->config().DumpProgramSPIRV )                             \
     {                                                                       \
         pIntercept->dumpProgramOptions(                                     \
             program,                                                        \
+            modified,                                                       \
             isCompile,                                                      \
             isLink,                                                         \
             options );                                                      \
@@ -2598,11 +2602,14 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
     }
 
 #define DUMP_PROGRAM_SOURCE( program, singleString, hash )                  \
-    if( ( injected == false ) &&                                            \
-        ( pIntercept->config().DumpProgramSource ||                         \
-          pIntercept->config().AutoCreateSPIRV ) )                          \
+    if( pIntercept->config().DumpProgramSource ||                           \
+        pIntercept->config().AutoCreateSPIRV )                              \
     {                                                                       \
-        pIntercept->dumpProgramSource( hash, program, singleString );       \
+        pIntercept->dumpProgramSource(                                      \
+            program,                                                        \
+            hash,                                                           \
+            injected,                                                       \
+            singleString );                                                 \
     }                                                                       \
     else if( ( injected == false ) &&                                       \
              ( pIntercept->config().SimpleDumpProgramSource ||              \
@@ -2642,8 +2649,9 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
     if( pIntercept->config().DumpInputProgramBinaries )                     \
     {                                                                       \
         pIntercept->dumpInputProgramBinaries(                               \
-            _hash,                                                          \
             _program,                                                       \
+            _hash,                                                          \
+            false, /* modified */                                           \
             _num,                                                           \
             _devs,                                                          \
             _lengths,                                                       \
@@ -2672,10 +2680,9 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
     }
 
 #define DUMP_PROGRAM_SPIRV( program, length, il, hash )                     \
-    if( ( injected == false ) &&                                            \
-        pIntercept->config().DumpProgramSPIRV )                             \
+    if( pIntercept->config().DumpProgramSPIRV )                             \
     {                                                                       \
-        pIntercept->dumpProgramSPIRV( hash, program, length, il );          \
+        pIntercept->dumpProgramSPIRV( program, hash, injected, length, il );\
     }                                                                       \
     else                                                                    \
     {                                                                       \

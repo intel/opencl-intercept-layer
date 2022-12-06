@@ -2114,7 +2114,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
 
         SAVE_PROGRAM_OPTIONS_HASH( program, options );
         PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions, isCompile );
-        DUMP_PROGRAM_OPTIONS( program, options, isCompile, isLink );
+        DUMP_PROGRAM_OPTIONS( program, newOptions ? newOptions : options, isCompile, isLink );
 
         CALL_LOGGING_ENTER( "program = %p, pfn_notify = %p", program, pfn_notify );
         BUILD_LOGGING_INIT();
@@ -2151,6 +2151,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
 
         DUMP_OUTPUT_PROGRAM_BINARIES( program );
         DUMP_KERNEL_ISA_BINARIES( program );
+        // Note: this uses the original program options!
         AUTO_CREATE_SPIRV( program, options );
         INCREMENT_PROGRAM_COMPILE_COUNT( program );
         PROGRAM_OPTIONS_CLEANUP( newOptions );
@@ -2187,7 +2188,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
 
         SAVE_PROGRAM_OPTIONS_HASH( program, options );
         PROGRAM_OPTIONS_OVERRIDE_INIT( program, options, newOptions, isCompile );
-        DUMP_PROGRAM_OPTIONS( program, options, isCompile, isLink );
+        DUMP_PROGRAM_OPTIONS( program, newOptions ? newOptions : options, isCompile, isLink );
 
         CALL_LOGGING_ENTER( "program = %p, pfn_notify = %p", program, pfn_notify );
         BUILD_LOGGING_INIT();
@@ -2260,7 +2261,6 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         const bool isCompile = false;
         const bool isLink = true;
         char*   newOptions = NULL;
-        cl_program  retVal = NULL;
 
         PROGRAM_LINK_OPTIONS_OVERRIDE_INIT( num_devices, device_list, options, newOptions );
 
@@ -2272,7 +2272,9 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         BUILD_LOGGING_INIT();
         HOST_PERFORMANCE_TIMING_START();
 
-        if( ( retVal == NULL ) && newOptions )
+        cl_program  retVal = NULL;
+
+        if( newOptions != NULL )
         {
             retVal = pIntercept->dispatch().clLinkProgram(
                 context,
@@ -2285,6 +2287,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
                 user_data,
                 errcode_ret );
         }
+
         if( retVal == NULL )
         {
             retVal = pIntercept->dispatch().clLinkProgram(
@@ -2309,7 +2312,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         // This is a new program object, so we don't currently have a hash for it.
         SAVE_PROGRAM_NUMBER( retVal );
         SAVE_PROGRAM_OPTIONS_HASH( retVal, options );
-        DUMP_PROGRAM_OPTIONS( retVal, options, isCompile, isLink );
+        DUMP_PROGRAM_OPTIONS( retVal, newOptions ? newOptions : options, isCompile, isLink );
         DUMP_OUTPUT_PROGRAM_BINARIES( retVal );
         DUMP_KERNEL_ISA_BINARIES( retVal );
         INCREMENT_PROGRAM_COMPILE_COUNT( retVal );
