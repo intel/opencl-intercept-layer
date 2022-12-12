@@ -113,7 +113,7 @@ static inline bool SetAubCaptureEnvironmentVariables(
     bool start )
 {
     // For NEO AubCapture:
-    // As setup, need to set AUBDumpSubcaptureMode = 2.
+    // As setup, need to set AUBDumpSubCaptureMode = 2.
     // This will be the client's responsibility.
     //
     // To start/stop AubCapture:
