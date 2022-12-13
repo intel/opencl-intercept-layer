@@ -157,7 +157,7 @@ static inline bool SetAubCaptureRegistryKeys(
     DWORD dwValue )
 {
     // For NEO AubCapture:
-    // As setup, need to set AUBDumpSubcaptureMode = 2.
+    // As setup, need to set AUBDumpSubCaptureMode = 2.
     // This will be the client's responsibility.
     //
     // To start/stop AubCapture:
@@ -297,9 +297,6 @@ inline bool Services::StopAubCaptureKDC(
     std::string command = "kdc.exe -off";
     int res = system(command.c_str());
     //fprintf(stderr, "Running the command: %s returned %d\n", command.c_str(), res );
-
-    // This is the newer NEO method of AubCapture:
-    bool success = SetAubCaptureRegistryKeys( "", 0 );
 
     return res != -1;
 }

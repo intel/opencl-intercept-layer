@@ -29,7 +29,7 @@ method is deprecated, is not recommended, and is supported for internal use only
 Most published drivers are Release driver builds, which do not support AUB file capture.
 
 To initially enable NEO AUB file capture, please enable the NEO controls
-`AUBDumpSubcaptureMode` and `SetCommandStreamReceiver`.
+`AUBDumpSubCaptureMode` and `SetCommandStreamReceiver`.
 
 The mechanism to enable these controls is operating system dependent.
 
@@ -37,7 +37,11 @@ On Windows, enable NEO AUB file capture by setting two `REG_DWORD` registry valu
 in the registry key:
 
 ```
-HKEY_CURRENT_USER\SOFTWARE\INTEL\IGFX\OCL
+// For 32-bit systems, or 64-bit applications on a 64-bit system:
+HKEY_LOCAL_MACHINE\SOFTWARE\INTEL\IGFX\OCL
+
+// For 32-bit applications on a 64-bit system:
+HKEY_LOCAL_MACHINE\SOFTWARE\WoW6432Node\INTEL\IGFX\OCL
 ```
 
 The first registry value should be named `AUBDumpSubCaptureMode` and should have the
@@ -49,8 +53,14 @@ On Linux, enable NEO file AUB capture by setting the environment variable
 `AUBDumpSubCaptureMode` to the value `2`, indicating `Toggle` mode, and by setting
 the environment variable `SetCommandStreamReceiver` to the value `3`, indicating that
 commands should both be captured and sent to the GPU.
+The environment variable method may also be used on Windows.
+
 The `AUBDumpSubCaptureMode` and `SetCommandStreamReceiver` variables may also be set
 via the config file `igdrcl.config`, if preferred.
+
+Additionally, it is generally recommended to set the `PrintDebugSettings` variable to
+the value `1`, which will print the values of all non-default variables to the console,
+to verify they have been properly set.
 
 ## Testing AUB File Capture
 
