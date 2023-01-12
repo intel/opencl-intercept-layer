@@ -51,7 +51,6 @@ static void* OpenLibrary()
 }
 
 #define GetFunctionAddress(_handle, _name)  dlsym(_handle, _name)
-#define GetLastError()                      dlerror()
 
 #endif
 
@@ -78,21 +77,21 @@ static bool printMetricsHelper(const std::string& metricsFileName)
     CloseMetricsDevice = (CloseMetricsDevice_fn)GetFunctionAddress(pLibrary, "CloseMetricsDevice");
     if (CloseMetricsDevice == NULL)
     {
-        fprintf(stderr, "CloseMetricsDevice NULL, error: %d\n", GetLastError());
+        fprintf(stderr, "Couldn't get pointer to CloseMetricsDevice!\n");
         return false;
     }
 
     OpenMetricsDevice = (OpenMetricsDevice_fn)GetFunctionAddress(pLibrary, "OpenMetricsDevice");
     if (OpenMetricsDevice == NULL)
     {
-        fprintf(stderr, "OpenMetricsDevice NULL, error: %d\n", GetLastError());
+        fprintf(stderr, "Couldn't get pointer to OpenMetricsDevice!\n");
         return false;
     }
 
     OpenMetricsDeviceFromFile = (OpenMetricsDeviceFromFile_fn)GetFunctionAddress(pLibrary, "OpenMetricsDeviceFromFile");
     if (OpenMetricsDeviceFromFile == NULL)
     {
-        fprintf(stderr, "OpenMetricsDeviceFromFile NULL, error: %d\n", GetLastError());
+        fprintf(stderr, "Couldn't get pointer to OpenMetricsDeviceFromFile!\n");
         return false;
     }
 
@@ -177,8 +176,8 @@ static bool printMetricsHelper(const std::string& metricsFileName)
                                 "%s\\%s (%s):\n"
                                 "%s\n\n",
                                 setParams->SymbolName,
-                                metricParams->ShortName,
                                 metricParams->SymbolName,
+                                metricParams->ShortName,
                                 metricParams->LongName);
                         }
                     }
