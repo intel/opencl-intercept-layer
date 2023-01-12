@@ -315,3 +315,6 @@ static HMODULE LoadDynamicLibrary(const wchar_t* pFileName, HANDLE hFile = NULL,
 
     return hModule;
 }
+
+#undef DEBUG
+#undef DBG

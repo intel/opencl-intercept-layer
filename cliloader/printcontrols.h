@@ -45,7 +45,7 @@ static const std::vector<cliControl> controls =
 #undef CLI_CONTROL
 #undef CLI_CONTROL_SEPARATOR
 
-void printControls()
+static void printControls()
 {
     for (const auto& control : controls )
     {
