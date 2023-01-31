@@ -842,4 +842,4 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will use 
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018-2022, Intel(R) Corporation
+Copyright (c) 2018-2023, Intel(R) Corporation
