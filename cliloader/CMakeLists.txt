@@ -24,6 +24,10 @@ add_dependencies(cliloader OpenCL)
 target_include_directories(cliloader PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../intercept)
 target_include_directories(cliloader PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
+if(CMAKE_DL_LIBS)
+    target_link_libraries(cliloader ${CMAKE_DL_LIBS})
+endif()
+
 if(WIN32)
     target_link_libraries(cliloader SetupAPI Shlwapi)
 endif()
