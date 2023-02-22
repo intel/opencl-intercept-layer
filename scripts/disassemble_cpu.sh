@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# Copyright (c) 2018-2022 Intel Corporation
+# Copyright (c) 2018-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #

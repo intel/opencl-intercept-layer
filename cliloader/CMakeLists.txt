@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2022 Intel Corporation
+# Copyright (c) 2018-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 
@@ -10,6 +10,7 @@ configure_file(git_version.h.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.h" @ONL
 set( CLILOADER_SOURCE_FILES
     cliloader.cpp
     printcontrols.h
+    printmetrics.h
     "${CMAKE_CURRENT_BINARY_DIR}/git_version.h"
 )
 source_group( Source FILES
@@ -23,6 +24,13 @@ add_dependencies(cliloader OpenCL)
 target_include_directories(cliloader PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../intercept)
 target_include_directories(cliloader PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 
+if(CMAKE_DL_LIBS)
+    target_link_libraries(cliloader ${CMAKE_DL_LIBS})
+endif()
+
+if(WIN32)
+    target_link_libraries(cliloader SetupAPI Shlwapi)
+endif()
 if(${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD")
     target_link_libraries(cliloader PRIVATE procstat util)
 endif()

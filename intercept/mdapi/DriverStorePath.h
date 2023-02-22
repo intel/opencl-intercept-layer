@@ -1,5 +1,5 @@
 /*
-// Copyright (c) 2018-2022 Intel Corporation
+// Copyright (c) 2018-2023 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 */
@@ -315,3 +315,6 @@ static HMODULE LoadDynamicLibrary(const wchar_t* pFileName, HANDLE hFile = NULL,
 
     return hModule;
 }
+
+#undef DEBUG
+#undef DBG

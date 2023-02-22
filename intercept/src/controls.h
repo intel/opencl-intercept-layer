@@ -1,5 +1,5 @@
 /*
-// Copyright (c) 2018-2022 Intel Corporation
+// Copyright (c) 2018-2023 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 */
@@ -101,6 +101,7 @@ CLI_CONTROL( std::string,   AppendBuildOptions,                     "",    "If s
 CLI_CONTROL( std::string,   AppendLinkOptions,                      "",    "If set, the Intercept Layer for OpenCL Applications will add these build options to the end of any application provided or injected build options for each call to clLinkProgram()." )
 CLI_CONTROL( bool,          DumpProgramBuildLogs,                   false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump build logs for every device a program is built for to a separate file.  The filename will have the form \"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options Hash Code>_<Device Type>_build_log.txt\"." )
 CLI_CONTROL( bool,          DumpKernelISABinaries,                  false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump kernel ISA binaries for every kernel, if supported.  Currently, kernel ISA binaries are only supported for Intel GPU devices.  Kernel ISA binaries can be decoded into ISA text with a disassembler.  The filename will have the form \"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options Hash Code>_<Device Type>_<Kernel Name>.isabin\"." )
+CLI_CONTROL( int,           DumpReplayKernelEnqueue,                -1,     "Test Control")
 
 CLI_CONTROL_SEPARATOR( Controls for Emulating Features: )
 CLI_CONTROL( bool,          Emulate_cl_khr_extended_versioning,     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl_khr_extended_versioning extension." )

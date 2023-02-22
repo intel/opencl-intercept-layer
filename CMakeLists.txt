@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2022 Intel Corporation
+# Copyright (c) 2018-2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 
@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
 project(CLIntercept VERSION 3.0.3 LANGUAGES CXX)

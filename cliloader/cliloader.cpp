@@ -1,5 +1,5 @@
 /*
-// Copyright (c) 2018-2022 Intel Corporation
+// Copyright (c) 2018-2023 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 */
@@ -8,6 +8,7 @@
 #include <string>
 
 #include "printcontrols.h"
+#include "printmetrics.h"
 
 bool debug = false;
 
@@ -345,6 +346,11 @@ static bool parseArguments(int argc, char *argv[])
             printControls();
             return false;
         }
+        else if (!strcmp(argv[i], "--metrics"))
+        {
+            printMetrics();
+            return false;
+        }
 #if !defined(_WIN32)
         else if( !strcmp(argv[i], "--no-LD_PRELOAD") )
         {
@@ -512,6 +518,7 @@ static bool parseArguments(int argc, char *argv[])
             "Options:\n"
             "  --debug                          Enable cliloader Debug Messages\n"
             "  --controls                       Print All Controls and Exit\n"
+            "  --metrics                        Print All MDAPI Metrics and Exit\n"
 #if !defined(_WIN32)
             "  --no-LD_PRELOAD                  Do not set LD_PRELOAD\n"
             "  --no-LD_LIBRARY_PATH             Do not set LD_LIBRARY_PATH\n"
@@ -534,9 +541,9 @@ static bool parseArguments(int argc, char *argv[])
             "  --chrome-kernel-timeline [-ckt]  Record Per-Kernel Device Timeline to a JSON Trace File\n"
             "  --chrome-device-stages [-cds]    Record Device Timeline Stages to a JSON Trace File\n"
             "  --driver-diagnostics [-ddiag]    Log Driver Diagnostics\n"
-            "  --mdapi-ebs                      Report Event-Based MDAPI Counters (Intel GPU Only)\n"
-            "  --mdapi-tbs                      Report Time-Based MDAPI Counters (Intel GPU Only)\n"
-            "  --mdapi-group <NAME>             Choose MDAPI Counters to Collect (Intel GPU Only)\n"
+            "  --mdapi-ebs                      Report Event-Based MDAPI Metrics (Intel GPU Only)\n"
+            "  --mdapi-tbs                      Report Time-Based MDAPI Metrics (Intel GPU Only)\n"
+            "  --mdapi-group <NAME>             Choose MDAPI Metrics to Collect (Intel GPU Only)\n"
             "  --host-timing [-h]               Report Host API Execution Time\n"
             "  --leak-checking [-l]             Track and Report OpenCL Leaks\n"
             "  --output-to-file [-f]            Log and Report to Files vs. stderr\n"

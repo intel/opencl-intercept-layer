@@ -1,5 +1,5 @@
 /*
-// Copyright (c) 2018-2022 Intel Corporation
+// Copyright (c) 2018-2023 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 */
@@ -45,7 +45,7 @@ static const std::vector<cliControl> controls =
 #undef CLI_CONTROL
 #undef CLI_CONTROL_SEPARATOR
 
-void printControls()
+static void printControls()
 {
     for (const auto& control : controls )
     {

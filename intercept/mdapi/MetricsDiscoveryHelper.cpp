@@ -1,5 +1,5 @@
 /*
-// Copyright (c) 2018-2022 Intel Corporation
+// Copyright (c) 2018-2023 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 */
@@ -72,7 +72,6 @@ static void* OpenLibrary( const std::string& metricsLibraryName )
 }
 
 #define GetFunctionAddress(_handle, _name)  dlsym(_handle, _name)
-#define GetLastError()                      dlerror()
 #define OutputDebugString(_buf)             fprintf(stderr, "%s", _buf);
 
 #endif
@@ -236,21 +235,21 @@ bool MDHelper::InitMetricsDiscovery(
     CloseMetricsDevice = (CloseMetricsDevice_fn)GetFunctionAddress(pLibrary, "CloseMetricsDevice");
     if (CloseMetricsDevice == NULL)
     {
-        DebugPrint("CloseMetricsDevice NULL, error: %d\n", GetLastError());
+        DebugPrint("Couldn't get pointer to CloseMetricsDevice!\n");
         return false;
     }
 
     OpenMetricsDevice = (OpenMetricsDevice_fn)GetFunctionAddress(pLibrary, "OpenMetricsDevice");
     if (OpenMetricsDevice == NULL)
     {
-        DebugPrint("OpenMetricsDevice NULL, error: %d\n", GetLastError());
+        DebugPrint("Couldn't get pointer to OpenMetricsDevice!\n");
         return false;
     }
 
     OpenMetricsDeviceFromFile = (OpenMetricsDeviceFromFile_fn)GetFunctionAddress(pLibrary, "OpenMetricsDeviceFromFile");
     if (OpenMetricsDeviceFromFile == NULL)
     {
-        DebugPrint("OpenMetricsDeviceFromFile NULL, error: %d\n", GetLastError());
+        DebugPrint("Couldn't get pointer to OpenMetricsDeviceFromFile!\n");
         return false;
     }
 

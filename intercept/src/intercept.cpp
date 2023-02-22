@@ -1,5 +1,5 @@
 /*
-// Copyright (c) 2018-2022 Intel Corporation
+// Copyright (c) 2018-2023 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 */
@@ -4621,7 +4621,7 @@ void CLIntercept::dumpProgramSource(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    CLI_ASSERT( config().DumpProgramSource || config().AutoCreateSPIRV );
+    CLI_ASSERT( config().DumpProgramSource || config().AutoCreateSPIRV);
 
     std::string fileName;
 
@@ -7187,6 +7187,19 @@ void CLIntercept::setKernelArg(
     }
 }
 
+void CLIntercept::setKernelArg(
+    cl_kernel kernel,
+    cl_uint arg_index,
+    const void* arg_value,
+    size_t arg_size )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    (m_KernelArgVectorMap[kernel])[arg_index] = 
+        std::vector<unsigned char>(reinterpret_cast<const unsigned char*>(arg_value),
+                                   reinterpret_cast<const unsigned char*>(arg_value) + arg_size);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::setKernelArgSVMPointer(
@@ -7244,13 +7257,109 @@ void CLIntercept::setKernelArgUSMPointer(
     }
 }
 
+void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
+{
+    std::string fileNamePrefix = "";
+    OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
+    fileNamePrefix += "/Replay/Enqueue_";
+    fileNamePrefix += std::to_string(enqueueCounter);
+    fileNamePrefix += "/";
+    OS().MakeDumpDirectories( fileNamePrefix );
+    std::ofstream output{fileNamePrefix + "kernel.cl"};
+
+    // Get the cl_program from the cl_kernel, then extract kernel source code from the cl_program
+    CLIntercept* pIntercept = GetIntercept();
+
+    cl_program tmp_program;
+    pIntercept->dispatch().clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(cl_program), &tmp_program, nullptr);
+
+    size_t sizeOfSource = 0;
+    pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeof(char*), nullptr, &sizeOfSource);
+
+    char* tmp_string = new char[sizeOfSource];
+    pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeOfSource, tmp_string, &sizeOfSource);
+
+    std::string kernelSource{tmp_string};
+    output << kernelSource;
+    delete[] tmp_string;
+}
+
+void CLIntercept::dumpKernelInfo(
+    cl_kernel kernel,
+    uint64_t enqueueCounter,
+    const size_t* gws_offset,
+    const size_t* gws,
+    const size_t* lws)
+{
+    std::string fileNamePrefix = "";
+    OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
+    fileNamePrefix += "/Replay/Enqueue_";
+    fileNamePrefix += std::to_string(enqueueCounter);
+    fileNamePrefix += "/";
+    OS().MakeDumpDirectories( fileNamePrefix );
+    std::ofstream output{fileNamePrefix + "worksizes.txt"};
+
+    for (int idx = 0; idx != 3; ++idx)
+    {
+        output << (!gws        ? 0 : gws[idx]) << '\n';
+        output << (!lws        ? 0 : lws[idx]) << '\n';
+        output << (!gws_offset ? 0 : gws_offset[idx]) << '\n';
+    }
+
+    // Get the cl_program from the cl_kernel and the device(s), then extract kernel build options from the cl_program
+    CLIntercept* pIntercept = GetIntercept();
+
+    cl_program tmp_program;
+    pIntercept->dispatch().clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(cl_program), &tmp_program, nullptr);
+
+    cl_context context;
+    pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_CONTEXT, sizeof(cl_context), &context, nullptr);
+
+    cl_device_id device_ids;
+    pIntercept->dispatch().clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(cl_context_info*), &device_ids, nullptr);
+
+    size_t sizeOfOptions = 0;
+    pIntercept->dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
+                                                 CL_PROGRAM_BUILD_OPTIONS, sizeof(char*), nullptr, &sizeOfOptions);
+    char* tmp_string = new char[sizeOfOptions];
+    pIntercept->dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
+                                                 CL_PROGRAM_BUILD_OPTIONS, sizeOfOptions, tmp_string, &sizeOfOptions);
+
+    std::string kernelBuildOptions{tmp_string};
+    std::ofstream outputBuildOptions{fileNamePrefix + "buildOptions.txt"};
+    outputBuildOptions << kernelBuildOptions;
+    outputBuildOptions << '\n';
+    delete[] tmp_string;
+}
+
+void CLIntercept::dumpArgumentsForKernel(
+        cl_kernel kernel, 
+        uint64_t enqueueCounter)
+{
+    std::string fileNamePrefix;
+    OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
+    fileNamePrefix += "/Replay/Enqueue_";
+    fileNamePrefix += std::to_string(enqueueCounter);
+    fileNamePrefix += "/";
+    OS().MakeDumpDirectories( fileNamePrefix );
+
+    auto ArgumentVectorMap = m_KernelArgVectorMap[kernel];
+    for (const auto &[key, value]: ArgumentVectorMap ) 
+    {
+        std::string fileName = fileNamePrefix + "Argument" + std::to_string(key) + ".bin"; 
+        std::ofstream out{fileName};
+        out.write(reinterpret_cast<char const*>(value.data()), value.size());
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::dumpBuffersForKernel(
     const std::string& name,
     const uint64_t enqueueCounter,
     cl_kernel kernel,
-    cl_command_queue command_queue )
+    cl_command_queue command_queue,
+    bool replay)
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -7259,17 +7368,27 @@ void CLIntercept::dumpBuffersForKernel(
     std::vector<char>   transferBuf;
     std::string fileNamePrefix = "";
 
-    // Get the dump directory name.
+    if (replay)
     {
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
-        fileNamePrefix += "/memDump";
-        fileNamePrefix += name;
-        fileNamePrefix += "Enqueue/";
-    }
-
-    // Now make directories as appropriate.
-    {
+        fileNamePrefix += "/Replay/Enqueue_";
+        fileNamePrefix += std::to_string(enqueueCounter);
+        fileNamePrefix += "/";
         OS().MakeDumpDirectories( fileNamePrefix );
+    } else
+    {
+        // Get the dump directory name.
+        {
+            OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
+            fileNamePrefix += "/memDump";
+            fileNamePrefix += name;
+            fileNamePrefix += "Enqueue/";
+        }
+
+        // Now make directories as appropriate.
+        {
+            OS().MakeDumpDirectories( fileNamePrefix );
+        }
     }
 
     CKernelArgMemMap&   kernelArgMemMap = m_KernelArgMap[ kernel ];
@@ -7611,7 +7730,7 @@ void CLIntercept::dumpArgument(
     cl_kernel kernel,
     cl_int arg_index,
     size_t size,
-    const void *pBuffer )
+    const void *pBuffer)
 {
     if( kernel )
     {
