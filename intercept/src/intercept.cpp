@@ -7275,6 +7275,10 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
 
     size_t sizeOfSource = 0;
     pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeof(char*), nullptr, &sizeOfSource);
+    if (sizeOfSource == 0)
+    {
+        std::cout << "[[Warning]]: Size of the extracted source is zero! Make sure that the kernel is compiled from source (and is not cached)\n";
+    }
 
     char* tmp_string = new char[sizeOfSource];
     pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeOfSource, tmp_string, &sizeOfSource);
@@ -7407,44 +7411,49 @@ void CLIntercept::dumpBuffersForKernel(
             unsigned int        number = m_MemAllocNumberMap[ memobj ];
 
             std::string fileName = fileNamePrefix;
-            char    tmpStr[ MAX_PATH ];
-
-            // Add the enqueue count to file name
+            if (replay)
             {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
-                    (unsigned int)enqueueCounter );
-
-                fileName += "Enqueue_";
-                fileName += tmpStr;
-            }
-
-            // Add the kernel name to the filename
+                fileName += "Buffer" + std::to_string(arg_index) + ".bin";
+            } else
             {
-                fileName += "_Kernel_";
-                fileName += getShortKernelName(kernel);
+                char    tmpStr[ MAX_PATH ];
+
+                // Add the enqueue count to file name
+                {
+                    CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
+                        (unsigned int)enqueueCounter );
+
+                    fileName += "Enqueue_";
+                    fileName += tmpStr;
+                }
+
+                // Add the kernel name to the filename
+                {
+                    fileName += "_Kernel_";
+                    fileName += getShortKernelName(kernel);
+                }
+
+                // Add the arg number to the file name
+                {
+                    CLI_SPRINTF( tmpStr, MAX_PATH, "%u", arg_index );
+
+                    fileName += "_Arg_";
+                    fileName += tmpStr;
+                }
+
+                // Add the buffer number to the file name
+                {
+                    CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", number );
+
+                    fileName += "_Buffer_";
+                    fileName += tmpStr;
+                }
+
+                // Add extension to file name
+                {
+                    fileName += ".bin";
+                }
             }
-
-            // Add the arg number to the file name
-            {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "%u", arg_index );
-
-                fileName += "_Arg_";
-                fileName += tmpStr;
-            }
-
-            // Add the buffer number to the file name
-            {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", number );
-
-                fileName += "_Buffer_";
-                fileName += tmpStr;
-            }
-
-            // Add extension to file name
-            {
-                fileName += ".bin";
-            }
-
             // Dump the buffer contents to the file.
             if( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() )
             {

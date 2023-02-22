@@ -1,4 +1,4 @@
-# Copyright (c) 2018-2023 Intel Corporation
+# Copyright (c) 2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 
@@ -11,9 +11,9 @@ import struct
 
 cpu_buffers = []
 buffer_idx = []
-buffer_files = gl.glob("./*_Buffer_*")
+buffer_files = gl.glob("./Buffer*.bin")
 for buffer in buffer_files:
-    buffer_idx.append(int(re.findall(r'\d+', buffer)[1]))
+    buffer_idx.append(int(re.findall(r'\d+', buffer)[0]))
     cpu_buffers.append(np.fromfile(buffer, dtype=np.float32))
 
 arguments = []
@@ -78,4 +78,4 @@ for idx in range(len(gpu_buffers)):
     cl.enqueue_copy(queue, cpu_buffers[idx], gpu_buffers[idx])
 
 for idx, cpu_buffer in enumerate(cpu_buffers):
-    cpu_buffer.tofile("output_buffer" + buffer_idx[idx] + ".bin")
+    cpu_buffer.tofile("output_buffer" + str(buffer_idx[idx]) + ".bin")
