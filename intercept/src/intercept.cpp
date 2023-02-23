@@ -53,16 +53,34 @@ Description:
     c -= a; c -= b; c ^= (b>>15); \
 }
 static inline uint64_t Hash(
-    const unsigned int *data,
+    const unsigned char *data,
     size_t count )
 {
     unsigned int    a = 0x428a2f98, hi = 0x71374491, lo = 0xb5c0fbcf;
-    while( count-- )
+    while( count >= 0 )
     {
-        a ^= *(data++);
+        a ^= *reinterpret_cast<const unsigned int*>(data);
         HASH_JENKINS_MIX( a, hi, lo );
+        data += sizeof(int);
+        count -= sizeof(int);
     }
-    return (((uint64_t)hi)<<32)|lo;
+
+    // Hashing algorithm expects ints, we may have fewer bits left so we will append zeros
+    int remainder = count / sizeof(int);
+    if (remainder != 0)
+    {
+        // Initialize temporary array with zeros
+        unsigned char remainingBytes[4] = {0};
+        // Move the data pointer back, to the last valid position
+        data -= sizeof(int);
+        for (int idx = 0; idx != remainder; ++idx)
+        {
+            remainingBytes[idx] = *reinterpret_cast<const unsigned char*>(data++);
+        }
+        a ^= *reinterpret_cast<const unsigned int*>(remainingBytes);
+        HASH_JENKINS_MIX(a, hi, lo);
+    }
+    return ((static_cast<uint64_t>(hi)) << 32) | lo;
 }
 #undef HASH_JENKINS_MIX
 
@@ -3883,7 +3901,7 @@ uint64_t CLIntercept::hashString(
         dwProgramSize /= 4;
 
         hash = Hash(
-            dwProgramSource,
+            reinterpret_cast<const unsigned char*>(dwProgramSource),
             dwProgramSize );
     }
 
@@ -7244,6 +7262,109 @@ void CLIntercept::setKernelArgUSMPointer(
     }
 }
 
+std::vector<char> CLIntercept::getBufferForAllocation(cl_kernel kernel,
+                                                  cl_command_queue command_queue,
+                                                  void* allocation )
+{
+    cl_platform_id  platform = getPlatform(kernel);
+
+    CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
+    cl_mem  memobj = (cl_mem)allocation;
+    if( ( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() ) ||
+        ( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() ) ||
+        ( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() ) )
+    {
+
+        // Dump the buffer contents to the file.
+        if( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() )
+        {
+            size_t  size = m_USMAllocInfoMap[ allocation ];
+            std::vector<char> buffer;
+            buffer.resize(size);
+
+            if( dispatchX(platform).clEnqueueMemcpyINTEL == NULL )
+            {
+                getExtensionFunctionAddress(
+                    platform,
+                    "clEnqueueMemcpyINTEL" );
+            }
+
+            const auto& dispatchX = this->dispatchX(platform);
+            if( dispatchX.clEnqueueMemcpyINTEL )
+            {
+                cl_int  error = dispatchX.clEnqueueMemcpyINTEL(
+                    command_queue,
+                    CL_TRUE,
+                    buffer.data(),
+                    allocation,
+                    size,
+                    0,
+                    nullptr,
+                    nullptr );
+                if( error == CL_SUCCESS )
+                {
+                    return buffer;
+                }
+            }
+        }
+        else if( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() )
+        {
+            size_t  size = m_SVMAllocInfoMap[ allocation ];
+
+            cl_int  error = dispatch().clEnqueueSVMMap(
+                command_queue,
+                CL_TRUE,
+                CL_MAP_READ,
+                allocation,
+                size,
+                0,
+                nullptr,
+                nullptr );
+            if( error == CL_SUCCESS )
+            {
+                std::vector<char> buffer(static_cast<char*>(allocation), static_cast<char*>(allocation) + size);
+                dispatch().clEnqueueSVMUnmap(
+                    command_queue,
+                    allocation,
+                    0,
+                    nullptr,
+                    nullptr );
+                return buffer;
+            }
+        }
+        else if( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() )
+        {
+            size_t  size = m_BufferInfoMap[ memobj ];
+
+            cl_int  error = CL_SUCCESS;
+            void*   ptr = dispatch().clEnqueueMapBuffer(
+                command_queue,
+                memobj,
+                CL_TRUE,
+                CL_MAP_READ,
+                0,
+                size,
+                0,
+                nullptr,
+                nullptr,
+                &error );
+            if( error == CL_SUCCESS )
+            {
+                std::vector<char> buffer(static_cast<char*>(ptr), static_cast<char*>(ptr) + size);
+                dispatch().clEnqueueUnmapMemObject(
+                    command_queue,
+                    memobj,
+                    ptr,
+                    0,
+                    nullptr,
+                    nullptr );
+                return buffer;
+            }
+        }
+    }
+    return {};
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::dumpBuffersForKernel(
@@ -7253,8 +7374,6 @@ void CLIntercept::dumpBuffersForKernel(
     cl_command_queue command_queue )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-
-    cl_platform_id  platform = getPlatform(kernel);
 
     std::vector<char>   transferBuf;
     std::string fileNamePrefix = "";
@@ -7281,183 +7400,30 @@ void CLIntercept::dumpBuffersForKernel(
         void*   allocation = (void*)(*i).second;
         cl_mem  memobj = (cl_mem)allocation;
         ++i;
-        if( ( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() ) ||
-            ( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() ) ||
-            ( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() ) )
-        {
-            unsigned int        number = m_MemAllocNumberMap[ memobj ];
+        unsigned int        number = m_MemAllocNumberMap[ memobj ];
 
-            std::string fileName = fileNamePrefix;
-            char    tmpStr[ MAX_PATH ];
+        std::string fileName = fileNamePrefix;
+        char    tmpStr[ MAX_PATH ];
+        CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
+            (unsigned int)enqueueCounter );
+        fileName += "Enqueue_";
+        fileName += tmpStr;
 
-            // Add the enqueue count to file name
-            {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
-                    (unsigned int)enqueueCounter );
+        fileName += "_Kernel_";
+        fileName += getShortKernelName(kernel);
 
-                fileName += "Enqueue_";
-                fileName += tmpStr;
-            }
+        CLI_SPRINTF( tmpStr, MAX_PATH, "%u", arg_index );
+        fileName += "_Arg_";
+        fileName += tmpStr;
 
-            // Add the kernel name to the filename
-            {
-                fileName += "_Kernel_";
-                fileName += getShortKernelName(kernel);
-            }
+        CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", number );
+        fileName += "_Buffer_";
+        fileName += tmpStr;
+        fileName += ".bin";
 
-            // Add the arg number to the file name
-            {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "%u", arg_index );
-
-                fileName += "_Arg_";
-                fileName += tmpStr;
-            }
-
-            // Add the buffer number to the file name
-            {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", number );
-
-                fileName += "_Buffer_";
-                fileName += tmpStr;
-            }
-
-            // Add extension to file name
-            {
-                fileName += ".bin";
-            }
-
-            // Dump the buffer contents to the file.
-            if( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() )
-            {
-                size_t  size = m_USMAllocInfoMap[ allocation ];
-
-                if( dispatchX(platform).clEnqueueMemcpyINTEL == NULL )
-                {
-                    getExtensionFunctionAddress(
-                        platform,
-                        "clEnqueueMemcpyINTEL" );
-                }
-                if( transferBuf.size() < size )
-                {
-                    transferBuf.resize(size);
-                }
-
-                const auto& dispatchX = this->dispatchX(platform);
-                if( dispatchX.clEnqueueMemcpyINTEL &&
-                    transferBuf.size() >= size )
-                {
-                    cl_int  error = dispatchX.clEnqueueMemcpyINTEL(
-                        command_queue,
-                        CL_TRUE,
-                        transferBuf.data(),
-                        allocation,
-                        size,
-                        0,
-                        NULL,
-                        NULL );
-                    if( error == CL_SUCCESS )
-                    {
-                        std::ofstream os;
-                        os.open(
-                            fileName.c_str(),
-                            std::ios::out | std::ios::binary );
-
-                        if( os.good() )
-                        {
-                            os.write( transferBuf.data(), size );
-                            os.close();
-                        }
-                        else
-                        {
-                            logf( "Failed to open buffer dump file for writing: %s\n",
-                                fileName.c_str() );
-                        }
-                    }
-                }
-            }
-            else if( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() )
-            {
-                size_t  size = m_SVMAllocInfoMap[ allocation ];
-
-                cl_int  error = dispatch().clEnqueueSVMMap(
-                    command_queue,
-                    CL_TRUE,
-                    CL_MAP_READ,
-                    allocation,
-                    size,
-                    0,
-                    NULL,
-                    NULL );
-                if( error == CL_SUCCESS )
-                {
-                    std::ofstream os;
-                    os.open(
-                        fileName.c_str(),
-                        std::ios::out | std::ios::binary );
-
-                    if( os.good() )
-                    {
-                        os.write( (const char*)allocation, size );
-                        os.close();
-                    }
-                    else
-                    {
-                        logf( "Failed to open buffer dump file for writing: %s\n",
-                            fileName.c_str() );
-                    }
-
-                    dispatch().clEnqueueSVMUnmap(
-                        command_queue,
-                        allocation,
-                        0,
-                        NULL,
-                        NULL );
-                }
-            }
-            else if( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() )
-            {
-                size_t  size = m_BufferInfoMap[ memobj ];
-
-                cl_int  error = CL_SUCCESS;
-                void*   ptr = dispatch().clEnqueueMapBuffer(
-                    command_queue,
-                    memobj,
-                    CL_TRUE,
-                    CL_MAP_READ,
-                    0,
-                    size,
-                    0,
-                    NULL,
-                    NULL,
-                    &error );
-                if( error == CL_SUCCESS )
-                {
-                    std::ofstream os;
-                    os.open(
-                        fileName.c_str(),
-                        std::ios::out | std::ios::binary );
-
-                    if( os.good() )
-                    {
-                        os.write( (const char*)ptr, size );
-                        os.close();
-                    }
-                    else
-                    {
-                        logf( "Failed to open buffer dump file for writing: %s\n",
-                            fileName.c_str() );
-                    }
-
-                    dispatch().clEnqueueUnmapMemObject(
-                        command_queue,
-                        memobj,
-                        ptr,
-                        0,
-                        NULL,
-                        NULL );
-                }
-            }
-        }
+        std::vector<char> buffer = getBufferForAllocation(kernel, command_queue, allocation);
+        std::ofstream bufferFile{fileName};
+        bufferFile.write(buffer.data(), buffer.size());            
     }
 }
 

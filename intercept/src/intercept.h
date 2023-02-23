@@ -544,6 +544,10 @@ public:
                 cl_kernel kernel,
                 cl_uint arg_index,
                 const void* arg );
+    std::vector<char> getBufferForAllocation(
+                cl_kernel kernel,
+                cl_command_queue command_queue,
+                void* allocation );
     void    dumpBuffersForKernel(
                 const std::string& name,
                 const uint64_t enqueueCounter,
