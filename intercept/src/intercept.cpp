@@ -7376,7 +7376,6 @@ void CLIntercept::dumpHashes(
             cl_command_queue command_queue,
             bool enqueueInfo )
 {
-    std::cout << "test\n";
     std::lock_guard<std::mutex> lock(m_Mutex);
     std::string fileNamePrefix = "";
 
