@@ -943,6 +943,14 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
     if( pIntercept && pIntercept->dispatch().clCreateBuffer )
     {
         GET_ENQUEUE_COUNTER();
+
+        if (pIntercept->config().DumpReplayKernelEnqueue != -1)
+        {
+            // Make sure that there are no device only buffers
+            // Since we need them to replay the kernel
+            flags &= ~CL_MEM_HOST_NO_ACCESS;
+        }
+
         CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), size = %zu, host_ptr = %p",
             context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
@@ -959,6 +967,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
             size,
             host_ptr,
             errcode_ret );
+
 
         HOST_PERFORMANCE_TIMING_END();
         ADD_BUFFER( retVal );
