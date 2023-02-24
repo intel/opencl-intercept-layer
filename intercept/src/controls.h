@@ -132,6 +132,10 @@ CLI_CONTROL( cl_uint,       DumpImagesMinEnqueue,                   0,     "The 
 CLI_CONTROL( cl_uint,       DumpImagesMaxEnqueue,                   UINT_MAX, "The Intercept Layer for OpenCL Applications will only dump image kernel arguments when the enqueue counter is less than this value, inclusive." )
 CLI_CONTROL( cl_uint,       DumpArgumentsOnSetMinEnqueue,           0,     "The Intercept Layer for OpenCL Applications will only dump argument values when the enqueue counter is greater than this value, inclusive." )
 CLI_CONTROL( cl_uint,       DumpArgumentsOnSetMaxEnqueue,           UINT_MAX, "The Intercept Layer for OpenCL Applications will only dump kernel arguments when the enqueue counter is less than this value, inclusive." )
+CLI_CONTROL( bool,          HashBuffersAfterEnqueue,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will calculate a hash of every binary buffer and output them to a file")
+CLI_CONTROL( bool,          HashBuffersWithEnqueueInfo,              false, "If set to a nonzero value, prepend the enqueue counter for the buffer to the hash")
+CLI_CONTROL( cl_uint,       HashBuffersMinEnqueue,                  0,     "The Intercept Layer for OpenCL Applications will only hash the buffer when the enqueue counter is greater than this value, inclusive." )
+CLI_CONTROL( cl_uint,       HashBuffersMaxEnqueue,                  UINT_MAX, "The Intercept Layer for OpenCL Applications will only hash the buffer when the enqueue counter is less than this value, inclusive." )
 
 CLI_CONTROL_SEPARATOR( Device Partitioning Controls: )
 CLI_CONTROL( bool,          AutoPartitionAllDevices,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically partition parent devices and return all parent devices and all sub-devices." )

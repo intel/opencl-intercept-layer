@@ -42,35 +42,40 @@ Description:
 \*****************************************************************************/
 #define HASH_JENKINS_MIX(a,b,c) \
 { \
-    a -= b; a -= c; a ^= (c>>13); \
-    b -= c; b -= a; b ^= (a<<8); \
-    c -= a; c -= b; c ^= (b>>13); \
-    a -= b; a -= c; a ^= (c>>12);  \
-    b -= c; b -= a; b ^= (a<<16); \
-    c -= a; c -= b; c ^= (b>>5); \
-    a -= b; a -= c; a ^= (c>>3);  \
-    b -= c; b -= a; b ^= (a<<10); \
-    c -= a; c -= b; c ^= (b>>15); \
+    a -= b; a -= c; a ^= (c >> 13); \
+    b -= c; b -= a; b ^= (a << 8);  \
+    c -= a; c -= b; c ^= (b >> 13); \
+    a -= b; a -= c; a ^= (c >> 12); \
+    b -= c; b -= a; b ^= (a << 16); \
+    c -= a; c -= b; c ^= (b >> 5);  \
+    a -= b; a -= c; a ^= (c >> 3);  \
+    b -= c; b -= a; b ^= (a << 10); \
+    c -= a; c -= b; c ^= (b >> 15); \
 }
 static inline uint64_t Hash(
     const unsigned char *data,
     size_t count )
 {
-    unsigned int    a = 0x428a2f98, hi = 0x71374491, lo = 0xb5c0fbcf;
-    while( count >= 0 )
+    unsigned int a  = 0x428a2f98;
+    unsigned int hi = 0x71374491;
+    unsigned int lo = 0xb5c0fbcf;
+
+    size_t idx = 0;
+    while( idx < count - sizeof(int))
     {
         a ^= *reinterpret_cast<const unsigned int*>(data);
         HASH_JENKINS_MIX( a, hi, lo );
         data += sizeof(int);
-        count -= sizeof(int);
+        idx += sizeof(int);
     }
 
     // Hashing algorithm expects ints, we may have fewer bits left so we will append zeros
-    int remainder = count / sizeof(int);
+    int remainder = count % sizeof(int);
     if (remainder != 0)
     {
-        // Initialize temporary array with zeros
+        // Initialize array that we will fill with remaining bytes with zeros
         unsigned char remainingBytes[4] = {0};
+
         // Move the data pointer back, to the last valid position
         data -= sizeof(int);
         for (int idx = 0; idx != remainder; ++idx)
@@ -7263,8 +7268,8 @@ void CLIntercept::setKernelArgUSMPointer(
 }
 
 std::vector<char> CLIntercept::getBufferForAllocation(cl_kernel kernel,
-                                                  cl_command_queue command_queue,
-                                                  void* allocation )
+                                                      cl_command_queue command_queue,
+                                                      void* allocation )
 {
     cl_platform_id  platform = getPlatform(kernel);
 
@@ -7365,6 +7370,51 @@ std::vector<char> CLIntercept::getBufferForAllocation(cl_kernel kernel,
     return {};
 }
 
+void CLIntercept::dumpHashes(
+            const uint64_t enqueueCounter,
+            cl_kernel kernel,
+            cl_command_queue command_queue,
+            bool enqueueInfo )
+{
+    std::cout << "test\n";
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    std::string fileNamePrefix = "";
+
+    // Get the dump directory name.
+    {
+        OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
+    }
+
+    std::string filename = fileNamePrefix + "/hashes.bin";
+    
+    CKernelArgMemMap&   kernelArgMemMap = m_KernelArgMap[ kernel ];
+    CKernelArgMemMap::iterator  itr = kernelArgMemMap.begin();
+    while( itr != kernelArgMemMap.end() )
+    {
+        cl_uint arg_index = (*itr).first;
+        void*   allocation = (void*)(*itr).second;
+        cl_mem  memobj = (cl_mem)allocation;
+        ++itr;
+
+        unsigned int number = m_MemAllocNumberMap[ memobj ];
+        std::vector<char> buffer = getBufferForAllocation(kernel, command_queue, allocation);
+        auto hash = Hash(reinterpret_cast<const unsigned char*>(buffer.data()), buffer.size());
+        std::ofstream outHashes{filename, std::ios::app};
+        if (enqueueInfo)
+        {
+            outHashes << "Enqueue: "        << enqueueCounter
+                      << ", Argument idx: " << arg_index
+                      << ", Alloc number: " << number
+                      << ", Hash: "         << hash
+                      << '\n';
+        } else
+        {
+            outHashes << hash << '\n';
+        }
+    }
+
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::dumpBuffersForKernel(
@@ -7375,7 +7425,6 @@ void CLIntercept::dumpBuffersForKernel(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    std::vector<char>   transferBuf;
     std::string fileNamePrefix = "";
 
     // Get the dump directory name.
@@ -7392,14 +7441,14 @@ void CLIntercept::dumpBuffersForKernel(
     }
 
     CKernelArgMemMap&   kernelArgMemMap = m_KernelArgMap[ kernel ];
-    CKernelArgMemMap::iterator  i = kernelArgMemMap.begin();
-    while( i != kernelArgMemMap.end() )
+    CKernelArgMemMap::iterator  itr = kernelArgMemMap.begin();
+    while( itr != kernelArgMemMap.end() )
     {
         CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
-        cl_uint arg_index = (*i).first;
-        void*   allocation = (void*)(*i).second;
+        cl_uint arg_index = (*itr).first;
+        void*   allocation = (void*)(*itr).second;
         cl_mem  memobj = (cl_mem)allocation;
-        ++i;
+        ++itr;
         unsigned int        number = m_MemAllocNumberMap[ memobj ];
 
         std::string fileName = fileNamePrefix;

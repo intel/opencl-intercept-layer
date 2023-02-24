@@ -573,6 +573,11 @@ public:
                 void* ptr,
                 size_t offset,
                 size_t size );
+    void    dumpHashes(
+                const uint64_t enqueueCounter,
+                cl_kernel kernel,
+                cl_command_queue command_queue,
+                bool enqueueInfo );
 
     void    addMapPointer(
                 const void* ptr,
@@ -2207,7 +2212,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().DumpBuffersAfterMap ||                       \
           pIntercept->config().DumpBuffersBeforeUnmap ||                    \
           pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
-          pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
+          pIntercept->config().DumpBuffersAfterEnqueue  ||                  \
+          pIntercept->config().HashBuffersAfterEnqueue) )                   \
     {                                                                       \
         pIntercept->addBuffer( _buffer );                                   \
     }
@@ -2228,7 +2234,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
-          pIntercept->config().DumpImagesAfterEnqueue ) )                   \
+          pIntercept->config().DumpImagesAfterEnqueue ||                    \
+          pIntercept->config().HashBuffersAfterEnqueue) )                   \
     {                                                                       \
         pIntercept->checkRemoveMemObj( _memobj );                           \
     }
@@ -2250,7 +2257,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 #define ADD_SVM_ALLOCATION( svmPtr, size )                                  \
     if( svmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
-          pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
+          pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().HashBuffersAfterEnqueue) )                   \
     {                                                                       \
         pIntercept->addSVMAllocation( svmPtr, size );                       \
     }
@@ -2258,7 +2266,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 #define REMOVE_SVM_ALLOCATION( svmPtr )                                     \
     if( svmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
-          pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
+          pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().HashBuffersAfterEnqueue) )                   \
     {                                                                       \
         pIntercept->removeSVMAllocation( svmPtr );                          \
     }
@@ -2266,7 +2275,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 #define ADD_USM_ALLOCATION( usmPtr, size )                                  \
     if( usmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
-          pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
+          pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().HashBuffersAfterEnqueue) )                   \
     {                                                                       \
         pIntercept->addUSMAllocation( usmPtr, size );                       \
     }
@@ -2274,7 +2284,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 #define REMOVE_USM_ALLOCATION( usmPtr )                                     \
     if( usmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
-          pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
+          pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().HashBuffersAfterEnqueue) )                   \
     {                                                                       \
         pIntercept->removeUSMAllocation( usmPtr );                          \
     }
@@ -2296,7 +2307,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     if( ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
-          pIntercept->config().DumpImagesAfterEnqueue ) &&                  \
+          pIntercept->config().DumpImagesAfterEnqueue ||                    \
+          pIntercept->config().HashBuffersAfterEnqueue ) &&                 \
         ( arg_value != NULL ) &&                                            \
         ( arg_size == sizeof(cl_mem) ) )                                    \
     {                                                                       \
@@ -2395,6 +2407,15 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
         pIntercept->dumpBuffersForKernel(                                   \
             "Post", enqueueCounter, kernel, command_queue );                \
     }
+
+#define DUMP_HASHES( kernel, command_queue )                                \
+    if(pIntercept->config().HashBuffersAfterEnqueue &&                      \
+       (pIntercept->config().HashBuffersMinEnqueue <= enqueueCounter) &&    \
+       (pIntercept->config().HashBuffersMaxEnqueue >= enqueueCounter))      \
+    {                                                                       \
+        pIntercept->dumpHashes(enqueueCounter, kernel, command_queue,       \
+                               pIntercept->config().HashBuffersWithEnqueueInfo);      \
+    }                                                                       
 
 #define DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue )                 \
     if( pIntercept->config().DumpImagesBeforeEnqueue &&                     \
