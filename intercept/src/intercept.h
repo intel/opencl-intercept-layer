@@ -2332,15 +2332,14 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           (pIntercept->config().DumpReplayKernelEnqueue != -1) ||           \
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
           pIntercept->config().DumpImagesAfterEnqueue ) &&                  \
-        ( arg_value != NULL ) &&                                            \
-        ( arg_size != sizeof(cl_mem) ) )                                    \
+        ( arg_value != NULL ) )                                    \
     {                                                                       \
         pIntercept->setKernelArg( kernel, arg_index, arg_value, arg_size ); \
     }
 
 #define SET_KERNEL_ARG_SVM_POINTER( kernel, arg_index, arg_value )          \
     if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
-        (pIntercept->config().DumpReplayKernelEnqueue != -1) ||           \
+        (pIntercept->config().DumpReplayKernelEnqueue != -1) ||             \
         pIntercept->config().DumpBuffersAfterEnqueue )                      \
     {                                                                       \
         pIntercept->setKernelArgSVMPointer( kernel, arg_index, arg_value ); \
