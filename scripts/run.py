@@ -9,19 +9,21 @@ import re
 import hashlib
 import struct
 
-cpu_buffers = []
+input_buffers = []
+output_buffers = []
 buffer_idx = []
 buffer_files = gl.glob("./Buffer*.bin")
 for buffer in buffer_files:
     buffer_idx.append(int(re.findall(r'\d+', buffer)[0]))
-    cpu_buffers.append(np.fromfile(buffer, dtype=np.float32))
+    input_buffers.append(np.fromfile(buffer, dtype='uint8').tobytes())
+    output_buffers.append(np.empty_like(input_buffers[-1]))
 
 arguments = []
 argument_idx = []
 argument_files = gl.glob("./Argument*.bin")
 for argument in argument_files:
     argument_idx.append(int(re.findall(r'\d+', argument)[0]))
-    arguments.append(np.fromfile(argument, dtype=bool).tobytes())
+    arguments.append(np.fromfile(argument, dtype='uint8').tobytes())
 
 # Make sure that we only set the arguments to the non-buffer parameters
 argument_idx = list(set(argument_idx) - set(buffer_idx))
@@ -32,8 +34,8 @@ queue = cl.CommandQueue(ctx)
 mf = cl.mem_flags
 gpu_buffers = []
 
-for idx in range(len(cpu_buffers)):
-    gpu_buffers.append(cl.Buffer(ctx, mf.COPY_HOST_PTR, hostbuf=cpu_buffers[idx]))
+for idx in range(len(input_buffers)):
+    gpu_buffers.append(cl.Buffer(ctx, mf.COPY_HOST_PTR, hostbuf=input_buffers[idx]))
 
 with open("kernel.cl", 'r') as file:
     kernel = file.read()
@@ -47,8 +49,8 @@ prg = cl.Program(ctx, kernel).build(flags)
 knl_name = prg.kernel_names
 knl = getattr(prg, knl_name)
 
-for idx, pos in enumerate(argument_idx):
-    knl.set_arg(pos, arguments[idx])
+for pos in argument_idx:
+    knl.set_arg(pos, arguments[pos])
 
 for idx, pos in enumerate(buffer_idx):
     knl.set_arg(pos, gpu_buffers[idx])
@@ -61,7 +63,7 @@ lws = []
 gws_offset = []
 
 for idx in range(3):
-    gws.append(int(lines[3 * idx]))
+    gws.append(int(lines[3 * idx + 0]))
     lws.append(int(lines[3 * idx + 1]))
     gws_offset.append(int(lines[3 * idx + 2]))
     
@@ -75,7 +77,7 @@ if lws == [0, 0, 0]:
 cl.enqueue_nd_range_kernel(queue, knl, gws, lws, gws_offset)
 
 for idx in range(len(gpu_buffers)):
-    cl.enqueue_copy(queue, cpu_buffers[idx], gpu_buffers[idx])
+    cl.enqueue_copy(queue, output_buffers[idx], gpu_buffers[idx])
 
-for idx, cpu_buffer in enumerate(cpu_buffers):
+for idx, cpu_buffer in enumerate(output_buffers):
     cpu_buffer.tofile("output_buffer" + str(buffer_idx[idx]) + ".bin")
