@@ -9,33 +9,34 @@ import re
 import hashlib
 import struct
 
-input_buffers = []
-output_buffers = []
 buffer_idx = []
+input_buffers = {}
+output_buffers = {}
 buffer_files = gl.glob("./Buffer*.bin")
 for buffer in buffer_files:
-    buffer_idx.append(int(re.findall(r'\d+', buffer)[0]))
-    input_buffers.append(np.fromfile(buffer, dtype='uint8').tobytes())
-    output_buffers.append(np.empty_like(input_buffers[-1]))
+    idx = int(re.findall(r'\d+', buffer)[0])
+    buffer_idx.append(idx)
+    input_buffers[idx] = np.fromfile(buffer, dtype='uint8').tobytes()
+    output_buffers[idx] = np.empty_like(input_buffers[idx])
 
-arguments = []
-argument_idx = []
+arguments = {}
 argument_files = gl.glob("./Argument*.bin")
 for argument in argument_files:
-    argument_idx.append(int(re.findall(r'\d+', argument)[0]))
-    arguments.append(np.fromfile(argument, dtype='uint8').tobytes())
+    idx = int(re.findall(r'\d+', argument)[0])
+    arguments[idx] = np.fromfile(argument, dtype='uint8').tobytes()
 
 # Make sure that we only set the arguments to the non-buffer parameters
-argument_idx = list(set(argument_idx) - set(buffer_idx))
+for idx in list(input_buffers):
+    del arguments[idx]
 
 ctx = cl.create_some_context()
 queue = cl.CommandQueue(ctx)
 
 mf = cl.mem_flags
-gpu_buffers = []
 
-for idx in range(len(input_buffers)):
-    gpu_buffers.append(cl.Buffer(ctx, mf.COPY_HOST_PTR, hostbuf=input_buffers[idx]))
+gpu_buffers = {}
+for idx in buffer_idx:
+    gpu_buffers[idx] = cl.Buffer(ctx, mf.COPY_HOST_PTR, hostbuf=input_buffers[idx])
 
 with open("kernel.cl", 'r') as file:
     kernel = file.read()
@@ -49,11 +50,11 @@ prg = cl.Program(ctx, kernel).build(flags)
 knl_name = prg.kernel_names
 knl = getattr(prg, knl_name)
 
-for pos in argument_idx:
-    knl.set_arg(pos, arguments[pos])
+for pos, argument in arguments.items():
+    knl.set_arg(pos, argument)
 
-for idx, pos in enumerate(buffer_idx):
-    knl.set_arg(pos, gpu_buffers[idx])
+for pos, buffer in gpu_buffers.items():
+    knl.set_arg(pos, buffer)
 
 with open("worksizes.txt", 'r') as file:
     lines = [line.rstrip() for line in file]
@@ -76,8 +77,8 @@ if lws == [0, 0, 0]:
     
 cl.enqueue_nd_range_kernel(queue, knl, gws, lws, gws_offset)
 
-for idx in range(len(gpu_buffers)):
-    cl.enqueue_copy(queue, output_buffers[idx], gpu_buffers[idx])
+for pos in gpu_buffers.keys():
+    cl.enqueue_copy(queue, output_buffers[pos], gpu_buffers[pos])
 
-for idx, cpu_buffer in enumerate(output_buffers):
-    cpu_buffer.tofile("output_buffer" + str(buffer_idx[idx]) + ".bin")
+for pos, cpu_buffer in output_buffers.items():
+    cpu_buffer.tofile("output_buffer" + str(pos) + ".bin")
