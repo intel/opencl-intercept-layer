@@ -25,7 +25,16 @@ args = parser.parse_args()
 app_name = args.app_location[args.app_location.rfind('/') + 1:-1]
 
 intercept_location_win = "C:\Intel\CLIntercept_Dump\\"
-intercept_location_lin = "~/CLIntercept_Dump/"
+intercept_location_posix = "~/CLIntercept_Dump/"
+intercept_location = ""
+
+if os.name == 'nt':
+    intercept_location = intercept_location_win
+elif os.name == 'posix':
+    intercept_location = intercept_location_posix
+else:
+    print("Unknown platform, exiting!")
+    exit()
 
 os.environ['CLI_DumpReplayKernelEnqueue'] = str(args.enqueue_number)
 os.environ['CLI_DumpBuffersAfterEnqueue'] = str(1)
@@ -39,7 +48,7 @@ command = args.cli_location + " " + args.app_location + " " + ' '.join(args.args
 # Run ./cliloader with CLI_DumpReplayKernelEnqueue=${EnqueueNumber}
 os.system(command)
 
-replay_location = os.path.join(intercept_location_lin, app_name, "Replay", "Enqueue_" + str(args.enqueue_number), "")
+replay_location = os.path.join(intercept_location, app_name, "Replay", "Enqueue_" + str(args.enqueue_number), "")
 replay_location = os.path.expanduser(replay_location)
 
 # Run extracted kernel to dump output buffers
@@ -55,7 +64,7 @@ for replayed_buffer in replayed_buffers:
     idx = int(re.findall(r'\d+', replayed_buffer)[0])
     replayed_hashes[idx] = hashlib.md5(np.fromfile(replayed_buffer)).hexdigest()
 
-dumped_location = os.path.join(intercept_location_lin, app_name, "memDumpPostEnqueue")
+dumped_location = os.path.join(intercept_location, app_name, "memDumpPostEnqueue")
 dumped_location = os.path.expanduser(dumped_location)
 os.chdir(dumped_location)
 
