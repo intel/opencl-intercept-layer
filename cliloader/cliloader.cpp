@@ -325,15 +325,43 @@ static std::string getProcessDirectory()
 #endif
 }
 
+// Important: This needs to stay in sync with GetDumpDirectoryName!
+static std::string getDefaultDumpDirectory()
+{
+    const char* cDumpDirectoryName = "CLIntercept_Dump";
+
+    std::string dumpDir;
+#if defined(_WIN32)
+    char* systemDrive = NULL;
+    size_t  length = 0;
+
+    _dupenv_s(&systemDrive, &length, "SystemDrive");
+
+    dumpDir = systemDrive;
+    dumpDir += "/Intel/";
+    dumpDir += cDumpDirectoryName;
+    dumpDir += "/<executable name>";
+
+    free(systemDrive);
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
+    dumpDir = getenv("HOME");
+    dumpDir += "/";
+    dumpDir += cDumpDirectoryName;
+    dumpDir += "/<executable name>";
+#else
+#pragma message("Need to implement getDefaultDumpDirectory()")
+    dumpDir = "unknown";
+#endif
+    return dumpDir;
+}
+
 static bool parseArguments(int argc, char *argv[])
 {
-    // Defer setting the MDAPI group, since it may be overridden via an
-    // explicit option.
+    // Defer setting these controls, since they may be overridden by explicit options.
     const char* mdapiGroup = NULL;
+    const char* reportToStderr = "1";
 
     bool    unknownOption = false;
-
-    SETENV("CLI_ReportToStderr", "1");
 
     for (int i = 1; i < argc; i++)
     {
@@ -472,7 +500,15 @@ static bool parseArguments(int argc, char *argv[])
         else if( !strcmp(argv[i], "-f") || !strcmp(argv[i], "--output-to-file") )
         {
             checkSetEnv("CLI_LogToFile", "1");
-            checkSetEnv("CLI_ReportToStderr", "0");
+            reportToStderr = "0";
+        }
+        else if( !strcmp(argv[i], "--dump-dir") )
+        {
+            ++i;
+            if( i < argc )
+            {
+                checkSetEnv("CLI_DumpDir", argv[i]);
+            }
         }
         else if (argv[i][0] == '-')
         {
@@ -483,6 +519,10 @@ static bool parseArguments(int argc, char *argv[])
             if( mdapiGroup != NULL )
             {
                 checkSetEnv("CLI_DevicePerfCounterCustom", mdapiGroup);
+            }
+            if (reportToStderr)
+            {
+                checkSetEnv("CLI_ReportToStderr", reportToStderr);
             }
 
 #if defined(_WIN32)
@@ -509,6 +549,7 @@ static bool parseArguments(int argc, char *argv[])
 #endif
         )
     {
+        std::string defaultDumpDir = getDefaultDumpDirectory();
         fprintf(stdout,
             "cliloader - A utility to simplify using the Intercept Layer for OpenCL Applications\n"
             "  Version: %s, from %s\n"
@@ -547,12 +588,15 @@ static bool parseArguments(int argc, char *argv[])
             "  --host-timing [-h]               Report Host API Execution Time\n"
             "  --leak-checking [-l]             Track and Report OpenCL Leaks\n"
             "  --output-to-file [-f]            Log and Report to Files vs. stderr\n"
+            "  --dump-dir <DIR>                 Specify the dump directory for log and report files,\n"
+            "                                    default: %s\n"
             "\n"
             "For more information, please visit the Intercept Layer for OpenCL Applications page:\n"
             "    %s\n"
             "\n",
             g_scGitDescribe,
             g_scGitRefSpec,
+            defaultDumpDir.c_str(),
             g_scURL );
         return false;
     }
@@ -716,6 +760,9 @@ int main(int argc, char *argv[])
         DEBUG("cleaned up child thread to replace functions\n");
     }
 
+    FreeModule(dll);
+    DEBUG("closed dll handle\n");
+
     // Resume child process:
     DEBUG("resuming child process\n");
     if( ResumeThread(pinfo.hThread) == -1 )
@@ -738,9 +785,6 @@ int main(int argc, char *argv[])
         die("getting child process exit code");
     }
     DEBUG("child process completed with exit code %u (%08X)\n", retval, retval);
-
-    FreeModule(dll);
-    DEBUG("cleanup complete\n");
 
     return retval;
 
