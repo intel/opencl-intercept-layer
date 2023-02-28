@@ -18,6 +18,12 @@
 #include "emulate.h"
 #include "intercept.h"
 
+// Raw string literal containing the run.py script is within the binary
+std::string pythonScript =
+{
+#include "../../scripts/rsl_run.py"
+};
+
 /*****************************************************************************\
 
 Inline Function:
@@ -7275,17 +7281,47 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
 
     size_t sizeOfSource = 0;
     pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeof(char*), nullptr, &sizeOfSource);
+    
     if (sizeOfSource == 0)
     {
         std::cout << "[[Warning]]: Size of the extracted source is zero! Make sure that the kernel is compiled from source (and is not cached)\n";
+        std::cout << "Now will try to output binaries, these probably won't work on other platforms!\n";
+        return;
     }
+    else
+    {
+        char* sourceString = new char[sizeOfSource];
+        pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeOfSource, sourceString, &sizeOfSource);
 
-    char* tmp_string = new char[sizeOfSource];
-    pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeOfSource, tmp_string, &sizeOfSource);
+        output << sourceString;
+        delete[] sourceString;
+        return;
+    }
+    
+    cl_uint num_devices;
+    clGetProgramInfo(tmp_program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &num_devices, nullptr);
 
-    std::string kernelSource{tmp_string};
-    output << kernelSource;
-    delete[] tmp_string;
+    // Grab the device ids
+    cl_device_id* devices = new cl_device_id[num_devices];
+    clGetProgramInfo(tmp_program, CL_PROGRAM_DEVICES, num_devices * sizeof(cl_device_id), devices, 0);
+
+    // Grab the sizes of the binaries
+    size_t* binary_sizes = new size_t[num_devices];
+    clGetProgramInfo(tmp_program, CL_PROGRAM_BINARY_SIZES, num_devices * sizeof(size_t), binary_sizes, nullptr);
+    
+    // Now get the binaries
+    char** binaries = new char*[num_devices];
+    for (unsigned idx = 0; idx < num_devices; ++idx)
+    {
+        binaries[idx] = new char[binary_sizes[idx]];
+    }
+    clGetProgramInfo(tmp_program, CL_PROGRAM_BINARIES, 0, binaries, nullptr);
+
+    for (unsigned idx = 0; idx < num_devices; ++idx)
+    {
+        std::ofstream outputBinaries{fileNamePrefix + "binary_" + std::to_string(idx)};
+        outputBinaries.write(binaries[idx], binary_sizes[idx]);
+    }
 }
 
 void CLIntercept::dumpKernelInfo(
@@ -7325,15 +7361,21 @@ void CLIntercept::dumpKernelInfo(
     size_t sizeOfOptions = 0;
     pIntercept->dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
                                                  CL_PROGRAM_BUILD_OPTIONS, sizeof(char*), nullptr, &sizeOfOptions);
-    char* tmp_string = new char[sizeOfOptions];
+    char* optionsString = new char[sizeOfOptions];
     pIntercept->dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
-                                                 CL_PROGRAM_BUILD_OPTIONS, sizeOfOptions, tmp_string, &sizeOfOptions);
+                                                 CL_PROGRAM_BUILD_OPTIONS, sizeOfOptions, optionsString, &sizeOfOptions);
 
-    std::string kernelBuildOptions{tmp_string};
     std::ofstream outputBuildOptions{fileNamePrefix + "buildOptions.txt"};
-    outputBuildOptions << kernelBuildOptions;
+    outputBuildOptions << optionsString;
     outputBuildOptions << '\n';
-    delete[] tmp_string;
+    delete[] optionsString;
+
+    std::string knlName = getShortKernelName(kernel);
+    std::ofstream outputKnlName{fileNamePrefix + "knlName.txt"};
+    outputKnlName << knlName;
+
+    std::ofstream outputPythonScript{fileNamePrefix + "run.py"};
+    outputPythonScript << pythonScript << '\n';
 }
 
 void CLIntercept::dumpArgumentsForKernel(
