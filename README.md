@@ -42,6 +42,7 @@ Detailed instructions:
 * [How to Collect MDAPI Performance Metrics](docs/mdapi.md)
 * [How to Use the Intercept Layer for OpenCL Applications with VTune](docs/vtune_logging.md)
 * [How to Use the Intercept Layer for OpenCL Applications with Chrome](docs/chrome_tracing.md)
+* [How to Dump Single Standalone Kernels which can be replayed independently for debugging and profiling](docs/capture_single_kernels.md)
 
 ## Tutorial
 

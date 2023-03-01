@@ -43,7 +43,6 @@ os.environ['CLI_DumpReplayKernelEnqueue'] = str(args.enqueue_number)
 os.environ['CLI_DumpBuffersAfterEnqueue'] = str(1)
 os.environ['CLI_DumpBuffersMinEnqueue'] = str(args.enqueue_number)
 os.environ['CLI_DumpBuffersMaxEnqueue'] = str(args.enqueue_number)
-os.environ['CLI_InitializeBuffers'] = str(1)
 
 # Run ./cliloader with CLI_DumpReplayKernelEnqueue=${EnqueueNumber}
 command = [args.cli_location, args.app_location]
