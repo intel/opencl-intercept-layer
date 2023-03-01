@@ -48,6 +48,7 @@ os.environ['CLI_InitializeBuffers'] = str(1)
 # Run ./cliloader with CLI_DumpReplayKernelEnqueue=${EnqueueNumber}
 command = [args.cli_location, args.app_location]
 command.extend(args.args)
+
 subprocess.run(command)
 
 replay_location = os.path.join(intercept_location, app_name, "Replay", "Enqueue_" + str(args.enqueue_number), "")

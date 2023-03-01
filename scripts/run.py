@@ -1,3 +1,4 @@
+
 # Copyright (c) 2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
@@ -8,6 +9,7 @@ import glob as gl
 import re
 import hashlib
 import struct
+import os
 
 buffer_idx = []
 input_buffers = {}
@@ -31,6 +33,7 @@ for idx in list(input_buffers):
 
 ctx = cl.create_some_context()
 queue = cl.CommandQueue(ctx)
+devices = ctx.get_info(cl.context_info.DEVICES)
 
 mf = cl.mem_flags
 
@@ -38,18 +41,31 @@ gpu_buffers = {}
 for idx in buffer_idx:
     gpu_buffers[idx] = cl.Buffer(ctx, mf.COPY_HOST_PTR, hostbuf=input_buffers[idx])
 
-with open("kernel.cl", 'r') as file:
-    kernel = file.read()
-
 with open("buildOptions.txt", 'r') as file:
     flags = [line.rstrip() for line in file]
+    print(f"Using flags: {flags}")
 
-print(f"Using flags: {flags}")
-prg = cl.Program(ctx, kernel).build(flags)
+if os.path.isfile("kernel.cl"):
+    with open("kernel.cl", 'r') as file:
+        kernel = file.read()
+    prg = cl.Program(ctx, kernel).build(flags)
+else:
+    binary_files = gl.glob("./binary_*")
+    binaries = []
+    for file in binary_files:
+        binaries.append(np.fromfile(file, dtype='uint8').tobytes())
 
-knl_name = prg.kernel_names
+    # Try the binaries to find one that works
+    for idx in range(len(binaries)):
+        try:
+            prg = cl.Program(ctx, [devices[0]], binaries[idx]).build(flags)
+            break
+        except:
+            pass
+
+with open('knlName.txt') as file:
+        knl_name = file.read()
 knl = getattr(prg, knl_name)
-
 for pos, argument in arguments.items():
     knl.set_arg(pos, argument)
 

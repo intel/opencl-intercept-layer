@@ -1223,6 +1223,9 @@ private:
     typedef std::map< cl_kernel, CKernelArgVectorMemMap > CKernelArgVectorMap;
     CKernelArgVectorMap m_KernelArgVectorMap;
 
+    typedef std::map< cl_device_id, std::vector<std::vector<unsigned char>>> CDeviceBinaryMap;
+    CDeviceBinaryMap m_DeviceBinaryMap;
+
     struct SMapPointerInfo
     {
         cl_map_flags    Flags;

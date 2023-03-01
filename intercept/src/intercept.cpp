@@ -4749,6 +4749,8 @@ void CLIntercept::dumpInputProgramBinaries(
     for( size_t i = 0; i < num_devices; i++ )
     {
         cl_device_type  deviceType = CL_DEVICE_TYPE_DEFAULT;
+        auto& binaryVectorVector = m_DeviceBinaryMap[device_list[i]];
+        binaryVectorVector.push_back({binaries[i], binaries[i] + lengths[i]});
 
         // It's OK if this fails.  If it does, it just
         // means that our output file won't have a device
@@ -7271,7 +7273,6 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
     fileNamePrefix += std::to_string(enqueueCounter);
     fileNamePrefix += "/";
     OS().MakeDumpDirectories( fileNamePrefix );
-    std::ofstream output{fileNamePrefix + "kernel.cl"};
 
     // Get the cl_program from the cl_kernel, then extract kernel source code from the cl_program
     CLIntercept* pIntercept = GetIntercept();
@@ -7290,6 +7291,7 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
     }
     else
     {
+        std::ofstream output{fileNamePrefix + "kernel.cl"};
         char* sourceString = new char[sizeOfSource];
         pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeOfSource, sourceString, &sizeOfSource);
 
@@ -7305,22 +7307,14 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
     cl_device_id* devices = new cl_device_id[num_devices];
     clGetProgramInfo(tmp_program, CL_PROGRAM_DEVICES, num_devices * sizeof(cl_device_id), devices, 0);
 
-    // Grab the sizes of the binaries
-    size_t* binary_sizes = new size_t[num_devices];
-    clGetProgramInfo(tmp_program, CL_PROGRAM_BINARY_SIZES, num_devices * sizeof(size_t), binary_sizes, nullptr);
-    
-    // Now get the binaries
-    char** binaries = new char*[num_devices];
-    for (unsigned idx = 0; idx < num_devices; ++idx)
+    for (unsigned device = 0; device < num_devices; ++device)
     {
-        binaries[idx] = new char[binary_sizes[idx]];
-    }
-    clGetProgramInfo(tmp_program, CL_PROGRAM_BINARIES, 0, binaries, nullptr);
-
-    for (unsigned idx = 0; idx < num_devices; ++idx)
-    {
-        std::ofstream outputBinaries{fileNamePrefix + "binary_" + std::to_string(idx)};
-        outputBinaries.write(binaries[idx], binary_sizes[idx]);
+        auto binaries = m_DeviceBinaryMap[devices[device]];
+        for (unsigned binary = 0; binary != binaries.size(); ++binary)
+        {
+            std::ofstream outputBinaries{fileNamePrefix + "binary_Device" + std::to_string(device) + "_Binary_" + std::to_string(binary) + ".bin"};
+            outputBinaries.write(reinterpret_cast<const char*>(binaries[binary].data()), binaries[binary].size());
+        }
     }
 }
 
