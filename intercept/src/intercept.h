@@ -2798,7 +2798,8 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
     }
 
 #define DUMP_OUTPUT_PROGRAM_BINARIES( program )                             \
-    if( pIntercept->config().DumpProgramBinaries )                          \
+    if( pIntercept->config().DumpProgramBinaries ||                         \
+        pIntercept->config().DumpReplayKernelEnqueue != -1 )                \
     {                                                                       \
         pIntercept->dumpProgramBinary( program );                           \
     }

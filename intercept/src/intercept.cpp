@@ -4749,8 +4749,6 @@ void CLIntercept::dumpInputProgramBinaries(
     for( size_t i = 0; i < num_devices; i++ )
     {
         cl_device_type  deviceType = CL_DEVICE_TYPE_DEFAULT;
-        auto& binaryVectorVector = m_DeviceBinaryMap[device_list[i]];
-        binaryVectorVector.push_back({binaries[i], binaries[i] + lengths[i]});
 
         // It's OK if this fails.  If it does, it just
         // means that our output file won't have a device
@@ -7285,9 +7283,8 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
     
     if (sizeOfSource == 0)
     {
-        std::cout << "[[Warning]]: Size of the extracted source is zero! Make sure that the kernel is compiled from source (and is not cached)\n";
-        std::cout << "Now will try to output binaries, these probably won't work on other platforms!\n";
-        return;
+        log("[[Warning]]: Size of the extracted source is zero! Make sure that the kernel is compiled from source (and is not cached)\n");
+        log("Now will try to output binaries, these probably won't work on other platforms!\n");
     }
     else
     {
@@ -7307,13 +7304,18 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
     cl_device_id* devices = new cl_device_id[num_devices];
     clGetProgramInfo(tmp_program, CL_PROGRAM_DEVICES, num_devices * sizeof(cl_device_id), devices, 0);
 
+    std::string knlName = getShortKernelName(kernel);
     for (unsigned device = 0; device < num_devices; ++device)
     {
         auto binaries = m_DeviceBinaryMap[devices[device]];
         for (unsigned binary = 0; binary != binaries.size(); ++binary)
         {
-            std::ofstream outputBinaries{fileNamePrefix + "binary_Device" + std::to_string(device) + "_Binary_" + std::to_string(binary) + ".bin"};
-            outputBinaries.write(reinterpret_cast<const char*>(binaries[binary].data()), binaries[binary].size());
+            auto pos = std::search(binaries[binary].data(), binaries[binary].data() + binaries[binary].size(), knlName.data(), knlName.data() + knlName.length());
+            if (pos != binaries[binary].data() + binaries[binary].size())
+            {
+                std::ofstream outputBinaries{fileNamePrefix + "binary_Device" + std::to_string(device) + "_Binary_" + std::to_string(binary) + ".bin", std::ios_base::binary};
+                outputBinaries.write(reinterpret_cast<const char*>(binaries[binary].data()), binaries[binary].size());
+            }
         }
     }
 }
@@ -9410,6 +9412,13 @@ void CLIntercept::dumpProgramBinary(
         {
             for( size_t i = 0; i < numDevices; i++ )
             {
+                CLIntercept* pIntercept = GetIntercept();
+                if ((pIntercept->config().DumpReplayKernelEnqueue != -1) && !pIntercept->config().DumpProgramBinaries)
+                {
+                    auto& binaryVectorVector = m_DeviceBinaryMap[devices[i]];
+                    binaryVectorVector.push_back({programBinaries[i], programBinaries[i] + programBinarySizes[i]});
+                    return;
+                }
                 cl_device_type  deviceType = CL_DEVICE_TYPE_DEFAULT;
 
                 // It's OK if this fails.  If it does, it just

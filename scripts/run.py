@@ -1,4 +1,3 @@
-
 # Copyright (c) 2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
@@ -45,12 +44,17 @@ with open("buildOptions.txt", 'r') as file:
     flags = [line.rstrip() for line in file]
     print(f"Using flags: {flags}")
 
+with open('knlName.txt') as file:
+        knl_name = file.read()
+
 if os.path.isfile("kernel.cl"):
+    print("Using kernel source code")
     with open("kernel.cl", 'r') as file:
         kernel = file.read()
     prg = cl.Program(ctx, kernel).build(flags)
 else:
-    binary_files = gl.glob("./binary_*")
+    print("Using device binary")
+    binary_files = gl.glob("./binary_Device*.bin")
     binaries = []
     for file in binary_files:
         binaries.append(np.fromfile(file, dtype='uint8').tobytes())
@@ -58,13 +62,12 @@ else:
     # Try the binaries to find one that works
     for idx in range(len(binaries)):
         try:
-            prg = cl.Program(ctx, [devices[0]], binaries[idx]).build(flags)
+            prg = cl.Program(ctx, [devices[0]], [binaries[idx]]).build(flags)
+            getattr(prg, knl_name)
             break
-        except:
+        except Exception as e:
             pass
 
-with open('knlName.txt') as file:
-        knl_name = file.read()
 knl = getattr(prg, knl_name)
 for pos, argument in arguments.items():
     knl.set_arg(pos, argument)
