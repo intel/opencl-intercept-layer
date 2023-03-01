@@ -4627,7 +4627,7 @@ void CLIntercept::dumpProgramSource(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    CLI_ASSERT( config().DumpProgramSource || config().AutoCreateSPIRV);
+    CLI_ASSERT( config().DumpProgramSource || config().AutoCreateSPIRV );
 
     std::string fileName;
 
@@ -7281,12 +7281,8 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
     size_t sizeOfSource = 0;
     pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeof(char*), nullptr, &sizeOfSource);
     
-    if (sizeOfSource == 0)
-    {
-        log("[[Warning]]: Size of the extracted source is zero! Make sure that the kernel is compiled from source (and is not cached)\n");
-        log("Now will try to output binaries, these probably won't work on other platforms!\n");
-    }
-    else
+    // For some reason, on AMD GPUs the OCL runtime returns a " ", hence sizeOfSource == 1, despite being empty
+    if (sizeOfSource > 1)
     {
         std::ofstream output{fileNamePrefix + "kernel.cl"};
         char* sourceString = new char[sizeOfSource];
@@ -7295,6 +7291,11 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
         output << sourceString;
         delete[] sourceString;
         return;
+    }
+    else
+    {
+        log("[[Warning]]: Size of the extracted source is zero! Make sure that the kernel is compiled from source (and is not cached)\n");
+        log("Now will try to output binaries, these probably won't work on other platforms!\n");
     }
     
     cl_uint num_devices;

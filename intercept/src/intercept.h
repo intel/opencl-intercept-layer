@@ -540,7 +540,7 @@ public:
                 cl_kernel kernel,
                 cl_uint arg_index,
                 const void* arg_value,
-                size_t arg_size);
+                size_t arg_size );
     void    setKernelArgSVMPointer(
                 cl_kernel kernel,
                 cl_uint arg_index,
@@ -557,16 +557,16 @@ public:
                 bool replay );
     void    dumpArgumentsForKernel(
                 cl_kernel kernel, 
-                uint64_t enqueueCounter);
+                uint64_t enqueueCounter );
     void    dumpKernelSource(
                 cl_kernel kernel,
-                uint64_t enqueueCounter);
+                uint64_t enqueueCounter );
     void    dumpKernelInfo(
                 cl_kernel kernel,
                 uint64_t enqueueCounter,
                 const size_t* global_work_offset,
                 const size_t* global_work_size,
-                const size_t* local_work_size);
+                const size_t* local_work_size );
     void    dumpImagesForKernel(
                 const std::string& name,
                 const uint64_t enqueueCounter,
@@ -578,7 +578,7 @@ public:
                 cl_kernel kernel,
                 cl_int arg_index,
                 size_t size,
-                const void *pBuffer);
+                const void *pBuffer );
     void    dumpBuffer(
                 const std::string& name,
                 const uint64_t enqueueCounter,
@@ -2299,7 +2299,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 #define REMOVE_USM_ALLOCATION( usmPtr )                                     \
     if( usmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
-          (pIntercept->config().DumpReplayKernelEnqueue != -1) ||           \
+          ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
           pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
     {                                                                       \
         pIntercept->removeUSMAllocation( usmPtr );                          \
@@ -2317,7 +2317,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
         enqueueCounter <= pIntercept->config().DumpArgumentsOnSetMaxEnqueue ) \
     {                                                                       \
         pIntercept->dumpArgument(                                           \
-            enqueueCounter, kernel, arg_index, arg_size, arg_value); \
+            enqueueCounter, kernel, arg_index, arg_size, arg_value );       \
     }                                                                       \
     if( ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
@@ -2332,17 +2332,17 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     }                                                                       \
     if( ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
-          (pIntercept->config().DumpReplayKernelEnqueue != -1) ||           \
+          ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
           pIntercept->config().DumpImagesAfterEnqueue ) &&                  \
-        ( arg_value != NULL ) )                                    \
+        ( arg_value != NULL ) )                                             \
     {                                                                       \
         pIntercept->setKernelArg( kernel, arg_index, arg_value, arg_size ); \
     }
 
 #define SET_KERNEL_ARG_SVM_POINTER( kernel, arg_index, arg_value )          \
     if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
-        (pIntercept->config().DumpReplayKernelEnqueue != -1) ||             \
+        ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||           \
         pIntercept->config().DumpBuffersAfterEnqueue )                      \
     {                                                                       \
         pIntercept->setKernelArgSVMPointer( kernel, arg_index, arg_value ); \
@@ -2350,7 +2350,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 
 #define SET_KERNEL_ARG_USM_POINTER( kernel, arg_index, arg_value )          \
     if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
-          (pIntercept->config().DumpReplayKernelEnqueue != -1) ||           \
+          ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
         pIntercept->config().DumpBuffersAfterEnqueue )                      \
     {                                                                       \
         pIntercept->setKernelArgUSMPointer( kernel, arg_index, arg_value ); \

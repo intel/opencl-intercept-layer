@@ -4781,7 +4781,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
 
         INCREMENT_ENQUEUE_COUNTER();
         DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue );
-        DUMP_REPLAYABLE_KERNEL( kernel, command_queue, global_work_offset, global_work_size, local_work_size);
+        DUMP_REPLAYABLE_KERNEL( kernel, command_queue, global_work_offset, global_work_size, local_work_size );
         DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue );
         CHECK_AUBCAPTURE_START_KERNEL(
             kernel,
