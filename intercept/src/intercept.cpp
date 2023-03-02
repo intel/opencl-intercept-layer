@@ -7324,6 +7324,7 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
 void CLIntercept::dumpKernelInfo(
     cl_kernel kernel,
     uint64_t enqueueCounter,
+    size_t work_dim,
     const size_t* gws_offset,
     const size_t* gws,
     const size_t* lws)
@@ -7336,12 +7337,27 @@ void CLIntercept::dumpKernelInfo(
     OS().MakeDumpDirectories( fileNamePrefix );
     std::ofstream output{fileNamePrefix + "worksizes.txt"};
 
-    for (int idx = 0; idx != 3; ++idx)
+    // Print the values of the worksizes and offsets on a line in the order:
+    // gws
+    // lws
+    // gws_offset
+    for (unsigned idx = 0; idx != work_dim; ++idx)
     {
-        output << (!gws        ? 0 : gws[idx]) << '\n';
-        output << (!lws        ? 0 : lws[idx]) << '\n';
-        output << (!gws_offset ? 0 : gws_offset[idx]) << '\n';
+        output << (!gws        ? 0 : gws[idx]) << ' ';
     }
+    output << '\n';
+
+    for (unsigned idx = 0; idx != work_dim; ++idx)
+    {
+        output << (!lws        ? 0 : lws[idx]) << ' ';
+    }
+    output << '\n';
+
+    for (unsigned idx = 0; idx != work_dim; ++idx)
+    {
+        output << (!gws_offset ? 0 : gws_offset[idx]) << ' ';
+    }
+    output << '\n';
 
     // Get the cl_program from the cl_kernel and the device(s), then extract kernel build options from the cl_program
     CLIntercept* pIntercept = GetIntercept();

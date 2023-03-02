@@ -76,23 +76,22 @@ for pos, argument in arguments.items():
 for pos, buffer in gpu_buffers.items():
     knl.set_arg(pos, buffer)
 
-with open("worksizes.txt", 'r') as file:
-    lines = [line.rstrip() for line in file]
-
 gws = []
 lws = []
 gws_offset = []
 
-for idx in range(3):
-    gws.append(int(lines[3 * idx + 0]))
-    lws.append(int(lines[3 * idx + 1]))
-    gws_offset.append(int(lines[3 * idx + 2]))
+with open("worksizes.txt", 'r') as file:
+    lines = file.read().splitlines()
+    
+gws.extend([int(value) for value in lines[0].split()])
+lws.extend([int(value) for value in lines[1].split()])
+gws_offset.extend([int(value) for value in lines[2].split()])
     
 print(f"Global Worksize: {gws}")
 print(f"Local Worksize: {lws}")
 print(f"Global Worksize Offsets: {gws_offset}")
     
-if lws == [0, 0, 0]:
+if lws == [0] or lws == [0, 0] or lws == [0, 0, 0]:
     lws = None
     
 cl.enqueue_nd_range_kernel(queue, knl, gws, lws, gws_offset)
