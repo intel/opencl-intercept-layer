@@ -53,15 +53,35 @@ Description:
     c -= a; c -= b; c ^= (b>>15); \
 }
 static inline uint64_t Hash(
-    const unsigned int *data,
+    const void* ptr,
     size_t count )
 {
     unsigned int    a = 0x428a2f98, hi = 0x71374491, lo = 0xb5c0fbcf;
-    while( count-- )
+
+    const uint32_t* dwData = reinterpret_cast<const uint32_t*>(ptr);
+    size_t dwCount = count / sizeof(uint32_t);
+    while( dwCount-- )
     {
-        a ^= *(data++);
+        a ^= *(dwData++);
         HASH_JENKINS_MIX( a, hi, lo );
     }
+
+    size_t extra = count % sizeof(uint32_t);
+    if( extra != 0 )
+    {
+        uint32_t extraValue = 0;
+
+        const uint8_t* data = reinterpret_cast<const uint8_t*>(ptr);
+        data += count - extra;
+
+        for( size_t i = 0; i < extra; i++) {
+            extraValue += *(data++) << (i * 8);
+        }
+
+        a ^= extraValue;
+        HASH_JENKINS_MIX( a, hi, lo );
+    }
+
     return (((uint64_t)hi)<<32)|lo;
 }
 #undef HASH_JENKINS_MIX
@@ -3801,9 +3821,8 @@ void CLIntercept::combineProgramStrings(
         allocSize += length;
     }
 
-    // Allocate a multiple of four bytes.
     // Allocate some extra to make sure we're null terminated.
-    allocSize = ( allocSize + ( 4 + 4 - 1 ) ) & ~( 4 - 1 );
+    allocSize++;
 
     singleString = new char[ allocSize ];
     if( singleString )
@@ -3868,23 +3887,15 @@ void CLIntercept::incrementProgramCompileCount(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-uint64_t CLIntercept::hashString(
-    const char* singleString,
+uint64_t CLIntercept::computeHash(
+    const void* ptr,
     size_t length )
 {
     uint64_t    hash = 0;
 
-    if( singleString != NULL )
+    if( ptr != NULL )
     {
-        const unsigned int* dwProgramSource = (const unsigned int*)singleString;
-        size_t  dwProgramSize = length;
-
-        dwProgramSize = ( dwProgramSize + ( 4 - 1 ) ) & ~( 4 - 1 );
-        dwProgramSize /= 4;
-
-        hash = Hash(
-            dwProgramSource,
-            dwProgramSize );
+        hash = Hash( ptr, length );
     }
 
     return hash;
@@ -3913,27 +3924,11 @@ void CLIntercept::saveProgramOptionsHash(
 
     if( program != NULL && options != NULL )
     {
-        // First: Create a copy of the options string that's padded to a
-        // multiple of four bytes.
-
-        cl_uint count = 1;
-        const char** strings = &options;
-        const size_t* lengths = NULL;
-        char* singleString = NULL;
-        combineProgramStrings(
-            count,
-            strings,
-            lengths,
-            singleString );
-
-        uint64_t hash = hashString(
-            singleString,
-            strlen( singleString ) );
+        uint64_t hash = computeHash(
+            options,
+            strlen( options ) );
 
         m_ProgramInfoMap[ program ].OptionsHash = hash;
-
-        delete [] singleString;
-        singleString = NULL;
     }
 }
 

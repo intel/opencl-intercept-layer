@@ -274,8 +274,8 @@ public:
 
     void    incrementProgramCompileCount(
                 const cl_program program );
-    uint64_t hashString(
-                const char* singleString,
+    uint64_t computeHash(
+                const void* ptr,
                 size_t length );
     void    saveProgramHash(
                 const cl_program program,
@@ -2573,7 +2573,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
             strings,                                                        \
             lengths,                                                        \
             singleString );                                                 \
-        hash = pIntercept->hashString(                                      \
+        hash = pIntercept->computeHash(                                     \
             singleString,                                                   \
             strlen( singleString ) );                                       \
     }
@@ -2640,8 +2640,8 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
           pIntercept->config().DumpProgramBinaries ||                       \
           pIntercept->config().DumpProgramSPIRV ) )                         \
     {                                                                       \
-        _hash = pIntercept->hashString(                                     \
-            (const char*)_binaries[0],                                      \
+        _hash = pIntercept->computeHash(                                    \
+            _binaries[0],                                                   \
             _lengths[0] );                                                  \
     }
 
@@ -2663,8 +2663,8 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 #define COMPUTE_SPIRV_HASH( _length, _il, _hash )                           \
     if( _length && _il && pIntercept->config().DumpProgramSPIRV )           \
     {                                                                       \
-        _hash = pIntercept->hashString(                                     \
-            (const char*)_il,                                               \
+        _hash = pIntercept->computeHash(                                    \
+            _il,                                                            \
             _length );                                                      \
     }
 
