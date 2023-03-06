@@ -104,7 +104,7 @@ For Windows:
 For Linux:
 
 - `./real_libOpenCL.so`
-- `/usr/lib/x86_64-linux-gnu/libOpenCL.so.1`
+- `/usr/lib/x86_64-linux-gnu/libOpenCL.so.1` (for `x86_64` processors, will be detected automatically)
 - `/usr/lib/x86_64-linux-gnu/libOpenCL.so`
 - `/opt/intel/opencl/lib64/libOpenCL.so.1`
 - `/opt/intel/opencl/lib64/libOpenCL.so`
