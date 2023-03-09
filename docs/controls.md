@@ -108,8 +108,8 @@ For Linux:
 - `/usr/lib/x86_64-linux-gnu/libOpenCL.so`
 - `/usr/lib/libOpenCL.so.1`
 - `/usr/lib/libOpenCL.so`
-- `"/usr/local/lib/libOpenCL.so.1`
-- `"/usr/local/lib/libOpenCL.so`
+- `/usr/local/lib/libOpenCL.so.1`
+- `/usr/local/lib/libOpenCL.so`
 - `/opt/intel/opencl/lib64/libOpenCL.so.1`
 - `/opt/intel/opencl/lib64/libOpenCL.so`
 - `/glob/development-tools/oneapi/inteloneapi/compiler/latest/linux/lib/libOpenCL.so.1`
