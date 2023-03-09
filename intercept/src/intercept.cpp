@@ -541,8 +541,14 @@ bool CLIntercept::init()
         const std::string libNames[] =
         {
             "./real_libOpenCL.so",
-            "/usr/lib/" CLINTERCEPT_PROCESSOR "-linux-gnu/libOpenCL.so.1",
-            "/usr/lib/" CLINTERCEPT_PROCESSOR "-linux-gnu/libOpenCL.so",
+#ifdef CLINTERCEPT_LIBRARY_ARCHITECTURE
+            "/usr/lib/" CLINTERCEPT_LIBRARY_ARCHITECTURE "/libOpenCL.so.1",
+            "/usr/lib/" CLINTERCEPT_LIBRARY_ARCHITECTURE "/libOpenCL.so",
+#endif
+            "/usr/lib/libOpenCL.so.1",
+            "/usr/lib/libOpenCL.so",
+            "/usr/local/lib/libOpenCL.so.1",
+            "/usr/local/lib/libOpenCL.so",
             "/opt/intel/opencl/lib64/libOpenCL.so.1",
             "/opt/intel/opencl/lib64/libOpenCL.so",
             "/glob/development-tools/oneapi/inteloneapi/compiler/latest/linux/lib/libOpenCL.so.1",

@@ -102,6 +102,12 @@ target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_CMAKE)
 configure_file(src/git_version.cpp.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.cpp" @ONLY)
 configure_file(src/git_version.rc.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.rc2" @ONLY)
 
+# When set, this is used for guessing the location of the real OpenCL ICD loader.
+if(CMAKE_LIBRARY_ARCHITECTURE)
+    message(STATUS "CMAKE_LIBRARY_ARCHITECTURE is: ${CMAKE_LIBRARY_ARCHITECTURE}")
+    target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_LIBRARY_ARCHITECTURE="${CMAKE_LIBRARY_ARCHITECTURE}")
+endif()
+
 if(ENABLE_CLIPROF)
     target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_CLILOADER)
 endif()
@@ -152,20 +158,6 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
     endif()
 elseif(APPLE)
     # never enabled on OSX (for now)
-endif()
-
-# Figure out the processor type, used for guessing the location of the real OpenCL ICD loader.
-if(CMAKE_SYSTEM_PROCESSOR MATCHES "^arm")
-    target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_PROCESSOR="arm")
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^aarch64")
-    target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_PROCESSOR="aarch64")
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^x86_64")
-    target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_PROCESSOR="x86_64")
-elseif(CMAKE_SYSTEM_PROCESSOR MATCHES "^i.86")
-    target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_PROCESSOR="i386")
-else()
-    message(STATUS "Unknown processor: ${CMAKE_SYSTEM_PROCESSOR}")
-    target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_PROCESSOR="unknown")
 endif()
 
 # MDAPI Support (optional)
