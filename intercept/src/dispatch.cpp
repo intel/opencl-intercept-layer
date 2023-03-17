@@ -361,6 +361,16 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
     {
         GET_ENQUEUE_COUNTER();
 
+        // Reference counts are only decremented for devices that are
+        // are sub-devices (that have a parent device).
+        cl_device_id parent = NULL;
+        pIntercept->dispatch().clGetDeviceInfo(
+            device,
+            CL_DEVICE_PARENT_DEVICE,
+            sizeof(parent),
+            &parent,
+            NULL);
+
         cl_uint ref_count =
             pIntercept->config().CallLogging ?
             pIntercept->getRefCount( device ) : 0;
@@ -376,7 +386,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
         HOST_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( device );
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
+        ref_count = ( parent != NULL ) ? ref_count - 1 : ref_count;
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
 
         return retVal;
     }
