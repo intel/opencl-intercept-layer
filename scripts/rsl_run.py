@@ -12,7 +12,7 @@ import struct
 import os
 import argparse 
 
-parser = argparse.ArgumentParser(description='Helper script to extract and validate single kernel from OpenCL app.')
+parser = argparse.ArgumentParser(description='Script to replay captured kernels')
 parser.add_argument('-repetitions', '--rep', type=int, dest='repetitions', default=1,
                     help='How often the kernel should be enqueued')
 args = parser.parse_args()
