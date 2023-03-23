@@ -10,21 +10,25 @@ To replay the captured kernels, you need the following Python libraries:
 * pyopencl
 * numpy
 
-If you want to replay a kernel for which only an OpenCL device binary is available, it is only (somewhat) guaranteed to work on the same system.
+If you want to replay a kernel for which only an OpenCL device binary is available, it is only (somewhat) guaranteed to work on the same system. Often you just have to remove the cached kernels, then on the next run you will get the kernel sources.
 
 ## Step by Step
 * Copy /scripts/capture_and_validate.py to the place where you run the app from
   * Not strictly necessary, but makes life easier
 * Run this script with the following arguments
-  - --num EnqueueNumberToBeCaptured
+  - --num EnqueueNumberToBeCaptured **OR** --name NameOfKernelToBeCaptured
   - -cli "/path/to/cliloader"
   - --p "/path/to/program"
   - --a ArgsForProgram
 
 Please make sure to follow this order of arguments
 
-This will then run the program via the CLI with the given arguments, capture the necessary information for the specified kernel and finally verifies that the buffers calculated by the standalone replayer agree with the buffers calculated. If the buffers don't agree, it will show a message in the terminal/command line.
+This will then run the program via the CLI with the given arguments, capture the necessary information for the specified kernel and finally verifies that the buffers calculated by the standalone replayer agree with the buffers calculated by the original program. If the buffers don't agree, it will show a message in the terminal/command line.
 
 ## Limitations (incomplete)
 * Does not work with OpenCL images (yet)
 * Untested for OOO queues
+
+## Advice
+* Use the following environment variables: PYOPENCL_NO_CACHE=1 and PYOPENCL_COMPILER_OUTPUT=1
+* Make sure that no CLI environment variables are set

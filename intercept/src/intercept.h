@@ -554,20 +554,24 @@ public:
                 const uint64_t enqueueCounter,
                 cl_kernel kernel,
                 cl_command_queue command_queue,
-                bool replay );
+                bool replay,
+                bool byKernelName );
     void    dumpArgumentsForKernel(
                 cl_kernel kernel, 
-                uint64_t enqueueCounter );
+                uint64_t enqueueCounter,
+                bool byKernelName );
     void    dumpKernelSource(
                 cl_kernel kernel,
-                uint64_t enqueueCounter );
+                uint64_t enqueueCounter,
+                bool byKernelName );
     void    dumpKernelInfo(
                 cl_kernel kernel,
                 uint64_t enqueueCounter,
                 size_t work_dim,
                 const size_t* global_work_offset,
                 const size_t* global_work_size,
-                const size_t* local_work_size );
+                const size_t* local_work_size,
+                bool byKernelName );
     void    dumpImagesForKernel(
                 const std::string& name,
                 const uint64_t enqueueCounter,
@@ -942,6 +946,13 @@ public:
     cl_int  finishAll(
                 cl_context conetxt );
 
+    void    addShortKernelName(
+                const std::string& kernelName );
+    std::string getShortKernelName(
+                    const cl_kernel kernel );
+    std::string getShortKernelNameWithHash(
+                    const cl_kernel kernel );
+
 private:
     static const char* sc_URL;
     static const char* sc_DumpDirectoryName;
@@ -973,13 +984,6 @@ private:
 #else
 #error Unknown OS!
 #endif
-
-    void    addShortKernelName(
-                const std::string& kernelName );
-    std::string getShortKernelName(
-                    const cl_kernel kernel );
-    std::string getShortKernelNameWithHash(
-                    const cl_kernel kernel );
 
     void    getCallLoggingPrefix(
                 std::string& str );
@@ -2423,27 +2427,33 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
         pIntercept->dumpBufferForKernel( kernel ) )                         \
     {                                                                       \
         pIntercept->dumpBuffersForKernel(                                   \
-            "Pre", enqueueCounter, kernel, command_queue, false );          \
+            "Pre", enqueueCounter, kernel, command_queue, false, false );   \
     }
 
-#define DUMP_BUFFERS_AFTER_ENQUEUE( kernel, command_queue )                 \
-    if( pIntercept->config().DumpBuffersAfterEnqueue &&                     \
-        pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&       \
-        pIntercept->dumpBufferForKernel( kernel ) )                         \
-    {                                                                       \
-        pIntercept->dumpBuffersForKernel(                                   \
-            "Post", enqueueCounter, kernel, command_queue, false );                \
-    }
+#define DUMP_BUFFERS_AFTER_ENQUEUE( kernel, command_queue )                     \
+    if(( pIntercept->config().DumpBuffersAfterEnqueue &&                        \
+        pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&           \
+        pIntercept->dumpBufferForKernel( kernel )) ||                           \
+        (hasDumpedByName && !hasDumpedValidationByName ))                       \
+    {                                                                           \
+        hasDumpedValidationByName = true;                                       \
+        pIntercept->dumpBuffersForKernel(                                       \
+            "Post", enqueueCounter, kernel, command_queue, false,               \
+                pIntercept->config().DumpReplayKernelName != "" );                       \
+    }                       
 
-#define DUMP_REPLAYABLE_KERNEL( kernel, command_queue, work_dim, gws_offset, gws, lws)            \
-    if (enqueueCounter == static_cast<size_t>(pIntercept->config().DumpReplayKernelEnqueue))     \
-    {                                                                       \
-        pIntercept->dumpBuffersForKernel(                                   \
-            "", enqueueCounter, kernel, command_queue, true);               \
-        pIntercept->dumpKernelSource(kernel, enqueueCounter);               \
-        pIntercept->dumpKernelInfo(kernel, enqueueCounter, work_dim, gws_offset, gws, lws);                 \
-        pIntercept->dumpArgumentsForKernel(kernel, enqueueCounter);          \
-    }                                                                       \
+#define DUMP_REPLAYABLE_KERNEL( kernel, command_queue, work_dim, gws_offset, gws, lws )                     \
+    if (enqueueCounter == static_cast<size_t>(pIntercept->config().DumpReplayKernelEnqueue ) ||             \
+        ( pIntercept->getShortKernelName(kernel) == pIntercept->config().DumpReplayKernelName &&            \
+        !hasDumpedByName ))                                                                                 \
+    {                                                                                                       \
+        hasDumpedByName = true;                                                                             \
+        pIntercept->dumpBuffersForKernel(                                                                   \
+            "", enqueueCounter, kernel, command_queue, true, pIntercept->config().DumpReplayKernelName != "");       \
+        pIntercept->dumpKernelSource(kernel, enqueueCounter, pIntercept->config().DumpReplayKernelName != "");       \
+        pIntercept->dumpKernelInfo(kernel, enqueueCounter, work_dim, gws_offset, gws, lws, pIntercept->config().DumpReplayKernelName != ""); \
+        pIntercept->dumpArgumentsForKernel(kernel, enqueueCounter, pIntercept->config().DumpReplayKernelName != ""); \
+    }                                                                                                       
 
 #define DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue )                 \
     if( pIntercept->config().DumpImagesBeforeEnqueue &&                     \
@@ -2800,7 +2810,8 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 
 #define DUMP_OUTPUT_PROGRAM_BINARIES( program )                             \
     if( pIntercept->config().DumpProgramBinaries ||                         \
-        pIntercept->config().DumpReplayKernelEnqueue != -1 )                \
+        pIntercept->config().DumpReplayKernelEnqueue != -1 ||               \
+        pIntercept->config().DumpReplayKernelName != "" )                   \
     {                                                                       \
         pIntercept->dumpProgramBinary( program );                           \
     }

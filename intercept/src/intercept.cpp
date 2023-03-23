@@ -7263,12 +7263,17 @@ void CLIntercept::setKernelArgUSMPointer(
     }
 }
 
-void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
+void CLIntercept::dumpKernelSource(cl_kernel kernel, 
+                                   uint64_t enqueueCounter,
+                                   bool byKernelName )
 {
     std::string fileNamePrefix = "";
     OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
     fileNamePrefix += "/Replay/Enqueue_";
-    fileNamePrefix += std::to_string(enqueueCounter);
+    if (byKernelName)
+        fileNamePrefix += getShortKernelName(kernel);
+    else
+        fileNamePrefix += std::to_string(enqueueCounter);
     fileNamePrefix += "/";
     OS().MakeDumpDirectories( fileNamePrefix );
 
@@ -7292,11 +7297,8 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
         delete[] sourceString;
         return;
     }
-    else
-    {
-        log("[[Warning]]: Size of the extracted source is zero! Make sure that the kernel is compiled from source (and is not cached)\n");
-        log("Now will try to output binaries, these probably won't work on other platforms!\n");
-    }
+    log("[[Warning]]: Size of the extracted source is zero! Make sure that the kernel is compiled from source (and is not cached)\n");
+    log("Now will try to output binaries, these probably won't work on other platforms!\n");
     
     cl_uint num_devices;
     clGetProgramInfo(tmp_program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &num_devices, nullptr);
@@ -7314,7 +7316,7 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel, uint64_t enqueueCounter)
             auto pos = std::search(binaries[binary].data(), binaries[binary].data() + binaries[binary].size(), knlName.data(), knlName.data() + knlName.length());
             if (pos != binaries[binary].data() + binaries[binary].size())
             {
-                std::ofstream outputBinaries{fileNamePrefix + "binary_Device" + std::to_string(device) + "_Binary_" + std::to_string(binary) + ".bin", std::ios_base::binary};
+                std::ofstream outputBinaries{fileNamePrefix + "binary_Device_" + std::to_string(device) + "_Binary_" + std::to_string(binary) + ".bin", std::ios_base::binary};
                 outputBinaries.write(reinterpret_cast<const char*>(binaries[binary].data()), binaries[binary].size());
             }
         }
@@ -7327,12 +7329,16 @@ void CLIntercept::dumpKernelInfo(
     size_t work_dim,
     const size_t* gws_offset,
     const size_t* gws,
-    const size_t* lws)
+    const size_t* lws,
+    bool byKernelName)
 {
     std::string fileNamePrefix = "";
     OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
     fileNamePrefix += "/Replay/Enqueue_";
-    fileNamePrefix += std::to_string(enqueueCounter);
+    if (byKernelName)
+        fileNamePrefix += getShortKernelName(kernel);
+    else
+        fileNamePrefix += std::to_string(enqueueCounter);
     fileNamePrefix += "/";
     OS().MakeDumpDirectories( fileNamePrefix );
     std::ofstream output{fileNamePrefix + "worksizes.txt"};
@@ -7389,16 +7395,23 @@ void CLIntercept::dumpKernelInfo(
 
     std::ofstream outputPythonScript{fileNamePrefix + "run.py"};
     outputPythonScript << pythonScript << '\n';
+
+    std::ofstream outputKernelNumber{fileNamePrefix + "enqueueNumber.txt"};
+    outputKernelNumber << std::to_string(enqueueCounter) << '\n';
 }
 
 void CLIntercept::dumpArgumentsForKernel(
         cl_kernel kernel, 
-        uint64_t enqueueCounter)
+        uint64_t enqueueCounter,
+        bool byKernelName )
 {
     std::string fileNamePrefix;
     OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
     fileNamePrefix += "/Replay/Enqueue_";
-    fileNamePrefix += std::to_string(enqueueCounter);
+    if (byKernelName)
+        fileNamePrefix += getShortKernelName(kernel);
+    else
+        fileNamePrefix += std::to_string(enqueueCounter);
     fileNamePrefix += "/";
     OS().MakeDumpDirectories( fileNamePrefix );
 
@@ -7418,7 +7431,8 @@ void CLIntercept::dumpBuffersForKernel(
     const uint64_t enqueueCounter,
     cl_kernel kernel,
     cl_command_queue command_queue,
-    bool replay)
+    bool replay,
+    bool byKernelName )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -7431,7 +7445,10 @@ void CLIntercept::dumpBuffersForKernel(
     {
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
         fileNamePrefix += "/Replay/Enqueue_";
-        fileNamePrefix += std::to_string(enqueueCounter);
+        if (byKernelName)
+            fileNamePrefix += getShortKernelName(kernel);
+        else
+            fileNamePrefix += std::to_string(enqueueCounter);
         fileNamePrefix += "/";
         OS().MakeDumpDirectories( fileNamePrefix );
     } else
@@ -9430,7 +9447,8 @@ void CLIntercept::dumpProgramBinary(
             for( size_t i = 0; i < numDevices; i++ )
             {
                 CLIntercept* pIntercept = GetIntercept();
-                if ((pIntercept->config().DumpReplayKernelEnqueue != -1) && !pIntercept->config().DumpProgramBinaries)
+                if (((pIntercept->config().DumpReplayKernelEnqueue != -1) || pIntercept->config().DumpReplayKernelName != "") && 
+                      !pIntercept->config().DumpProgramBinaries )
                 {
                     auto& binaryVectorVector = m_DeviceBinaryMap[devices[i]];
                     binaryVectorVector.push_back({programBinaries[i], programBinaries[i] + programBinarySizes[i]});
