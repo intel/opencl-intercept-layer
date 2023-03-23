@@ -10,6 +10,12 @@ import re
 import hashlib
 import struct
 import os
+import argparse 
+
+parser = argparse.ArgumentParser(description='Helper script to extract and validate single kernel from OpenCL app.')
+parser.add_argument('-repetitions', '--rep', type=int, dest='repetitions', default=1,
+                    help='How often the kernel should be enqueued')
+args = parser.parse_args()
 
 buffer_idx = []
 input_buffers = {}
@@ -93,8 +99,9 @@ print(f"Global Worksize Offsets: {gws_offset}")
     
 if lws == [0] or lws == [0, 0] or lws == [0, 0, 0]:
     lws = None
-    
-cl.enqueue_nd_range_kernel(queue, knl, gws, lws, gws_offset)
+
+for _ in range(args.repetitions):
+    cl.enqueue_nd_range_kernel(queue, knl, gws, lws, gws_offset)
 
 for pos in gpu_buffers.keys():
     cl.enqueue_copy(queue, output_buffers[pos], gpu_buffers[pos])
