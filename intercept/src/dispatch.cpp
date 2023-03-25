@@ -4776,8 +4776,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
     CLIntercept*    pIntercept = GetIntercept();
 
     // In case we want to dump a replayble kernel by kernel name, we only do this on the first enqueue
-    static bool hasDumpedByName = false;
-    static bool hasDumpedValidationByName = false;
+    static bool hasDumpedBufferByName = false;
+    static bool hasDumpedValidationBufferByName = false;
+    static bool hasDumpedImageByName = false;
+    static bool hasDumpedValidationImageByName = false;
 
     if( pIntercept && pIntercept->dispatch().clEnqueueNDRangeKernel )
     {

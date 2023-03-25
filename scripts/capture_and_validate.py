@@ -46,14 +46,22 @@ else:
 app_name = args.app_location[args.app_location.rfind(delim) + 1:]
 
 os.environ['CLI_DumpBuffersAfterEnqueue'] = str(1)
+os.environ['CLI_DumpImagesAfterEnqueue'] = str(1)
+os.environ['CLI_InitializeBuffers'] = str(1)
+os.environ['CLI_AppendBuildOptions'] = "-cl-kernel-arg-info"
+
 if args.enqueue_number != -1:
     os.environ['CLI_DumpReplayKernelEnqueue'] = str(args.enqueue_number)
     os.environ['CLI_DumpBuffersMinEnqueue'] = str(args.enqueue_number)
     os.environ['CLI_DumpBuffersMaxEnqueue'] = str(args.enqueue_number)
+    os.environ['CLI_DumpImagesMinEnqueue'] = str(args.enqueue_number)
+    os.environ['CLI_DumpImagesMaxEnqueue'] = str(args.enqueue_number)
 else:
     os.environ['CLI_DumpReplayKernelName'] = args.kernel_name
     os.environ['CLI_DumpBuffersMinEnqueue'] = str(1)
     os.environ['CLI_DumpBuffersMaxEnqueue'] = str(0)
+    os.environ['CLI_DumpImagesMinEnqueue'] = str(1)
+    os.environ['CLI_DumpImagesMaxEnqueue'] = str(0)
 
 # Run ./cliloader, dumping via either enqueue number or the kernel name
 command = [args.cli_location, args.app_location]
@@ -84,6 +92,18 @@ for replayed_buffer in replayed_buffers:
     idx = int(re.findall(r'\d+', replayed_buffer)[0])
     replayed_hashes[idx] = hashlib.md5(np.fromfile(replayed_buffer)).hexdigest()
 
+# Compare the images for binary equality
+replayed_images = gl.glob("./output_image*.raw")
+for replayed_image in replayed_images:
+    idx = int(re.findall(r'\d+', replayed_image)[0])
+    replayed_hashes[idx] = hashlib.md5(np.fromfile(replayed_image)).hexdigest()
+
+try:
+    with open('./ArgumentDataTypes.txt') as file:
+        data_types = [line.rsplit() for line in file.readlines()]
+except:
+    print("Information about argument data types not available!")
+
 dumped_location = os.path.join(intercept_location, app_name, "memDumpPostEnqueue")
 dumped_location = os.path.expanduser(dumped_location)
 os.chdir(dumped_location)
@@ -102,17 +122,29 @@ for dumped_buffer in dumped_buffers:
     idx = int(re.findall(r'\d+', dumped_buffer[start:])[0])
     dumped_hashes[idx] = hashlib.md5(np.fromfile(dumped_buffer)).hexdigest()
 
-all_equal = False
-if len(replayed_hashes) == len(dumped_hashes):
-    for pos in replayed_hashes.keys():
-        if replayed_hashes[pos] == dumped_hashes[pos]:
-            all_equal = True
-            print(f"Pos: {pos} is equal")
-        else:
+dumped_images = gl.glob("./Enqueue_" + padded_enqueue_num + "_Kernel_*.raw")
+for dumped_image in dumped_images:
+    start = dumped_image.find("_Arg_")
+    idx = int(re.findall(r'\d+', dumped_image[start:])[0])
+    dumped_hashes[idx] = hashlib.md5(np.fromfile(dumped_image)).hexdigest()
+
+all_equal = True
+for pos in replayed_hashes.keys():
+    if replayed_hashes[pos] == dumped_hashes[pos]:
+        print(f"Pos: {pos} is equal")
+    else:
+        try:
+            print(f"Pos: {pos} is not equal, data type={data_types[pos]}")
+        except:
             print(f"Pos: {pos} is not equal")
-            all_equal = False
+        all_equal = False
+
+print()
 if all_equal:
     print("Replayed standalone kernel produces correct results")
 else:
-    print("Replayed standalone kernel differs from app's result, " 
-           "please open an issue on the Github so that we can look into it!")
+    print("Replayed standalone kernel differs from app's result, \n" 
+          "this may due a slightly different order of operations on floating point \n"
+          "numbers. Please check manually if the differences are significant. \n"
+          "If they are completely different, please open an issue on the Github \n"
+          "so that we can look into it!")

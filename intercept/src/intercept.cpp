@@ -3863,6 +3863,11 @@ void CLIntercept::combineProgramStrings(
     }
 }
 
+void CLIntercept::saveProgramString (cl_program program, const char* singleString)
+{
+    m_SourceStringMap[program] = std::string( singleString );
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::incrementProgramCompileCount(
@@ -4626,7 +4631,6 @@ void CLIntercept::dumpProgramSource(
     const char* singleString )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-
     CLI_ASSERT( config().DumpProgramSource || config().AutoCreateSPIRV );
 
     std::string fileName;
@@ -4668,6 +4672,8 @@ void CLIntercept::dumpProgramSource(
     // Dump the program source to a .cl file.
     if( singleString )
     {
+
+
         std::ofstream os;
         os.open(
             fileName.c_str(),
@@ -7029,6 +7035,9 @@ void CLIntercept::addImage(
         size_t  depth = 0;
         size_t  arraySize = 0;
         size_t  elementSize = 0;
+        size_t  rowPitch = 0;
+        size_t  slicePitch = 0;
+        cl_image_format format;
 
         errorCode |= dispatch().clGetImageInfo(
             image,
@@ -7060,6 +7069,24 @@ void CLIntercept::addImage(
             sizeof(elementSize),
             &elementSize,
             NULL );
+        errorCode |= dispatch().clGetImageInfo(
+            image,
+            CL_IMAGE_ROW_PITCH, 
+            sizeof(rowPitch),
+            &rowPitch,
+            nullptr );
+        errorCode |= dispatch().clGetImageInfo(
+            image,
+            CL_IMAGE_SLICE_PITCH, 
+            sizeof(slicePitch),
+            &slicePitch,
+            nullptr ); 
+        errorCode |= dispatch().clGetImageInfo(
+            image,
+            CL_IMAGE_FORMAT, 
+            sizeof(cl_image_format),
+            &format,
+            nullptr );   
 
         if( errorCode == CL_SUCCESS )
         {
@@ -7071,10 +7098,12 @@ void CLIntercept::addImage(
                 if( arraySize == 0 )
                 {
                     imageInfo.Region[1] = 1;            // 1D image
+                    imageInfo.ImageType = CL_MEM_OBJECT_IMAGE1D;
                 }
                 else
                 {
                     imageInfo.Region[1] = arraySize;    // 1D image array
+                    imageInfo.ImageType = CL_MEM_OBJECT_IMAGE1D_ARRAY;
                 }
             }
             else
@@ -7087,18 +7116,25 @@ void CLIntercept::addImage(
                 if( arraySize == 0 )
                 {
                     imageInfo.Region[2] = 1;            // 2D image
+                    imageInfo.ImageType = CL_MEM_OBJECT_IMAGE2D;
                 }
                 else
                 {
                     imageInfo.Region[2] = arraySize;    // 2D image array
+                    imageInfo.ImageType = CL_MEM_OBJECT_IMAGE2D_ARRAY;
                 }
             }
             else
             {
+                // What about an array of 3D images?
                 imageInfo.Region[2] = depth;            // 3D image
+                imageInfo.ImageType = CL_MEM_OBJECT_IMAGE3D;
             }
 
             imageInfo.ElementSize = elementSize;
+            imageInfo.Format = format;
+            imageInfo.RowPitch = rowPitch;
+            imageInfo.SlicePitch = slicePitch;
 
             m_MemAllocNumberMap[ image ] = m_MemAllocNumber;
             m_ImageInfoMap[ image ] = imageInfo;
@@ -7200,10 +7236,15 @@ void CLIntercept::setKernelArg(
     size_t arg_size )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-
-    (m_KernelArgVectorMap[kernel])[arg_index] = 
-        std::vector<unsigned char>(reinterpret_cast<const unsigned char*>(arg_value),
-                                   reinterpret_cast<const unsigned char*>(arg_value) + arg_size);
+    if (arg_value != nullptr)
+    {
+        (m_KernelArgVectorMap[kernel])[arg_index] = 
+            std::vector<unsigned char>(reinterpret_cast<const unsigned char*>(arg_value),
+                                       reinterpret_cast<const unsigned char*>(arg_value) + arg_size);
+        return;
+    }
+    // Run time __local buffers
+    (m_KernelArgLocalMap[kernel])[arg_index] = arg_size;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7267,6 +7308,7 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel,
                                    uint64_t enqueueCounter,
                                    bool byKernelName )
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
     std::string fileNamePrefix = "";
     OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
     fileNamePrefix += "/Replay/Enqueue_";
@@ -7283,21 +7325,21 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel,
     cl_program tmp_program;
     pIntercept->dispatch().clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(cl_program), &tmp_program, nullptr);
 
-    size_t sizeOfSource = 0;
-    pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeof(char*), nullptr, &sizeOfSource);
-    
-    // For some reason, on AMD GPUs the OCL runtime returns a " ", hence sizeOfSource == 1, despite being empty
-    if (sizeOfSource > 1)
+    try
     {
-        std::ofstream output{fileNamePrefix + "kernel.cl"};
-        char* sourceString = new char[sizeOfSource];
-        pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeOfSource, sourceString, &sizeOfSource);
-
-        output << sourceString;
-        delete[] sourceString;
+        std::string source = m_SourceStringMap.at(tmp_program);
+        std::string fileName = fileNamePrefix + "kernel.cl";
+        std::ofstream output;
+        output.open(fileName.c_str(), std::ios::out | std::ios::binary );
+        output.write(source.c_str(), source.length());
         return;
+    } 
+    catch (std::exception const& excep)
+    {
+        (void)excep;
     }
-    log("[[Warning]]: Size of the extracted source is zero! Make sure that the kernel is compiled from source (and is not cached)\n");
+
+    log("[[Warning]]: Kernel source is not available! Make sure that the kernel is compiled from source (and is not cached)\n");
     log("Now will try to output binaries, these probably won't work on other platforms!\n");
     
     cl_uint num_devices;
@@ -7332,6 +7374,7 @@ void CLIntercept::dumpKernelInfo(
     const size_t* lws,
     bool byKernelName)
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
     std::string fileNamePrefix = "";
     OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
     fileNamePrefix += "/Replay/Enqueue_";
@@ -7398,6 +7441,23 @@ void CLIntercept::dumpKernelInfo(
 
     std::ofstream outputKernelNumber{fileNamePrefix + "enqueueNumber.txt"};
     outputKernelNumber << std::to_string(enqueueCounter) << '\n';
+
+    cl_uint numArgs = 0;
+    pIntercept->dispatch().clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS, sizeof(cl_uint), &numArgs, nullptr);
+
+    std::ofstream outputArgTypes{fileNamePrefix + "ArgumentDataTypes.txt"};
+    for ( int idx = 0; idx != numArgs; ++idx )
+    {
+        char tmp[100];
+        int error = pIntercept->dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, sizeof(tmp), tmp, nullptr);
+        if ( error == CL_KERNEL_ARG_INFO_NOT_AVAILABLE )
+        {
+            log("Kernel Argument info not available");
+            return;
+        }
+        outputArgTypes << tmp << '\n';
+    }
+
 }
 
 void CLIntercept::dumpArgumentsForKernel(
@@ -7405,6 +7465,7 @@ void CLIntercept::dumpArgumentsForKernel(
         uint64_t enqueueCounter,
         bool byKernelName )
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
     std::string fileNamePrefix;
     OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
     fileNamePrefix += "/Replay/Enqueue_";
@@ -7415,12 +7476,20 @@ void CLIntercept::dumpArgumentsForKernel(
     fileNamePrefix += "/";
     OS().MakeDumpDirectories( fileNamePrefix );
 
-    auto ArgumentVectorMap = m_KernelArgVectorMap[kernel];
-    for (const auto &[key, value]: ArgumentVectorMap ) 
+    auto argumentVectorMap = m_KernelArgVectorMap[kernel];
+    for (const auto &[key, value]: argumentVectorMap ) 
     {
         std::string fileName = fileNamePrefix + "Argument" + std::to_string(key) + ".bin"; 
         std::ofstream out{fileName};
         out.write(reinterpret_cast<char const*>(value.data()), value.size());
+    }
+
+    auto localMemSizes = m_KernelArgLocalMap[kernel];
+    for (const auto &[key, value]: localMemSizes ) 
+    {
+        std::string fileName = fileNamePrefix + "Local" + std::to_string(key) + ".txt"; 
+        std::ofstream out{fileName};
+        out << std::to_string(value);
     }
 }
 
@@ -7667,18 +7736,39 @@ void CLIntercept::dumpImagesForKernel(
     const std::string& name,
     const uint64_t enqueueCounter,
     cl_kernel kernel,
-    cl_command_queue command_queue )
+    cl_command_queue command_queue,
+    bool replay,
+    bool byKernelName )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
     std::string fileNamePrefix = "";
 
     // Get the dump directory name.
+    if (replay)
     {
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
-        fileNamePrefix += "/memDump";
-        fileNamePrefix += name;
-        fileNamePrefix += "Enqueue/";
+        fileNamePrefix += "/Replay/Enqueue_";
+        if (byKernelName)
+            fileNamePrefix += getShortKernelName(kernel);
+        else
+            fileNamePrefix += std::to_string(enqueueCounter);
+        fileNamePrefix += "/";
+        OS().MakeDumpDirectories( fileNamePrefix );
+    } else
+    {
+        // Get the dump directory name.
+        {
+            OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
+            fileNamePrefix += "/memDump";
+            fileNamePrefix += name;
+            fileNamePrefix += "Enqueue/";
+        }
+
+        // Now make directories as appropriate.
+        {
+            OS().MakeDumpDirectories( fileNamePrefix );
+        }
     }
 
     // Now make directories as appropriate.
@@ -7704,53 +7794,71 @@ void CLIntercept::dumpImagesForKernel(
             unsigned int        number = m_MemAllocNumberMap[ memobj ];
 
             std::string fileName = fileNamePrefix;
-            char    tmpStr[ MAX_PATH ];
-
-            // Add the enqueue count to file name
+            if (replay)
             {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
-                    (unsigned int)enqueueCounter );
+                fileName += "Image" + std::to_string(arg_index) + ".raw";
 
-                fileName += "Enqueue_";
-                fileName += tmpStr;
-            }
-
-            // Add the kernel name to the filename
+                // write image meta data to file
+                std::ofstream metaData{fileNamePrefix + "Image_MetaData_" + std::to_string(arg_index) + ".txt"};
+                metaData << info.Region[0] << '\n'
+                         << info.Region[1] << '\n'
+                         << info.Region[2] << '\n'
+                         << info.ElementSize << '\n'
+                         << info.RowPitch << '\n'
+                         << info.SlicePitch << '\n'
+                         << info.Format.image_channel_data_type << '\n'
+                         << info.Format.image_channel_order << '\n'
+                         << static_cast<int>(info.ImageType);
+            } else
             {
-                fileName += "_Kernel_";
-                fileName += getShortKernelName(kernel);
-            }
+                char    tmpStr[ MAX_PATH ];
 
-            // Add the arg number to the file name
-            {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "%u", arg_index );
+                // Add the enqueue count to file name
+                {
+                    CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
+                        (unsigned int)enqueueCounter );
 
-                fileName += "_Arg_";
-                fileName += tmpStr;
-            }
+                    fileName += "Enqueue_";
+                    fileName += tmpStr;
+                }
 
-            // Add the image number to the file name
-            {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", number );
+                // Add the kernel name to the filename
+                {
+                    fileName += "_Kernel_";
+                    fileName += getShortKernelName(kernel);
+                }
 
-                fileName += "_Image_";
-                fileName += tmpStr;
-            }
+                // Add the arg number to the file name
+                {
+                    CLI_SPRINTF( tmpStr, MAX_PATH, "%u", arg_index );
 
-            // Add the image dimensions to the file name
-            {
-                CLI_SPRINTF( tmpStr, MAX_PATH, "_%zux%zux%zu_%zubpp",
-                    info.Region[0],
-                    info.Region[1],
-                    info.Region[2],
-                    info.ElementSize * 8 );
+                    fileName += "_Arg_";
+                    fileName += tmpStr;
+                }
 
-                fileName += tmpStr;
-            }
+                // Add the image number to the file name
+                {
+                    CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", number );
 
-            // Add extension to file name
-            {
-                fileName += ".raw";
+                    fileName += "_Image_";
+                    fileName += tmpStr;
+                }
+
+                // Add the image dimensions to the file name
+                {
+                    CLI_SPRINTF( tmpStr, MAX_PATH, "_%zux%zux%zu_%zubpp",
+                        info.Region[0],
+                        info.Region[1],
+                        info.Region[2],
+                        info.ElementSize * 8 );
+
+                    fileName += tmpStr;
+                }
+
+                // Add extension to file name
+                {
+                    fileName += ".raw";
+                }
             }
 
             // Dump the image contents to the file.
