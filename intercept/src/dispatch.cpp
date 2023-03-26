@@ -944,7 +944,8 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
     {
         GET_ENQUEUE_COUNTER();
 
-        if (pIntercept->config().DumpReplayKernelEnqueue != -1)
+        if (pIntercept->config().DumpReplayKernelEnqueue != -1 ||
+            pIntercept->config().DumpReplayKernelName != "" )
         {
             // Make sure that there are no device only buffers
             // Since we need them to replay the kernel
