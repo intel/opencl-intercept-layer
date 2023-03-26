@@ -25,6 +25,18 @@ def get_image_metadata(idx: int):
     format = cl.ImageFormat(int(lines[7]), int(lines[6]))
     return format, shape
 
+def sampler_from_string(ctx, sampler_descr):
+    normalized = True if "TRUE" in sampler_descr else False
+    addressing_mode = cl.addressing_mode.CLAMP_TO_EDGE   if "CLAMP_TO_EDGE" in sampler_descr   else \
+                      cl.addressing_mode.CLAMP           if "CLAMP" in sampler_descr           else \
+                      cl.addressing_mode.MIRRORED_REPEAT if "MIRRORED_REPEAT" in sampler_descr else \
+                      cl.addressing_mode.REPEAT          if "REPEAT" in sampler_descr          else \
+                      cl.addressing_mode.NONE
+    
+    filter_mode = cl.filter_mode.LINEAR                  if "LINEAR" in sampler_descr          else \
+                  cl.filter_mode.NEAREST
+    return cl.Sampler(ctx, False, addressing_mode, filter_mode)
+
 parser = argparse.ArgumentParser(description='Script to replay captured kernels')
 parser.add_argument('-repetitions', '--rep', type=int, dest='repetitions', default=1,
                     help='How often the kernel should be enqueued')
@@ -76,18 +88,25 @@ for idx in buffer_idx:
 if len(tmp_args) != len(set(tmp_args)):
     print("Some of the buffers are aliasing, we will replicate this behavior")
 
-# TODO Samplers
+ctx = cl.create_some_context()
+queue = cl.CommandQueue(ctx)
+devices = ctx.get_info(cl.context_info.DEVICES)
 
+# TODO Samplers
+samplers = {}
+sampler_files = gl.glob("./Sampler*.txt")
+for sampler in sampler_files:
+    idx = int(re.findall(r'\d+', sampler)[0])
+    with open(sampler) as file:
+        samplers[idx] = sampler_from_string(ctx, file.readline())
 
 # Make sure that we only set the arguments to the non-buffer parameters
 for idx in list(input_buffers):
     del arguments[idx]
 for idx in list(input_images):
     del arguments[idx]
-
-ctx = cl.create_some_context()
-queue = cl.CommandQueue(ctx)
-devices = ctx.get_info(cl.context_info.DEVICES)
+for idx in list(samplers):
+    del arguments[idx]
 
 mf = cl.mem_flags
 
@@ -142,6 +161,9 @@ for pos, image in gpu_images.items():
 for pos, size in local_sizes.items():
     knl.set_arg(pos, cl.LocalMemory(size))
 
+for pos, sampler in samplers.items():
+    knl.set_arg(pos, sampler)
+
 gws = []
 lws = []
 gws_offset = []
@@ -162,6 +184,7 @@ if lws == [0] or lws == [0, 0] or lws == [0, 0, 0]:
 
 for _ in range(args.repetitions):
     cl.enqueue_nd_range_kernel(queue, knl, gws, lws, gws_offset)
+
 
 for pos in gpu_buffers.keys():
     if len(pos) == 1:

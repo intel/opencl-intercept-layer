@@ -956,6 +956,7 @@ public:
                     const cl_kernel kernel );
     void saveProgramString (cl_program program, 
                             const char* singleString);
+    void saveSampler(cl_kernel kernel, cl_uint arg_index, std::string const& sampler );
 
 private:
     static const char* sc_URL;
@@ -1245,6 +1246,10 @@ private:
 
     typedef std::map<cl_program, std::string> CSourceStringMap;
     CSourceStringMap m_SourceStringMap;
+
+    typedef std::map<cl_uint, std::string> CSamplerArgMap;
+    typedef std::map<cl_kernel, CSamplerArgMap> CSamplerKernelArgMap;
+    CSamplerKernelArgMap m_samplerKernelArgMap;
 
     struct SMapPointerInfo
     {
@@ -2282,14 +2287,18 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 
 #define ADD_SAMPLER( sampler, str )                                         \
     if( sampler &&                                                          \
-        pIntercept->config().CallLogging )                                  \
+        pIntercept->config().CallLogging ||                                 \
+          ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
+          ( pIntercept->config().DumpReplayKernelName != "" ) )             \
     {                                                                       \
         pIntercept->addSamplerString( sampler, str );                       \
     }
 
 #define REMOVE_SAMPLER( sampler )                                           \
     if( sampler &&                                                          \
-        pIntercept->config().CallLogging )                                  \
+        pIntercept->config().CallLogging ||                                 \
+          ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
+          ( pIntercept->config().DumpReplayKernelName != "" ) )             \
     {                                                                       \
         pIntercept->checkRemoveSamplerString( sampler );                    \
     }

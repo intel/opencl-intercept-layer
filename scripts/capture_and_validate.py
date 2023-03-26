@@ -45,8 +45,6 @@ else:
 
 app_name = args.app_location[args.app_location.rfind(delim) + 1:]
 
-os.environ['CLI_DumpBuffersAfterEnqueue'] = str(1)
-os.environ['CLI_DumpImagesAfterEnqueue'] = str(1)
 os.environ['CLI_InitializeBuffers'] = str(1)
 os.environ['CLI_AppendBuildOptions'] = "-cl-kernel-arg-info"
 
@@ -58,10 +56,6 @@ if args.enqueue_number != -1:
     os.environ['CLI_DumpImagesMaxEnqueue'] = str(args.enqueue_number)
 else:
     os.environ['CLI_DumpReplayKernelName'] = args.kernel_name
-    os.environ['CLI_DumpBuffersMinEnqueue'] = str(1)
-    os.environ['CLI_DumpBuffersMaxEnqueue'] = str(0)
-    os.environ['CLI_DumpImagesMinEnqueue'] = str(1)
-    os.environ['CLI_DumpImagesMaxEnqueue'] = str(0)
 
 # Run ./cliloader, dumping via either enqueue number or the kernel name
 command = [args.cli_location, args.app_location]
