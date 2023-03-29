@@ -5,6 +5,7 @@ import glob as gl
 import re
 import hashlib
 import numpy as np
+import sys
 
 # args:
 #   Enqueue number
@@ -33,17 +34,7 @@ intercept_location_posix = "~/CLIntercept_Dump/"
 intercept_location = ""
 delim = ""
 
-if os.name == 'nt':
-    intercept_location = intercept_location_win
-    delim = "\\"
-elif os.name == 'posix':
-    intercept_location = intercept_location_posix
-    delim = "/"
-else:
-    print("Unknown platform, exiting!")
-    exit()
-
-app_name = args.app_location[args.app_location.rfind(delim) + 1:]
+app_name = os.path.basename(args.app_location)
 
 os.environ['CLI_InitializeBuffers'] = str(1)
 os.environ['CLI_AppendBuildOptions'] = "-cl-kernel-arg-info"
@@ -71,7 +62,8 @@ replay_location = os.path.expanduser(replay_location)
 
 # Run extracted kernel to dump output buffers
 os.chdir(replay_location)
-subprocess.run(["python", "run.py"])
+python_exe = sys.executable
+subprocess.run([str(python_exe), "run.py"])
 
 print("\nNow starting validation!")
 

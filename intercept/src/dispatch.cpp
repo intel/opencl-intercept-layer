@@ -944,6 +944,13 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
     {
         GET_ENQUEUE_COUNTER();
 
+        CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), size = %zu, host_ptr = %p",
+            context,
+            pIntercept->enumName().name_mem_flags( flags ).c_str(),
+            flags,
+            size,
+            host_ptr );
+
         if (pIntercept->config().DumpReplayKernelEnqueue != -1 ||
             pIntercept->config().DumpReplayKernelName != "" )
         {
@@ -951,13 +958,6 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
             // Since we need them to replay the kernel
             flags &= ~CL_MEM_HOST_NO_ACCESS;
         }
-
-        CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), size = %zu, host_ptr = %p",
-            context,
-            pIntercept->enumName().name_mem_flags( flags ).c_str(),
-            flags,
-            size,
-            host_ptr );
         INITIALIZE_BUFFER_CONTENTS_INIT( flags, size, host_ptr );
         CHECK_ERROR_INIT( errcode_ret );
         HOST_PERFORMANCE_TIMING_START();
@@ -2768,10 +2768,14 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
             kernel,
             argsString.c_str() );
 
-        if( argsString.find( "CL_SAMPLER_NORMALIZED_COORDS" ) != std::string::npos && arg_value != nullptr )
+        if( pIntercept->config().DumpReplayKernelEnqueue != -1 ||
+            pIntercept->config().DumpReplayKernelName != "" )
         {
-            // This argument is a sampler, dump it
-            pIntercept->saveSampler( kernel, arg_index, argsString );
+            if( argsString.find( "CL_SAMPLER_NORMALIZED_COORDS" ) != std::string::npos && arg_value != nullptr )
+            {
+                // This argument is a sampler, dump it
+                pIntercept->saveSampler( kernel, arg_index, argsString );
+            }
         }
         SET_KERNEL_ARG( kernel, arg_index, arg_size, arg_value );
         HOST_PERFORMANCE_TIMING_START();
@@ -4784,6 +4788,11 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
     cl_event* event )
 {
     CLIntercept*    pIntercept = GetIntercept();
+
+    // This works starting C++11
+    // https://stackoverflow.com/questions/14106653/are-function-local-static-mutexes-thread-safe
+    static std::mutex localMutex;
+    std::unique_lock<std::mutex> lock(localMutex);
 
     // In case we want to dump a replayble kernel by kernel name, we only do this on the first enqueue
     static bool hasDumpedBufferByName = false;

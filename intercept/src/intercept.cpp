@@ -19,10 +19,10 @@
 #include "intercept.h"
 
 // Raw string literal containing the run.py script is within the binary
-std::string pythonScript =
-{
-#include "../../scripts/rsl_run.py"
-};
+const std::string pythonScript =
+R"===(
+#include "../../scripts/run.py"
+)===";
 
 /*****************************************************************************\
 
@@ -3865,6 +3865,7 @@ void CLIntercept::combineProgramStrings(
 
 void CLIntercept::saveProgramString (cl_program program, const char* singleString)
 {
+    std::unique_lock<std::mutex> lock(m_Mutex);
     m_SourceStringMap[program] = std::string( singleString );
 }
 
@@ -7319,13 +7320,10 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel,
     fileNamePrefix += "/";
     OS().MakeDumpDirectories( fileNamePrefix );
 
-    // Get the cl_program from the cl_kernel, then extract kernel source code from the cl_program
-    CLIntercept* pIntercept = GetIntercept();
-
     cl_program tmp_program;
-    pIntercept->dispatch().clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(cl_program), &tmp_program, nullptr);
+    dispatch().clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(cl_program), &tmp_program, nullptr);
 
-    try
+    if( m_SourceStringMap.find(tmp_program) != m_SourceStringMap.end() )
     {
         std::string source = m_SourceStringMap.at(tmp_program);
         std::string fileName = fileNamePrefix + "kernel.cl";
@@ -7334,10 +7332,6 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel,
         output.write(source.c_str(), source.length());
         return;
     } 
-    catch (std::exception const& excep)
-    {
-        (void)excep;
-    }
 
     log("[[Warning]]: Kernel source is not available! Make sure that the kernel is compiled from source (and is not cached)\n");
     log("Now will try to output binaries, these probably won't work on other platforms!\n");
@@ -7363,6 +7357,7 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel,
             }
         }
     }
+    delete[] devices;
 }
 
 void CLIntercept::dumpKernelInfo(
@@ -7408,23 +7403,20 @@ void CLIntercept::dumpKernelInfo(
     }
     output << '\n';
 
-    // Get the cl_program from the cl_kernel and the device(s), then extract kernel build options from the cl_program
-    CLIntercept* pIntercept = GetIntercept();
-
     cl_program tmp_program;
-    pIntercept->dispatch().clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(cl_program), &tmp_program, nullptr);
+    dispatch().clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(cl_program), &tmp_program, nullptr);
 
     cl_context context;
-    pIntercept->dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_CONTEXT, sizeof(cl_context), &context, nullptr);
+    dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_CONTEXT, sizeof(cl_context), &context, nullptr);
 
     cl_device_id device_ids;
-    pIntercept->dispatch().clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(cl_context_info*), &device_ids, nullptr);
+    dispatch().clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(cl_context_info*), &device_ids, nullptr);
 
     size_t sizeOfOptions = 0;
-    pIntercept->dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
+    dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
                                                  CL_PROGRAM_BUILD_OPTIONS, sizeof(char*), nullptr, &sizeOfOptions);
     char* optionsString = new char[sizeOfOptions];
-    pIntercept->dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
+    dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
                                                  CL_PROGRAM_BUILD_OPTIONS, sizeOfOptions, optionsString, &sizeOfOptions);
 
     std::ofstream outputBuildOptions{fileNamePrefix + "buildOptions.txt"};
@@ -7443,21 +7435,22 @@ void CLIntercept::dumpKernelInfo(
     outputKernelNumber << std::to_string(enqueueCounter) << '\n';
 
     cl_uint numArgs = 0;
-    pIntercept->dispatch().clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS, sizeof(cl_uint), &numArgs, nullptr);
+    dispatch().clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS, sizeof(cl_uint), &numArgs, nullptr);
 
     std::ofstream outputArgTypes{fileNamePrefix + "ArgumentDataTypes.txt"};
-    for ( int idx = 0; idx != numArgs; ++idx )
+    for ( size_t idx = 0; idx != numArgs; ++idx )
     {
-        char tmp[100];
-        int error = pIntercept->dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, sizeof(tmp), tmp, nullptr);
+        size_t argNameSize = 0;
+        dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, sizeof(std::string), nullptr, &argNameSize);
+        std::string argName("", argNameSize);
+        int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, sizeof(argName), &argName, nullptr);
         if ( error == CL_KERNEL_ARG_INFO_NOT_AVAILABLE )
         {
-            log("Kernel Argument info not available");
+            log("Kernel Argument info not available for replaying");
             return;
         }
-        outputArgTypes << tmp << '\n';
+        outputArgTypes << argName << '\n';
     }
-
 }
 
 void CLIntercept::dumpArgumentsForKernel(

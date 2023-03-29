@@ -2287,18 +2287,18 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 
 #define ADD_SAMPLER( sampler, str )                                         \
     if( sampler &&                                                          \
-        pIntercept->config().CallLogging ||                                 \
+        ( pIntercept->config().CallLogging ||                               \
           ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
-          ( pIntercept->config().DumpReplayKernelName != "" ) )             \
+          ( pIntercept->config().DumpReplayKernelName != "" ) ) )           \
     {                                                                       \
         pIntercept->addSamplerString( sampler, str );                       \
     }
 
 #define REMOVE_SAMPLER( sampler )                                           \
     if( sampler &&                                                          \
-        pIntercept->config().CallLogging ||                                 \
+        ( pIntercept->config().CallLogging ||                               \
           ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
-          ( pIntercept->config().DumpReplayKernelName != "" ) )             \
+          ( pIntercept->config().DumpReplayKernelName != "" ) ) )           \
     {                                                                       \
         pIntercept->checkRemoveSamplerString( sampler );                    \
     }
@@ -2504,10 +2504,10 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     }
 
 #define DUMP_IMAGES_AFTER_ENQUEUE( kernel, command_queue )                  \
-    if( pIntercept->config().DumpImagesAfterEnqueue &&                      \
-        pIntercept->checkDumpImageEnqueueLimits( enqueueCounter ) &&        \
-        pIntercept->dumpImagesForKernel( kernel ) ||                        \
-        (hasDumpedImageByName && !hasDumpedValidationImageByName ))         \
+    if( ( pIntercept->config().DumpImagesAfterEnqueue &&                    \
+          pIntercept->checkDumpImageEnqueueLimits( enqueueCounter )  &&     \
+          pIntercept->dumpImagesForKernel( kernel ) ) ||                      \
+          ( hasDumpedImageByName && !hasDumpedValidationImageByName ) )     \
     {                                                                       \
         hasDumpedValidationImageByName = true;                              \
         pIntercept->dumpImagesForKernel(                                    \
