@@ -20,10 +20,9 @@
 
 // Raw string literal containing the run.py script is within the binary
 const std::string pythonScript =
-R"===(
-#include "../../scripts/run.py"
-)===";
-
+{
+#include "../../scripts/rsl_run.py"
+};
 /*****************************************************************************\
 
 Inline Function:
@@ -3863,12 +3862,6 @@ void CLIntercept::combineProgramStrings(
     }
 }
 
-void CLIntercept::saveProgramString (cl_program program, const char* singleString)
-{
-    std::unique_lock<std::mutex> lock(m_Mutex);
-    m_SourceStringMap[program] = std::string( singleString );
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::incrementProgramCompileCount(
@@ -7305,9 +7298,9 @@ void CLIntercept::setKernelArgUSMPointer(
     }
 }
 
-void CLIntercept::dumpKernelSource(cl_kernel kernel, 
-                                   uint64_t enqueueCounter,
-                                   bool byKernelName )
+void CLIntercept::dumpKernelSourceOrDeviceBinary( cl_kernel kernel, 
+                                                  uint64_t enqueueCounter,
+                                                  bool byKernelName )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
     std::string fileNamePrefix = "";
@@ -7323,41 +7316,47 @@ void CLIntercept::dumpKernelSource(cl_kernel kernel,
     cl_program tmp_program;
     dispatch().clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(cl_program), &tmp_program, nullptr);
 
-    if( m_SourceStringMap.find(tmp_program) != m_SourceStringMap.end() )
+    size_t size = 0;
+    dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeof(char*), nullptr, &size);
+
+    std::string sourceCode("", size);
+    int error = dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, size, &sourceCode[0], nullptr);
+
+    if (error == CL_SUCCESS && size != 0)
     {
-        std::string source = m_SourceStringMap.at(tmp_program);
-        std::string fileName = fileNamePrefix + "kernel.cl";
-        std::ofstream output;
-        output.open(fileName.c_str(), std::ios::out | std::ios::binary );
-        output.write(source.c_str(), source.length());
+        std::ofstream output(fileNamePrefix + "kernel.cl", std::ios::out | std::ios::binary);
+        output.write(sourceCode.c_str(), size);
         return;
-    } 
+    }
 
     log("[[Warning]]: Kernel source is not available! Make sure that the kernel is compiled from source (and is not cached)\n");
     log("Now will try to output binaries, these probably won't work on other platforms!\n");
     
     cl_uint num_devices;
-    clGetProgramInfo(tmp_program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &num_devices, nullptr);
+    dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &num_devices, nullptr);
 
     // Grab the device ids
-    cl_device_id* devices = new cl_device_id[num_devices];
-    clGetProgramInfo(tmp_program, CL_PROGRAM_DEVICES, num_devices * sizeof(cl_device_id), devices, 0);
+    std::vector<cl_device_id> devices(num_devices);
 
-    std::string knlName = getShortKernelName(kernel);
-    for (unsigned device = 0; device < num_devices; ++device)
+    dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_DEVICES, num_devices * sizeof(cl_device_id), devices.data(), 0);
+
+    std::vector<size_t> sizes(num_devices);
+    dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_BINARY_SIZES, sizeof(size_t*), sizes.data(), nullptr);
+
+    std::vector<std::vector<unsigned char>> binaries;
+    for (size_t device = 0; device != num_devices; ++device)
     {
-        auto binaries = m_DeviceBinaryMap[devices[device]];
-        for (unsigned binary = 0; binary != binaries.size(); ++binary)
-        {
-            auto pos = std::search(binaries[binary].data(), binaries[binary].data() + binaries[binary].size(), knlName.data(), knlName.data() + knlName.length());
-            if (pos != binaries[binary].data() + binaries[binary].size())
-            {
-                std::ofstream outputBinaries{fileNamePrefix + "binary_Device_" + std::to_string(device) + "_Binary_" + std::to_string(binary) + ".bin", std::ios_base::binary};
-                outputBinaries.write(reinterpret_cast<const char*>(binaries[binary].data()), binaries[binary].size());
-            }
-        }
+        std::vector<unsigned char> binary(sizes[device]);
+        binaries.emplace_back(binary);
     }
-    delete[] devices;
+
+    error = dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_BINARIES, binaries.size() * sizeof(char*), binaries.data(), nullptr);
+
+    for (size_t device = 0; device != num_devices; ++device)
+    {
+        std::ofstream output(fileNamePrefix + "DeviceBinary" + std::to_string(device) + ".bin", std::ios::out | std::ios::binary);
+        output.write(reinterpret_cast<char const*>(binaries[device].data()), binaries[device].size());
+    }
 }
 
 void CLIntercept::dumpKernelInfo(
@@ -7415,14 +7414,13 @@ void CLIntercept::dumpKernelInfo(
     size_t sizeOfOptions = 0;
     dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
                                                  CL_PROGRAM_BUILD_OPTIONS, sizeof(char*), nullptr, &sizeOfOptions);
-    char* optionsString = new char[sizeOfOptions];
-    dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
-                                                 CL_PROGRAM_BUILD_OPTIONS, sizeOfOptions, optionsString, &sizeOfOptions);
 
-    std::ofstream outputBuildOptions{fileNamePrefix + "buildOptions.txt"};
-    outputBuildOptions << optionsString;
-    outputBuildOptions << '\n';
-    delete[] optionsString;
+    std::string optionsString("", sizeOfOptions);
+    dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
+                                                 CL_PROGRAM_BUILD_OPTIONS, sizeOfOptions, &optionsString[0], &sizeOfOptions);
+
+    std::ofstream outputBuildOptions{fileNamePrefix + "buildOptions.txt", std::ios::out | std::ios::binary};
+    outputBuildOptions.write(optionsString.c_str(), optionsString.length() - 1);
 
     std::string knlName = getShortKernelName(kernel);
     std::ofstream outputKnlName{fileNamePrefix + "knlName.txt"};
@@ -7438,12 +7436,13 @@ void CLIntercept::dumpKernelInfo(
     dispatch().clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS, sizeof(cl_uint), &numArgs, nullptr);
 
     std::ofstream outputArgTypes{fileNamePrefix + "ArgumentDataTypes.txt"};
-    for ( size_t idx = 0; idx != numArgs; ++idx )
+    for ( cl_uint idx = 0; idx != numArgs; ++idx )
     {
         size_t argNameSize = 0;
-        dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, sizeof(std::string), nullptr, &argNameSize);
+        dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, 0, nullptr, &argNameSize);
+
         std::string argName("", argNameSize);
-        int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, sizeof(argName), &argName, nullptr);
+        int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, argNameSize, &argName, nullptr);
         if ( error == CL_KERNEL_ARG_INFO_NOT_AVAILABLE )
         {
             log("Kernel Argument info not available for replaying");
@@ -7915,6 +7914,7 @@ void CLIntercept::dumpImagesForKernel(
 
 void CLIntercept::saveSampler(cl_kernel kernel, cl_uint arg_index, std::string const& sampler)
 {
+    std::unique_lock<std::mutex> lock(m_Mutex);
     auto& samplerArgMap = m_samplerKernelArgMap[kernel];
     samplerArgMap[arg_index] = sampler;
 }
@@ -9561,14 +9561,6 @@ void CLIntercept::dumpProgramBinary(
         {
             for( size_t i = 0; i < numDevices; i++ )
             {
-                CLIntercept* pIntercept = GetIntercept();
-                if (((pIntercept->config().DumpReplayKernelEnqueue != -1) || pIntercept->config().DumpReplayKernelName != "") && 
-                      !pIntercept->config().DumpProgramBinaries )
-                {
-                    auto& binaryVectorVector = m_DeviceBinaryMap[devices[i]];
-                    binaryVectorVector.push_back({programBinaries[i], programBinaries[i] + programBinarySizes[i]});
-                    return;
-                }
                 cl_device_type  deviceType = CL_DEVICE_TYPE_DEFAULT;
 
                 // It's OK if this fails.  If it does, it just

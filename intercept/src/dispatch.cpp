@@ -7047,7 +7047,9 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
         GET_ENQUEUE_COUNTER();
 
         std::string propsStr;
-        if( pIntercept->config().CallLogging )
+        if( pIntercept->config().CallLogging ||
+            (pIntercept->config().DumpReplayKernelEnqueue != -1) ||
+            (pIntercept->config().DumpReplayKernelName != ""))
         {
             pIntercept->getSamplerPropertiesString(
                 sampler_properties,

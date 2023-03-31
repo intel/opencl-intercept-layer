@@ -32,7 +32,14 @@ args = parser.parse_args()
 intercept_location_win = "C:\Intel\CLIntercept_Dump\\"
 intercept_location_posix = "~/CLIntercept_Dump/"
 intercept_location = ""
-delim = ""
+
+if os.name == 'nt':
+    intercept_location = intercept_location_win
+elif os.name == 'posix':
+    intercept_location = intercept_location_posix
+else:
+    print("Unknown platform, exiting!")
+    exit()
 
 app_name = os.path.basename(args.app_location)
 

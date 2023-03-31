@@ -1,4 +1,5 @@
 
+R"===(
 # Copyright (c) 2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
@@ -201,4 +202,4 @@ for pos, cpu_buffer in output_buffers.items():
 
 for pos, cpu_image in output_images.items():
     cpu_image.tofile("output_image" + str(pos) + ".raw")
-
+)==="
