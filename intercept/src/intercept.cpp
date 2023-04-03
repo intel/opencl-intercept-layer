@@ -7469,25 +7469,25 @@ void CLIntercept::dumpArgumentsForKernel(
     OS().MakeDumpDirectories( fileNamePrefix );
 
     auto argumentVectorMap = m_KernelArgVectorMap[kernel];
-    for (const auto& [key, value]: argumentVectorMap ) 
+    for (const auto& [pos, value]: argumentVectorMap ) 
     {
-        std::string fileName = fileNamePrefix + "Argument" + std::to_string(key) + ".bin"; 
+        std::string fileName = fileNamePrefix + "Argument" + std::to_string(pos) + ".bin"; 
         std::ofstream out{fileName};
         out.write(reinterpret_cast<char const*>(value.data()), value.size());
     }
 
     auto localMemSizes = m_KernelArgLocalMap[kernel];
-    for (const auto& [key, value]: localMemSizes ) 
+    for (const auto& [pos, value]: localMemSizes ) 
     {
-        std::string fileName = fileNamePrefix + "Local" + std::to_string(key) + ".txt"; 
+        std::string fileName = fileNamePrefix + "Local" + std::to_string(pos) + ".txt"; 
         std::ofstream out{fileName};
         out << std::to_string(value);
     }
 
     auto samplerValues = m_samplerKernelArgMap[kernel];
-    for (const auto& [key, value]: samplerValues)
+    for (const auto& [pos, value]: samplerValues)
     {
-        std::string fileName = fileNamePrefix + "Sampler" + std::to_string(key) + ".txt";
+        std::string fileName = fileNamePrefix + "Sampler" + std::to_string(pos) + ".txt";
         std::ofstream out{fileName};
         out << value;
     }
