@@ -7319,10 +7319,10 @@ void CLIntercept::dumpKernelSourceOrDeviceBinary( cl_kernel kernel,
     size_t size = 0;
     dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, sizeof(char*), nullptr, &size);
 
-    std::string sourceCode("", size);
+    std::string sourceCode(size, ' ');
     int error = dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, size, &sourceCode[0], nullptr);
 
-    if (error == CL_SUCCESS && size != 0)
+    if (error == CL_SUCCESS && size > 1)
     {
         std::ofstream output(fileNamePrefix + "kernel.cl", std::ios::out | std::ios::binary);
         output.write(sourceCode.c_str(), size);
@@ -7441,7 +7441,7 @@ void CLIntercept::dumpKernelInfo(
         size_t argNameSize = 0;
         dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, 0, nullptr, &argNameSize);
 
-        std::string argName("", argNameSize);
+        std::string argName(argNameSize, ' ');
         int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, argNameSize, &argName, nullptr);
         if ( error == CL_KERNEL_ARG_INFO_NOT_AVAILABLE )
         {
