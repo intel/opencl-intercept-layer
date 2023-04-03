@@ -7415,7 +7415,7 @@ void CLIntercept::dumpKernelInfo(
     dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
                                                  CL_PROGRAM_BUILD_OPTIONS, sizeof(char*), nullptr, &sizeOfOptions);
 
-    std::string optionsString("", sizeOfOptions);
+    std::string optionsString(sizeOfOptions, ' ');
     dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
                                                  CL_PROGRAM_BUILD_OPTIONS, sizeOfOptions, &optionsString[0], &sizeOfOptions);
 
