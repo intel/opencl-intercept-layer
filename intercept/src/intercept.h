@@ -557,7 +557,7 @@ public:
                 bool replay,
                 bool byKernelName );
     void    dumpArgumentsForKernel(
-                cl_kernel kernel, 
+                cl_kernel kernel,
                 uint64_t enqueueCounter,
                 bool byKernelName );
     void    dumpKernelSourceOrDeviceBinary(
@@ -952,7 +952,7 @@ public:
 
     void saveSampler(
                 cl_kernel kernel,
-                cl_uint arg_index, 
+                cl_uint arg_index,
                 std::string const& sampler );
 
 private:
@@ -2387,7 +2387,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
           pIntercept->config().DumpImagesAfterEnqueue )                     \
     {                                                                       \
         pIntercept->setKernelArg( kernel, arg_index, arg_value, arg_size ); \
-    }                                                                       
+    }
 
 #define SET_KERNEL_ARG_SVM_POINTER( kernel, arg_index, arg_value )          \
     if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
@@ -2486,7 +2486,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
         pIntercept->dumpBuffersForKernel(                                       \
             "Post", enqueueCounter, kernel, command_queue, false,               \
                 pIntercept->config().DumpReplayKernelName != "" );              \
-    }                       
+    }
 
 #define DUMP_REPLAYABLE_KERNEL( kernel, command_queue, work_dim, gws_offset, gws, lws )                        \
     if ( pIntercept->checkDumpByCounter( enqueueCounter ) ||                                                   \
@@ -2501,7 +2501,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
         pIntercept->dumpKernelSourceOrDeviceBinary(kernel, enqueueCounter, pIntercept->config().DumpReplayKernelName != "");       \
         pIntercept->dumpKernelInfo(kernel, enqueueCounter, work_dim, gws_offset, gws, lws, pIntercept->config().DumpReplayKernelName != ""); \
         pIntercept->dumpArgumentsForKernel(kernel, enqueueCounter, pIntercept->config().DumpReplayKernelName != ""); \
-    }                                                                                                       
+    }
 
 #define DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue )                 \
     if( pIntercept->config().DumpImagesBeforeEnqueue &&                     \

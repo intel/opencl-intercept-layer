@@ -7065,22 +7065,22 @@ void CLIntercept::addImage(
             NULL );
         errorCode |= dispatch().clGetImageInfo(
             image,
-            CL_IMAGE_ROW_PITCH, 
+            CL_IMAGE_ROW_PITCH,
             sizeof(rowPitch),
             &rowPitch,
             nullptr );
         errorCode |= dispatch().clGetImageInfo(
             image,
-            CL_IMAGE_SLICE_PITCH, 
+            CL_IMAGE_SLICE_PITCH,
             sizeof(slicePitch),
             &slicePitch,
-            nullptr ); 
+            nullptr );
         errorCode |= dispatch().clGetImageInfo(
             image,
-            CL_IMAGE_FORMAT, 
+            CL_IMAGE_FORMAT,
             sizeof(cl_image_format),
             &format,
-            nullptr );   
+            nullptr );
 
         if( errorCode == CL_SUCCESS )
         {
@@ -7232,7 +7232,7 @@ void CLIntercept::setKernelArg(
     std::lock_guard<std::mutex> lock(m_Mutex);
     if (arg_value != nullptr)
     {
-        (m_KernelArgVectorMap[kernel])[arg_index] = 
+        (m_KernelArgVectorMap[kernel])[arg_index] =
             std::vector<unsigned char>(reinterpret_cast<const unsigned char*>(arg_value),
                                        reinterpret_cast<const unsigned char*>(arg_value) + arg_size);
         return;
@@ -7298,7 +7298,7 @@ void CLIntercept::setKernelArgUSMPointer(
     }
 }
 
-void CLIntercept::dumpKernelSourceOrDeviceBinary( cl_kernel kernel, 
+void CLIntercept::dumpKernelSourceOrDeviceBinary( cl_kernel kernel,
                                                   uint64_t enqueueCounter,
                                                   bool byKernelName )
 {
@@ -7331,7 +7331,7 @@ void CLIntercept::dumpKernelSourceOrDeviceBinary( cl_kernel kernel,
 
     log("[[Warning]]: Kernel source is not available! Make sure that the kernel is compiled from source (and is not cached)\n");
     log("Now will try to output binaries, these probably won't work on other platforms!\n");
-    
+
     cl_uint num_devices;
     dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &num_devices, nullptr);
 
@@ -7453,7 +7453,7 @@ void CLIntercept::dumpKernelInfo(
 }
 
 void CLIntercept::dumpArgumentsForKernel(
-        cl_kernel kernel, 
+        cl_kernel kernel,
         uint64_t enqueueCounter,
         bool byKernelName )
 {
@@ -7469,17 +7469,17 @@ void CLIntercept::dumpArgumentsForKernel(
     OS().MakeDumpDirectories( fileNamePrefix );
 
     auto argumentVectorMap = m_KernelArgVectorMap[kernel];
-    for (const auto& [pos, value]: argumentVectorMap ) 
+    for (const auto& [pos, value]: argumentVectorMap )
     {
-        std::string fileName = fileNamePrefix + "Argument" + std::to_string(pos) + ".bin"; 
+        std::string fileName = fileNamePrefix + "Argument" + std::to_string(pos) + ".bin";
         std::ofstream out{fileName};
         out.write(reinterpret_cast<char const*>(value.data()), value.size());
     }
 
     auto localMemSizes = m_KernelArgLocalMap[kernel];
-    for (const auto& [pos, value]: localMemSizes ) 
+    for (const auto& [pos, value]: localMemSizes )
     {
-        std::string fileName = fileNamePrefix + "Local" + std::to_string(pos) + ".txt"; 
+        std::string fileName = fileNamePrefix + "Local" + std::to_string(pos) + ".txt";
         std::ofstream out{fileName};
         out << std::to_string(value);
     }
