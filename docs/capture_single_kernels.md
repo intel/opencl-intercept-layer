@@ -21,8 +21,8 @@ If you want to replay a kernel for which only an OpenCL device binary is availab
   * CLI_DumpReplayKernelName if you want to capture a kernel by its name
   * CLI_DumpReplayKernelEnqueue if you want to capture a kernel by its enqueue number
 * Then simply run the program via the OpenCL-Intercept-Layer
-* Example on Windows: `CLI_DumpReplayKernelName=${NameOfKernel} cliloader.exe /path/to/executable`
-* Example on Windows: `CLI_DumpReplayKernelEnqueue=${EnqueueCounter} cliloader.exe /path/to/executable`
+* Example on Linux: `CLI_DumpReplayKernelName=${NameOfKernel} cliloader /path/to/executable`
+* Example on Linux: `CLI_DumpReplayKernelEnqueue=${EnqueueCounter} cliloader /path/to/executable`
 
 ## Step by Step for automatic capturing and validation
 
@@ -42,6 +42,7 @@ This will then run the program via the CLI with the given arguments, capture the
 
 * OpenCl Buffers
   * These may be aliasing, then only one buffer is used
+    * Only true if they use the same memory address, so not when using sub buffers and having offsets
   * `__local` OpenCL buffers as parameter (i.e. where you have `setKernelArg(ctx, arg_idx, sizeOfLocalBuffer, nullptr)`)
   * Device only buffers, i.e. those with `CL_MEM_HOST_NO_ACCESS`
 * OpenCL Images
@@ -54,6 +55,7 @@ This will then run the program via the CLI with the given arguments, capture the
 
 * Does not work with OpenCL pipes
 * Untested for OOO queues
+* Sub buffers are not dealt with explictly, this may affect the results for both debugging and performance
 * The capture and validate script doesn't work with GUI apps
 
 ## Advice
@@ -62,3 +64,17 @@ This will then run the program via the CLI with the given arguments, capture the
 * Make sure that no CLI environment variables are set, to prevent unexpected behavior
   * You can consider setting `CLI_InitializeBuffers=1` for predictable results between runs
 * Only set one of {CLI_DumpReplayKernelName, CLI_DumpReplayKernelEnqueue}
+* Always make sure to check if your results make sense. 
+* For some apps using `cliloader[.exe]` doesn't work properly, [then install the build OpenCL library manually](install.md).
+
+## Request
+
+* Please send in bug reports
+* Great care has been made to test the currently supported features
+  * But programs may do something unexpected
+  * We probably have missed some edge cases
+* Please also send in feature requests!
+  * Please let us know your use case:
+    * Debugging
+    * Profiling/performance tuning
+  * Submit a convenient way to test this feature
