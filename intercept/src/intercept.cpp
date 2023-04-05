@@ -7462,32 +7462,42 @@ void CLIntercept::dumpArgumentsForKernel(
     std::string fileNamePrefix;
     OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
     fileNamePrefix += "/Replay/Enqueue_";
-    if (byKernelName)
+    if( byKernelName )
+    {
         fileNamePrefix += getShortKernelName(kernel);
+    }
     else
+    {
         fileNamePrefix += std::to_string(enqueueCounter);
+    }
     fileNamePrefix += "/";
     OS().MakeDumpDirectories( fileNamePrefix );
 
-    auto argumentVectorMap = m_KernelArgVectorMap[kernel];
-    for (const auto& [pos, value]: argumentVectorMap )
+    const auto& argumentVectorMap = m_KernelArgVectorMap[kernel];
+    for( const auto& arg: argumentVectorMap )
     {
+        const auto pos = arg.first;
+        const auto& value = arg.second;
         std::string fileName = fileNamePrefix + "Argument" + std::to_string(pos) + ".bin";
         std::ofstream out{fileName};
         out.write(reinterpret_cast<char const*>(value.data()), value.size());
     }
 
-    auto localMemSizes = m_KernelArgLocalMap[kernel];
-    for (const auto& [pos, value]: localMemSizes )
+    const auto& localMemSizes = m_KernelArgLocalMap[kernel];
+    for( const auto& arg: localMemSizes )
     {
+        const auto pos = arg.first;
+        const auto value = arg.second;
         std::string fileName = fileNamePrefix + "Local" + std::to_string(pos) + ".txt";
         std::ofstream out{fileName};
         out << std::to_string(value);
     }
 
-    auto samplerValues = m_samplerKernelArgMap[kernel];
-    for (const auto& [pos, value]: samplerValues)
+    const auto& samplerValues = m_samplerKernelArgMap[kernel];
+    for( const auto& arg: samplerValues)
     {
+        const auto pos = arg.first;
+        const auto& value = arg.second;
         std::string fileName = fileNamePrefix + "Sampler" + std::to_string(pos) + ".txt";
         std::ofstream out{fileName};
         out << value;
