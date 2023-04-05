@@ -954,12 +954,21 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
     if( pIntercept && pIntercept->dispatch().clCreateBuffer )
     {
         GET_ENQUEUE_COUNTER();
+
         CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), size = %zu, host_ptr = %p",
             context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
             flags,
             size,
             host_ptr );
+
+        if (pIntercept->config().DumpReplayKernelEnqueue != -1 ||
+            pIntercept->config().DumpReplayKernelName != "" )
+        {
+            // Make sure that there are no device only buffers
+            // Since we need them to replay the kernel
+            flags &= ~CL_MEM_HOST_NO_ACCESS;
+        }
         INITIALIZE_BUFFER_CONTENTS_INIT( flags, size, host_ptr );
         CHECK_ERROR_INIT( errcode_ret );
         HOST_PERFORMANCE_TIMING_START();
@@ -970,6 +979,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
             size,
             host_ptr,
             errcode_ret );
+
 
         HOST_PERFORMANCE_TIMING_END();
         ADD_BUFFER( retVal );
@@ -1696,17 +1706,19 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
         GET_ENQUEUE_COUNTER();
 
         std::string propsStr;
-        if( pIntercept->config().CallLogging )
+        if( pIntercept->config().CallLogging ||
+            (pIntercept->config().DumpReplayKernelEnqueue != -1) ||
+            (pIntercept->config().DumpReplayKernelName != "") )
         {
-            cl_sampler_properties sampler_properties[] = {
-                CL_SAMPLER_NORMALIZED_COORDS, normalized_coords,
-                CL_SAMPLER_ADDRESSING_MODE,   addressing_mode,
-                CL_SAMPLER_FILTER_MODE,       filter_mode,
-                0
-            };
-            pIntercept->getSamplerPropertiesString(
-                sampler_properties,
-                propsStr );
+        cl_sampler_properties sampler_properties[] = {
+            CL_SAMPLER_NORMALIZED_COORDS, normalized_coords,
+            CL_SAMPLER_ADDRESSING_MODE,   addressing_mode,
+            CL_SAMPLER_FILTER_MODE,       filter_mode,
+            0
+        };
+        pIntercept->getSamplerPropertiesString(
+            sampler_properties,
+            propsStr );
         }
 
         CALL_LOGGING_ENTER( "context = %p, properties = [ %s ]",
@@ -2751,13 +2763,15 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
         GET_ENQUEUE_COUNTER();
 
         std::string argsString;
-        if( pIntercept->config().CallLogging )
+        if( pIntercept->config().CallLogging ||
+            (pIntercept->config().DumpReplayKernelEnqueue != -1) ||
+            (pIntercept->config().DumpReplayKernelName != "") )
         {
-            pIntercept->getKernelArgString(
-                arg_index,
-                arg_size,
-                arg_value,
-                argsString );
+        pIntercept->getKernelArgString(
+            arg_index,
+            arg_size,
+            arg_value,
+            argsString );
         }
         CALL_LOGGING_ENTER_KERNEL(
             kernel,
@@ -2765,6 +2779,15 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
             kernel,
             argsString.c_str() );
 
+        if( pIntercept->config().DumpReplayKernelEnqueue != -1 ||
+            pIntercept->config().DumpReplayKernelName != "" )
+        {
+            if( argsString.find( "CL_SAMPLER_NORMALIZED_COORDS" ) != std::string::npos && arg_value != nullptr )
+            {
+                // This argument is a sampler, dump it
+                pIntercept->saveSampler( kernel, arg_index, argsString );
+            }
+        }
         SET_KERNEL_ARG( kernel, arg_index, arg_size, arg_value );
         HOST_PERFORMANCE_TIMING_START();
 
@@ -4777,12 +4800,24 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
+    // This works starting C++11
+    // https://stackoverflow.com/questions/14106653/are-function-local-static-mutexes-thread-safe
+    static std::mutex localMutex;
+    std::unique_lock<std::mutex> lock(localMutex);
+
+    // In case we want to dump a replayble kernel by kernel name, we only do this on the first enqueue
+    static bool hasDumpedBufferByName = false;
+    static bool hasDumpedValidationBufferByName = false;
+    static bool hasDumpedImageByName = false;
+    static bool hasDumpedValidationImageByName = false;
+
     if( pIntercept && pIntercept->dispatch().clEnqueueNDRangeKernel )
     {
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
         DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue );
+        DUMP_REPLAYABLE_KERNEL( kernel, command_queue, work_dim, global_work_offset, global_work_size, local_work_size );
         DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue );
         CHECK_AUBCAPTURE_START_KERNEL(
             kernel,
@@ -7023,7 +7058,9 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
         GET_ENQUEUE_COUNTER();
 
         std::string propsStr;
-        if( pIntercept->config().CallLogging )
+        if( pIntercept->config().CallLogging ||
+            (pIntercept->config().DumpReplayKernelEnqueue != -1) ||
+            (pIntercept->config().DumpReplayKernelName != ""))
         {
             pIntercept->getSamplerPropertiesString(
                 sampler_properties,
