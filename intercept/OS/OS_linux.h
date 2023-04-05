@@ -37,6 +37,10 @@ public:
                 const char*& str,
                 size_t& length ) const;
 
+    bool    GetReplayScriptString(
+                const char*& str,
+                size_t& length ) const;
+
     bool    ExecuteCommand(
                 const std::string& filename ) const;
     bool    StartAubCapture(
@@ -80,9 +84,10 @@ inline bool Services::GetPrecompiledKernelString(
 #if defined(USE_KERNEL_OVERRIDES)
     str = &_binary_kernels_precompiled_kernels_cl_start;
     length = &_binary_kernels_precompiled_kernels_cl_end - &_binary_kernels_precompiled_kernels_cl_start;
-#endif
-
     return true;
+#else
+    return false;
+#endif
 }
 
 #if defined(USE_KERNEL_OVERRIDES)
@@ -97,9 +102,28 @@ inline bool Services::GetBuiltinKernelString(
 #if defined(USE_KERNEL_OVERRIDES)
     str = &_binary_kernels_builtin_kernels_cl_start;
     length = &_binary_kernels_builtin_kernels_cl_end - &_binary_kernels_builtin_kernels_cl_start;
+    return true;
+#else
+    return false;
+#endif
+}
+
+#if defined(USE_SCRIPTS)
+extern "C" char _binary_scripts_run_py_start;
+extern "C" char _binary_scripts_run_py_end;
 #endif
 
+inline bool Services::GetReplayScriptString(
+    const char*& str,
+    size_t& length ) const
+{
+#if defined(USE_SCRIPTS)
+    str = &_binary_scripts_run_py_start;
+    length = &_binary_scripts_run_py_end - &_binary_scripts_run_py_start;
     return true;
+#else
+    return false;
+#endif
 }
 
 inline bool Services::ExecuteCommand( const std::string& command ) const

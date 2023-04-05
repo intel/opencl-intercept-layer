@@ -55,7 +55,7 @@ This will then run the program via the CLI with the given arguments, capture the
 
 * Does not work with OpenCL pipes
 * Untested for OOO queues
-* Sub buffers are not dealt with explictly, this may affect the results for both debugging and performance
+* Sub buffers are not dealt with explicitly, this may affect the results for both debugging and performance
 * The capture and validate script doesn't work with GUI apps
 
 ## Advice

@@ -31,6 +31,10 @@ public:
                 const char*& str,
                 size_t& length ) const;
 
+    bool    GetReplayScriptString(
+                const char*& str,
+                size_t& length ) const;
+
     bool    ExecuteCommand(
                 const std::string& filename ) const;
     bool    StartAubCapture(
@@ -72,6 +76,13 @@ inline bool Services::GetPrecompiledKernelString(
 }
 
 inline bool Services::GetBuiltinKernelString(
+    const char*& str,
+    size_t& length ) const
+{
+    return false;
+}
+
+inline bool Services::GetReplayScriptString(
     const char*& str,
     size_t& length ) const
 {
