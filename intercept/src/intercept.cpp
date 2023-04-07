@@ -3212,6 +3212,14 @@ void CLIntercept::logKernelInfo(
                     sizeof(wgs),
                     &wgs,
                     NULL );
+                size_t  rwgs[3] = {0, 0, 0};
+                errorCode |= dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    deviceList[i],
+                    CL_KERNEL_COMPILE_WORK_GROUP_SIZE,
+                    sizeof(rwgs),
+                    rwgs,
+                    NULL );
                 cl_ulong pms = 0;
                 errorCode |= dispatch().clGetKernelWorkGroupInfo(
                     kernel,
@@ -3229,7 +3237,7 @@ void CLIntercept::logKernelInfo(
                     &lms,
                     NULL );
                 cl_ulong sms = 0;
-                cl_int errorCode_sms =dispatch().clGetKernelWorkGroupInfo(
+                cl_int errorCode_sms = dispatch().clGetKernelWorkGroupInfo(
                     kernel,
                     deviceList[i],
                     CL_KERNEL_SPILL_MEM_SIZE_INTEL,
@@ -3252,6 +3260,11 @@ void CLIntercept::logKernelInfo(
                     if( config().KernelInfoLogging )
                     {
                         logf( "        Work Group Size: %zu\n", wgs);
+                        if( rwgs[0] != 0 || rwgs[1] != 0 || rwgs[2] != 0 )
+                        {
+                            logf( "        Required Work Group Size: < %zu, %zu, %zu >\n",
+                                rwgs[0], rwgs[1], rwgs[2]);
+                        }
                         logf( "        Private Mem Size: %u\n", (cl_uint)pms);
                         logf( "        Local Mem Size: %u\n", (cl_uint)lms);
                         if( errorCode_sms == CL_SUCCESS )
