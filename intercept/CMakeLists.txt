@@ -126,10 +126,11 @@ target_include_directories(OpenCL PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-# Kernel Override Support (optional)
+# Kernel Override and Script Embedding Support (optional)
 if(WIN32)
     # always enabled on Windows
     target_compile_definitions(OpenCL PRIVATE USE_KERNEL_OVERRIDES)
+    target_compile_definitions(OpenCL PRIVATE USE_SCRIPTS)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
        ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
     # conditionally enabled on Linux and Android
@@ -154,6 +155,21 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
         target_sources(OpenCL PRIVATE
             ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
             ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
+        )
+    endif()
+    if(ENABLE_SCRIPTS)
+        target_compile_definitions(OpenCL PRIVATE USE_SCRIPTS)
+
+        set(CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/scripts)
+        add_custom_command(OUTPUT ${CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY}/run_py.o
+            COMMAND ${CMAKE_COMMAND} -E make_directory ${CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY}
+            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary
+                scripts/run.py
+                -o ${CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY}/run_py.o
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run.py
+        )
+        target_sources(OpenCL PRIVATE
+            ${CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY}/run_py.o
         )
     endif()
 elseif(APPLE)

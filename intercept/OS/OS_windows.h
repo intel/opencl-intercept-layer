@@ -32,6 +32,10 @@ public:
                 const char*& str,
                 size_t& length ) const;
 
+    bool    GetReplayScriptString(
+                const char*& str,
+                size_t& length ) const;
+
     bool    ExecuteCommand(
                 const std::string& filename ) const;
     bool    StartAubCapture(
@@ -121,6 +125,40 @@ inline bool Services::GetBuiltinKernelString(
     HRSRC hrsrc = ::FindResource(
         m_hInstance,
         MAKEINTRESOURCE(IDR_TEXT_BUILTIN_KERNELS),
+        "TEXT" );
+
+    if( hrsrc != NULL )
+    {
+        length = ::SizeofResource(
+            m_hInstance,
+            hrsrc );
+
+        HGLOBAL hres = ::LoadResource(
+            m_hInstance,
+            hrsrc );
+        if( hres != NULL )
+        {
+            void*   pVoid = ::LockResource( hres );
+            if( pVoid )
+            {
+                str = (const char*)pVoid;
+                success = true;
+            }
+        }
+    }
+
+    return success;
+}
+
+inline bool Services::GetReplayScriptString(
+    const char*& str,
+    size_t& length ) const
+{
+    bool    success = false;
+
+    HRSRC hrsrc = ::FindResource(
+        m_hInstance,
+        MAKEINTRESOURCE(IDR_TEXT_REPLAY_SCRIPT),
         "TEXT" );
 
     if( hrsrc != NULL )

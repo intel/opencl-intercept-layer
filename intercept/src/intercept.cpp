@@ -18,11 +18,6 @@
 #include "emulate.h"
 #include "intercept.h"
 
-// Raw string literal containing the run.py script is within the binary
-const std::string pythonScript =
-{
-#include "../../scripts/rsl_run.py"
-};
 /*****************************************************************************\
 
 Inline Function:
@@ -7427,8 +7422,15 @@ void CLIntercept::dumpKernelInfo(
     std::ofstream outputKnlName{fileNamePrefix + "knlName.txt"};
     outputKnlName << knlName;
 
-    std::ofstream outputPythonScript{fileNamePrefix + "run.py"};
-    outputPythonScript << pythonScript << '\n';
+    const char* pPythonScript = NULL;
+    size_t pythonScriptLength = 0;
+    if( m_OS.GetReplayScriptString(
+            pPythonScript,
+            pythonScriptLength ) )
+    {
+        std::ofstream outputPythonScript{fileNamePrefix + "run.py", std::ios::out | std::ios::binary};
+        outputPythonScript.write(pPythonScript, pythonScriptLength);
+    }
 
     std::ofstream outputKernelNumber{fileNamePrefix + "enqueueNumber.txt"};
     outputKernelNumber << std::to_string(enqueueCounter) << '\n';
@@ -7446,7 +7448,7 @@ void CLIntercept::dumpKernelInfo(
         int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, argNameSize, &argName, nullptr);
         if ( error == CL_KERNEL_ARG_INFO_NOT_AVAILABLE )
         {
-            log("Kernel Argument info not available for replaying");
+            log("Note: Kernel Argument info not available for replaying.\n");
             return;
         }
         outputArgTypes << argName << '\n';
@@ -8868,7 +8870,7 @@ void CLIntercept::initPrecompiledKernelOverrides(
         const char* pProgramString = NULL;
         size_t  programStringLength = 0;
 
-        // Get the program string from the resource embedded into this DLL.
+        // Get the precompiled kernel string.
         if( errorCode == CL_SUCCESS )
         {
             if( m_OS.GetPrecompiledKernelString(
@@ -9082,7 +9084,7 @@ void CLIntercept::initBuiltinKernelOverrides(
         const char* pProgramString = NULL;
         size_t  programStringLength = 0;
 
-        // Get the program string from the resource embedded into this DLL.
+        // Get the builtin kernel program string.
         if( errorCode == CL_SUCCESS )
         {
             if( m_OS.GetBuiltinKernelString(

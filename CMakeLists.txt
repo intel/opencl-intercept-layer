@@ -44,6 +44,7 @@ if(WIN32)
 endif()
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
     option(ENABLE_KERNEL_OVERRIDES "Enable Embedding Kernel Override Strings" ON)
+    option(ENABLE_SCRIPTS "Enable Embedding Script Strings" ON)
 endif()
 
 # This uses modules from: https://github.com/rpavlik/cmake-modules
