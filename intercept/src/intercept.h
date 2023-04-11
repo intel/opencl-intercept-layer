@@ -2527,7 +2527,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
     if ( pIntercept->config().DetectNaNs )                                                    \
     {                                                                                         \
         pIntercept->detectNaNs( when, kernel, enqueueCounter, command_queue, work_dim, gws ); \
-    }                                                                       
+    }
 
 #define DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue )                 \
     if( pIntercept->config().DumpImagesBeforeEnqueue &&                     \

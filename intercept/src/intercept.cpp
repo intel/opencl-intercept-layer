@@ -7557,14 +7557,14 @@ void  CLIntercept::detectNaNs(
             void* bufferPtr = nullptr;
             size_t bufferSize = 0;
 
-            // check if the type is a floating point number 
+            // check if the type is a floating point number
             size_t argNameSize = 0;
             dispatch().clGetKernelArgInfo(kernel, arg_index, CL_KERNEL_ARG_TYPE_NAME, 0, nullptr, &argNameSize);
 
             std::string argType(' ', static_cast<int>(argNameSize));
             dispatch().clGetKernelArgInfo(kernel, arg_index, CL_KERNEL_ARG_TYPE_NAME, argNameSize, &argType[0], nullptr);
 
-            if( argType.find("float") != std::string::npos && 
+            if( argType.find("float") != std::string::npos &&
                 argType.find("double") != std::string::npos )
                 continue;
 
@@ -7596,7 +7596,7 @@ void  CLIntercept::detectNaNs(
                         0,
                         nullptr,
                         nullptr );
-                    
+
                     bufferPtr = transferBuf.data();
                     bufferSize = size;
                 }
@@ -7655,7 +7655,7 @@ void  CLIntercept::detectNaNs(
             }
             if (bufferPtr == nullptr)
                 continue;
-            
+
             bool foundNaN = false;
             if( argType.find("float") != std::string::npos )
             {
@@ -7667,7 +7667,7 @@ void  CLIntercept::detectNaNs(
                         break;
                     }
                 }
-            } else 
+            } else
             {
                 for( int idx = 0; idx < bufferSize / sizeof(double); idx += sizeof(double) )
                 {
@@ -7682,7 +7682,7 @@ void  CLIntercept::detectNaNs(
             {
                 std::string tmp =   when                                                        +
                                     " kernel: "             + getShortKernelName( kernel )      +
-                                    ", EnqueueCtr: "       + std::to_string( enqueueCounter )   + 
+                                    ", EnqueueCtr: "       + std::to_string( enqueueCounter )   +
                                     ", arg_index: "        + std::to_string( arg_index )        +
                                     ", data type: "        + argType.c_str()                    +
                                     ", has a NaN.\n";
@@ -7727,7 +7727,7 @@ void  CLIntercept::detectNaNs(
                             {
                                 std::string tmp = when                                                        +
                                                   " kernel: "            + getShortKernelName( kernel )       +
-                                                  ", EnqueueCtr: "       + std::to_string( enqueueCounter )   + 
+                                                  ", EnqueueCtr: "       + std::to_string( enqueueCounter )   +
                                                   ", arg_index: "        + std::to_string( arg_index )        +
                                                   ", data type: CL_FLOAT"                                     +
                                                   ", has a NaN.\n";
