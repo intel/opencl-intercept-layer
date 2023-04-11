@@ -4817,8 +4817,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
 
         INCREMENT_ENQUEUE_COUNTER();
         DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue );
-        DUMP_REPLAYABLE_KERNEL( kernel, command_queue, work_dim, global_work_offset, global_work_size, local_work_size );
         DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue );
+        DUMP_REPLAYABLE_KERNEL( kernel, command_queue, work_dim, global_work_offset, global_work_size, local_work_size );
+        CHECK_FOR_NANS( "Before", kernel, command_queue, work_dim, global_work_size );
         CHECK_AUBCAPTURE_START_KERNEL(
             kernel,
             work_dim,
@@ -4926,6 +4927,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
 
         DUMP_BUFFERS_AFTER_ENQUEUE( kernel, command_queue );
         DUMP_IMAGES_AFTER_ENQUEUE( kernel, command_queue );
+        CHECK_FOR_NANS( "After", kernel, command_queue, work_dim, global_work_size );
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
         CHECK_AUBCAPTURE_STOP( command_queue );
 

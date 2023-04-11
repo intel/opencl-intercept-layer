@@ -7519,6 +7519,229 @@ void CLIntercept::dumpArgumentsForKernel(
     }
 }
 
+void  CLIntercept::detectNaNs(
+    std::string when,
+    cl_kernel kernel,
+    const uint64_t enqueueCounter,
+    cl_command_queue command_queue,
+    size_t work_dim,
+    size_t const* gws )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_platform_id  platform = getPlatform(kernel);
+
+    std::vector<char>   transferBuf;
+    std::string fileNamePrefix = "";
+    OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
+    fileNamePrefix += "/NaN_checker_" + std::to_string(m_ProcessId) + ".txt";
+
+    std::ofstream output{fileNamePrefix, std::ios_base::app};
+
+    // for all buffers & images
+    // See if we have NaNs
+    CKernelArgMemMap& kernelArgMemMap = m_KernelArgMap[ kernel ];
+    CKernelArgMemMap::iterator idx = kernelArgMemMap.begin();
+    while( idx != kernelArgMemMap.end() )
+    {
+        cl_uint arg_index = (*idx).first;
+        void*   allocation = (void*)(*idx).second;
+        cl_mem  memobj = (cl_mem)allocation;
+        ++idx;
+
+        // check if we have a buffer
+        if( ( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() ) ||
+            ( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() ) ||
+            ( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() ) )
+        {
+            void* bufferPtr = nullptr;
+            size_t bufferSize = 0;
+
+            // check if the type is a floating point number 
+            size_t argNameSize = 0;
+            dispatch().clGetKernelArgInfo(kernel, arg_index, CL_KERNEL_ARG_TYPE_NAME, 0, nullptr, &argNameSize);
+
+            std::string argType(' ', static_cast<int>(argNameSize));
+            dispatch().clGetKernelArgInfo(kernel, arg_index, CL_KERNEL_ARG_TYPE_NAME, argNameSize, &argType[0], nullptr);
+
+            if( argType.find("float") != std::string::npos && 
+                argType.find("double") != std::string::npos )
+                continue;
+
+            if( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() )
+            {
+                size_t  size = m_USMAllocInfoMap[ allocation ];
+
+                if( dispatchX(platform).clEnqueueMemcpyINTEL == NULL )
+                {
+                    getExtensionFunctionAddress(
+                        platform,
+                        "clEnqueueMemcpyINTEL" );
+                }
+                if( transferBuf.size() < size )
+                {
+                    transferBuf.resize(size);
+                }
+
+                const auto& dispatchX = this->dispatchX(platform);
+                if( dispatchX.clEnqueueMemcpyINTEL &&
+                    transferBuf.size() >= size )
+                {
+                    cl_int  error = dispatchX.clEnqueueMemcpyINTEL(
+                        command_queue,
+                        CL_TRUE,
+                        transferBuf.data(),
+                        allocation,
+                        size,
+                        0,
+                        nullptr,
+                        nullptr );
+                    
+                    bufferPtr = transferBuf.data();
+                    bufferSize = size;
+                }
+            }
+            else if( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() )
+            {
+                size_t  size = m_SVMAllocInfoMap[ allocation ];
+                cl_int  error = dispatch().clEnqueueSVMMap(
+                    command_queue,
+                    CL_TRUE,
+                    CL_MAP_READ,
+                    allocation,
+                    size,
+                    0,
+                    nullptr,
+                    nullptr );
+                if( error == CL_SUCCESS )
+                {
+                    bufferPtr = allocation;
+                    bufferSize = size;
+                    dispatch().clEnqueueSVMUnmap(
+                        command_queue,
+                        allocation,
+                        0,
+                        nullptr,
+                        nullptr );
+                }
+            }
+            else if( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() )
+            {
+                size_t  size = m_BufferInfoMap[ memobj ];
+
+                cl_int  error = CL_SUCCESS;
+                bufferPtr = dispatch().clEnqueueMapBuffer(
+                    command_queue,
+                    memobj,
+                    CL_TRUE,
+                    CL_MAP_READ,
+                    0,
+                    size,
+                    0,
+                    nullptr,
+                    nullptr,
+                    &error );
+                if( error == CL_SUCCESS )
+                {
+                    bufferSize = size;
+                    dispatch().clEnqueueUnmapMemObject(
+                        command_queue,
+                        memobj,
+                        bufferPtr,
+                        0,
+                        nullptr,
+                        nullptr );
+                }
+            }
+            if (bufferPtr == nullptr)
+                continue;
+            
+            bool foundNaN = false;
+            if( argType.find("float") != std::string::npos )
+            {
+                for( int idx = 0; idx < bufferSize / sizeof(float); idx += sizeof(float) )
+                {
+                    if( std::isnan( reinterpret_cast<float*>(bufferPtr)[idx] ))
+                    {
+                        foundNaN = true;
+                        break;
+                    }
+                }
+            } else 
+            {
+                for( int idx = 0; idx < bufferSize / sizeof(double); idx += sizeof(double) )
+                {
+                    if( std::isnan( reinterpret_cast<double*>(bufferPtr)[idx] ))
+                    {
+                        foundNaN = true;
+                        break;
+                    }
+                }
+            }
+            if( foundNaN )
+            {
+                std::string tmp =   when                                                        +
+                                    " kernel: "             + getShortKernelName( kernel )      +
+                                    ", EnqueueCtr: "       + std::to_string( enqueueCounter )   + 
+                                    ", arg_index: "        + std::to_string( arg_index )        +
+                                    ", data type: "        + argType.c_str()                    +
+                                    ", has a NaN.\n";
+                output << tmp;
+            }
+            continue;
+        }
+        // Not a buffer, should be an image
+        if( m_ImageInfoMap.find( memobj ) != m_ImageInfoMap.end() )
+        {
+            const SImageInfo& info = m_ImageInfoMap[ memobj ];
+            if( info.Format.image_channel_data_type == CL_FLOAT )
+            {
+                size_t  size =
+                    info.Region[0] *
+                    info.Region[1] *
+                    info.Region[2] *
+                    info.ElementSize;
+                std::vector<char> readImageData(size);
+
+                if( readImageData.data() )
+                {
+                    size_t  origin[3] = { 0, 0, 0 };
+                    cl_int  error = dispatch().clEnqueueReadImage(
+                        command_queue,
+                        memobj,
+                        CL_TRUE,
+                        origin,
+                        info.Region,
+                        0,
+                        0,
+                        readImageData.data(),
+                        0,
+                        nullptr,
+                        nullptr );
+
+                    if( error == CL_SUCCESS )
+                    {
+                        for( int idx = 0; idx < size / sizeof( float ); idx += sizeof( float ) )
+                        {
+                            if( std::isnan( reinterpret_cast<float*>(readImageData.data())[idx] ))
+                            {
+                                std::string tmp = when                                                        +
+                                                  " kernel: "            + getShortKernelName( kernel )       +
+                                                  ", EnqueueCtr: "       + std::to_string( enqueueCounter )   + 
+                                                  ", arg_index: "        + std::to_string( arg_index )        +
+                                                  ", data type: CL_FLOAT"                                     +
+                                                  ", has a NaN.\n";
+                                output << tmp;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::dumpBuffersForKernel(

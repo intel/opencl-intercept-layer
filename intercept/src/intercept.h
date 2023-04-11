@@ -954,6 +954,13 @@ public:
                 cl_kernel kernel,
                 cl_uint arg_index,
                 std::string const& sampler );
+    void detectNaNs(
+                std::string when,
+                cl_kernel kernel,
+                uint64_t enqueueCounter,
+                cl_command_queue queue,
+                size_t work_dim,
+                size_t const* gws );
 
 private:
     static const char* sc_URL;
@@ -1250,6 +1257,8 @@ private:
     typedef std::map<cl_uint, std::string> CSamplerArgMap;
     typedef std::map<cl_kernel, CSamplerArgMap> CSamplerKernelArgMap;
     CSamplerKernelArgMap m_samplerKernelArgMap;
+
+    std::vector<std::string> m_NaNInfoVector;
 
     struct SMapPointerInfo
     {
@@ -2265,6 +2274,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
           pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
           ( pIntercept->config().DumpReplayKernelName != "" ) ||            \
+          pIntercept->config().DetectNaNs ||                                \
           pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
     {                                                                       \
         pIntercept->addBuffer( _buffer );                                   \
@@ -2275,7 +2285,8 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
         ( pIntercept->config().DumpImagesBeforeEnqueue ||                   \
           pIntercept->config().DumpImagesAfterEnqueue ||                    \
           ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
-          ( pIntercept->config().DumpReplayKernelName != "" ) ) )           \
+          ( pIntercept->config().DumpReplayKernelName != "" ) ||            \
+          pIntercept->config().DetectNaNs ) )                               \
     {                                                                       \
         pIntercept->addImage( _image );                                     \
     }
@@ -2290,6 +2301,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
           ( pIntercept->config().DumpReplayKernelName != "" ) ||            \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
+          pIntercept->config().DetectNaNs ||                                \
           pIntercept->config().DumpImagesAfterEnqueue ) )                   \
     {                                                                       \
         pIntercept->checkRemoveMemObj( _memobj );                           \
@@ -2318,6 +2330,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
           ( pIntercept->config().DumpReplayKernelName != "" ) ||            \
+          pIntercept->config().DetectNaNs ||                                \
           pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
     {                                                                       \
         pIntercept->addSVMAllocation( svmPtr, size );                       \
@@ -2328,6 +2341,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
         ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||           \
+          pIntercept->config().DetectNaNs ||                                \
         ( pIntercept->config().DumpReplayKernelName != "" ) ) )             \
     {                                                                       \
         pIntercept->removeSVMAllocation( svmPtr );                          \
@@ -2338,6 +2352,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
           ( pIntercept->config().DumpReplayKernelName != "" ) ||            \
+          pIntercept->config().DetectNaNs ||                                \
           pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
     {                                                                       \
         pIntercept->addUSMAllocation( usmPtr, size );                       \
@@ -2348,6 +2363,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
           ( pIntercept->config().DumpReplayKernelName != "" ) ||            \
+          pIntercept->config().DetectNaNs ||                                \
           pIntercept->config().DumpBuffersAfterEnqueue ) )                  \
     {                                                                       \
         pIntercept->removeUSMAllocation( usmPtr );                          \
@@ -2369,6 +2385,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
     }                                                                       \
     if( ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().DetectNaNs ||                                \
           (pIntercept->config().DumpReplayKernelEnqueue != -1) ||           \
           ( pIntercept->config().DumpReplayKernelName != "" ) ||            \
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
@@ -2381,6 +2398,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
     }                                                                       \
     if ( pIntercept->config().DumpBuffersBeforeEnqueue ||                   \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().DetectNaNs ||                                \
           ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||         \
           ( pIntercept->config().DumpReplayKernelName != "" ) ||            \
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
@@ -2393,6 +2411,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
     if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
         ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||           \
         ( pIntercept->config().DumpReplayKernelName != "" ) ||              \
+        pIntercept->config().DetectNaNs ||                                  \
         pIntercept->config().DumpBuffersAfterEnqueue )                      \
     {                                                                       \
         pIntercept->setKernelArgSVMPointer( kernel, arg_index, arg_value ); \
@@ -2402,6 +2421,7 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
     if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
         ( pIntercept->config().DumpReplayKernelEnqueue != -1 ) ||           \
         ( pIntercept->config().DumpReplayKernelName != "" ) ||              \
+        pIntercept->config().DetectNaNs ||                                  \
         pIntercept->config().DumpBuffersAfterEnqueue )                      \
     {                                                                       \
         pIntercept->setKernelArgUSMPointer( kernel, arg_index, arg_value ); \
@@ -2502,6 +2522,12 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
         pIntercept->dumpKernelInfo(kernel, enqueueCounter, work_dim, gws_offset, gws, lws, pIntercept->config().DumpReplayKernelName != ""); \
         pIntercept->dumpArgumentsForKernel(kernel, enqueueCounter, pIntercept->config().DumpReplayKernelName != ""); \
     }
+
+#define CHECK_FOR_NANS( when, kernel, command_queue, work_dim, gws )                          \
+    if ( pIntercept->config().DetectNaNs )                                                    \
+    {                                                                                         \
+        pIntercept->detectNaNs( when, kernel, enqueueCounter, command_queue, work_dim, gws ); \
+    }                                                                       
 
 #define DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue )                 \
     if( pIntercept->config().DumpImagesBeforeEnqueue &&                     \
@@ -2858,6 +2884,13 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
             "-cl-intel-greater-than-4GB-buffer-required",                   \
             _options,                                                       \
             _newOptions );                                                  \
+    }                                                                       \
+    if( pIntercept->config().DetectNaNs)                                    \
+    {                                                                       \
+        pIntercept->appendBuildOptions(                                     \
+                        "-cl-kernel-arg-info",                              \
+                        _options,                                           \
+                        _newOptions);                                       \
     }
 
 #define DUMP_OUTPUT_PROGRAM_BINARIES( program )                             \
