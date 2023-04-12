@@ -12,6 +12,7 @@
 #include <stdarg.h>
 #include <sstream>
 #include <time.h>       // strdate
+#include <cmath>
 
 #include "common.h"
 #include "demangle.h"
@@ -7602,8 +7603,11 @@ void  CLIntercept::detectNaNs(
                         nullptr,
                         nullptr );
 
-                    bufferPtr = transferBuf.data();
-                    bufferSize = size;
+                    if( error == CL_SUCCESS )
+                    {
+                        bufferPtr = transferBuf.data();
+                        bufferSize = size;
+                    }
                 }
             }
             else if( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() )
@@ -7664,7 +7668,7 @@ void  CLIntercept::detectNaNs(
             bool foundNaN = false;
             if( argType.find("float") != std::string::npos )
             {
-                for( int idx = 0; idx < bufferSize / sizeof(float); idx += sizeof(float) )
+                for( unsigned idx = 0; idx < bufferSize / sizeof(float); idx += sizeof(float) )
                 {
                     if( std::isnan( reinterpret_cast<float*>(bufferPtr)[idx] ))
                     {
@@ -7674,7 +7678,7 @@ void  CLIntercept::detectNaNs(
                 }
             } else
             {
-                for( int idx = 0; idx < bufferSize / sizeof(double); idx += sizeof(double) )
+                for( unsigned idx = 0; idx < bufferSize / sizeof(double); idx += sizeof(double) )
                 {
                     if( std::isnan( reinterpret_cast<double*>(bufferPtr)[idx] ))
                     {
@@ -7726,7 +7730,7 @@ void  CLIntercept::detectNaNs(
 
                     if( error == CL_SUCCESS )
                     {
-                        for( int idx = 0; idx < size / sizeof( float ); idx += sizeof( float ) )
+                        for( unsigned idx = 0; idx < size / sizeof( float ); idx += sizeof( float ) )
                         {
                             if( std::isnan( reinterpret_cast<float*>(readImageData.data())[idx] ))
                             {
