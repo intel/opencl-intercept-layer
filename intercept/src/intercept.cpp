@@ -7455,13 +7455,18 @@ void CLIntercept::dumpKernelInfo(
     for ( cl_uint idx = 0; idx != numArgs; ++idx )
     {
         size_t argNameSize = 0;
-        dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, 0, nullptr, &argNameSize);
+        int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, 0, nullptr, &argNameSize);
+        if ( error != CL_SUCCESS || argNameSize == 0 )
+        {
+            log( "Note: Kernel Argument info not available for replaying.\n" );
+            return;
+        }
 
         std::string argName(argNameSize, ' ');
-        int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, argNameSize, &argName, nullptr);
-        if ( error == CL_KERNEL_ARG_INFO_NOT_AVAILABLE )
+        error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, argNameSize, &argName[0], nullptr);
+        if ( error != CL_SUCCESS )
         {
-            log("Note: Kernel Argument info not available for replaying.\n");
+            log( "Note: Kernel Argument info not available for replaying.\n" );
             return;
         }
         outputArgTypes << argName << '\n';
