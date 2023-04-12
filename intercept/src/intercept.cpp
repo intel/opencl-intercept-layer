@@ -7458,7 +7458,7 @@ void CLIntercept::dumpKernelInfo(
         dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, 0, nullptr, &argNameSize);
 
         std::string argName(argNameSize, ' ');
-        int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, argNameSize, &argName, nullptr);
+        int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, argNameSize, &argName[0], nullptr);
         if ( error == CL_KERNEL_ARG_INFO_NOT_AVAILABLE )
         {
             log("Note: Kernel Argument info not available for replaying.\n");
