@@ -7541,12 +7541,17 @@ void CLIntercept::dumpBuffersForKernel(
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
         fileNamePrefix += "/Replay/Enqueue_";
         if (byKernelName)
+        {
             fileNamePrefix += getShortKernelName(kernel);
+        }
         else
+        {
             fileNamePrefix += std::to_string(enqueueCounter);
+        }
         fileNamePrefix += "/";
         OS().MakeDumpDirectories( fileNamePrefix );
-    } else
+    }
+    else
     {
         // Get the dump directory name.
         {
@@ -7581,7 +7586,8 @@ void CLIntercept::dumpBuffersForKernel(
             if (replay)
             {
                 fileName += "Buffer" + std::to_string(arg_index) + ".bin";
-            } else
+            }
+            else
             {
                 char    tmpStr[ MAX_PATH ];
 
@@ -7781,7 +7787,8 @@ void CLIntercept::dumpImagesForKernel(
             fileNamePrefix += std::to_string(enqueueCounter);
         fileNamePrefix += "/";
         OS().MakeDumpDirectories( fileNamePrefix );
-    } else
+    }
+    else
     {
         // Get the dump directory name.
         {
@@ -7835,7 +7842,8 @@ void CLIntercept::dumpImagesForKernel(
                          << info.Format.image_channel_data_type << '\n'
                          << info.Format.image_channel_order << '\n'
                          << static_cast<int>(info.ImageType);
-            } else
+            }
+            else
             {
                 char    tmpStr[ MAX_PATH ];
 
