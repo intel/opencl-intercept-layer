@@ -12651,6 +12651,9 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clCommandNDRangeKernelKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clGetCommandBufferInfoKHR );
 
+    // cl_khr_command_buffer_mutlti_device
+    CHECK_RETURN_EXTENSION_FUNCTION( clRemapCommandBufferKHR );
+
     // cl_khr_command_buffer_mutable_dispatch
     CHECK_RETURN_EXTENSION_FUNCTION( clUpdateMutableCommandsKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clGetMutableCommandInfoKHR );

@@ -11176,6 +11176,66 @@ CL_API_ENTRY cl_int CL_API_CALL clGetCommandBufferInfoKHR(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_command_buffer_multi_device
+CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clRemapCommandBufferKHR(
+    cl_command_buffer_khr command_buffer,
+    cl_bool automatic,
+    cl_uint num_queues,
+    const cl_command_queue* queues,
+    cl_uint num_handles,
+    const cl_mutable_command_khr* handles,
+    cl_mutable_command_khr* handles_ret,
+    cl_int* errcode_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        cl_command_queue queue = num_queues ? queues[0] : NULL;
+        const auto& dispatchX = pIntercept->dispatchX(queue);
+        if( dispatchX.clRemapCommandBufferKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER( "command_buffer = %p, %s, num_queues = %u, num_handles = %u",
+                command_buffer,
+                automatic ? "automatic" : "non-automatic",
+                num_queues,
+                num_handles );
+            CHECK_ERROR_INIT( errcode_ret );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_command_buffer_khr   retVal = dispatchX.clRemapCommandBufferKHR(
+                command_buffer,
+                automatic,
+                num_queues,
+                queues,
+                num_handles,
+                handles,
+                handles_ret,
+                errcode_ret );
+
+            HOST_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( errcode_ret[0] );
+            ADD_OBJECT_ALLOCATION( retVal );
+            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+
+            if( retVal != NULL )
+            {
+                pIntercept->addCommandBufferInfo(
+                    retVal,
+                    queue );
+            }
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_khr_command_buffer_mutable_dispatch
 CL_API_ENTRY cl_int CL_API_CALL clUpdateMutableCommandsKHR(
     cl_command_buffer_khr command_buffer,
