@@ -710,6 +710,20 @@ CEnumNameMap::CEnumNameMap()
 
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_COMMAND_BUFFER_KHR );
 
+    // cl_khr_command_buffer_multi_device
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_COMMAND_BUFFER_CAPABILITIES_KHR );
+
+    ADD_ENUM_NAME( m_cl_platform_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_PLATFORM_UNIVERSAL_SYNC_KHR );
+    ADD_ENUM_NAME( m_cl_platform_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_PLATFORM_REMAP_QUEUES_KHR );
+    ADD_ENUM_NAME( m_cl_platform_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_PLATFORM_AUTOMATIC_REMAP_KHR );
+
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMMAND_BUFFER_NUM_SYNC_DEVICES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMMAND_BUFFER_SYNC_DEVICES_KHR );
+
+    ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_MULTIPLE_QUEUE_KHR );
+
+    ADD_ENUM_NAME( m_cl_command_buffer_flags_khr, CL_COMMAND_BUFFER_DEVICE_SIDE_SYNC_KHR );
+
     // cl_khr_command_buffer_mutable_dispatch
     ADD_ENUM_NAME( m_cl_command_buffer_flags_khr, CL_COMMAND_BUFFER_MUTABLE_KHR );
 

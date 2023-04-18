@@ -13,7 +13,7 @@ extern "C" {
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_command_buffer
 
-// Note: This implements the provisional extension v0.9.0.
+// Note: This implements the provisional extension v0.9.2.
 
 typedef cl_bitfield         cl_device_command_buffer_capabilities_khr;
 typedef struct _cl_command_buffer_khr* cl_command_buffer_khr;
@@ -214,6 +214,36 @@ clGetCommandBufferInfoKHR(
     size_t param_value_size,
     void* param_value,
     size_t* param_value_size_ret) ;
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_khr_command_buffer_multi_device
+
+// Note: This implements the provisional extension v0.9.0.
+
+typedef cl_bitfield         cl_platform_command_buffer_capabilities_khr;
+
+#define CL_PLATFORM_COMMAND_BUFFER_CAPABILITIES_KHR         0x0908
+#define CL_COMMAND_BUFFER_PLATFORM_UNIVERSAL_SYNC_KHR       (1 << 0)
+#define CL_COMMAND_BUFFER_PLATFORM_REMAP_QUEUES_KHR         (1 << 1)
+#define CL_COMMAND_BUFFER_PLATFORM_AUTOMATIC_REMAP_KHR      (1 << 2)
+
+#define CL_DEVICE_COMMAND_BUFFER_NUM_SYNC_DEVICES_KHR       0x12AB
+#define CL_DEVICE_COMMAND_BUFFER_SYNC_DEVICES_KHR           0x12AC
+
+#define CL_COMMAND_BUFFER_CAPABILITY_MULTIPLE_QUEUE_KHR     (1 << 4)
+
+#define CL_COMMAND_BUFFER_DEVICE_SIDE_SYNC_KHR              (1 << 2)
+
+extern CL_API_ENTRY cl_command_buffer_khr CL_API_CALL
+clRemapCommandBufferKHR(
+    cl_command_buffer_khr command_buffer,
+    cl_bool automatic,
+    cl_uint num_queues,
+    const cl_command_queue* queues,
+    cl_uint num_handles,
+    const cl_mutable_command_khr* handles,
+    cl_mutable_command_khr* handles_ret,
+    cl_int* errcode_ret) ;
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_command_buffer_mutable_dispatch
