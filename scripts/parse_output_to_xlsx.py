@@ -93,13 +93,13 @@ def print_lines_ignored(lines):
     from itertools import groupby
     from operator import itemgetter
     message = "Lines ignored:"
-    for k, g in groupby(enumerate(lines), lambda (l,x) : x-l):
-        line_range = map(itemgetter(1), g)
-        if line_range[0] == line_range[-1]:
+    for k, g in groupby(enumerate(lines), lambda x: x[1]-x[0]):
+        line_range = list(map(itemgetter(1), g))
+        if len(line_range) == 1:
             message += " [" + str(line_range[0]+1) + "]"
         else:
             message += " [" + str(line_range[0]+1) + "-" + str(line_range[-1]+1) + "]"
-    print message
+    print(message)
 
 
 # To use the script, run:
@@ -129,7 +129,7 @@ def main():
                 lines_ignored.append(i)
 
     if len(result) == 0:
-        print "ERROR: Nothing in the trace. All lines ignored"
+        print("ERROR: Nothing in the trace. All lines ignored")
     elif len(lines_ignored) != 0:
         print_lines_ignored(lines_ignored)
 
