@@ -2618,6 +2618,116 @@ void CLIntercept::getCommandBufferPropertiesString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getCommandBufferMutableConfigString(
+    const cl_mutable_base_config_khr* mutable_config,
+    std::string& str ) const
+{
+    str = "";
+
+    if( mutable_config )
+    {
+        char s[256];
+        CLI_SPRINTF(s, 256, "type = %s (%04X), next = %p, num_mutable_dispatch = %u",
+            enumName().name_command_buffer_structure_type(mutable_config->type).c_str(),
+            mutable_config->type,
+            mutable_config->next,
+            mutable_config->num_mutable_dispatch);
+        str += s;
+
+        for( cl_uint i = 0; i < mutable_config->num_mutable_dispatch; i++ )
+        {
+            const cl_mutable_dispatch_config_khr* dispatchConfig =
+                &mutable_config->mutable_dispatch_list[i];
+            CLI_SPRINTF(s, 256, "\n  dispatch config: type = %s (%04X), next = %p, command = %p:",
+                enumName().name_command_buffer_structure_type(dispatchConfig->type).c_str(),
+                dispatchConfig->type,
+                dispatchConfig->next,
+                dispatchConfig->command);
+            str += s;
+            if( dispatchConfig->type == CL_STRUCTURE_TYPE_MUTABLE_DISPATCH_CONFIG_KHR )
+            {
+                CLI_SPRINTF(s, 256, "\n    num_args = %u, num_svm_args = %u, num_exec_infos = %u, work_dim = %u",
+                    dispatchConfig->num_args,
+                    dispatchConfig->num_svm_args,
+                    dispatchConfig->num_exec_infos,
+                    dispatchConfig->work_dim);
+                str += s;
+
+                for( cl_uint a = 0; a < dispatchConfig->num_args; a++ )
+                {
+                    const cl_mutable_dispatch_arg_khr* arg =
+                        &dispatchConfig->arg_list[a];
+                    CLI_SPRINTF(s, 256, "\n      arg %u: arg_index = %u, arg_size = %zu, arg_value = %p",
+                        a,
+                        arg->arg_index,
+                        arg->arg_size,
+                        arg->arg_value);
+                    str += s;
+                }
+
+                for( cl_uint a = 0; a < dispatchConfig->num_svm_args; a++ )
+                {
+                    const cl_mutable_dispatch_arg_khr* arg =
+                        &dispatchConfig->arg_svm_list[a];
+                    CLI_SPRINTF(s, 256, "\n      svm arg %u: arg_index = %u, arg_value = %p",
+                        a,
+                        arg->arg_index,
+                        arg->arg_value);
+                    str += s;
+                }
+
+                for( cl_uint a = 0; a < dispatchConfig->num_exec_infos; a++ )
+                {
+                    const cl_mutable_dispatch_exec_info_khr* info =
+                        &dispatchConfig->exec_info_list[a];
+                    CLI_SPRINTF(s, 256, "\n      exec info %u: param_name = %s (%04X), param_value_size = %zu, param_value = %p",
+                        a,
+                        enumName().name(info->param_name).c_str(),
+                        info->param_name,
+                        info->param_value_size,
+                        info->param_value);
+                    str += s;
+                }
+
+                if( dispatchConfig->global_work_offset != nullptr ||
+                    dispatchConfig->global_work_size != nullptr ||
+                    dispatchConfig->local_work_size != nullptr )
+                {
+                    cl_uint work_dim = dispatchConfig->work_dim;
+                    if( work_dim == 0 )
+                    {
+                        // TODO: lock?
+                        auto iter = m_MutableCommandInfoMap.find(
+                            dispatchConfig->command);
+                        if( iter != m_MutableCommandInfoMap.end() )
+                        {
+                            work_dim = iter->second.WorkDim;
+                        }
+                    }
+                    if( work_dim != 0 )
+                    {
+                        std::string dispatchStr;
+                        getEnqueueNDRangeKernelArgsString(
+                            work_dim,
+                            dispatchConfig->global_work_offset,
+                            dispatchConfig->global_work_size,
+                            dispatchConfig->local_work_size,
+                            dispatchStr);
+                        str += "\n      ";
+                        str += dispatchStr;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        str = "NULL";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::getCreateKernelsInProgramRetString(
     cl_int retVal,
     cl_kernel* kernels,
@@ -2755,7 +2865,7 @@ void CLIntercept::getEnqueueNDRangeKernelArgsString(
     }
     else
     {
-        ss << "NULL?";
+        ss << "NULL";
     }
     ss << " >, ";
 
@@ -6854,13 +6964,18 @@ void CLIntercept::checkRemoveCommandBufferInfo(
 //
 void CLIntercept::addMutableCommandInfo(
     cl_mutable_command_khr cmd,
-    cl_command_buffer_khr cmdbuf )
+    cl_command_buffer_khr cmdbuf,
+    cl_uint dim )
 {
     if( cmd && cmdbuf )
     {
         std::lock_guard<std::mutex> lock(m_Mutex);
 
-        m_MutableCommandInfoMap[cmd] = getPlatform(cmdbuf);
+        SMutableCommandInfo& info = m_MutableCommandInfoMap[cmd];
+
+        info.Platform = getPlatform(cmdbuf);
+        info.WorkDim = dim;
+
         m_CommandBufferMutableCommandsMap[cmdbuf].push_back(cmd);
     }
 }
