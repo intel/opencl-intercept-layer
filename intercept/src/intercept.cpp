@@ -13667,6 +13667,18 @@ void CLIntercept::chromeCallLoggingExit(
         m_InterceptTrace.write(m_StringBuffer, size);
     }
 
+    if( m_Config.ChromeFlowEvents && includeId )
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"s\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"Command\""
+            ",\"cat\":\"Commands\",\"ts\":%" PRIu64 ",\"id\":%" PRIu64 "},\n",
+            m_ProcessId,
+            threadId,
+            usStart,
+            enqueueCounter);
+        m_InterceptTrace.write(m_StringBuffer, size);
+    }
+
     if( m_Config.FlushFiles )
     {
         m_InterceptTrace.flush();
@@ -13893,6 +13905,32 @@ void CLIntercept::chromeTraceEvent(
         const uint64_t  usStart =
             (commandStart - commandQueued + normalizedQueuedTimeNS) / 1000;
         const uint64_t  usDelta = ( commandEnd - commandStart ) / 1000;
+        if( m_Config.ChromeFlowEvents )
+        {
+            if( m_Config.ChromePerformanceTimingPerKernel )
+            {
+                int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+                    "{\"ph\":\"f\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"Command\""
+                    ",\"cat\":\"Commands\",\"ts\":%" PRIu64 ",\"id\":%" PRIu64 "},\n",
+                    m_ProcessId,
+                    name.c_str(),
+                    usStart,
+                    enqueueCounter );
+                m_InterceptTrace.write(m_StringBuffer, size);
+            }
+            else
+            {
+                int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+                    "{\"ph\":\"f\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"Command\""
+                    ",\"cat\":\"Commands\",\"ts\":%" PRIu64 ",\"id\":%" PRIu64 "},\n",
+                    m_ProcessId,
+                    queueNumber,
+                    usStart,
+                    enqueueCounter );
+                m_InterceptTrace.write(m_StringBuffer, size);
+            }
+        }
+
         if( m_Config.ChromePerformanceTimingPerKernel )
         {
             int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
