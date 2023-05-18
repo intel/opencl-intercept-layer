@@ -2,15 +2,15 @@
 
 ## Introduction
 
-Often, problems in an OpenCL accelerated program such as bugs or performance issues, only affect single kernels.
-The functionality described in this document can assist in finding and fixing these problems by allowing you to extract ("capture") a single kernel with its corresponding arguments, buffers, build options, global offsets, global and local work-group sizes, and either the kernel source or a device binary.
+Often, problems in an OpenCL accelerated program, such as bugs or performance issues, only affect single kernels.
+The functionality described in this document can assist in finding and fixing these problems by extracting ("capturing") a single kernel from an application with its corresponding arguments, buffers, build options, global offsets, global and local work-group sizes, and either the kernel source or a device binary.
 
-These are then combined by a python script, which is automatically placed in the right directory.
-Running this script will run ("replay") the single kernel and output the buffers it calculated.
+The different parts of extracted kernel can then be combined by a python script.
+Executing the python script will run ("replay") the single kernel and output the buffers the kernel calculated.
 
 ## Requirements
 
-To replay the captured kernels, you will need the following Python libraries:
+To replay the captured kernels, you will need the following Python packages:
 
 * `pyopencl`
 * `numpy`
@@ -18,15 +18,15 @@ To replay the captured kernels, you will need the following Python libraries:
 ## Step by Step for Automatic Capturing
 
 * Set one of the two controls:
-  * `DumpReplayKernelName`, if you want to capture a kernel by its name
-  * `DumpReplayKernelEnqueue`, if you want to capture a kernel by its enqueue number
+  * `DumpReplayKernelName`, if you want to capture a kernel by its name.
+  * `DumpReplayKernelEnqueue`, if you want to capture a kernel by its enqueue number.
 * Then, simply run the program as usual!
 * Example on Linux: `CLI_DumpReplayKernelName=${NameOfKernel} cliloader /path/to/executable`
 
 ## Step by Step for Automatic Capturing and Validation
 
 * Copy the [capture_and_validate.py](../scripts/capture_and_validate.py) script to the place where you run the app from.
-  * Not strictly necessary, but makes life easier
+  * Not strictly necessary, but makes life easier.
 * Run this script with the following arguments:
   - One of `--num EnqueueNumberToBeCaptured` or `--name NameOfKernelToBeCaptured`
   - `-cli "/path/to/cliloader"`
