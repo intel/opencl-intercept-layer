@@ -7494,7 +7494,7 @@ void CLIntercept::dumpArgumentsForKernel(
         const auto pos = arg.first;
         const auto& value = arg.second;
         std::string fileName = fileNamePrefix + "Argument" + std::to_string(pos) + ".bin";
-        std::ofstream out{fileName};
+        std::ofstream out{fileName, std::ios::out | std::ios::binary};
         out.write(reinterpret_cast<char const*>(value.data()), value.size());
     }
 
