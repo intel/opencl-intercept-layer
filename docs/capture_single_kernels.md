@@ -1,12 +1,12 @@
-# Automatic Capture And Validation of Single OpenCL Kernels from App
+# Capture and Replay Single Kernels
 
 ## Introduction
 
-Often problems in an OpenCL accelerated program, such as bugs or performance issues, only affect single kernels.
-The functionality described in this document can assist in finding these problems by allowing you to extract ("capture") a single kernel with its corresponding arguments, buffers, build options, global offsets, global and local work-group sizes, and either the kernel source or a device binary.
+Often, problems in an OpenCL accelerated program such as bugs or performance issues, only affect single kernels.
+The functionality described in this document can assist in finding and fixing these problems by allowing you to extract ("capture") a single kernel with its corresponding arguments, buffers, build options, global offsets, global and local work-group sizes, and either the kernel source or a device binary.
 
 These are then combined by a python script, which is automatically placed in the right directory.
-Running this script will prompt you to choose an OpenCL device/platform, and then will run ("replay") this kernel and output the buffers it calculated.
+Running this script will run ("replay") the single kernel and output the buffers it calculated.
 
 ## Requirements
 
