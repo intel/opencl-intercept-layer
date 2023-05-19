@@ -2627,7 +2627,7 @@ void CLIntercept::getCommandBufferMutableConfigString(
     if( mutable_config )
     {
         char s[256];
-        CLI_SPRINTF(s, 256, "type = %s (%04X), next = %p, num_mutable_dispatch = %u",
+        CLI_SPRINTF(s, 256, "type = %s (%u), next = %p, num_mutable_dispatch = %u",
             enumName().name_command_buffer_structure_type(mutable_config->type).c_str(),
             mutable_config->type,
             mutable_config->next,
@@ -2638,7 +2638,8 @@ void CLIntercept::getCommandBufferMutableConfigString(
         {
             const cl_mutable_dispatch_config_khr* dispatchConfig =
                 &mutable_config->mutable_dispatch_list[i];
-            CLI_SPRINTF(s, 256, "\n  dispatch config: type = %s (%04X), next = %p, command = %p:",
+            CLI_SPRINTF(s, 256, "\n  dispatch config %u: type = %s (%u), next = %p, command = %p:",
+                i,
                 enumName().name_command_buffer_structure_type(dispatchConfig->type).c_str(),
                 dispatchConfig->type,
                 dispatchConfig->next,

@@ -11273,7 +11273,9 @@ CL_API_ENTRY cl_int CL_API_CALL clUpdateMutableCommandsKHR(
                 pIntercept->getCommandBufferMutableConfigString(
                     mutable_config,
                     configStr );
-                CALL_LOGGING_INFO("mutable_config: %s", configStr.c_str() );
+                CALL_LOGGING_INFO("mutable_config %p: %s",
+                    mutable_config,
+                    configStr.c_str() );
             }
             HOST_PERFORMANCE_TIMING_START();
 
