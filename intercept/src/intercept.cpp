@@ -2654,40 +2654,70 @@ void CLIntercept::getCommandBufferMutableConfigString(
                     dispatchConfig->work_dim);
                 str += s;
 
-                for( cl_uint a = 0; a < dispatchConfig->num_args; a++ )
+                if( dispatchConfig->num_args != 0 &&
+                    dispatchConfig->arg_list == nullptr )
                 {
-                    const cl_mutable_dispatch_arg_khr* arg =
-                        &dispatchConfig->arg_list[a];
-                    CLI_SPRINTF(s, 256, "\n      arg %u: arg_index = %u, arg_size = %zu, arg_value = %p",
-                        a,
-                        arg->arg_index,
-                        arg->arg_size,
-                        arg->arg_value);
-                    str += s;
+                        CLI_SPRINTF(s, 256, "\n      error: num_args is %u and arg_list is NULL!",
+                            dispatchConfig->num_args);
+                        str += s;
+                }
+                else
+                {
+                    for( cl_uint a = 0; a < dispatchConfig->num_args; a++ )
+                    {
+                        const cl_mutable_dispatch_arg_khr* arg =
+                            &dispatchConfig->arg_list[a];
+                        CLI_SPRINTF(s, 256, "\n      arg %u: arg_index = %u, arg_size = %zu, arg_value = %p",
+                            a,
+                            arg->arg_index,
+                            arg->arg_size,
+                            arg->arg_value);
+                        str += s;
+                    }
                 }
 
-                for( cl_uint a = 0; a < dispatchConfig->num_svm_args; a++ )
+                if( dispatchConfig->num_svm_args != 0 &&
+                    dispatchConfig->arg_svm_list == nullptr )
                 {
-                    const cl_mutable_dispatch_arg_khr* arg =
-                        &dispatchConfig->arg_svm_list[a];
-                    CLI_SPRINTF(s, 256, "\n      svm arg %u: arg_index = %u, arg_value = %p",
-                        a,
-                        arg->arg_index,
-                        arg->arg_value);
-                    str += s;
+                        CLI_SPRINTF(s, 256, "\n      error: num_svm_args is %u and arg_svm_list is NULL!",
+                            dispatchConfig->num_svm_args);
+                        str += s;
+                }
+                else
+                {
+                    for( cl_uint a = 0; a < dispatchConfig->num_svm_args; a++ )
+                    {
+                        const cl_mutable_dispatch_arg_khr* arg =
+                            &dispatchConfig->arg_svm_list[a];
+                        CLI_SPRINTF(s, 256, "\n      svm arg %u: arg_index = %u, arg_value = %p",
+                            a,
+                            arg->arg_index,
+                            arg->arg_value);
+                        str += s;
+                    }
                 }
 
-                for( cl_uint a = 0; a < dispatchConfig->num_exec_infos; a++ )
+                if( dispatchConfig->num_exec_infos != 0 &&
+                    dispatchConfig->exec_info_list == nullptr )
                 {
-                    const cl_mutable_dispatch_exec_info_khr* info =
-                        &dispatchConfig->exec_info_list[a];
-                    CLI_SPRINTF(s, 256, "\n      exec info %u: param_name = %s (%04X), param_value_size = %zu, param_value = %p",
-                        a,
-                        enumName().name(info->param_name).c_str(),
-                        info->param_name,
-                        info->param_value_size,
-                        info->param_value);
-                    str += s;
+                        CLI_SPRINTF(s, 256, "\n      error: num_exec_infos is %u and exec_info_list is NULL!",
+                            dispatchConfig->num_exec_infos);
+                        str += s;
+                }
+                else
+                {
+                    for( cl_uint a = 0; a < dispatchConfig->num_exec_infos; a++ )
+                    {
+                        const cl_mutable_dispatch_exec_info_khr* info =
+                            &dispatchConfig->exec_info_list[a];
+                        CLI_SPRINTF(s, 256, "\n      exec info %u: param_name = %s (%04X), param_value_size = %zu, param_value = %p",
+                            a,
+                            enumName().name(info->param_name).c_str(),
+                            info->param_name,
+                            info->param_value_size,
+                            info->param_value);
+                        str += s;
+                    }
                 }
 
                 if( dispatchConfig->global_work_offset != nullptr ||
