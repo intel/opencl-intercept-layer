@@ -5862,10 +5862,10 @@ void CLIntercept::updateHostTimingStats(
     if( config().HostPerformanceTimeLogging )
     {
         uint64_t    numberOfCalls = hostTimingStats.NumberOfCalls;
-        logf( "Host Time for call %u: %s = %u\n",
-            (unsigned int)numberOfCalls,
+        logf( "Host Time for call %" PRIu64 ": %s = %" PRIu64 " ns\n",
+            numberOfCalls,
             key.c_str(),
-            (unsigned int)nsDelta );
+            nsDelta );
     }
 }
 
