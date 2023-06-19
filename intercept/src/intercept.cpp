@@ -2667,11 +2667,44 @@ void CLIntercept::getCommandBufferMutableConfigString(
                     {
                         const cl_mutable_dispatch_arg_khr* arg =
                             &dispatchConfig->arg_list[a];
-                        CLI_SPRINTF(s, 256, "\n      arg %u: arg_index = %u, arg_size = %zu, arg_value = %p",
-                            a,
-                            arg->arg_index,
-                            arg->arg_size,
-                            arg->arg_value);
+                        if( ( arg->arg_value != NULL ) &&
+                            ( arg->arg_size == sizeof(cl_mem) ) )
+                        {
+                            cl_mem* pMem = (cl_mem*)arg->arg_value;
+                            CLI_SPRINTF(s, 256, "\n      arg %u: arg_index = %u, arg_size = %zu, arg_value = %p",
+                                a,
+                                arg->arg_index,
+                                arg->arg_size,
+                                pMem[0] );
+                        }
+                        else if( ( arg->arg_value != NULL ) &&
+                                 ( arg->arg_size == sizeof(cl_uint) ) )
+                        {
+                            cl_uint*    pData = (cl_uint*)arg->arg_value;
+                            CLI_SPRINTF(s, 256, "\n      arg %u: arg_index = %u, arg_size = %zu, arg_value = 0x%x",
+                                a,
+                                arg->arg_index,
+                                arg->arg_size,
+                                pData[0]);
+                        }
+                        else if( ( arg->arg_value != NULL ) &&
+                                 ( arg->arg_size == sizeof(cl_ulong) ) )
+                        {
+                            cl_ulong*   pData = (cl_ulong*)arg->arg_value;
+                            CLI_SPRINTF(s, 256, "\n      arg %u: arg_index = %u, arg_size = %zu, arg_value = 0x%" PRIx64,
+                                a,
+                                arg->arg_index,
+                                arg->arg_size,
+                                pData[0]);
+                        }
+                        else
+                        {
+                            CLI_SPRINTF(s, 256, "\n      arg %u: arg_index = %u, arg_size = %zu",
+                                a,
+                                arg->arg_index,
+                                arg->arg_size);
+                        }
+
                         str += s;
                     }
                 }
