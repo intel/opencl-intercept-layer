@@ -168,6 +168,9 @@ public:
     void    getCommandBufferPropertiesString(
                 const cl_command_buffer_properties_khr* properties,
                 std::string& str ) const;
+    void    getCommandBufferMutableConfigString(
+                const cl_mutable_base_config_khr* mutable_config,
+                std::string& str ) const;
     void    getCreateKernelsInProgramRetString(
                 cl_int retVal,
                 cl_kernel* kernels,
@@ -494,7 +497,8 @@ public:
 
     void    addMutableCommandInfo(
                 cl_mutable_command_khr cmd,
-                cl_command_buffer_khr cmdbuf );
+                cl_command_buffer_khr cmdbuf,
+                cl_uint dim );
 
     void    addSamplerString(
                 cl_sampler sampler,
@@ -1306,7 +1310,13 @@ private:
     typedef std::map< cl_command_buffer_khr, cl_platform_id >   CCommandBufferInfoMap;
     CCommandBufferInfoMap   m_CommandBufferInfoMap;
 
-    typedef std::map< cl_mutable_command_khr, cl_platform_id >  CMutableCommandInfoMap;
+    struct SMutableCommandInfo
+    {
+        cl_platform_id  Platform;
+        cl_uint         WorkDim;
+    };
+
+    typedef std::map< cl_mutable_command_khr, SMutableCommandInfo >  CMutableCommandInfoMap;
     CMutableCommandInfoMap  m_MutableCommandInfoMap;
 
     typedef std::list< cl_mutable_command_khr > CMutableCommandList;
@@ -1676,7 +1686,7 @@ inline cl_platform_id CLIntercept::getPlatform( cl_mutable_command_khr cmd ) con
     CMutableCommandInfoMap::const_iterator iter = m_MutableCommandInfoMap.find(cmd);
     if( iter != m_MutableCommandInfoMap.end() )
     {
-        return iter->second;
+        return iter->second.Platform;
     }
     else
     {
@@ -2357,7 +2367,13 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
 #define ADD_MUTABLE_COMMAND( pCmd, cmdbuf )                                 \
     if( pCmd && pCmd[0] )                                                   \
     {                                                                       \
-        pIntercept->addMutableCommandInfo( pCmd[0], cmdbuf );               \
+        pIntercept->addMutableCommandInfo( pCmd[0], cmdbuf, 0 );            \
+    }
+
+#define ADD_MUTABLE_COMMAND_NDRANGE( pCmd, cmdbuf, workdim )                \
+    if( pCmd && pCmd[0] )                                                   \
+    {                                                                       \
+        pIntercept->addMutableCommandInfo( pCmd[0], cmdbuf, workdim );      \
     }
 
 #define SET_KERNEL_ARG( kernel, arg_index, arg_size, arg_value )            \

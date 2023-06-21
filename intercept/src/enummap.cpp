@@ -748,8 +748,8 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_MUTABLE_DISPATCH_GLOBAL_WORK_SIZE_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_MUTABLE_DISPATCH_LOCAL_WORK_SIZE_KHR );
 
-    // CL_STRUCTURE_TYPE_MUTABLE_BASE_CONFIG_KHR           0
-    // CL_STRUCTURE_TYPE_MUTABLE_DISPATCH_CONFIG_KHR       1
+    ADD_ENUM_NAME( m_cl_command_buffer_structure_type_khr, CL_STRUCTURE_TYPE_MUTABLE_BASE_CONFIG_KHR );
+    ADD_ENUM_NAME( m_cl_command_buffer_structure_type_khr, CL_STRUCTURE_TYPE_MUTABLE_DISPATCH_CONFIG_KHR );
 
     // cl_khr_extended_versioning extension
     // Most enums for this extension were added to OpenCL 3.0.

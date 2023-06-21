@@ -1710,15 +1710,15 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
             pIntercept->config().DumpReplayKernelEnqueue != -1 ||
             !pIntercept->config().DumpReplayKernelName.empty() )
         {
-        cl_sampler_properties sampler_properties[] = {
-            CL_SAMPLER_NORMALIZED_COORDS, normalized_coords,
-            CL_SAMPLER_ADDRESSING_MODE,   addressing_mode,
-            CL_SAMPLER_FILTER_MODE,       filter_mode,
-            0
-        };
-        pIntercept->getSamplerPropertiesString(
-            sampler_properties,
-            propsStr );
+            cl_sampler_properties sampler_properties[] = {
+                CL_SAMPLER_NORMALIZED_COORDS, normalized_coords,
+                CL_SAMPLER_ADDRESSING_MODE,   addressing_mode,
+                CL_SAMPLER_FILTER_MODE,       filter_mode,
+                0
+            };
+            pIntercept->getSamplerPropertiesString(
+                sampler_properties,
+                propsStr );
         }
 
         CALL_LOGGING_ENTER( "context = %p, properties = [ %s ]",
@@ -11099,11 +11099,26 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            // TODO: Should NullLocalWorkSize or local work size overrides apply
+            // here?
+
+            std::string argsString;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getEnqueueNDRangeKernelArgsString(
+                    work_dim,
+                    global_work_offset,
+                    global_work_size,
+                    local_work_size,
+                    argsString );
+            }
             CALL_LOGGING_ENTER_KERNEL(
                 kernel,
-                "command_buffer = %p, command_queue = %p",
+                "command_buffer = %p, queue = %p, kernel = %p, %s",
                 command_buffer,
-                command_queue );
+                command_queue,
+                kernel,
+                argsString.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandNDRangeKernelKHR(
@@ -11123,7 +11138,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
-            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
+            ADD_MUTABLE_COMMAND_NDRANGE( mutable_handle, command_buffer, work_dim );
 
             return retVal;
         }
@@ -11252,6 +11267,16 @@ CL_API_ENTRY cl_int CL_API_CALL clUpdateMutableCommandsKHR(
             CALL_LOGGING_ENTER( "command_buffer = %p, mutable_config = %p",
                 command_buffer,
                 mutable_config );
+            if( pIntercept->config().CallLogging )
+            {
+                std::string configStr;
+                pIntercept->getCommandBufferMutableConfigString(
+                    mutable_config,
+                    configStr );
+                CALL_LOGGING_INFO("mutable_config %p: %s",
+                    mutable_config,
+                    configStr.c_str() );
+            }
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clUpdateMutableCommandsKHR(
