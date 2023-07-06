@@ -4809,6 +4809,7 @@ void CLIntercept::dumpProgramSource(
     const char* singleString )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
+
     CLI_ASSERT( config().DumpProgramSource || config().AutoCreateSPIRV );
 
     std::string fileName;
@@ -4850,8 +4851,6 @@ void CLIntercept::dumpProgramSource(
     // Dump the program source to a .cl file.
     if( singleString )
     {
-
-
         std::ofstream os;
         os.open(
             fileName.c_str(),
@@ -7323,7 +7322,7 @@ void CLIntercept::addImage(
             }
             else
             {
-                // What about an array of 3D images?
+                CLI_ASSERT( arraySize == 0 );
                 imageInfo.Region[2] = depth;            // 3D image
                 imageInfo.ImageType = CL_MEM_OBJECT_IMAGE3D;
             }
@@ -7421,11 +7420,13 @@ void CLIntercept::setKernelArg(
 
     if( m_MemAllocNumberMap.find( memobj ) != m_MemAllocNumberMap.end() )
     {
-        CKernelArgMemMap&   kernelArgMap = m_KernelArgMap[ kernel ];
-        kernelArgMap[ arg_index ] = memobj;
+        CArgMemMap& argMemMap = m_KernelArgMemMap[ kernel ];
+        argMemMap[ arg_index ] = memobj;
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::setKernelArg(
     cl_kernel kernel,
     cl_uint arg_index,
@@ -7433,15 +7434,29 @@ void CLIntercept::setKernelArg(
     size_t arg_size )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-    if (arg_value != nullptr)
+
+    if( arg_value != nullptr )
     {
-        (m_KernelArgVectorMap[kernel])[arg_index] =
-            std::vector<unsigned char>(reinterpret_cast<const unsigned char*>(arg_value),
-                                       reinterpret_cast<const unsigned char*>(arg_value) + arg_size);
-        return;
+        if( arg_size == sizeof(cl_mem) )
+        {
+            cl_mem  mem = ((cl_mem*)arg_value)[0];
+            if( m_MemAllocNumberMap.find(mem) != m_MemAllocNumberMap.end() )
+            {
+                CArgMemMap& argMemMap = m_KernelArgMemMap[ kernel ];
+                argMemMap[ arg_index ] = mem;
+            }
+        }
+
+        CArgDataMap& argDataMap = m_KernelArgDataMap[kernel];
+        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(arg_value);
+        argDataMap[ arg_index ] = std::vector<uint8_t>(
+            pRawArgData, pRawArgData + arg_size );
     }
-    // Run time __local buffers
-    (m_KernelArgLocalMap[kernel])[arg_index] = arg_size;
+    else
+    {
+        CArgLocalSizeMap& argMap = m_KernelArgLocalSizeMap[ kernel ];
+        argMap[ arg_index ] = arg_size;
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7458,8 +7473,6 @@ void CLIntercept::setKernelArgSVMPointer(
     // an SVM allocation.  As a result, we need to search the SVM map to find the
     // base address and size of the SVM allocation.
 
-    CKernelArgMemMap&   kernelArgMap = m_KernelArgMap[ kernel ];
-
     CSVMAllocInfoMap::iterator iter = m_SVMAllocInfoMap.lower_bound( arg );
     if( iter->first != arg && iter != m_SVMAllocInfoMap.begin() )
     {
@@ -7471,7 +7484,8 @@ void CLIntercept::setKernelArgSVMPointer(
     const void* endPtr = (const char*)startPtr + iter->second;
     if( arg >= startPtr && arg < endPtr )
     {
-        kernelArgMap[ arg_index ] = startPtr;
+        CArgMemMap& argMemMap = m_KernelArgMemMap[ kernel ];
+        argMemMap[ arg_index ] = startPtr;
     }
 }
 
@@ -7484,8 +7498,6 @@ void CLIntercept::setKernelArgUSMPointer(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    CKernelArgMemMap&   kernelArgMap = m_KernelArgMap[ kernel ];
-
     CUSMAllocInfoMap::iterator iter = m_USMAllocInfoMap.lower_bound( arg );
     if( iter->first != arg && iter != m_USMAllocInfoMap.begin() )
     {
@@ -7497,10 +7509,14 @@ void CLIntercept::setKernelArgUSMPointer(
     const void* endPtr = (const char*)startPtr + iter->second;
     if( arg >= startPtr && arg < endPtr )
     {
-        kernelArgMap[ arg_index ] = startPtr;
+        CArgMemMap& argMemMap = m_KernelArgMemMap[ kernel ];
+        argMemMap[ arg_index ] = startPtr;
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// !!! TODO: Clean up formatting, possible error checks?
 void CLIntercept::dumpKernelSourceOrDeviceBinary( cl_kernel kernel,
                                                   uint64_t enqueueCounter,
                                                   bool byKernelName )
@@ -7564,6 +7580,9 @@ void CLIntercept::dumpKernelSourceOrDeviceBinary( cl_kernel kernel,
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// !!! TODO: Clean up formatting, possible error checks?
 void CLIntercept::dumpKernelInfo(
     cl_kernel kernel,
     uint64_t enqueueCounter,
@@ -7664,10 +7683,13 @@ void CLIntercept::dumpKernelInfo(
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// !!! TODO: Clean up formatting, possible error checks?
 void CLIntercept::dumpArgumentsForKernel(
-        cl_kernel kernel,
-        uint64_t enqueueCounter,
-        bool byKernelName )
+    cl_kernel kernel,
+    uint64_t enqueueCounter,
+    bool byKernelName )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
     std::string fileNamePrefix;
@@ -7684,8 +7706,8 @@ void CLIntercept::dumpArgumentsForKernel(
     fileNamePrefix += "/";
     OS().MakeDumpDirectories( fileNamePrefix );
 
-    const auto& argumentVectorMap = m_KernelArgVectorMap[kernel];
-    for( const auto& arg: argumentVectorMap )
+    const auto& argDataMap = m_KernelArgDataMap[kernel];
+    for( const auto& arg: argDataMap )
     {
         const auto pos = arg.first;
         const auto& value = arg.second;
@@ -7694,7 +7716,7 @@ void CLIntercept::dumpArgumentsForKernel(
         out.write(reinterpret_cast<char const*>(value.data()), value.size());
     }
 
-    const auto& localMemSizes = m_KernelArgLocalMap[kernel];
+    const auto& localMemSizes = m_KernelArgLocalSizeMap[kernel];
     for( const auto& arg: localMemSizes )
     {
         const auto pos = arg.first;
@@ -7704,7 +7726,7 @@ void CLIntercept::dumpArgumentsForKernel(
         out << std::to_string(value);
     }
 
-    const auto& samplerValues = m_samplerKernelArgMap[kernel];
+    const auto& samplerValues = m_SamplerKernelArgMap[kernel];
     for( const auto& arg: samplerValues)
     {
         const auto pos = arg.first;
@@ -7717,6 +7739,7 @@ void CLIntercept::dumpArgumentsForKernel(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// !!! TODO: Can we unify the "replay" and "non-replay" codepaths?
 void CLIntercept::dumpBuffersForKernel(
     const std::string& name,
     const uint64_t enqueueCounter,
@@ -7763,8 +7786,8 @@ void CLIntercept::dumpBuffersForKernel(
         }
     }
 
-    CKernelArgMemMap&   kernelArgMemMap = m_KernelArgMap[ kernel ];
-    CKernelArgMemMap::iterator  i = kernelArgMemMap.begin();
+    CArgMemMap& kernelArgMemMap = m_KernelArgMemMap[ kernel ];
+    CArgMemMap::iterator  i = kernelArgMemMap.begin();
     while( i != kernelArgMemMap.end() )
     {
         CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
@@ -7960,6 +7983,7 @@ void CLIntercept::dumpBuffersForKernel(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// !!! TODO: Can we unify the "replay" and "non-replay" codepaths?
 void CLIntercept::dumpImagesForKernel(
     const std::string& name,
     const uint64_t enqueueCounter,
@@ -8005,9 +8029,8 @@ void CLIntercept::dumpImagesForKernel(
         OS().MakeDumpDirectories( fileNamePrefix );
     }
 
-    CKernelArgMemMap&   kernelArgMemMap = m_KernelArgMap[ kernel ];
-    CKernelArgMemMap::iterator  i = kernelArgMemMap.begin();
-
+    CArgMemMap& kernelArgMemMap = m_KernelArgMemMap[ kernel ];
+    CArgMemMap::iterator  i = kernelArgMemMap.begin();
     while( i != kernelArgMemMap.end() )
     {
         CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
@@ -8142,10 +8165,12 @@ void CLIntercept::dumpImagesForKernel(
     }
 }
 
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::saveSampler(cl_kernel kernel, cl_uint arg_index, std::string const& sampler)
 {
     std::unique_lock<std::mutex> lock(m_Mutex);
-    auto& samplerArgMap = m_samplerKernelArgMap[kernel];
+    auto& samplerArgMap = m_SamplerKernelArgMap[kernel];
     samplerArgMap[arg_index] = sampler;
 }
 
@@ -8156,7 +8181,7 @@ void CLIntercept::dumpArgument(
     cl_kernel kernel,
     cl_int arg_index,
     size_t size,
-    const void *pBuffer)
+    const void *pBuffer )
 {
     if( kernel )
     {

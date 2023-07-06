@@ -982,7 +982,6 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
             host_ptr,
             errcode_ret );
 
-
         HOST_PERFORMANCE_TIMING_END();
         ADD_BUFFER( retVal );
         INITIALIZE_BUFFER_CONTENTS_CLEANUP( flags, host_ptr );
@@ -2781,6 +2780,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
             kernel,
             argsString.c_str() );
 
+        // !!! TODO Revisit: is there a better way to do this?
         if( pIntercept->config().DumpReplayKernelEnqueue != -1 ||
             !pIntercept->config().DumpReplayKernelName.empty() )
         {
@@ -4777,6 +4777,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
     cl_event* event )
 {
     CLIntercept*    pIntercept = GetIntercept();
+
+    // !!! TODO Revisit: is there a better way to do this?
 
     // This works starting C++11
     // https://stackoverflow.com/questions/14106653/are-function-local-static-mutexes-thread-safe

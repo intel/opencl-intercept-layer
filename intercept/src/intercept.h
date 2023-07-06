@@ -850,7 +850,7 @@ public:
     bool    checkDumpBufferEnqueueLimits( uint64_t enqueueCounter ) const;
     bool    checkDumpImageEnqueueLimits( uint64_t enqueueCounter ) const;
     bool    checkDumpByCounter( uint64_t enqueueCounter ) const;
-    bool    checkDumpByName ( cl_kernel kernel );
+    bool    checkDumpByName( cl_kernel kernel );
 
     bool    checkAubCaptureEnqueueLimits( uint64_t enqueueCounter ) const;
     bool    checkAubCaptureKernelSignature(
@@ -993,6 +993,7 @@ private:
 #else
 #error Unknown OS!
 #endif
+
     void    addShortKernelName(
                 const std::string& kernelName );
     std::string getShortKernelName(
@@ -1239,24 +1240,24 @@ private:
     typedef std::map< cl_mem, SImageInfo >  CImageInfoMap;
     CImageInfoMap   m_ImageInfoMap;
 
-    typedef std::map< cl_uint, const void* >        CKernelArgMemMap;
-    typedef std::map< cl_kernel, CKernelArgMemMap > CKernelArgMap;
-    CKernelArgMap   m_KernelArgMap;
+    typedef std::map< cl_uint, const void* >    CArgMemMap;
+    typedef std::map< cl_kernel, CArgMemMap >   CKernelArgMemMap;
+    CKernelArgMemMap    m_KernelArgMemMap;
 
-    typedef std::map< cl_uint, std::vector<unsigned char>> CKernelArgVectorMemMap;
-    typedef std::map< cl_kernel, CKernelArgVectorMemMap > CKernelArgVectorMap;
-    CKernelArgVectorMap m_KernelArgVectorMap;
+    typedef std::map< cl_uint, std::vector<uint8_t> >   CArgDataMap;
+    typedef std::map< cl_kernel, CArgDataMap >  CKernelArgDataMap;
+    CKernelArgDataMap   m_KernelArgDataMap;
 
-    typedef std::map< cl_uint, size_t> CKernelArgLocalMemMap;
-    typedef std::map< cl_kernel, CKernelArgLocalMemMap > CKernelArgLocalMap;
-    CKernelArgLocalMap m_KernelArgLocalMap;
+    typedef std::map< cl_uint, size_t > CArgLocalSizeMap;
+    typedef std::map< cl_kernel, CArgLocalSizeMap > CKernelArgLocalSizeMap;
+    CKernelArgLocalSizeMap  m_KernelArgLocalSizeMap;
 
     typedef std::map<cl_program, std::string> CSourceStringMap;
     CSourceStringMap m_SourceStringMap;
 
     typedef std::map<cl_uint, std::string> CSamplerArgMap;
     typedef std::map<cl_kernel, CSamplerArgMap> CSamplerKernelArgMap;
-    CSamplerKernelArgMap m_samplerKernelArgMap;
+    CSamplerKernelArgMap m_SamplerKernelArgMap;
 
     struct SMapPointerInfo
     {
@@ -2480,27 +2481,6 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
             "Unmap", enqueueCounter, memobj, command_queue, NULL, 0, 0 );   \
     }
 
-#define DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue)                 \
-    if( pIntercept->config().DumpBuffersBeforeEnqueue &&                    \
-        pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&       \
-        pIntercept->dumpBufferForKernel( kernel ) )                         \
-    {                                                                       \
-        pIntercept->dumpBuffersForKernel(                                   \
-            "Pre", enqueueCounter, kernel, command_queue, false, false );   \
-    }
-
-#define DUMP_BUFFERS_AFTER_ENQUEUE( kernel, command_queue )                 \
-    if( ( pIntercept->config().DumpBuffersAfterEnqueue &&                   \
-          pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&     \
-          pIntercept->dumpBufferForKernel( kernel ) ) ||                    \
-        ( hasDumpedBufferByName && !hasDumpedValidationBufferByName ) )     \
-    {                                                                       \
-        hasDumpedValidationBufferByName = true;                             \
-        pIntercept->dumpBuffersForKernel(                                   \
-            "Post", enqueueCounter, kernel, command_queue, false,           \
-             !pIntercept->config().DumpReplayKernelName.empty() );          \
-    }
-
 #define DUMP_REPLAYABLE_KERNEL( kernel, command_queue, work_dim, gws_offset, gws, lws ) \
     if ( pIntercept->checkDumpByCounter( enqueueCounter ) ||                \
         ( pIntercept->checkDumpByName( kernel ) &&                          \
@@ -2523,6 +2503,27 @@ inline bool CLIntercept::checkDumpByName( cl_kernel kernel )
         pIntercept->dumpArgumentsForKernel(                                 \
             kernel, enqueueCounter,                                         \
             !pIntercept->config().DumpReplayKernelName.empty() );           \
+    }
+
+#define DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue )                \
+    if( pIntercept->config().DumpBuffersBeforeEnqueue &&                    \
+        pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&       \
+        pIntercept->dumpBufferForKernel( kernel ) )                         \
+    {                                                                       \
+        pIntercept->dumpBuffersForKernel(                                   \
+            "Pre", enqueueCounter, kernel, command_queue, false, false );   \
+    }
+
+#define DUMP_BUFFERS_AFTER_ENQUEUE( kernel, command_queue )                 \
+    if( ( pIntercept->config().DumpBuffersAfterEnqueue &&                   \
+          pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&     \
+          pIntercept->dumpBufferForKernel( kernel ) ) ||                    \
+        ( hasDumpedBufferByName && !hasDumpedValidationBufferByName ) )     \
+    {                                                                       \
+        hasDumpedValidationBufferByName = true;                             \
+        pIntercept->dumpBuffersForKernel(                                   \
+            "Post", enqueueCounter, kernel, command_queue, false,           \
+             !pIntercept->config().DumpReplayKernelName.empty() );          \
     }
 
 #define DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue )                 \
