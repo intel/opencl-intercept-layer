@@ -964,8 +964,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
             size,
             host_ptr );
 
-        if( pIntercept->config().DumpReplayKernelEnqueue != -1 ||
-            !pIntercept->config().DumpReplayKernelName.empty() )
+        if( pIntercept->config().CaptureReplay )
         {
             // Make sure that there are no device only buffers
             // Since we need them to replay the kernel
@@ -1708,8 +1707,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
 
         std::string propsStr;
         if( pIntercept->config().CallLogging ||
-            pIntercept->config().DumpReplayKernelEnqueue != -1 ||
-            !pIntercept->config().DumpReplayKernelName.empty() )
+            pIntercept->config().CaptureReplay )
         {
             cl_sampler_properties sampler_properties[] = {
                 CL_SAMPLER_NORMALIZED_COORDS, normalized_coords,
@@ -2765,8 +2763,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
 
         std::string argsString;
         if( pIntercept->config().CallLogging ||
-            pIntercept->config().DumpReplayKernelEnqueue != -1 ||
-            !pIntercept->config().DumpReplayKernelName.empty() )
+            pIntercept->config().CaptureReplay )
         {
             pIntercept->getKernelArgString(
                 arg_index,
@@ -2781,8 +2778,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
             argsString.c_str() );
 
         // !!! TODO Revisit: is there a better way to do this?
-        if( pIntercept->config().DumpReplayKernelEnqueue != -1 ||
-            !pIntercept->config().DumpReplayKernelName.empty() )
+        if( pIntercept->config().CaptureReplay )
         {
             if( argsString.find( "CL_SAMPLER_NORMALIZED_COORDS" ) != std::string::npos && arg_value != nullptr )
             {
@@ -4778,32 +4774,18 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
 {
     CLIntercept*    pIntercept = GetIntercept();
 
-    // !!! TODO Revisit: is there a better way to do this?
-
-    // This works starting C++11
-    // https://stackoverflow.com/questions/14106653/are-function-local-static-mutexes-thread-safe
-    static std::mutex localMutex;
-    std::unique_lock<std::mutex> lock(localMutex);
-
-    // In case we want to dump a replayble kernel by kernel name, we only do this on the first enqueue
-    static bool hasDumpedBufferByName = false;
-    static bool hasDumpedValidationBufferByName = false;
-    static bool hasDumpedImageByName = false;
-    static bool hasDumpedValidationImageByName = false;
-
     if( pIntercept && pIntercept->dispatch().clEnqueueNDRangeKernel )
     {
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
-        DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue );
-        DUMP_REPLAYABLE_KERNEL(
+        CHECK_CAPTURE_REPLAY_START_KERNEL(
             kernel,
-            command_queue,
             work_dim,
             global_work_offset,
             global_work_size,
             local_work_size );
+        DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue );
         DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue );
         CHECK_AUBCAPTURE_START_KERNEL(
             kernel,
@@ -7039,8 +7021,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
 
         std::string propsStr;
         if( pIntercept->config().CallLogging ||
-            pIntercept->config().DumpReplayKernelEnqueue != -1 ||
-            !pIntercept->config().DumpReplayKernelName.empty() )
+            pIntercept->config().CaptureReplay )
         {
             pIntercept->getSamplerPropertiesString(
                 sampler_properties,

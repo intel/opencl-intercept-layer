@@ -42,6 +42,16 @@ parser.add_argument('-repetitions', '--rep', type=int, dest='repetitions', defau
                     help='How often the kernel should be enqueued')
 args = parser.parse_args()
 
+# Read the enqueue number from the file
+with open('./enqueueNumber.txt') as file:
+    enqueue_number = file.read().splitlines()[0]
+
+padded_enqueue_num = ""
+if int(enqueue_number) < 10000:
+    padded_enqueue_num = str(enqueue_number).rjust(4, "0")
+else:
+    padded_enqueue_num = str(enqueue_number)
+
 arguments = {}
 argument_files = gl.glob("./Argument*.bin")
 for argument in argument_files:
@@ -51,10 +61,11 @@ for argument in argument_files:
 buffer_idx = []
 input_buffers = {}
 output_buffers = {}
-buffer_files = gl.glob("./Buffer*.bin")
+buffer_files = gl.glob("../../memDumpPreEnqueue/Enqueue_" + padded_enqueue_num + "*.bin")
 input_buffer_ptrs = defaultdict(list)
 for buffer in buffer_files:
-    idx = int(re.findall(r'\d+', buffer)[0])
+    start = buffer.find("_Arg_")
+    idx = int(re.findall(r'\d+', buffer[start:])[0])
     buffer_idx.append(idx)
     input_buffers[idx] = np.fromfile(buffer, dtype='uint8').tobytes()
     input_buffer_ptrs[arguments[idx]].append(idx)
@@ -63,10 +74,11 @@ for buffer in buffer_files:
 image_idx = []
 input_images = {}
 output_images = {}
-image_files = gl.glob("./Image*.raw")
+image_files = gl.glob("../../memDumpPreEnqueue/Enqueue_" + padded_enqueue_num + "*.raw")
 input_images_ptrs = defaultdict(list)
 for image in image_files:
-    idx = int(re.findall(r'\d+', image)[0])
+    start = image.find("_Arg_")
+    idx = int(re.findall(r'\d+', image[start:])[0])
     image_idx.append(idx)
     input_images[idx] = np.fromfile(image, dtype='uint8').tobytes()
     input_images_ptrs[arguments[idx]].append(idx)
@@ -124,7 +136,7 @@ with open("buildOptions.txt", 'r') as file:
     print(f"Using flags: {flags}")
 
 with open('knlName.txt') as file:
-        knl_name = file.read()
+    knl_name = file.read()
 
 if os.path.isfile("kernel.cl"):
     print("Using kernel source code")
@@ -185,7 +197,6 @@ if lws == [0] or lws == [0, 0] or lws == [0, 0, 0]:
 for _ in range(args.repetitions):
     cl.enqueue_nd_range_kernel(queue, knl, gws, lws, gws_offset)
 
-
 for pos in gpu_buffers.keys():
     if len(pos) == 1:
         cl.enqueue_copy(queue, output_buffers[pos[0]], gpu_buffers[pos])
@@ -201,4 +212,3 @@ for pos, cpu_buffer in output_buffers.items():
 
 for pos, cpu_image in output_images.items():
     cpu_image.tofile("output_image" + str(pos) + ".raw")
-

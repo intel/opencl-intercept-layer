@@ -145,6 +145,17 @@ CLI_CONTROL( bool,          AutoPartitionSingleSubDevice,           false, "If s
 CLI_CONTROL( bool,          AutoPartitionByAffinityDomain,          true,  "If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices by the next partitionable affinity domain." )
 CLI_CONTROL( cl_uint,       AutoPartitionEqually,                   1,     "If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices into sub-devices with the specified number of compute units." )
 
+CLI_CONTROL_SEPARATOR( Capture and Replay Controls: )
+CLI_CONTROL( bool,          CaptureReplay,                          false, "This is the top-level control for kernel capture and replay." )
+CLI_CONTROL( cl_uint,       CaptureReplayMinEnqueue,                0,     "The Intercept Layer for OpenCL Applications will only enable kernel capture and replay when the enqueue counter is greater than this value, inclusive." )
+CLI_CONTROL( cl_uint,       CaptureReplayMaxEnqueue,                UINT_MAX, "The Intercept Layer for OpenCL Applications will stop kernel capture and replay when the encounter is greater than this value, meaning that only enqueues less than this value, inclusive, will be captured." )
+CLI_CONTROL( std::string,   CaptureReplayKernelName,                "",     "If set, the Intercept Layer for OpenCL Applications will only enable kernel capture and replay when the kernel name equals this name.")
+CLI_CONTROL( std::string,   CaptureReplayKernelGWS,                 "",     "If set, the Intercept Layer for OpenCL Applications will only enable kernel capture and replay when the NDRange global work size matches this string.  The string should have the form \"XxYxZ\".  The wildcard \"*\" matches all global work sizes.")
+CLI_CONTROL( std::string,   CaptureReplayKernelLWS,                 "",     "If set, the Intercept Layer for OpenCL Applications will only enable kernel capture and replay when the NDRange local work size matches this string.  The string should have the form \"XxYxZ\".  The wildcard \"*\" matches all local work sizes, and the string \"NULL\" matches a NULL local work size.")
+CLI_CONTROL( bool,          CaptureReplayUniqueKernels,             false,  "If set, the Intercept Layer for OpenCL Applications will only enable kernel capture and replay if the kernel signature (i.e. hash + kernelname + gws + lws) has not been seen already." )
+CLI_CONTROL( cl_uint,       CaptureReplayNumKernelEnqueuesSkip,     0,      "The Intercept Layer for OpenCL Applications will skip this many kernel enqueues before enabling kernel capture and replay.")
+CLI_CONTROL( cl_uint,       CaptureReplayNumKernelEnqueuesCapture,  UINT_MAX, "The Intercept Layer for OpenCL Applications will only capture this many kernel enqueues.")
+
 CLI_CONTROL_SEPARATOR( AubCapture Controls: )
 CLI_CONTROL( bool,          AubCapture,                             false, "This is the top-level control for aub capture.  The Intercept Layer for OpenCL Applications doesn't implement aub capture itself, but can be used to selectively enable and disable aub capture via other methods." )
 CLI_CONTROL( bool,          AubCaptureKDC,                          false, "If set, the Intercept Layer for OpenCL Applications will use the older kdc.exe method of aub capture.  By default, the newer NEO method of aub capture will be used.  This control is ignored for all non-Windows operating systems." )

@@ -147,6 +147,9 @@ CLIntercept::CLIntercept( void* pGlobalData )
     m_QueueNumber = 0;
     m_MemAllocNumber = 0;
 
+    m_CaptureReplayKernelEnqueueSkipCounter = 0;
+    m_CaptureReplayKernelEnqueueCaptureCounter = 0;
+
     m_AubCaptureStarted = false;
     m_AubCaptureKernelEnqueueSkipCounter = 0;
     m_AubCaptureKernelEnqueueCaptureCounter = 0;
@@ -606,6 +609,19 @@ bool CLIntercept::init()
         initCustomPerfCounters();
     }
 #endif
+
+    if( m_Config.DumpReplayKernelEnqueue >= 0 )
+    {
+        m_Config.CaptureReplay = true;
+        m_Config.CaptureReplayMinEnqueue = m_Config.DumpReplayKernelEnqueue;
+        m_Config.CaptureReplayMaxEnqueue = m_Config.DumpReplayKernelEnqueue;
+    }
+    if( !m_Config.DumpReplayKernelName.empty() )
+    {
+        m_Config.CaptureReplay = true;
+        m_Config.CaptureReplayKernelName = m_Config.DumpReplayKernelName;
+        m_Config.CaptureReplayNumKernelEnqueuesCapture = 1;
+    }
 
     m_StartTime = clock::now();
     log( "Timer Started!\n" );
@@ -7517,21 +7533,10 @@ void CLIntercept::setKernelArgUSMPointer(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // !!! TODO: Clean up formatting, possible error checks?
-void CLIntercept::dumpKernelSourceOrDeviceBinary( cl_kernel kernel,
-                                                  uint64_t enqueueCounter,
-                                                  bool byKernelName )
+void CLIntercept::dumpCaptureReplayKernelSource(
+    const std::string& dumpDirectory,
+    cl_kernel kernel )
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    std::string fileNamePrefix = "";
-    OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
-    fileNamePrefix += "/Replay/Enqueue_";
-    if (byKernelName)
-        fileNamePrefix += getShortKernelName(kernel);
-    else
-        fileNamePrefix += std::to_string(enqueueCounter);
-    fileNamePrefix += "/";
-    OS().MakeDumpDirectories( fileNamePrefix );
-
     cl_program tmp_program;
     dispatch().clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(cl_program), &tmp_program, nullptr);
 
@@ -7541,68 +7546,56 @@ void CLIntercept::dumpKernelSourceOrDeviceBinary( cl_kernel kernel,
     std::string sourceCode(size, ' ');
     int error = dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_SOURCE, size, &sourceCode[0], nullptr);
 
-    if (error == CL_SUCCESS && size > 1)
+    if( error == CL_SUCCESS && size > 1 )
     {
-        std::ofstream output(fileNamePrefix + "kernel.cl", std::ios::out | std::ios::binary);
+        std::ofstream output(dumpDirectory + "kernel.cl", std::ios::out | std::ios::binary);
         output.write(sourceCode.c_str(), size);
-        return;
     }
-
-    log("[[Warning]]: Kernel source is not available! Make sure that the kernel is compiled from source (and is not cached)\n");
-    log("Now will try to output binaries, these probably won't work on other platforms!\n");
-
-    cl_uint num_devices;
-    dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &num_devices, nullptr);
-
-    // Grab the device ids
-    std::vector<cl_device_id> devices(num_devices);
-
-    dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_DEVICES, num_devices * sizeof(cl_device_id), devices.data(), 0);
-
-    std::vector<size_t> sizes(num_devices);
-    dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_BINARY_SIZES, sizeof(size_t) * sizes.size(), sizes.data(), nullptr);
-
-    std::vector<std::vector<unsigned char>> binaries;
-    std::vector<unsigned char *> binariesDatas;
-    for (size_t device = 0; device != num_devices; ++device)
+    else
     {
-        std::vector<unsigned char> binary(sizes[device]);
-        binaries.emplace_back(binary);
-        binariesDatas.emplace_back(binaries[device].data());
-    }
+        log("[[Warning]]: Kernel source is not available! Make sure that the kernel is compiled from source (and is not cached)\n");
+        log("Now will try to output binaries, these probably won't work on other platforms!\n");
 
-    error = dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_BINARIES, binariesDatas.size() * sizeof(unsigned char*), binariesDatas.data(), nullptr);
+        cl_uint num_devices;
+        dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &num_devices, nullptr);
 
-    for (size_t device = 0; device != num_devices; ++device)
-    {
-        std::ofstream output(fileNamePrefix + "DeviceBinary" + std::to_string(device) + ".bin", std::ios::out | std::ios::binary);
-        output.write(reinterpret_cast<char const*>(binaries[device].data()), binaries[device].size());
+        // Grab the device ids
+        std::vector<cl_device_id> devices(num_devices);
+
+        dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_DEVICES, num_devices * sizeof(cl_device_id), devices.data(), 0);
+
+        std::vector<size_t> sizes(num_devices);
+        dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_BINARY_SIZES, sizeof(size_t*), sizes.data(), nullptr);
+
+        std::vector<std::vector<unsigned char>> binaries;
+        for (size_t device = 0; device != num_devices; ++device)
+        {
+            std::vector<unsigned char> binary(sizes[device]);
+            binaries.emplace_back(binary);
+        }
+
+        error = dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_BINARIES, binaries.size() * sizeof(char*), binaries.data(), nullptr);
+
+        for (size_t device = 0; device != num_devices; ++device)
+        {
+            std::ofstream output(dumpDirectory + "DeviceBinary" + std::to_string(device) + ".bin", std::ios::out | std::ios::binary);
+            output.write(reinterpret_cast<char const*>(binaries[device].data()), binaries[device].size());
+        }
     }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 // !!! TODO: Clean up formatting, possible error checks?
-void CLIntercept::dumpKernelInfo(
+void CLIntercept::dumpCaptureReplayKernelInfo(
+    const std::string& dumpDirectory,
     cl_kernel kernel,
-    uint64_t enqueueCounter,
     size_t work_dim,
     const size_t* gws_offset,
     const size_t* gws,
-    const size_t* lws,
-    bool byKernelName)
+    const size_t* lws )
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    std::string fileNamePrefix = "";
-    OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
-    fileNamePrefix += "/Replay/Enqueue_";
-    if (byKernelName)
-        fileNamePrefix += getShortKernelName(kernel);
-    else
-        fileNamePrefix += std::to_string(enqueueCounter);
-    fileNamePrefix += "/";
-    OS().MakeDumpDirectories( fileNamePrefix );
-    std::ofstream output{fileNamePrefix + "worksizes.txt"};
+    std::ofstream output{dumpDirectory + "worksizes.txt"};
 
     // Print the values of the worksizes and offsets on a line in the order:
     // gws
@@ -7643,30 +7636,17 @@ void CLIntercept::dumpKernelInfo(
     dispatch().clGetProgramBuildInfo(tmp_program, device_ids,
                                                  CL_PROGRAM_BUILD_OPTIONS, sizeOfOptions, &optionsString[0], &sizeOfOptions);
 
-    std::ofstream outputBuildOptions{fileNamePrefix + "buildOptions.txt", std::ios::out | std::ios::binary};
+    std::ofstream outputBuildOptions{dumpDirectory + "buildOptions.txt", std::ios::out | std::ios::binary};
     outputBuildOptions.write(optionsString.c_str(), optionsString.length() - 1);
 
     std::string knlName = getShortKernelName(kernel);
-    std::ofstream outputKnlName{fileNamePrefix + "knlName.txt"};
+    std::ofstream outputKnlName{dumpDirectory + "knlName.txt"};
     outputKnlName << knlName;
-
-    const char* pPythonScript = NULL;
-    size_t pythonScriptLength = 0;
-    if( m_OS.GetReplayScriptString(
-            pPythonScript,
-            pythonScriptLength ) )
-    {
-        std::ofstream outputPythonScript{fileNamePrefix + "run.py", std::ios::out | std::ios::binary};
-        outputPythonScript.write(pPythonScript, pythonScriptLength);
-    }
-
-    std::ofstream outputKernelNumber{fileNamePrefix + "enqueueNumber.txt"};
-    outputKernelNumber << std::to_string(enqueueCounter) << '\n';
 
     cl_uint numArgs = 0;
     dispatch().clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS, sizeof(cl_uint), &numArgs, nullptr);
 
-    std::ofstream outputArgTypes{fileNamePrefix + "ArgumentDataTypes.txt"};
+    std::ofstream outputArgTypes{dumpDirectory + "ArgumentDataTypes.txt"};
     for ( cl_uint idx = 0; idx != numArgs; ++idx )
     {
         size_t argNameSize = 0;
@@ -7686,32 +7666,16 @@ void CLIntercept::dumpKernelInfo(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // !!! TODO: Clean up formatting, possible error checks?
-void CLIntercept::dumpArgumentsForKernel(
-    cl_kernel kernel,
-    uint64_t enqueueCounter,
-    bool byKernelName )
+void CLIntercept::dumpCaptureReplayKernelArguments(
+    const std::string& dumpDirectory,
+    cl_kernel kernel )
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-    std::string fileNamePrefix;
-    OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
-    fileNamePrefix += "/Replay/Enqueue_";
-    if( byKernelName )
-    {
-        fileNamePrefix += getShortKernelName(kernel);
-    }
-    else
-    {
-        fileNamePrefix += std::to_string(enqueueCounter);
-    }
-    fileNamePrefix += "/";
-    OS().MakeDumpDirectories( fileNamePrefix );
-
     const auto& argDataMap = m_KernelArgDataMap[kernel];
     for( const auto& arg: argDataMap )
     {
         const auto pos = arg.first;
         const auto& value = arg.second;
-        std::string fileName = fileNamePrefix + "Argument" + std::to_string(pos) + ".bin";
+        std::string fileName = dumpDirectory + "Argument" + std::to_string(pos) + ".bin";
         std::ofstream out{fileName, std::ios::out | std::ios::binary};
         out.write(reinterpret_cast<char const*>(value.data()), value.size());
     }
@@ -7721,7 +7685,7 @@ void CLIntercept::dumpArgumentsForKernel(
     {
         const auto pos = arg.first;
         const auto value = arg.second;
-        std::string fileName = fileNamePrefix + "Local" + std::to_string(pos) + ".txt";
+        std::string fileName = dumpDirectory + "Local" + std::to_string(pos) + ".txt";
         std::ofstream out{fileName};
         out << std::to_string(value);
     }
@@ -7731,7 +7695,7 @@ void CLIntercept::dumpArgumentsForKernel(
     {
         const auto pos = arg.first;
         const auto& value = arg.second;
-        std::string fileName = fileNamePrefix + "Sampler" + std::to_string(pos) + ".txt";
+        std::string fileName = dumpDirectory + "Sampler" + std::to_string(pos) + ".txt";
         std::ofstream out{fileName};
         out << value;
     }
@@ -8849,6 +8813,49 @@ void CLIntercept::usmAllocPropertiesOverride(
         // Add the terminating zero.
         pLocalAllocProperties[ numProperties ] = 0;
     }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::startCaptureReplay(
+    const uint64_t enqueueCounter,
+    const cl_kernel kernel,
+    const cl_uint workDim,
+    const size_t* gwo,
+    const size_t* gws,
+    const size_t* lws )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    std::string fileNamePrefix = "";
+
+    OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
+    fileNamePrefix += "/Replay/Enqueue_";
+    fileNamePrefix += std::to_string(enqueueCounter);
+    fileNamePrefix += "_";
+    fileNamePrefix += getShortKernelName(kernel);
+    fileNamePrefix += "/";
+
+    OS().MakeDumpDirectories( fileNamePrefix );
+
+    const char* pPythonScript = NULL;
+    size_t pythonScriptLength = 0;
+    if( m_OS.GetReplayScriptString(
+            pPythonScript,
+            pythonScriptLength ) )
+    {
+        std::ofstream outputPythonScript{fileNamePrefix + "run.py", std::ios::out | std::ios::binary};
+        outputPythonScript.write(pPythonScript, pythonScriptLength);
+    }
+
+    {
+        std::ofstream outputKernelNumber{fileNamePrefix + "enqueueNumber.txt"};
+        outputKernelNumber << std::to_string(enqueueCounter) << '\n';
+    }
+
+    dumpCaptureReplayKernelSource( fileNamePrefix, kernel );
+    dumpCaptureReplayKernelInfo( fileNamePrefix, kernel, workDim, gwo, gws, lws );
+    dumpCaptureReplayKernelArguments( fileNamePrefix, kernel );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -14060,6 +14067,234 @@ void CLIntercept::chromeTraceEvent(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+bool CLIntercept::checkCaptureReplayKernelSignature(
+    const cl_kernel kernel,
+    cl_uint workDim,
+    const size_t* gws,
+    const size_t* lws )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    bool    match = true;
+
+    // If the capture replay kernel name is set, make sure it matches the name
+    // of the passed-in kernel:
+
+    if( match &&
+        !m_Config.CaptureReplayKernelName.empty() &&
+        // Note: This currently checks the long kernel name.
+        // Should it be the short kernel name instead?
+        m_KernelInfoMap[ kernel ].KernelName != m_Config.AubCaptureKernelName )
+    {
+        logf( "Skipping capture replay: kernel name '%s' doesn't match the requested kernel name '%s'.\n",
+            m_KernelInfoMap[ kernel ].KernelName.c_str(),
+            m_Config.CaptureReplayKernelName.c_str() );
+        match = false;
+    }
+
+    // If the capture replay global work size is set, and it is not set to the
+    // wildcard ("*"), make sure it matches the passed-in global work size:
+
+    if( match &&
+        !m_Config.CaptureReplayKernelGWS.empty() &&
+        m_Config.CaptureReplayKernelGWS != "*" )
+    {
+        std::ostringstream  ss;
+        if( gws )
+        {
+            if( workDim >= 1 )
+            {
+                ss << gws[0];
+            }
+            if( workDim >= 2 )
+            {
+                ss << "x" << gws[1];
+            }
+            if( workDim >= 3 )
+            {
+                ss << "x" << gws[2];
+            }
+        }
+        else
+        {
+            ss << "NULL";
+        }
+        if( m_Config.CaptureReplayKernelGWS != ss.str() )
+        {
+            logf( "Skipping capture replay: global work size %s doesn't match the requested global work size %s.\n",
+                ss.str(),
+                m_Config.CaptureReplayKernelGWS.c_str() );
+            match = false;
+        }
+    }
+
+    // If the capture replay local work size is set, and it is not set to the
+    // wildcard ("*"), make sure it matches the passed-in local work size:
+
+    if( match &&
+        !m_Config.CaptureReplayKernelLWS.empty() &&
+        m_Config.CaptureReplayKernelLWS != "*" )
+    {
+        std::ostringstream  ss;
+        if( lws )
+        {
+            if( workDim >= 1 )
+            {
+                ss << lws[0];
+            }
+            if( workDim >= 2 )
+            {
+                ss << "x" << lws[1];
+            }
+            if( workDim >= 3 )
+            {
+                ss << "x" << lws[2];
+            }
+        }
+        else
+        {
+            ss << "NULL";
+        }
+        if( m_Config.CaptureReplayKernelLWS != ss.str() )
+        {
+            logf( "Skipping capture replay: local work size %s doesn't match the requested local work size %s.\n",
+                ss.str(),
+                m_Config.CaptureReplayKernelLWS.c_str() );
+            match = false;
+        }
+    }
+
+    if( match &&
+        m_Config.CaptureReplayUniqueKernels )
+    {
+        const SKernelInfo& kernelInfo = m_KernelInfoMap[ kernel ];
+
+        // Note: This currently uses the long kernel name.
+        // Should it be the short kernel name instead?
+        std::string key = kernelInfo.KernelName;
+
+        {
+            char    hashString[256] = "";
+            if( config().OmitProgramNumber )
+            {
+                CLI_SPRINTF( hashString, 256, "(%08X_%04u_%08X)",
+                    (unsigned int)kernelInfo.ProgramHash,
+                    kernelInfo.CompileCount,
+                    (unsigned int)kernelInfo.OptionsHash );
+            }
+            else
+            {
+                CLI_SPRINTF( hashString, 256, "(%04u_%08X_%04u_%08X)",
+                    kernelInfo.ProgramNumber,
+                    (unsigned int)kernelInfo.ProgramHash,
+                    kernelInfo.CompileCount,
+                    (unsigned int)kernelInfo.OptionsHash );
+            }
+            key += hashString;
+        }
+
+        if( gws )
+        {
+            std::ostringstream  ss;
+            ss << " GWS[ ";
+            if( gws )
+            {
+                if( workDim >= 1 )
+                {
+                    ss << gws[0];
+                }
+                if( workDim >= 2 )
+                {
+                    ss << "x" << gws[1];
+                }
+                if( workDim >= 3 )
+                {
+                    ss << "x" << gws[2];
+                }
+            }
+            else
+            {
+                ss << "NULL";
+            }
+            ss << " ]";
+            key += ss.str();
+        }
+
+        {
+            std::ostringstream  ss;
+            ss << " LWS[ ";
+            if( lws )
+            {
+                if( workDim >= 1 )
+                {
+                    ss << lws[0];
+                }
+                if( workDim >= 2 )
+                {
+                    ss << "x" << lws[1];
+                }
+                if( workDim >= 3 )
+                {
+                    ss << "x" << lws[2];
+                }
+            }
+            else
+            {
+                ss << "NULL";
+            }
+            ss << " ]";
+            key += ss.str();
+        }
+
+        if( m_CaptureReplaySet.find( key ) == m_CaptureReplaySet.end() )
+        {
+            m_CaptureReplaySet.insert( key );
+        }
+        else
+        {
+            logf( "Skipping capture replay: key %s was already captured.\n",
+                key.c_str() );
+            match = false;
+        }
+    }
+
+    return match;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+bool CLIntercept::checkCaptureReplayKernelSkips()
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    bool    skip = false;
+    if( m_CaptureReplayKernelEnqueueSkipCounter < m_Config.CaptureReplayNumKernelEnqueuesSkip )
+    {
+        logf( "Skipping kernel capture replay: current skip counter is %u, requested skip counter is %u.\n",
+            m_CaptureReplayKernelEnqueueSkipCounter,
+            m_Config.CaptureReplayNumKernelEnqueuesSkip );
+
+        skip = true;
+        ++m_CaptureReplayKernelEnqueueSkipCounter;
+    }
+    else
+    {
+        if( m_CaptureReplayKernelEnqueueCaptureCounter >= m_Config.CaptureReplayNumKernelEnqueuesCapture )
+        {
+            logf( "Skipping kernel capture replay: current capture counter is %u, requested capture counter is %u.\n",
+                m_CaptureReplayKernelEnqueueCaptureCounter,
+                m_Config.CaptureReplayNumKernelEnqueuesCapture );
+            skip = true;
+        }
+
+        ++m_CaptureReplayKernelEnqueueCaptureCounter;
+    }
+
+    return !skip;
+}
+
+    ///////////////////////////////////////////////////////////////////////////////
+//
 bool CLIntercept::checkAubCaptureKernelSignature(
     const cl_kernel kernel,
     cl_uint workDim,
@@ -14074,6 +14309,7 @@ bool CLIntercept::checkAubCaptureKernelSignature(
     // of the passed-in kernel:
 
     if( match &&
+        // !!! TODO: check for .empty here instead?
         m_Config.AubCaptureKernelName != "" &&
         // Note: This currently checks the long kernel name.
         // Should it be the short kernel name instead?
