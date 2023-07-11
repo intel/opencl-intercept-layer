@@ -501,6 +501,15 @@ cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_khr_device_uuid
+
+#define CL_DEVICE_UUID_KHR                                  0x106A
+#define CL_DRIVER_UUID_KHR                                  0x106B
+#define CL_DEVICE_LUID_VALID_KHR                            0x106C
+#define CL_DEVICE_LUID_KHR                                  0x106D
+#define CL_DEVICE_NODE_MASK_KHR                             0x106E
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_khr_dx9_media_sharing
 
 #if defined(_WIN32)

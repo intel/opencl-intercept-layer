@@ -656,6 +656,13 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_D3D11_OBJECTS_KHR );
 #endif
 
+    // cl_khr_device_uuid
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_UUID_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DRIVER_UUID_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LUID_VALID_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LUID_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NODE_MASK_KHR );
+
 #if defined(_WIN32)
     // cl_khr_dx9_media_sharing
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_DX9_MEDIA_ADAPTER_KHR );
