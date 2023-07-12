@@ -956,7 +956,6 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
     if( pIntercept && pIntercept->dispatch().clCreateBuffer )
     {
         GET_ENQUEUE_COUNTER();
-
         CALL_LOGGING_ENTER( "context = %p, flags = %s (%llX), size = %zu, host_ptr = %p",
             context,
             pIntercept->enumName().name_mem_flags( flags ).c_str(),
@@ -2762,8 +2761,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
         GET_ENQUEUE_COUNTER();
 
         std::string argsString;
-        if( pIntercept->config().CallLogging ||
-            pIntercept->config().CaptureReplay )
+        if( pIntercept->config().CallLogging )
         {
             pIntercept->getKernelArgString(
                 arg_index,
@@ -2777,15 +2775,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
             kernel,
             argsString.c_str() );
 
-        // !!! TODO Revisit: is there a better way to do this?
-        if( pIntercept->config().CaptureReplay )
-        {
-            if( argsString.find( "CL_SAMPLER_NORMALIZED_COORDS" ) != std::string::npos && arg_value != nullptr )
-            {
-                // This argument is a sampler, dump it
-                pIntercept->saveSampler( kernel, arg_index, argsString );
-            }
-        }
         SET_KERNEL_ARG( kernel, arg_index, arg_size, arg_value );
         HOST_PERFORMANCE_TIMING_START();
 

@@ -541,10 +541,6 @@ public:
     void    setKernelArg(
                 cl_kernel kernel,
                 cl_uint arg_index,
-                cl_mem memobj );
-    void    setKernelArg(
-                cl_kernel kernel,
-                cl_uint arg_index,
                 const void* arg_value,
                 size_t arg_size );
     void    setKernelArgSVMPointer(
@@ -559,16 +555,12 @@ public:
                 const std::string& name,
                 const uint64_t enqueueCounter,
                 cl_kernel kernel,
-                cl_command_queue command_queue,
-                bool replay,
-                bool byKernelName );
+                cl_command_queue command_queue );
     void    dumpImagesForKernel(
                 const std::string& name,
                 const uint64_t enqueueCounter,
                 cl_kernel kernel,
-                cl_command_queue command_queue,
-                bool replay,
-                bool byKernelName );
+                cl_command_queue command_queue );
 
     void    dumpArgument(
                 const uint64_t enqueueCounter,
@@ -837,18 +829,14 @@ public:
 
     CObjectTracker& objectTracker();
 
-    bool    dumpBufferForKernel( const cl_kernel kernel );
-    bool    dumpImagesForKernel( const cl_kernel kernel );
+    bool    checkDumpBuffersForKernel( const cl_kernel kernel );
+    bool    checkDumpImagesForKernel( const cl_kernel kernel );
     bool    checkDumpBufferEnqueueLimits( uint64_t enqueueCounter ) const;
     bool    checkDumpImageEnqueueLimits( uint64_t enqueueCounter ) const;
 
+    bool    checkCaptureReplayForKernel( const cl_kernel kernel );
     bool    checkCaptureReplayEnqueueLimits( uint64_t enqueueCounter ) const;
-    bool    checkCaptureReplayKernelSignature(
-                const cl_kernel kernel,
-                cl_uint workDim,
-                const size_t* gws,
-                const size_t* lws);
-    bool    checkCaptureReplayKernelSkips();
+    bool    checkCaptureReplayKernelSkips( const cl_kernel kernel );
 
     bool    checkAubCaptureEnqueueLimits( uint64_t enqueueCounter ) const;
     bool    checkAubCaptureKernelSignature(
@@ -954,11 +942,6 @@ public:
 
     cl_int  finishAll(
                 cl_context conetxt );
-
-    void saveSampler(
-                cl_kernel kernel,
-                cl_uint arg_index,
-                std::string const& sampler );
 
 private:
     static const char* sc_URL;
@@ -1256,6 +1239,10 @@ private:
     typedef std::map< cl_kernel, CArgMemMap >   CKernelArgMemMap;
     CKernelArgMemMap    m_KernelArgMemMap;
 
+    typedef std::map< cl_uint, std::string >    CArgSamplerMap;
+    typedef std::map< cl_kernel, CArgSamplerMap >   CKernelArgSamplerMap;
+    CKernelArgSamplerMap    m_KernelArgSamplerMap;
+
     typedef std::map< cl_uint, std::vector<uint8_t> >   CArgDataMap;
     typedef std::map< cl_kernel, CArgDataMap >  CKernelArgDataMap;
     CKernelArgDataMap   m_KernelArgDataMap;
@@ -1266,10 +1253,6 @@ private:
 
     typedef std::map<cl_program, std::string> CSourceStringMap;
     CSourceStringMap m_SourceStringMap;
-
-    typedef std::map<cl_uint, std::string> CSamplerArgMap;
-    typedef std::map<cl_kernel, CSamplerArgMap> CSamplerKernelArgMap;
-    CSamplerKernelArgMap m_SamplerKernelArgMap;
 
     struct SMapPointerInfo
     {
@@ -2211,6 +2194,14 @@ inline CObjectTracker& CLIntercept::objectTracker()
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+inline bool CLIntercept::checkCaptureReplayForKernel( const cl_kernel kernel )
+{
+    // Note: This currently checks the long kernel name.
+    // Should it be the short kernel name instead?
+    return m_Config.CaptureReplayKernelName.empty() ||
+        m_KernelInfoMap[ kernel ].KernelName == m_Config.CaptureReplayKernelName;
+}
+
 inline bool CLIntercept::checkCaptureReplayEnqueueLimits(
     uint64_t enqueueCounter ) const
 {
@@ -2222,8 +2213,8 @@ inline bool CLIntercept::checkCaptureReplayEnqueueLimits(
     bool captureReplay =                                                    \
         pIntercept->config().CaptureReplay &&                               \
         pIntercept->checkCaptureReplayEnqueueLimits( enqueueCounter ) &&    \
-        pIntercept->checkCaptureReplayKernelSignature( kernel, wd, gws, lws ) &&\
-        pIntercept->checkCaptureReplayKernelSkips();                        \
+        pIntercept->checkCaptureReplayForKernel( kernel ) &&                \
+        pIntercept->checkCaptureReplayKernelSkips( kernel );                \
     if( captureReplay )                                                     \
     {                                                                       \
         pIntercept->startCaptureReplay(                                     \
@@ -2232,7 +2223,7 @@ inline bool CLIntercept::checkCaptureReplayEnqueueLimits(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-inline bool CLIntercept::dumpBufferForKernel( const cl_kernel kernel )
+inline bool CLIntercept::checkDumpBuffersForKernel( const cl_kernel kernel )
 {
     // Note: This currently checks the long kernel name.
     // Should it be the short kernel name instead?
@@ -2240,7 +2231,7 @@ inline bool CLIntercept::dumpBufferForKernel( const cl_kernel kernel )
         m_KernelInfoMap[ kernel ].KernelName == m_Config.DumpBuffersForKernel;
 }
 
-inline bool CLIntercept::dumpImagesForKernel( const cl_kernel kernel )
+inline bool CLIntercept::checkDumpImagesForKernel( const cl_kernel kernel )
 {
     // Note: This currently checks the long kernel name.
     // Should it be the short kernel name instead?
@@ -2413,11 +2404,6 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
         pIntercept->config().DumpImagesAfterEnqueue ||                      \
         pIntercept->config().CaptureReplay )                                \
     {                                                                       \
-        if( (arg_value != NULL) && (arg_size == sizeof(cl_mem)) )           \
-        {                                                                   \
-            cl_mem* pMem = (cl_mem*)arg_value;                              \
-            pIntercept->setKernelArg( kernel, arg_index, pMem[0] );         \
-        }                                                                   \
         pIntercept->setKernelArg( kernel, arg_index, arg_value, arg_size ); \
     }
 
@@ -2501,42 +2487,40 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     if( captureReplay ||                                                    \
         ( pIntercept->config().DumpBuffersBeforeEnqueue &&                  \
           pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&     \
-          pIntercept->dumpBufferForKernel( kernel ) ) )                     \
+          pIntercept->checkDumpBuffersForKernel( kernel ) ) )               \
     {                                                                       \
         pIntercept->dumpBuffersForKernel(                                   \
-            "Pre", enqueueCounter, kernel, command_queue, false, false );   \
+            "Pre", enqueueCounter, kernel, command_queue );                 \
     }
 
 #define DUMP_BUFFERS_AFTER_ENQUEUE( kernel, command_queue )                 \
     if( captureReplay ||                                                    \
         ( pIntercept->config().DumpBuffersAfterEnqueue &&                   \
           pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&     \
-          pIntercept->dumpBufferForKernel( kernel ) ) )                     \
+          pIntercept->checkDumpBuffersForKernel( kernel ) ) )               \
     {                                                                       \
         pIntercept->dumpBuffersForKernel(                                   \
-            "Post", enqueueCounter, kernel, command_queue, false,           \
-             !pIntercept->config().DumpReplayKernelName.empty() );          \
+            "Post", enqueueCounter, kernel, command_queue );                \
     }
 
 #define DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue )                 \
     if( captureReplay ||                                                    \
         ( pIntercept->config().DumpImagesBeforeEnqueue &&                   \
           pIntercept->checkDumpImageEnqueueLimits( enqueueCounter ) &&      \
-          pIntercept->dumpImagesForKernel( kernel ) ) )                     \
+          pIntercept->checkDumpImagesForKernel( kernel ) ) )                \
     {                                                                       \
         pIntercept->dumpImagesForKernel(                                    \
-            "Pre", enqueueCounter, kernel, command_queue, false, false );   \
+            "Pre", enqueueCounter, kernel, command_queue );                 \
     }
 
 #define DUMP_IMAGES_AFTER_ENQUEUE( kernel, command_queue )                  \
     if( captureReplay ||                                                    \
         ( pIntercept->config().DumpImagesAfterEnqueue &&                    \
           pIntercept->checkDumpImageEnqueueLimits( enqueueCounter )  &&     \
-          pIntercept->dumpImagesForKernel( kernel ) ) )                     \
+          pIntercept->checkDumpImagesForKernel( kernel ) ) )                \
     {                                                                       \
         pIntercept->dumpImagesForKernel(                                    \
-            "Post", enqueueCounter, kernel, command_queue, false,           \
-            !pIntercept->config().DumpReplayKernelName.empty() );           \
+            "Post", enqueueCounter, kernel, command_queue );                \
     }
 
 #define ADD_MAP_POINTER( _ptr, _flags, _sz )                                \
