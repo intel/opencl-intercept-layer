@@ -123,7 +123,7 @@ void CLIntercept::Delete( CLIntercept*& pIntercept )
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLIntercept::CLIntercept( void* pGlobalData )
-    : m_OS( pGlobalData )
+    : m_OS( pGlobalData ), m_InterceptTrace( this )
 {
     m_ProcessId = m_OS.GetProcessID();
 
@@ -263,7 +263,7 @@ CLIntercept::~CLIntercept()
     log( "... shutdown complete.\n" );
 
     m_InterceptLog.close();
-    m_InterceptTrace.close();
+    m_InterceptTrace.flush();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -416,22 +416,11 @@ bool CLIntercept::init()
         fileName += sc_TraceFileName;
 
         OS().MakeDumpDirectories( fileName );
-        m_InterceptTrace.open(
-            fileName.c_str(),
-            std::ios::out | std::ios::binary );
-        m_InterceptTrace << "[\n";
+        m_InterceptTrace.init( fileName );
 
         uint64_t    threadId = OS().GetThreadID();
         std::string processName = OS().GetProcessName();
-        m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"process_name\", \"pid\":" << m_ProcessId
-            << ", \"tid\":" << threadId
-            << ", \"args\":{\"name\":\"" << processName
-            << "\"}},\n";
-        //m_InterceptTrace
-        //    << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << processId
-        //    << ", \"tid\":" << threadId
-        //    << ", \"args\":{\"name\":\"Host APIs\"}},\n";
+        m_InterceptTrace.addProcessMetadata( threadId, processName );
     }
 
     std::string name = "";
@@ -625,11 +614,7 @@ bool CLIntercept::init()
         using us = std::chrono::microseconds;
         uint64_t    usStartTime =
             std::chrono::duration_cast<us>(m_StartTime.time_since_epoch()).count();
-        m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"clintercept_start_time\", \"pid\":" << m_ProcessId
-            << ", \"tid\":" << threadId
-            << ", \"args\":{\"start_time\":" << usStartTime
-            << "}},\n";
+        m_InterceptTrace.addStartTimeMetadata( threadId, usStartTime );
     }
 
     log( "... loading complete.\n" );
@@ -13786,76 +13771,21 @@ void CLIntercept::chromeCallLoggingExit(
     uint64_t    usDelta =
         std::chrono::duration_cast<us>(tickEnd - tickStart).count();
 
-    // Notes for the future:
-    // Printing into a pre-allocated string buffer and then writing is
-    // measured to be faster than calling fprintf or stream insertion
-    // operators.
-    // Handling each of these four cases separately eliminates the need
-    // to concatenate strings and reduces overhead.
-
     if( !tag.empty() && includeId )
     {
-        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s( %s )\""
-            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
-            m_ProcessId,
-            threadId,
-            functionName,
-            tag.c_str(),
-            usStart,
-            usDelta,
-            enqueueCounter );
-        m_InterceptTrace.write(m_StringBuffer, size);
+        m_InterceptTrace.addCallLogging( functionName, tag, threadId, usStart, usDelta, enqueueCounter );
     }
     else if( !tag.empty() )
     {
-        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s( %s )\""
-            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
-            m_ProcessId,
-            threadId,
-            functionName,
-            tag.c_str(),
-            usStart,
-            usDelta );
-        m_InterceptTrace.write(m_StringBuffer, size);
+        m_InterceptTrace.addCallLogging( functionName, tag, threadId, usStart, usDelta );
     }
     else if( includeId )
     {
-        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
-            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
-            m_ProcessId,
-            threadId,
-            functionName,
-            usStart,
-            usDelta,
-            enqueueCounter );
-        m_InterceptTrace.write(m_StringBuffer, size);
+        m_InterceptTrace.addCallLogging( functionName, threadId, usStart, usDelta, enqueueCounter );
     }
     else
     {
-        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
-            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
-            m_ProcessId,
-            threadId,
-            functionName,
-            usStart,
-            usDelta );
-        m_InterceptTrace.write(m_StringBuffer, size);
-    }
-
-    if( m_Config.ChromeFlowEvents && includeId )
-    {
-        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-            "{\"ph\":\"s\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"Command\""
-            ",\"cat\":\"Commands\",\"ts\":%" PRIu64 ",\"id\":%" PRIu64 "},\n",
-            m_ProcessId,
-            threadId,
-            usStart,
-            enqueueCounter);
-        m_InterceptTrace.write(m_StringBuffer, size);
+        m_InterceptTrace.addCallLogging( functionName, threadId, usStart, usDelta );
     }
 
     if( m_Config.FlushFiles )
@@ -13955,16 +13885,7 @@ void CLIntercept::chromeRegisterCommandQueue(
             }
         }
 
-        m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << m_ProcessId
-            << ", \"tid\":-" << queueNumber
-            << ", \"args\":{\"name\":\"" << trackName
-            << "\"}},\n";
-        m_InterceptTrace
-            << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << m_ProcessId
-            << ", \"tid\":-" << queueNumber
-            << ", \"args\":{\"sort_index\":\"" << queueNumber
-            << "\"}},\n";
+        m_InterceptTrace.addQueueMetadata( queueNumber, trackName );
     }
 }
 

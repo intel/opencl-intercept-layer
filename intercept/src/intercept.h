@@ -21,6 +21,7 @@
 #include <stdint.h>
 
 #include "common.h"
+#include "chrometracer.h"
 #include "enummap.h"
 #include "dispatch.h"
 #include "objtracker.h"
@@ -1017,7 +1018,7 @@ private:
     void*       m_OpenCLLibraryHandle;
 
     std::ofstream   m_InterceptLog;
-    std::ofstream   m_InterceptTrace;
+    CChromeTracer   m_InterceptTrace;
 
     mutable char    m_StringBuffer[CLI_STRING_BUFFER_SIZE];
 
@@ -3380,16 +3381,7 @@ inline unsigned int CLIntercept::getThreadNumber( uint64_t threadId )
 
         if( m_Config.ChromeCallLogging )
         {
-            m_InterceptTrace
-                << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << m_ProcessId
-                << ", \"tid\":" << threadId
-                << ", \"args\":{\"name\":\"Host Thread " << threadId
-                << "\"}},\n";
-            m_InterceptTrace
-                << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << m_ProcessId
-                << ", \"tid\":" << threadId
-                << ", \"args\":{\"sort_index\":\"" << threadNumber + 10000
-                << "\"}},\n";
+            m_InterceptTrace.addThreadMetadata( threadId, threadNumber );
         }
     }
 
