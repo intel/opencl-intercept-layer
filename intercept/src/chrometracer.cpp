@@ -18,10 +18,10 @@ void CChromeTracer::init( const std::string& fileName )
         m_RecordBuffer.reserve( m_BufferSize );
     }
 
-    m_InterceptTrace.open(
+    m_TraceFile.open(
         fileName.c_str(),
         std::ios::out | std::ios::binary );
-    m_InterceptTrace << "[\n";
+    m_TraceFile << "[\n";
 }
 
 // Notes for the future:
@@ -46,7 +46,7 @@ void CChromeTracer::writeCallLogging(
         name,
         startTime,
         delta );
-    m_InterceptTrace.write(m_StringBuffer, size);
+    m_TraceFile.write(m_StringBuffer, size);
 }
 
 // Call Logging with Tag
@@ -66,7 +66,7 @@ void CChromeTracer::writeCallLogging(
         tag,
         startTime,
         delta );
-    m_InterceptTrace.write(m_StringBuffer, size);
+    m_TraceFile.write(m_StringBuffer, size);
 }
 
 // Call Logging with Id
@@ -86,7 +86,7 @@ void CChromeTracer::writeCallLogging(
         startTime,
         delta,
         id );
-    m_InterceptTrace.write(m_StringBuffer, size);
+    m_TraceFile.write(m_StringBuffer, size);
 
     if( m_pIntercept->config().ChromeFlowEvents )
     {
@@ -97,7 +97,7 @@ void CChromeTracer::writeCallLogging(
             threadId,
             startTime,
             id );
-        m_InterceptTrace.write(m_StringBuffer, size);
+        m_TraceFile.write(m_StringBuffer, size);
     }
 }
 
@@ -120,7 +120,7 @@ void CChromeTracer::writeCallLogging(
         startTime,
         delta,
         id );
-    m_InterceptTrace.write(m_StringBuffer, size);
+    m_TraceFile.write(m_StringBuffer, size);
 
     if( m_pIntercept->config().ChromeFlowEvents )
     {
@@ -131,7 +131,160 @@ void CChromeTracer::writeCallLogging(
             threadId,
             startTime,
             id );
-        m_InterceptTrace.write(m_StringBuffer, size);
+        m_TraceFile.write(m_StringBuffer, size);
+    }
+}
+
+// Device Timing
+void CChromeTracer::writeDeviceTiming(
+    const char* name,
+    uint32_t queueNumber,
+    uint64_t startTime,
+    uint64_t endTime,
+    uint64_t id )
+{
+    if( m_pIntercept->config().ChromeFlowEvents )
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"f\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"Command\""
+            ",\"cat\":\"Commands\",\"ts\":%" PRIu64 ",\"id\":%" PRIu64 "},\n",
+            m_ProcessId,
+            queueNumber,
+            startTime,
+            id );
+        m_TraceFile.write(m_StringBuffer, size);
+    }
+
+    int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"%s\""
+        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+        m_ProcessId,
+        queueNumber,
+        name,
+        startTime,
+        endTime - startTime,
+        id );
+    m_TraceFile.write(m_StringBuffer, size);
+}
+
+// Device Timing Per Kernel
+void CChromeTracer::writeDeviceTiming(
+    const char* name,
+    uint64_t startTime,
+    uint64_t endTime,
+    uint64_t id )
+{
+    if( m_pIntercept->config().ChromeFlowEvents )
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"f\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"Command\""
+            ",\"cat\":\"Commands\",\"ts\":%" PRIu64 ",\"id\":%" PRIu64 "},\n",
+            m_ProcessId,
+            name,
+            startTime,
+            id );
+        m_TraceFile.write(m_StringBuffer, size);
+    }
+
+    int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s\""
+        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+        m_ProcessId,
+        name,
+        name,
+        startTime,
+        endTime - startTime,
+        id );
+    m_TraceFile.write(m_StringBuffer, size);
+}
+
+// Shared lookup tables:
+static const size_t cNumStates = 3;
+static const char* colours[cNumStates] = {
+    "thread_state_runnable",
+    "cq_build_running",
+    "thread_state_iowait"
+};
+static const char* suffixes[cNumStates] = {
+    "(Queued)",
+    "(Submitted)",
+    "(Execution)"
+};
+
+// Device Timing In Stages
+void CChromeTracer::writeDeviceTiming(
+    const char* name,
+    uint32_t count,
+    uint32_t queueNumber,
+    uint64_t queuedTime,
+    uint64_t submitTime,
+    uint64_t startTime,
+    uint64_t endTime,
+    uint64_t id )
+{
+    const uint64_t  usStarts[cNumStates] = {
+        queuedTime,
+        submitTime,
+        startTime
+    };
+    const uint64_t  usDeltas[cNumStates] = {
+        submitTime - queuedTime,
+        startTime - submitTime,
+        endTime - startTime
+    };
+
+    for( size_t state = 0; state < cNumStates; state++ )
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%u.%u,\"name\":\"%s %s\""
+            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
+            m_ProcessId,
+            count,
+            queueNumber,
+            name,
+            suffixes[state],
+            usStarts[state],
+            usDeltas[state],
+            colours[state],
+            id );
+        m_TraceFile.write(m_StringBuffer, size);
+    }
+}
+
+// Device Timing In Stages Per Kernel
+void CChromeTracer::writeDeviceTiming(
+    const char* name,
+    uint64_t queuedTime,
+    uint64_t submitTime,
+    uint64_t startTime,
+    uint64_t endTime,
+    uint64_t id )
+{
+    const uint64_t  usStarts[cNumStates] = {
+        queuedTime,
+        submitTime,
+        startTime
+    };
+    const uint64_t  usDeltas[cNumStates] = {
+        submitTime - queuedTime,
+        startTime - submitTime,
+        endTime - startTime
+    };
+
+    for( size_t state = 0; state < cNumStates; state++ )
+    {
+        int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
+            "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s %s\""
+            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
+            m_ProcessId,
+            name,
+            name,
+            suffixes[state],
+            usStarts[state],
+            usDeltas[state],
+            colours[state],
+            id );
+        m_TraceFile.write(m_StringBuffer, size);
     }
 }
 
@@ -179,9 +332,41 @@ void CChromeTracer::flushRecords()
             break;
 
         case RecordType::DeviceTiming:
+            writeDeviceTiming(
+                rec.Name.c_str(),
+                rec.DeviceTiming.QueueNumber,
+                rec.DeviceTiming.StartTime,
+                rec.DeviceTiming.EndTime,
+                rec.DeviceTiming.Id );
+            break;
         case RecordType::DeviceTimingPerKernel:
+            writeDeviceTiming(
+                rec.Name.c_str(),
+                rec.DeviceTiming.StartTime,
+                rec.DeviceTiming.EndTime,
+                rec.DeviceTiming.Id );
+            break;
         case RecordType::DeviceTimingInStages:
+            writeDeviceTiming(
+                rec.Name.c_str(),
+                rec.DeviceTiming.Count,
+                rec.DeviceTiming.QueueNumber,
+                rec.DeviceTiming.QueuedTime,
+                rec.DeviceTiming.SubmitTime,
+                rec.DeviceTiming.StartTime,
+                rec.DeviceTiming.EndTime,
+                rec.DeviceTiming.Id );
+            break;
         case RecordType::DeviceTimingInStagesPerKernel:
+            writeDeviceTiming(
+                rec.Name.c_str(),
+                rec.DeviceTiming.QueuedTime,
+                rec.DeviceTiming.SubmitTime,
+                rec.DeviceTiming.StartTime,
+                rec.DeviceTiming.EndTime,
+                rec.DeviceTiming.Id );
+            break;
+
         default: CLI_ASSERT(0); break;
         }
     }

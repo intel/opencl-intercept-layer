@@ -30,7 +30,7 @@ public:
     ~CChromeTracer()
     {
         flush();
-        m_InterceptTrace.close();
+        m_TraceFile.close();
     }
 
     void init( const std::string& fileName );
@@ -39,7 +39,7 @@ public:
             uint64_t threadId,
             const std::string& processName )
     {
-        m_InterceptTrace
+        m_TraceFile
             << "{\"ph\":\"M\", \"name\":\"process_name\", \"pid\":" << m_ProcessId
             << ", \"tid\":" << threadId
             << ", \"args\":{\"name\":\"" << processName
@@ -50,12 +50,12 @@ public:
             uint64_t threadId,
             uint32_t threadNumber )
     {
-        m_InterceptTrace
+        m_TraceFile
             << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << m_ProcessId
             << ", \"tid\":" << threadId
             << ", \"args\":{\"name\":\"Host Thread " << threadId
             << "\"}},\n";
-        m_InterceptTrace
+        m_TraceFile
             << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << m_ProcessId
             << ", \"tid\":" << threadId
             << ", \"args\":{\"sort_index\":\"" << threadNumber + 10000
@@ -66,7 +66,7 @@ public:
             uint64_t threadId,
             uint64_t startTime )
     {
-        m_InterceptTrace
+        m_TraceFile
             << "{\"ph\":\"M\", \"name\":\"clintercept_start_time\", \"pid\":" << m_ProcessId
             << ", \"tid\":" << threadId
             << ", \"args\":{\"start_time\":" << startTime
@@ -77,12 +77,12 @@ public:
             uint32_t queueNumber,
             const std::string& queueName )
     {
-        m_InterceptTrace
+        m_TraceFile
             << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << m_ProcessId
             << ", \"tid\":-" << queueNumber
             << ", \"args\":{\"name\":\"" << queueName
             << "\"}},\n";
-        m_InterceptTrace
+        m_TraceFile
             << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << m_ProcessId
             << ", \"tid\":-" << queueNumber
             << ", \"args\":{\"sort_index\":\"" << queueNumber
@@ -215,10 +215,147 @@ public:
         }
     }
 
+    // Device Timing
+    void addDeviceTiming(
+            const std::string& name,
+            uint32_t queueNumber,
+            uint64_t startTime,
+            uint64_t endTime,
+            uint64_t id )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        if( m_BufferSize == 0 )
+        {
+            writeDeviceTiming(
+                name.c_str(),
+                queueNumber,
+                startTime,
+                endTime,
+                id );
+        }
+        else
+        {
+            m_RecordBuffer.emplace_back(RecordType::DeviceTiming, name);
+
+            Record& rec = m_RecordBuffer.back();
+            rec.DeviceTiming.QueueNumber = queueNumber;
+            rec.DeviceTiming.StartTime = startTime;
+            rec.DeviceTiming.EndTime = endTime;
+            rec.DeviceTiming.Id = id;
+
+            checkFlushRecords();
+        }
+    }
+
+    // Device Timing Per Kernel
+    void addDeviceTiming(
+            const std::string& name,
+            uint64_t startTime,
+            uint64_t endTime,
+            uint64_t id )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        if( m_BufferSize == 0 )
+        {
+            writeDeviceTiming(
+                name.c_str(),
+                startTime,
+                endTime,
+                id );
+        }
+        else
+        {
+            m_RecordBuffer.emplace_back(RecordType::DeviceTimingPerKernel, name);
+
+            Record& rec = m_RecordBuffer.back();
+            rec.DeviceTiming.StartTime = startTime;
+            rec.DeviceTiming.EndTime = endTime;
+            rec.DeviceTiming.Id = id;
+
+            checkFlushRecords();
+        }
+    }
+
+    // Device Timing In Stages
+    void addDeviceTiming(
+            const std::string& name,
+            uint32_t count,
+            uint32_t queueNumber,
+            uint64_t queuedTime,
+            uint64_t submitTime,
+            uint64_t startTime,
+            uint64_t endTime,
+            uint64_t id )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        if( m_BufferSize == 0 )
+        {
+            writeDeviceTiming(
+                name.c_str(),
+                count,
+                queueNumber,
+                queuedTime,
+                submitTime,
+                startTime,
+                endTime,
+                id );
+        }
+        else
+        {
+            m_RecordBuffer.emplace_back(RecordType::DeviceTimingInStages, name);
+
+            Record& rec = m_RecordBuffer.back();
+            rec.DeviceTiming.Count = count;
+            rec.DeviceTiming.QueueNumber = queueNumber;
+            rec.DeviceTiming.QueuedTime = queuedTime;
+            rec.DeviceTiming.SubmitTime = submitTime;
+            rec.DeviceTiming.StartTime = startTime;
+            rec.DeviceTiming.EndTime = endTime;
+            rec.DeviceTiming.Id = id;
+
+            checkFlushRecords();
+        }
+    }
+
+    // Device Timing In Stages Per Kernel
+    void addDeviceTiming(
+            const std::string& name,
+            uint64_t queuedTime,
+            uint64_t submitTime,
+            uint64_t startTime,
+            uint64_t endTime,
+            uint64_t id )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        if( m_BufferSize == 0 )
+        {
+            writeDeviceTiming(
+                name.c_str(),
+                queuedTime,
+                submitTime,
+                startTime,
+                endTime,
+                id );
+        }
+        else
+        {
+            m_RecordBuffer.emplace_back(RecordType::DeviceTimingInStagesPerKernel, name);
+
+            Record& rec = m_RecordBuffer.back();
+            rec.DeviceTiming.QueuedTime = queuedTime;
+            rec.DeviceTiming.SubmitTime = submitTime;
+            rec.DeviceTiming.StartTime = startTime;
+            rec.DeviceTiming.EndTime = endTime;
+            rec.DeviceTiming.Id = id;
+
+            checkFlushRecords();
+        }
+    }
+
     // temp
     std::ostream& write( const char* str, std::streamsize count )
     {
-        return m_InterceptTrace.write(str, count);
+        return m_TraceFile.write(str, count);
     }
 
     std::ostream& flush()
@@ -228,7 +365,7 @@ public:
             std::lock_guard<std::mutex> lock(m_Mutex);
             flushRecords();
         }
-        return m_InterceptTrace.flush();
+        return m_TraceFile.flush();
     }
 
 private:
@@ -239,7 +376,7 @@ private:
     uint64_t    m_ProcessId;
     uint32_t    m_BufferSize;
 
-    std::ofstream   m_InterceptTrace;
+    std::ofstream   m_TraceFile;
     mutable char    m_StringBuffer[CLI_STRING_BUFFER_SIZE];
 
     enum class RecordType
@@ -258,6 +395,8 @@ private:
     struct Record
     {
         Record( RecordType rt, const char* name ) :
+            Type(rt), Name(name) {}
+        Record( RecordType rt, const std::string& name ) :
             Type(rt), Name(name) {}
         Record( RecordType rt, const char* name, const std::string& tag ) :
             Type(rt), Name(name), Tag(tag) {}
@@ -322,6 +461,41 @@ private:
             uint64_t threadId,
             uint64_t startTime,
             uint64_t delta,
+            uint64_t id );
+
+    // Device Timing
+    void writeDeviceTiming(
+            const char* name,
+            uint32_t queueNumber,
+            uint64_t startTime,
+            uint64_t endTime,
+            uint64_t id );
+
+    // Device Timing Per Kernel
+    void writeDeviceTiming(
+            const char* name,
+            uint64_t startTime,
+            uint64_t endTime,
+            uint64_t id );
+
+    // Device Timing In Stages
+    void writeDeviceTiming(
+            const char* name,
+            uint32_t count,
+            uint32_t queueNumber,
+            uint64_t queuedTime,
+            uint64_t submitTime,
+            uint64_t startTime,
+            uint64_t endTime,
+            uint64_t id );
+
+    // Device Timing In Stages Per Kernel
+    void writeDeviceTiming(
+            const char* name,
+            uint64_t queuedTime,
+            uint64_t submitTime,
+            uint64_t startTime,
+            uint64_t endTime,
             uint64_t id );
 
     void checkFlushRecords()
