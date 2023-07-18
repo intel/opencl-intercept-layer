@@ -4,8 +4,6 @@
 // SPDX-License-Identifier: MIT
 */
 
-#pragma once
-
 #include "chrometracer.h"
 #include "intercept.h"
 

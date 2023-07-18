@@ -258,10 +258,10 @@ private:
 
     struct Record
     {
-        struct Record() = default;
-        struct Record( RecordType rt, const char* name ) :
+        Record() = default;
+        Record( RecordType rt, const char* name ) :
             Type(rt), Name(name) {}
-        struct Record( RecordType rt, const char* name, const std::string& tag ) :
+        Record( RecordType rt, const char* name, const std::string& tag ) :
             Type(rt), Name(name), Tag(tag) {}
 
         RecordType  Type;
