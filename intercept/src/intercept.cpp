@@ -260,10 +260,10 @@ CLIntercept::~CLIntercept()
         }
     }
 
-    log( "... shutdown complete.\n" );
-
-    m_InterceptLog.close();
     m_InterceptTrace.flush();
+
+    log( "... shutdown complete.\n" );
+    m_InterceptLog.close();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -2941,6 +2941,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
     if( pIntercept && pIntercept->dispatch().clWaitForEvents )
     {
         GET_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING();
 
         std::string eventList;
         if( pIntercept->config().CallLogging )
@@ -2962,7 +2963,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
         HOST_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         CALL_LOGGING_EXIT( retVal );
-
         DEVICE_PERFORMANCE_TIMING_CHECK();
 
         return retVal;
@@ -3253,6 +3253,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFinish)(
     if( pIntercept && pIntercept->dispatch().clFinish )
     {
         GET_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING();
         CALL_LOGGING_ENTER( "queue = %p", command_queue );
         HOST_PERFORMANCE_TIMING_START();
 
@@ -3262,7 +3263,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFinish)(
         HOST_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         CALL_LOGGING_EXIT( retVal );
-
         DEVICE_PERFORMANCE_TIMING_CHECK();
 
         return retVal;
@@ -3291,6 +3291,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_read );
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3348,12 +3349,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
+            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_read );
             ADD_EVENT( event ? event[0] : NULL );
-
-            if( blocking_read )
-            {
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3391,6 +3388,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_read );
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3450,12 +3448,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
+            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_read );
             ADD_EVENT( event ? event[0] : NULL );
-
-            if( blocking_read )
-            {
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3487,6 +3481,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_write );
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3544,12 +3539,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
+            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_write );
             ADD_EVENT( event ? event[0] : NULL );
-
-            if( blocking_write )
-            {
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3587,6 +3578,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_write );
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -3646,12 +3638,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
+            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_write );
             ADD_EVENT( event ? event[0] : NULL );
-
-            if( blocking_write )
-            {
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3932,6 +3920,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_read );
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4007,12 +3996,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
+            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_read );
             ADD_EVENT( event ? event[0] : NULL );
-
-            if( blocking_read )
-            {
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4046,6 +4031,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_write );
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4105,12 +4091,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
+            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_write );
             ADD_EVENT( event ? event[0] : NULL );
-
-            if( blocking_write )
-            {
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4421,6 +4403,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
         void*   retVal = NULL;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_map );
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4492,12 +4475,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                 "[ map count = %d ] returned %p",
                 map_count,
                 retVal );
+            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_map );
             ADD_EVENT( event ? event[0] : NULL );
-
-            if( blocking_map )
-            {
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4532,6 +4511,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
         void*   retVal = NULL;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_map );
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -4619,12 +4599,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                 "[ map count = %d ] returned %p",
                 map_count,
                 retVal );
+            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_map );
             ADD_EVENT( event ? event[0] : NULL );
-
-            if( blocking_map )
-            {
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5118,6 +5094,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWaitForEvents)(
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -5148,7 +5125,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWaitForEvents)(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
-
             DEVICE_PERFORMANCE_TIMING_CHECK();
         }
 
@@ -6234,6 +6210,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING();
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -6264,13 +6241,12 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
+            DEVICE_PERFORMANCE_TIMING_CHECK();
             ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
         CHECK_AUBCAPTURE_STOP( command_queue );
-
-        DEVICE_PERFORMANCE_TIMING_CHECK();
 
         return retVal;
     }
@@ -6438,6 +6414,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_copy );
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -6474,12 +6451,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
+            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_copy );
             ADD_EVENT( event ? event[0] : NULL );
-
-            if( blocking_copy )
-            {
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6578,6 +6551,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
         cl_int  retVal = CL_SUCCESS;
 
         INCREMENT_ENQUEUE_COUNTER();
+        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_map );
         CHECK_AUBCAPTURE_START( command_queue );
 
         if( pIntercept->config().NullEnqueue == false )
@@ -6616,12 +6590,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
             ADD_MAP_POINTER( svm_ptr, map_flags, size );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
+            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_map );
             ADD_EVENT( event ? event[0] : NULL );
-
-            if( blocking_map )
-            {
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-            }
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -7575,6 +7545,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseExternalMemObjectsKHR(
             cl_int  retVal = CL_SUCCESS;
 
             INCREMENT_ENQUEUE_COUNTER();
+            FLUSH_CHROME_TRACE_BUFFERING();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -7597,13 +7568,12 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseExternalMemObjectsKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
+                DEVICE_PERFORMANCE_TIMING_CHECK();
                 ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
             CHECK_AUBCAPTURE_STOP( command_queue );
-
-            DEVICE_PERFORMANCE_TIMING_CHECK();
 
             return retVal;
         }
@@ -7962,6 +7932,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
             cl_int  retVal = CL_SUCCESS;
 
             INCREMENT_ENQUEUE_COUNTER();
+            FLUSH_CHROME_TRACE_BUFFERING();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -7984,13 +7955,12 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
+                DEVICE_PERFORMANCE_TIMING_CHECK();
                 ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
             CHECK_AUBCAPTURE_STOP( command_queue );
-
-            DEVICE_PERFORMANCE_TIMING_CHECK();
 
             return retVal;
         }
@@ -8267,6 +8237,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
             cl_int  retVal = CL_SUCCESS;
 
             INCREMENT_ENQUEUE_COUNTER();
+            FLUSH_CHROME_TRACE_BUFFERING();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -8289,13 +8260,12 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
+                DEVICE_PERFORMANCE_TIMING_CHECK();
                 ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
             CHECK_AUBCAPTURE_STOP( command_queue );
-
-            DEVICE_PERFORMANCE_TIMING_CHECK();
 
             return retVal;
         }
@@ -8484,6 +8454,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
             cl_int  retVal = CL_SUCCESS;
 
             INCREMENT_ENQUEUE_COUNTER();
+            FLUSH_CHROME_TRACE_BUFFERING();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -8506,13 +8477,12 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
+                DEVICE_PERFORMANCE_TIMING_CHECK();
                 ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
             CHECK_AUBCAPTURE_STOP( command_queue );
-
-            DEVICE_PERFORMANCE_TIMING_CHECK();
 
             return retVal;
         }
@@ -8701,6 +8671,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
             cl_int  retVal = CL_SUCCESS;
 
             INCREMENT_ENQUEUE_COUNTER();
+            FLUSH_CHROME_TRACE_BUFFERING();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -8723,13 +8694,12 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
+                DEVICE_PERFORMANCE_TIMING_CHECK();
                 ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
             CHECK_AUBCAPTURE_STOP( command_queue );
-
-            DEVICE_PERFORMANCE_TIMING_CHECK();
 
             return retVal;
         }
@@ -9391,6 +9361,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
             cl_int  retVal = CL_SUCCESS;
 
             INCREMENT_ENQUEUE_COUNTER();
+            FLUSH_CHROME_TRACE_BUFFERING();
             CHECK_AUBCAPTURE_START( command_queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -9413,13 +9384,12 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
+                DEVICE_PERFORMANCE_TIMING_CHECK();
                 ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
             CHECK_AUBCAPTURE_STOP( command_queue );
-
-            DEVICE_PERFORMANCE_TIMING_CHECK();
 
             return retVal;
         }
@@ -10202,6 +10172,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
             cl_int  retVal = CL_SUCCESS;
 
             INCREMENT_ENQUEUE_COUNTER();
+            FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking );
             CHECK_AUBCAPTURE_START( queue );
 
             if( pIntercept->config().NullEnqueue == false )
@@ -10238,12 +10209,8 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
                 CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
+                DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking );
                 ADD_EVENT( event ? event[0] : NULL );
-
-                if( blocking )
-                {
-                    DEVICE_PERFORMANCE_TIMING_CHECK();
-                }
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );

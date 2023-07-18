@@ -10,11 +10,11 @@
 void CChromeTracer::init( const std::string& fileName )
 {
     m_ProcessId = m_pIntercept->OS().GetProcessID();
-    m_BufferSize = 1024;
-
+    m_BufferSize = m_pIntercept->config().ChromeTraceBuffering ?
+        1024 * 1024 / sizeof(Record) : // 1MB buffer
+        0;
     if( m_BufferSize != 0 )
     {
-        fprintf(stderr, "Note: record size is %zu bytes.\n", sizeof(Record));
         m_RecordBuffer.reserve( m_BufferSize );
     }
 
@@ -137,9 +137,9 @@ void CChromeTracer::writeCallLogging(
 
 void CChromeTracer::flushRecords()
 {
-    CLIntercept::clock::time_point  start, end;
-    size_t count = m_RecordBuffer.size();
-    start = CLIntercept::clock::now();
+    //CLIntercept::clock::time_point  start, end;
+    //size_t count = m_RecordBuffer.size();
+    //start = CLIntercept::clock::now();
 
     for( const auto& rec : m_RecordBuffer )
     {
@@ -188,8 +188,8 @@ void CChromeTracer::flushRecords()
 
     m_RecordBuffer.clear();
 
-    end = CLIntercept::clock::now();
-    using us = std::chrono::microseconds;
-    uint64_t    usDelta = std::chrono::duration_cast<us>(end - start).count();
-    fprintf(stderr, "Wrote %zu chrome tracing records in %" PRIu64 "us.\n", count, usDelta);
+    //end = CLIntercept::clock::now();
+    //using us = std::chrono::microseconds;
+    //uint64_t    usDelta = std::chrono::duration_cast<us>(end - start).count();
+    //fprintf(stderr, "Wrote %zu chrome tracing records in %" PRIu64 "us.\n", count, usDelta);
 }

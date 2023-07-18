@@ -221,7 +221,6 @@ public:
         return m_InterceptTrace.write(str, count);
     }
 
-    // temp?
     std::ostream& flush()
     {
         if( m_RecordBuffer.size() > 0 )
@@ -258,7 +257,6 @@ private:
 
     struct Record
     {
-        Record() = default;
         Record( RecordType rt, const char* name ) :
             Type(rt), Name(name) {}
         Record( RecordType rt, const char* name, const std::string& tag ) :
