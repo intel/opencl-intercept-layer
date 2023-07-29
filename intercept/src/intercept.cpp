@@ -7663,7 +7663,7 @@ void CLIntercept::dumpCaptureReplayKernelArguments(
     {
         const auto index = arg.first;
         const auto& value = arg.second;
-        std::string fileName = dumpDirectory + "Argument" + std::to_string(index) + ".bin";
+        std::string fileName{dumpDirectory + "Argument" + std::to_string(index) + ".bin"};
         std::ofstream out{fileName, std::ios::out | std::ios::binary};
         out.write(reinterpret_cast<char const*>(value.data()), value.size());
     }
@@ -7673,17 +7673,39 @@ void CLIntercept::dumpCaptureReplayKernelArguments(
     {
         const auto index = arg.first;
         const auto value = arg.second;
-        std::string fileName = dumpDirectory + "Local" + std::to_string(index) + ".txt";
+        std::string fileName{dumpDirectory + "Local" + std::to_string(index) + ".txt"};
         std::ofstream out{fileName};
         out << std::to_string(value);
     }
 
+    const auto& argMemMap = m_KernelArgMemMap[kernel];
+    for( const auto& arg : argMemMap )
+    {
+        const auto index = arg.first;
+        const auto value = (cl_mem)arg.second;
+        if( m_ImageInfoMap.find( value ) != m_ImageInfoMap.end() )
+        {
+            const SImageInfo&   info = m_ImageInfoMap[ value ];
+            std::string fileName{dumpDirectory + "Image_MetaData_" + std::to_string(index) + ".txt"};
+            std::ofstream out{fileName};
+            out << info.Region[0] << '\n'
+                << info.Region[1] << '\n'
+                << info.Region[2] << '\n'
+                << info.ElementSize << '\n'
+                << info.RowPitch << '\n'
+                << info.SlicePitch << '\n'
+                << info.Format.image_channel_data_type << '\n'
+                << info.Format.image_channel_order << '\n'
+                << static_cast<int>(info.ImageType);
+        }
+    }
+
     const auto& samplerValues = m_KernelArgSamplerMap[kernel];
-    for( const auto& arg: samplerValues)
+    for( const auto& arg: samplerValues )
     {
         const auto index = arg.first;
         const auto& value = arg.second;
-        std::string fileName = dumpDirectory + "Sampler" + std::to_string(index) + ".txt";
+        std::string fileName{dumpDirectory + "Sampler" + std::to_string(index) + ".txt"};
         std::ofstream out{fileName};
         out << value;
     }
@@ -8043,21 +8065,6 @@ void CLIntercept::dumpImagesForKernel(
 
                     delete [] readImageData;
                 }
-            }
-
-            if( m_Config.CaptureReplay )
-            {
-                // write image meta data to file
-                std::ofstream metaData{fileNamePrefix + "Image_MetaData_" + std::to_string(arg_index) + ".txt"};
-                metaData << info.Region[0] << '\n'
-                         << info.Region[1] << '\n'
-                         << info.Region[2] << '\n'
-                         << info.ElementSize << '\n'
-                         << info.RowPitch << '\n'
-                         << info.SlicePitch << '\n'
-                         << info.Format.image_channel_data_type << '\n'
-                         << info.Format.image_channel_order << '\n'
-                         << static_cast<int>(info.ImageType);
             }
         }
     }
