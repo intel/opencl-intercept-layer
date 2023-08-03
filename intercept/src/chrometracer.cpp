@@ -40,12 +40,12 @@ void CChromeTracer::writeCallLogging(
 {
     int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
         "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
-        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
+        ",\"ts\":%.3f,\"dur\":%.3f},\n",
         m_ProcessId,
         threadId,
         name,
-        startTime,
-        delta );
+        startTime / 1000.0,
+        delta /1000.0 );
     m_TraceFile.write(m_StringBuffer, size);
 }
 
@@ -59,13 +59,13 @@ void CChromeTracer::writeCallLogging(
 {
     int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
         "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s( %s )\""
-        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 "},\n",
+        ",\"ts\":%.3f,\"dur\":%.3f},\n",
         m_ProcessId,
         threadId,
         name,
         tag,
-        startTime,
-        delta );
+        startTime / 1000.0,
+        delta / 1000.0 );
     m_TraceFile.write(m_StringBuffer, size);
 }
 
@@ -79,12 +79,12 @@ void CChromeTracer::writeCallLogging(
 {
     int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
         "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s\""
-        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+        ",\"ts\":%.3f,\"dur\":%.3f,\"args\":{\"id\":%" PRIu64 "}},\n",
         m_ProcessId,
         threadId,
         name,
-        startTime,
-        delta,
+        startTime / 1000.0,
+        delta / 1000.0,
         id );
     m_TraceFile.write(m_StringBuffer, size);
 
@@ -92,10 +92,10 @@ void CChromeTracer::writeCallLogging(
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
             "{\"ph\":\"s\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"Command\""
-            ",\"cat\":\"Commands\",\"ts\":%" PRIu64 ",\"id\":%" PRIu64 "},\n",
+            ",\"cat\":\"Commands\",\"ts\":%.3f,\"id\":%" PRIu64 "},\n",
             m_ProcessId,
             threadId,
-            startTime,
+            startTime / 1000.0,
             id );
         m_TraceFile.write(m_StringBuffer, size);
     }
@@ -112,13 +112,13 @@ void CChromeTracer::writeCallLogging(
 {
     int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
         "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"%s( %s )\""
-        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+        ",\"ts\":%.3f,\"dur\":%.3f,\"args\":{\"id\":%" PRIu64 "}},\n",
         m_ProcessId,
         threadId,
         name,
         tag,
-        startTime,
-        delta,
+        startTime / 1000.0,
+        delta / 1000.0,
         id );
     m_TraceFile.write(m_StringBuffer, size);
 
@@ -126,10 +126,10 @@ void CChromeTracer::writeCallLogging(
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
             "{\"ph\":\"s\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"Command\""
-            ",\"cat\":\"Commands\",\"ts\":%" PRIu64 ",\"id\":%" PRIu64 "},\n",
+            ",\"cat\":\"Commands\",\"ts\":%.3f,\"id\":%" PRIu64 "},\n",
             m_ProcessId,
             threadId,
-            startTime,
+            startTime / 1000.0,
             id );
         m_TraceFile.write(m_StringBuffer, size);
     }
@@ -147,22 +147,22 @@ void CChromeTracer::writeDeviceTiming(
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
             "{\"ph\":\"f\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"Command\""
-            ",\"cat\":\"Commands\",\"ts\":%" PRIu64 ",\"id\":%" PRIu64 "},\n",
+            ",\"cat\":\"Commands\",\"ts\":%.3f,\"id\":%" PRIu64 "},\n",
             m_ProcessId,
             queueNumber,
-            startTime,
+            startTime / 1000.0,
             id );
         m_TraceFile.write(m_StringBuffer, size);
     }
 
     int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
         "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"%s\""
-        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+        ",\"ts\":%.3f,\"dur\":%.3f,\"args\":{\"id\":%" PRIu64 "}},\n",
         m_ProcessId,
         queueNumber,
         name,
-        startTime,
-        endTime - startTime,
+        startTime / 1000.0,
+        (endTime - startTime) / 1000.0,
         id );
     m_TraceFile.write(m_StringBuffer, size);
 }
@@ -178,22 +178,22 @@ void CChromeTracer::writeDeviceTiming(
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
             "{\"ph\":\"f\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"Command\""
-            ",\"cat\":\"Commands\",\"ts\":%" PRIu64 ",\"id\":%" PRIu64 "},\n",
+            ",\"cat\":\"Commands\",\"ts\":%.3f,\"id\":%" PRIu64 "},\n",
             m_ProcessId,
             name,
-            startTime,
+            startTime / 1000.0,
             id );
         m_TraceFile.write(m_StringBuffer, size);
     }
 
     int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
         "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s\""
-        ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"args\":{\"id\":%" PRIu64 "}},\n",
+        ",\"ts\":%.3f,\"dur\":%.3f,\"args\":{\"id\":%" PRIu64 "}},\n",
         m_ProcessId,
         name,
         name,
-        startTime,
-        endTime - startTime,
+        startTime / 1000.0,
+        (endTime - startTime) / 1000.0,
         id );
     m_TraceFile.write(m_StringBuffer, size);
 }
@@ -222,22 +222,22 @@ void CChromeTracer::writeDeviceTiming(
     uint64_t endTime,
     uint64_t id )
 {
-    const uint64_t  usStarts[cNumStates] = {
-        queuedTime,
-        submitTime,
-        startTime
+    const double    usStarts[cNumStates] = {
+        queuedTime / 1000.0,
+        submitTime / 1000.0,
+        startTime / 1000.0,
     };
-    const uint64_t  usDeltas[cNumStates] = {
-        submitTime - queuedTime,
-        startTime - submitTime,
-        endTime - startTime
+    const double    usDeltas[cNumStates] = {
+        (submitTime - queuedTime) / 1000.0,
+        (startTime - submitTime) / 1000.0,
+        (endTime - startTime) / 1000.0,
     };
 
     for( size_t state = 0; state < cNumStates; state++ )
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
             "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":%u.%u,\"name\":\"%s %s\""
-            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
+            ",\"ts\":%.3f,\"dur\":%.3f,\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
             m_ProcessId,
             count,
             queueNumber,
@@ -260,22 +260,22 @@ void CChromeTracer::writeDeviceTiming(
     uint64_t endTime,
     uint64_t id )
 {
-    const uint64_t  usStarts[cNumStates] = {
-        queuedTime,
-        submitTime,
-        startTime
+    const double    usStarts[cNumStates] = {
+        queuedTime / 1000.0,
+        submitTime / 1000.0,
+        startTime / 1000.0,
     };
-    const uint64_t  usDeltas[cNumStates] = {
-        submitTime - queuedTime,
-        startTime - submitTime,
-        endTime - startTime
+    const double    usDeltas[cNumStates] = {
+        (submitTime - queuedTime) / 1000.0,
+        (startTime - submitTime) / 1000.0,
+        (endTime - startTime) / 1000.0,
     };
 
     for( size_t state = 0; state < cNumStates; state++ )
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
             "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"%s %s\""
-            ",\"ts\":%" PRIu64 ",\"dur\":%" PRIu64 ",\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
+            ",\"ts\":%.3f,\"dur\":%.3f,\"cname\":\"%s\",\"args\":{\"id\":%" PRIu64 "}},\n",
             m_ProcessId,
             name,
             name,

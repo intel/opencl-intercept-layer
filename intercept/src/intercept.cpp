@@ -13765,27 +13765,27 @@ void CLIntercept::chromeCallLoggingExit(
     // This will name the thread if it is not named already.
     getThreadNumber( threadId );
 
-    using us = std::chrono::microseconds;
-    uint64_t    usStart =
-        std::chrono::duration_cast<us>(tickStart - m_StartTime).count();
-    uint64_t    usDelta =
-        std::chrono::duration_cast<us>(tickEnd - tickStart).count();
+    using ns = std::chrono::nanoseconds;
+    uint64_t    nsStart =
+        std::chrono::duration_cast<ns>(tickStart - m_StartTime).count();
+    uint64_t    nsDelta =
+        std::chrono::duration_cast<ns>(tickEnd - tickStart).count();
 
     if( !tag.empty() && includeId )
     {
-        m_ChromeTrace.addCallLogging( functionName, tag, threadId, usStart, usDelta, enqueueCounter );
+        m_ChromeTrace.addCallLogging( functionName, tag, threadId, nsStart, nsDelta, enqueueCounter );
     }
     else if( !tag.empty() )
     {
-        m_ChromeTrace.addCallLogging( functionName, tag, threadId, usStart, usDelta );
+        m_ChromeTrace.addCallLogging( functionName, tag, threadId, nsStart, nsDelta );
     }
     else if( includeId )
     {
-        m_ChromeTrace.addCallLogging( functionName, threadId, usStart, usDelta, enqueueCounter );
+        m_ChromeTrace.addCallLogging( functionName, threadId, nsStart, nsDelta, enqueueCounter );
     }
     else
     {
-        m_ChromeTrace.addCallLogging( functionName, threadId, usStart, usDelta );
+        m_ChromeTrace.addCallLogging( functionName, threadId, nsStart, nsDelta );
     }
 
     if( m_Config.FlushFiles )
@@ -13940,13 +13940,13 @@ void CLIntercept::chromeTraceEvent(
     //        deltaNS, deltaNS / 1000.0 );
     //}
 
-    const uint64_t  usQueued = normalizedQueuedTimeNS / 1000;
-    const uint64_t  usSubmit =
-        ( commandSubmit - commandQueued + normalizedQueuedTimeNS) / 1000;
-    const uint64_t  usStart =
-        (commandStart - commandQueued + normalizedQueuedTimeNS) / 1000;
-    const uint64_t  usEnd =
-        (commandEnd - commandQueued + normalizedQueuedTimeNS) / 1000;
+    const uint64_t  nsQueued = normalizedQueuedTimeNS;
+    const uint64_t  nsSubmit =
+        commandSubmit - commandQueued + normalizedQueuedTimeNS;
+    const uint64_t  nsStart =
+        commandStart - commandQueued + normalizedQueuedTimeNS;
+    const uint64_t  nsEnd =
+        commandEnd - commandQueued + normalizedQueuedTimeNS;
 
     if( m_Config.ChromePerformanceTimingInStages )
     {
@@ -13954,10 +13954,10 @@ void CLIntercept::chromeTraceEvent(
         {
             m_ChromeTrace.addDeviceTiming(
                 name,
-                usQueued,
-                usSubmit,
-                usStart,
-                usEnd,
+                nsQueued,
+                nsSubmit,
+                nsStart,
+                nsEnd,
                 enqueueCounter );
         }
         else
@@ -13966,10 +13966,10 @@ void CLIntercept::chromeTraceEvent(
                 name,
                 m_EventsChromeTraced,
                 queueNumber,
-                usQueued,
-                usSubmit,
-                usStart,
-                usEnd,
+                nsQueued,
+                nsSubmit,
+                nsStart,
+                nsEnd,
                 enqueueCounter );
         }
         m_EventsChromeTraced++;
@@ -13978,11 +13978,11 @@ void CLIntercept::chromeTraceEvent(
     {
         if( m_Config.ChromePerformanceTimingPerKernel )
         {
-            m_ChromeTrace.addDeviceTiming( name, usStart, usEnd, enqueueCounter );
+            m_ChromeTrace.addDeviceTiming( name, nsStart, nsEnd, enqueueCounter );
         }
         else
         {
-            m_ChromeTrace.addDeviceTiming( name, queueNumber, usStart, usEnd, enqueueCounter );
+            m_ChromeTrace.addDeviceTiming( name, queueNumber, nsStart, nsEnd, enqueueCounter );
         }
     }
 }

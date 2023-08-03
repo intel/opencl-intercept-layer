@@ -22,10 +22,9 @@ class CChromeTracer
 {
 public:
     CChromeTracer( const CLIntercept* pIntercept ) :
-        m_pIntercept(pIntercept)
-    {
-        m_ProcessId = 0;
-    }
+        m_pIntercept(pIntercept),
+        m_ProcessId(0),
+        m_BufferSize(0) {}
 
     ~CChromeTracer()
     {
