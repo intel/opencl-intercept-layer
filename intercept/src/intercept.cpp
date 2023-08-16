@@ -418,7 +418,7 @@ bool CLIntercept::init()
         OS().MakeDumpDirectories( fileName );
 
         uint64_t    processId = OS().GetProcessID();
-        uint64_t    bufferSize = m_Config.ChromeTraceBufferSize;
+        uint32_t    bufferSize = m_Config.ChromeTraceBufferSize;
         bool        addFlowEvents = m_Config.ChromeFlowEvents;
         m_ChromeTrace.init( fileName, processId, bufferSize, addFlowEvents );
 

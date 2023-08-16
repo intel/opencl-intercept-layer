@@ -10,6 +10,7 @@
 #include <cinttypes>
 #include <fstream>
 #include <mutex>
+#include <string>
 #include <vector>
 
 #include <stdint.h>
@@ -33,7 +34,7 @@ public:
     void init(
             const std::string& fileName,
             uint64_t processId,
-            uint64_t bufferSize,
+            uint32_t bufferSize,
             bool addFlowEvents );
 
     void addProcessMetadata(

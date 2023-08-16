@@ -9,7 +9,7 @@
 void CChromeTracer::init(
     const std::string& fileName,
     uint64_t processId,
-    uint64_t bufferSize,
+    uint32_t bufferSize,
     bool addFlowEvents )
 {
     m_ProcessId = processId;
