@@ -16,13 +16,11 @@
 
 #include "common.h"
 
-class CLIntercept;
-
 class CChromeTracer
 {
 public:
-    CChromeTracer( const CLIntercept* pIntercept ) :
-        m_pIntercept(pIntercept),
+    CChromeTracer() :
+        m_AddFlowEvents(false),
         m_ProcessId(0),
         m_BufferSize(0) {}
 
@@ -32,7 +30,11 @@ public:
         m_TraceFile.close();
     }
 
-    void init( const std::string& fileName );
+    void init(
+            const std::string& fileName,
+            uint64_t processId,
+            uint64_t bufferSize,
+            bool addFlowEvents );
 
     void addProcessMetadata(
             uint64_t threadId,
@@ -368,9 +370,9 @@ public:
     }
 
 private:
-    const CLIntercept* m_pIntercept;
-
     std::mutex  m_Mutex;
+
+    bool        m_AddFlowEvents;
 
     uint64_t    m_ProcessId;
     uint32_t    m_BufferSize;

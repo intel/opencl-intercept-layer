@@ -187,9 +187,13 @@ If set to a nonzero value, logs the elapsed time in microseconds in addition to 
 
 If set to a nonzero value, logs function entry and exit information for every OpenCL call using the ITT APIs.  This feature will only function if the Intercept Layer for OpenCL Applications is built with ITT support.
 
-##### `ChromeTraceBuffering` (bool)
+##### `ChromeTraceBufferSize` (cl_uint)
 
-If set to a nonzero value, buffers JSON records for Chrome Tracing in memory before writing to a file.  The buffer will be flushed when it fills, on blocking OpenCL calls, and during application termination.
+If set to a nonzero value, buffers JSON records for Chrome Tracing in memory before writing to a file.  The buffer will be flushed when it fills, upon application termination, and optionally on blocking OpenCL calls.
+
+##### `ChromeTraceBufferingBlockingCallFlush` (bool)
+
+If set to a nonzero value, flushes buffered JSON records for Chrome Tracing after blocking OpenCL calls.
 
 ##### `ChromeCallLogging` (bool)
 

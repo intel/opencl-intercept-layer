@@ -123,7 +123,7 @@ void CLIntercept::Delete( CLIntercept*& pIntercept )
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLIntercept::CLIntercept( void* pGlobalData )
-    : m_OS( pGlobalData ), m_ChromeTrace( this )
+    : m_OS( pGlobalData )
 {
     m_ProcessId = m_OS.GetProcessID();
 
@@ -416,7 +416,11 @@ bool CLIntercept::init()
         fileName += sc_TraceFileName;
 
         OS().MakeDumpDirectories( fileName );
-        m_ChromeTrace.init( fileName );
+
+        uint64_t    processId = OS().GetProcessID();
+        uint64_t    bufferSize = m_Config.ChromeTraceBufferSize;
+        bool        addFlowEvents = m_Config.ChromeFlowEvents;
+        m_ChromeTrace.init( fileName, processId, bufferSize, addFlowEvents );
 
         uint64_t    threadId = OS().GetThreadID();
         std::string processName = OS().GetProcessName();

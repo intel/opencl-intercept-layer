@@ -21,6 +21,7 @@
 #include <stdint.h>
 
 #include "common.h"
+
 #include "chrometracer.h"
 #include "enummap.h"
 #include "dispatch.h"
@@ -3287,7 +3288,8 @@ inline void CLIntercept::flushChromeTraceBuffering()
 }
 
 #define FLUSH_CHROME_TRACE_BUFFERING()                                      \
-    if( pIntercept->config().ChromeTraceBuffering &&                        \
+    if( pIntercept->config().ChromeTraceBufferSize &&                       \
+        pIntercept->config().ChromeTraceBufferingBlockingCallFlush &&       \
         ( pIntercept->config().ChromeCallLogging ||                         \
           pIntercept->config().ChromePerformanceTiming ) )                  \
     {                                                                       \
@@ -3298,7 +3300,8 @@ inline void CLIntercept::flushChromeTraceBuffering()
 
 #define FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( _condition )              \
     if( ( _condition ) &&                                                   \
-        pIntercept->config().ChromeTraceBuffering &&                        \
+        pIntercept->config().ChromeTraceBufferSize &&                       \
+        pIntercept->config().ChromeTraceBufferingBlockingCallFlush &&       \
         ( pIntercept->config().ChromeCallLogging ||                         \
           pIntercept->config().ChromePerformanceTiming ) )                  \
     {                                                                       \

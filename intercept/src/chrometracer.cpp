@@ -5,14 +5,17 @@
 */
 
 #include "chrometracer.h"
-#include "intercept.h"
 
-void CChromeTracer::init( const std::string& fileName )
+void CChromeTracer::init(
+    const std::string& fileName,
+    uint64_t processId,
+    uint64_t bufferSize,
+    bool addFlowEvents )
 {
-    m_ProcessId = m_pIntercept->OS().GetProcessID();
-    m_BufferSize = m_pIntercept->config().ChromeTraceBuffering ?
-        1024 * 1024 / sizeof(Record) : // 1MB buffer
-        0;
+    m_ProcessId = processId;
+    m_BufferSize = bufferSize;
+    m_AddFlowEvents = addFlowEvents;
+
     if( m_BufferSize != 0 )
     {
         m_RecordBuffer.reserve( m_BufferSize );
@@ -88,7 +91,7 @@ void CChromeTracer::writeCallLogging(
         id );
     m_TraceFile.write(m_StringBuffer, size);
 
-    if( m_pIntercept->config().ChromeFlowEvents )
+    if( m_AddFlowEvents )
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
             "{\"ph\":\"s\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"Command\""
@@ -122,7 +125,7 @@ void CChromeTracer::writeCallLogging(
         id );
     m_TraceFile.write(m_StringBuffer, size);
 
-    if( m_pIntercept->config().ChromeFlowEvents )
+    if( m_AddFlowEvents )
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
             "{\"ph\":\"s\",\"pid\":%" PRIu64 ",\"tid\":%" PRIu64 ",\"name\":\"Command\""
@@ -143,7 +146,7 @@ void CChromeTracer::writeDeviceTiming(
     uint64_t endTime,
     uint64_t id )
 {
-    if( m_pIntercept->config().ChromeFlowEvents )
+    if( m_AddFlowEvents )
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
             "{\"ph\":\"f\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"Command\""
@@ -174,7 +177,7 @@ void CChromeTracer::writeDeviceTiming(
     uint64_t endTime,
     uint64_t id )
 {
-    if( m_pIntercept->config().ChromeFlowEvents )
+    if( m_AddFlowEvents )
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
             "{\"ph\":\"f\",\"pid\":%" PRIu64 ",\"tid\":\"%s\",\"name\":\"Command\""
