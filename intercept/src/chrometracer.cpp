@@ -293,10 +293,6 @@ void CChromeTracer::writeDeviceTiming(
 
 void CChromeTracer::flushRecords()
 {
-    //CLIntercept::clock::time_point  start, end;
-    //size_t count = m_RecordBuffer.size();
-    //start = CLIntercept::clock::now();
-
     for( const auto& rec : m_RecordBuffer )
     {
         switch( rec.Type )
@@ -375,9 +371,4 @@ void CChromeTracer::flushRecords()
     }
 
     m_RecordBuffer.clear();
-
-    //end = CLIntercept::clock::now();
-    //using us = std::chrono::microseconds;
-    //uint64_t    usDelta = std::chrono::duration_cast<us>(end - start).count();
-    //fprintf(stderr, "Wrote %zu chrome tracing records in %" PRIu64 "us.\n", count, usDelta);
 }
