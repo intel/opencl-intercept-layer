@@ -58,6 +58,8 @@ source_group(Resources FILES
 )
 
 set(CLINTERCEPT_SOURCE_FILES
+    src/chrometracer.h
+    src/chrometracer.cpp
     src/clIntercept.def
     src/clIntercept.map
     src/cli_ext.h
