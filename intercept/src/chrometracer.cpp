@@ -149,7 +149,7 @@ void CChromeTracer::writeDeviceTiming(
     if( m_AddFlowEvents )
     {
         int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-            "{\"ph\":\"f\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"Command\""
+            "{\"ph\":\"f\",\"pid\":%" PRIu64 ",\"tid\":0.%u,\"name\":\"Command\""
             ",\"cat\":\"Commands\",\"ts\":%.3f,\"id\":%" PRIu64 "},\n",
             m_ProcessId,
             queueNumber,
@@ -159,7 +159,7 @@ void CChromeTracer::writeDeviceTiming(
     }
 
     int size = CLI_SPRINTF(m_StringBuffer, CLI_STRING_BUFFER_SIZE,
-        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":-%u,\"name\":\"%s\""
+        "{\"ph\":\"X\",\"pid\":%" PRIu64 ",\"tid\":0.%u,\"name\":\"%s\""
         ",\"ts\":%.3f,\"dur\":%.3f,\"args\":{\"id\":%" PRIu64 "}},\n",
         m_ProcessId,
         queueNumber,

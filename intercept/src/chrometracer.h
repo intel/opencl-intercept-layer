@@ -81,12 +81,12 @@ public:
     {
         m_TraceFile
             << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << m_ProcessId
-            << ", \"tid\":-" << queueNumber
+            << ", \"tid\":0." << queueNumber
             << ", \"args\":{\"name\":\"" << queueName
             << "\"}},\n";
         m_TraceFile
             << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << m_ProcessId
-            << ", \"tid\":-" << queueNumber
+            << ", \"tid\":0." << queueNumber
             << ", \"args\":{\"sort_index\":\"" << queueNumber
             << "\"}},\n";
     }
