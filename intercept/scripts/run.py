@@ -1,7 +1,8 @@
-
-# Copyright (c) 2023-2024 Intel Corporation
+#
+# Copyright (c) 2023 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
+#
 
 import numpy as np
 import pyopencl as cl
