@@ -12816,6 +12816,8 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyImageToBufferKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillBufferKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillImageKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCommandSVMMemcpyKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clCommandSVMMemFillKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clCommandNDRangeKernelKHR );
     CHECK_RETURN_EXTENSION_FUNCTION( clGetCommandBufferInfoKHR );
 

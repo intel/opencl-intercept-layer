@@ -11043,6 +11043,118 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_khr_command_buffer
+CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
+    cl_command_buffer_khr command_buffer,
+    cl_command_queue command_queue,
+    void* dst_ptr,
+    const void* src_ptr,
+    size_t size,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point,
+    cl_mutable_command_khr* mutable_handle)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clCommandSVMMemcpyKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER(
+                "command_buffer = %p, command_queue = %p, dst_ptr = %p, src_ptr = %p, size = %zu",
+                command_buffer,
+                command_queue,
+                dst_ptr,
+                src_ptr,
+                size );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clCommandSVMMemcpyKHR(
+                command_buffer,
+                command_queue,
+                dst_ptr,
+                src_ptr,
+                size,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point,
+                mutable_handle );
+
+            HOST_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
+CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemFillKHR(
+    cl_command_buffer_khr command_buffer,
+    cl_command_queue command_queue,
+    void* svm_ptr,
+    const void* pattern,
+    size_t pattern_size,
+    size_t size,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point,
+    cl_mutable_command_khr* mutable_handle)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(command_buffer);
+        if( dispatchX.clCommandSVMMemFillKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            CALL_LOGGING_ENTER(
+                "command_buffer = %p, command_queue = %p, svm_ptr = %p, pattern_size = %zu, size = %zu",
+                command_buffer,
+                command_queue,
+                svm_ptr,
+                pattern_size,
+                size );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clCommandSVMMemFillKHR(
+                command_buffer,
+                command_queue,
+                svm_ptr,
+                pattern,
+                pattern_size,
+                size,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point,
+                mutable_handle );
+
+            HOST_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+            ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_command_buffer
 CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
