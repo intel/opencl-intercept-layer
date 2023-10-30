@@ -9914,6 +9914,8 @@ clMemBlockingFreeINTEL(
             REMOVE_USM_ALLOCATION( ptr );
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
+            DEVICE_PERFORMANCE_TIMING_CHECK();
+            FLUSH_CHROME_TRACE_BUFFERING();
 
             return retVal;
         }
