@@ -7279,6 +7279,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCloneKernel) (
 
         HOST_PERFORMANCE_TIMING_END();
         CHECK_ERROR( errcode_ret[0] );
+        ADD_OBJECT_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         if( retVal != NULL )
