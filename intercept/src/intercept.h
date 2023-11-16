@@ -3295,7 +3295,7 @@ inline void CLIntercept::flushChromeTraceBuffering()
     {                                                                       \
         TOOL_OVERHEAD_TIMING_START();                                       \
         pIntercept->flushChromeTraceBuffering();                            \
-        TOOL_OVERHEAD_TIMING_END( "(chrome trace flush overhead) ");        \
+        TOOL_OVERHEAD_TIMING_END( "(chrome trace flush overhead)" );        \
     }
 
 #define FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( _condition )              \
@@ -3307,7 +3307,7 @@ inline void CLIntercept::flushChromeTraceBuffering()
     {                                                                       \
         TOOL_OVERHEAD_TIMING_START();                                       \
         pIntercept->flushChromeTraceBuffering();                            \
-        TOOL_OVERHEAD_TIMING_END( "(chrome trace flush overhead) ");        \
+        TOOL_OVERHEAD_TIMING_END( "(chrome trace flush overhead)" );        \
     }
 
 ///////////////////////////////////////////////////////////////////////////////

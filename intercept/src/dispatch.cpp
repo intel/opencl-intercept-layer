@@ -621,6 +621,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( context );
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
+        DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( ref_count == 0 );
+        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( ref_count == 0 );
 
 #if 0
         pIntercept->report();
