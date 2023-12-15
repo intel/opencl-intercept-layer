@@ -10887,6 +10887,18 @@ bool CLIntercept::overrideGetDeviceInfo(
             override = true;
         }
         break;
+    case CL_DEVICE_IL_VERSION:
+        if( m_Config.DeviceILVersion != "" )
+        {
+            char*   ptr = (char*)param_value;
+            errorCode = writeStringToMemory(
+                param_value_size,
+                m_Config.DeviceILVersion,
+                param_value_size_ret,
+                ptr );
+            override = true;
+        }
+        break;
     case CL_DEVICE_VENDOR_ID:
         if( m_Config.DeviceVendorID != 0 )
         {
