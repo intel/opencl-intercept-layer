@@ -787,6 +787,10 @@ If set to a non-empty string, the clGetDeviceInfo() query for CL\_DEVICE\_OPENCL
 
 If set to a non-empty string, the clGetDeviceInfo() query for CL\_DEVICE\_EXTENSIONS will return this value instead of the true device extensions string.
 
+##### `DeviceILVersion` (string)
+
+If set to a non-empty string, the clGetDeviceInfo() query for CL\_DEVICE\_IL\_VERSION will return this value instead of the true device intermediate language versions.
+
 ##### `DeviceVendorID` (cl_uint)
 
 If set to a non-zero value, the clGetDeviceInfo() query for CL\_DEVICE\_VENDOR will return this value instead of the true device vendor ID.
