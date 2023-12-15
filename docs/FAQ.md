@@ -116,6 +116,24 @@ If not, here are a few common controls to check:
   You may want to try logging to a file or the debugger instead, such as via `LogToFile`.
 * `DevicePerformanceTiming` enables event profiling and attaches an event to each OpenCL command, which can serialize command execution on some OpenCL devices, reducing the benefits of out-of-order queues.
 
+## The Intercept Layer is not working with my Python virtual environment (venv).
+
+The root-cause of the issue is that a Python [virtual environment](https://docs.python.org/3/library/venv.html) uses a different Python executable, typically in a "Scripts" directory on Windows.
+Activating the virtual environment sets up the Windows PATH so the different Python executable is called.
+The different Python executable spawns a separate child process for the real Python executable, which runs Python in the virtual environment, and the separate child process does the actual work.
+
+When `cliloader` is used to intercept OpenCL calls in the virtual environment, `cliloader` sets up the Intercept Layer in the first Python executable, but it has no knowledge of the separate child Python process that is making OpenCL calls, so none of the OpenCL calls are intercepted.
+
+This issue could happen with other applications but it is most commonly encountered with Python virtual environments.
+It has only been observed on Windows; it has not been observed on Linux because Linux uses a different mechanism to intercept OpenCL calls.
+
+Here are several ways to work around this issue:
+
+* Explicitly invoke the real Python executable using its full path.
+* Enable the OpenCL Intercept Layer using a "local install" or "global install", instead of using `cliloader`.
+
+Note, for a "local install" the OpenCL Intercept Layer should be copied to the directory with the real Python executable, not to the "Scripts" directory with the different virtual environment Python executable.
+
 ## How do I submit a bug?
 
 Please file a GitHub issue to report a bug.
