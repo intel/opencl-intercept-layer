@@ -7556,13 +7556,16 @@ void CLIntercept::dumpCaptureReplayKernelSource(
         dispatch().clGetProgramInfo(program, CL_PROGRAM_BINARY_SIZES, num_devices * sizeof(size_t), sizes.data(), nullptr);
 
         std::vector<std::vector<unsigned char>> binaries;
+        std::vector<unsigned char*> binariesData;
         binaries.reserve(num_devices);
+        binariesData.reserve(num_devices);
         for( size_t device = 0; device != num_devices; ++device )
         {
             binaries.emplace_back(sizes[device]);
+            binariesData.emplace_back(binaries[device].data());
         }
 
-        error = dispatch().clGetProgramInfo(program, CL_PROGRAM_BINARIES, num_devices * sizeof(char*), binaries.data(), nullptr);
+        error = dispatch().clGetProgramInfo(program, CL_PROGRAM_BINARIES, num_devices * sizeof(unsigned char*), binariesData.data(), nullptr);
         if( error == CL_SUCCESS )
         {
             for (size_t device = 0; device != num_devices; ++device)
