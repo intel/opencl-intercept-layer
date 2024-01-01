@@ -7518,16 +7518,18 @@ void CLIntercept::dumpKernelSourceOrDeviceBinary( cl_kernel kernel,
     dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_DEVICES, num_devices * sizeof(cl_device_id), devices.data(), 0);
 
     std::vector<size_t> sizes(num_devices);
-    dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_BINARY_SIZES, sizeof(size_t*), sizes.data(), nullptr);
+    dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_BINARY_SIZES, sizeof(size_t) * sizes.size(), sizes.data(), nullptr);
 
     std::vector<std::vector<unsigned char>> binaries;
+    std::vector<unsigned char *> binariesDatas;
     for (size_t device = 0; device != num_devices; ++device)
     {
         std::vector<unsigned char> binary(sizes[device]);
         binaries.emplace_back(binary);
+        binariesDatas.emplace_back(binaries[device].data());
     }
 
-    error = dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_BINARIES, binaries.size() * sizeof(char*), binaries.data(), nullptr);
+    error = dispatch().clGetProgramInfo(tmp_program, CL_PROGRAM_BINARIES, binariesDatas.size() * sizeof(unsigned char*), binariesDatas.data(), nullptr);
 
     for (size_t device = 0; device != num_devices; ++device)
     {
