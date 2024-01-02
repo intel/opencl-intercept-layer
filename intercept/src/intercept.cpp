@@ -3407,6 +3407,14 @@ void CLIntercept::logKernelInfo(
                     sizeof(sms),
                     &sms,
                     NULL );
+                cl_uint regCount = 0;
+                cl_int errorCode_regCount = dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    deviceList[i],
+                    CL_KERNEL_REGISTER_COUNT_INTEL,
+                    sizeof(regCount),
+                    &regCount,
+                    NULL );
                 if( errorCode == CL_SUCCESS )
                 {
                     logf( "    For device: %s\n",
@@ -3433,6 +3441,10 @@ void CLIntercept::logKernelInfo(
                         if( errorCode_sms == CL_SUCCESS )
                         {
                             logf( "        Spill Mem Size: %u\n", (cl_uint)sms);
+                        }
+                        if( errorCode_regCount == CL_SUCCESS )
+                        {
+                            logf( "        Register Count: %u\n", regCount);
                         }
                     }
                 }
@@ -5802,6 +5814,20 @@ void CLIntercept::getTimingTagsKernel(
                 if( simd )
                 {
                     ss << " SIMD" << simd;
+                }
+            }
+            {
+                cl_uint regCount = 0;
+                dispatch().clGetKernelWorkGroupInfo(
+                    kernel,
+                    device,
+                    CL_KERNEL_REGISTER_COUNT_INTEL,
+                    sizeof(regCount),
+                    &regCount,
+                    NULL );
+                if( regCount )
+                {
+                    ss << " REG" << regCount;
                 }
             }
             {

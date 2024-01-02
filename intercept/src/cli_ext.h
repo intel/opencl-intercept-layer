@@ -1765,6 +1765,11 @@ cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeINTEL(
     const size_t *globalWorkSize,
     size_t *suggestedLocalWorkSize);
 
+///////////////////////////////////////////////////////////////////////////////
+// Unofficial cl_intel_maximum_registers extension:
+
+#define CL_KERNEL_REGISTER_COUNT_INTEL 0x425B
+
 #ifdef __cplusplus
 }
 #endif
