@@ -1,5 +1,5 @@
 /*
-// Copyright (c) 2018-2023 Intel Corporation
+// Copyright (c) 2018-2024 Intel Corporation
 //
 // SPDX-License-Identifier: MIT
 */
@@ -30,7 +30,7 @@ BEGIN
             VALUE "FileDescription", "Intercept Layer for OpenCL(tm) Applications Configuration App"
             VALUE "FileVersion", "v3.0"
             VALUE "InternalName", "CLIConfig"
-            VALUE "LegalCopyright", "Copyright (c) Intel Corporation 2018-2023"
+            VALUE "LegalCopyright", "Copyright (c) Intel Corporation 2018-2024"
             VALUE "OriginalFilename", "CLIConfig.exe"
             VALUE "ProductName", "Intercept Layer for OpenCL(tm) Applications Configuration App"
             VALUE "ProductVersion", "v3.0"
