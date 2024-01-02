@@ -102,4 +102,4 @@ may be useful to invoke a disassembler on all ISA binaries in a specified direct
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018-2023, Intel(R) Corporation
+Copyright (c) 2018-2024, Intel(R) Corporation
