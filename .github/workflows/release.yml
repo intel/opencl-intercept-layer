@@ -1,5 +1,8 @@
 name: release
 
+permissions:
+  contents: read
+
 on:
   push:
     tags:
@@ -16,19 +19,22 @@ jobs:
 
     runs-on: ${{matrix.os}}
 
+    permissions:
+      contents: write
+
     steps:
     - uses: actions/checkout@v3
 
     - name: Create Build Directory
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      run: cmake -E make_directory ./build
 
     - name: Run CMake
       shell: bash
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ./build
       run: cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE $GITHUB_WORKSPACE
 
     - name: Build
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ./build
       shell: bash
       run: cmake --build . --parallel --config $BUILD_TYPE --target package
 
@@ -40,7 +46,7 @@ jobs:
       with:
         draft: true
         files: |
-          ${{runner.workspace}}/build/clintercept-*.zip
+          ./build/clintercept-*.zip
 
     - name: Release (Linux tgz)
       if: |
@@ -50,4 +56,4 @@ jobs:
       with:
         draft: true
         files: |
-          ${{runner.workspace}}/build/clintercept-*.tar.gz
+          ./build/clintercept-*.tar.gz
