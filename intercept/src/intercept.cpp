@@ -3430,7 +3430,7 @@ void CLIntercept::logKernelInfo(
                     }
                     if( config().KernelInfoLogging )
                     {
-                        logf( "        Work Group Size: %zu\n", wgs);
+                        logf( "        Max Work Group Size: %zu\n", wgs);
                         if( rwgs[0] != 0 || rwgs[1] != 0 || rwgs[2] != 0 )
                         {
                             logf( "        Required Work Group Size: < %zu, %zu, %zu >\n",
