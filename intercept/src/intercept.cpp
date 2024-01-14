@@ -7630,9 +7630,9 @@ void CLIntercept::dumpCaptureReplayKernelInfo(
     std::ofstream outputBuildOptions{dumpDirectory + "buildOptions.txt", std::ios::out | std::ios::binary};
     outputBuildOptions.write(optionsString.c_str(), optionsString.length() - 1);
 
-    std::string knlName = getShortKernelName(kernel);
-    std::ofstream outputKnlName{dumpDirectory + "knlName.txt"};
-    outputKnlName << knlName;
+    std::string kernelName = getShortKernelName(kernel);
+    std::ofstream outputKernelName{dumpDirectory + "kernelName.txt"};
+    outputKernelName << kernelName;
 
     cl_uint numArgs = 0;
     dispatch().clGetKernelInfo(kernel, CL_KERNEL_NUM_ARGS, sizeof(cl_uint), &numArgs, nullptr);

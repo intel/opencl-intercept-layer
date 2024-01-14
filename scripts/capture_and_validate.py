@@ -42,8 +42,8 @@ if print_help:
     parser.print_help(sys.stderr)
     sys.exit(1)
 
-intercept_location_win = "C:\Intel\CLIntercept_Dump\\"
-intercept_location_posix = "~/CLIntercept_Dump/"
+intercept_location_win = 'C:\\Intel\\CLIntercept_Dump\\'
+intercept_location_posix = os.path.expanduser('~/CLIntercept_Dump/')
 intercept_location = ""
 
 if os.name == 'nt':
@@ -70,10 +70,10 @@ else:
 
 # Run ./cliloader, dumping via either enqueue number or the kernel name
 if args.cli_location == None:
-    command = [args.cli_location, args.app_location]
-else:
     print('No cliloader executable was specified!')
     command = [args.app_location]
+else:
+    command = [args.cli_location, args.app_location]
 command.extend(args.args)
 
 print('\n\nRunning test application: {}'.format(' '.join(map(str,command))))
@@ -152,7 +152,7 @@ for dumped_image in dumped_images:
     dumped_hashes[idx] = hashlib.md5(np.fromfile(dumped_image)).hexdigest()
 
 all_equal = True
-for pos in replayed_hashes.keys():
+for pos in sorted(replayed_hashes.keys()):
     if replayed_hashes[pos] == dumped_hashes[pos]:
         print(f"Check: Argument {pos} is equal.")
     else:

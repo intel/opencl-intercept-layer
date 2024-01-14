@@ -19,9 +19,16 @@ def get_image_metadata(idx: int):
     with open(filename) as metadata:
         lines = metadata.readlines()
 
-    shape = [int(lines[0]),
-                   int(lines[1]),
-                   int(lines[2])]
+    image_type = int(lines[8])
+    if image_type in [cl.mem_object_type.IMAGE1D]:
+        shape = [int(lines[0])]
+    elif image_type in [cl.mem_object_type.IMAGE2D]:
+        shape = [int(lines[0]), int(lines[1])]
+    elif image_type in [cl.mem_object_type.IMAGE3D]:
+        shape = [int(lines[0]), int(lines[1]), int(lines[2])]
+    else:
+        print('Unsupported image type for playback!')
+        shape = [int(lines[0]), int(lines[1]), int(lines[2])]
 
     format = cl.ImageFormat(int(lines[7]), int(lines[6]))
     return format, shape
@@ -136,8 +143,8 @@ with open("buildOptions.txt", 'r') as file:
     flags = [line.rstrip() for line in file]
     print(f"Using flags: {flags}")
 
-with open('knlName.txt') as file:
-    knl_name = file.read()
+with open('kernelName.txt') as file:
+    kernel_name = file.read()
 
 if os.path.isfile("kernel.cl"):
     print("Using kernel source code")
@@ -155,27 +162,27 @@ else:
     for idx in range(len(binaries)):
         try:
             prg = cl.Program(ctx, [devices[0]], [binaries[idx]]).build(flags)
-            getattr(prg, knl_name)
+            getattr(prg, kernel_name)
             break
         except Exception as e:
             pass
 
-knl = getattr(prg, knl_name)
+kernel = getattr(prg, kernel_name)
 for pos, argument in arguments.items():
-    knl.set_arg(pos, argument)
+    kernel.set_arg(pos, argument)
 
 for pos, buffer in gpu_buffers.items():
     for idx in pos:
-        knl.set_arg(idx, buffer)
+        kernel.set_arg(idx, buffer)
 
 for pos, image in gpu_images.items():
-    knl.set_arg(pos, image)
+    kernel.set_arg(pos, image)
 
 for pos, size in local_sizes.items():
-    knl.set_arg(pos, cl.LocalMemory(size))
+    kernel.set_arg(pos, cl.LocalMemory(size))
 
 for pos, sampler in samplers.items():
-    knl.set_arg(pos, sampler)
+    kernel.set_arg(pos, sampler)
 
 gws = []
 lws = []
@@ -196,7 +203,7 @@ if lws == [0] or lws == [0, 0] or lws == [0, 0, 0]:
     lws = None
 
 for _ in range(args.repetitions):
-    cl.enqueue_nd_range_kernel(queue, knl, gws, lws, gws_offset)
+    cl.enqueue_nd_range_kernel(queue, kernel, gws, lws, gws_offset)
 
 for pos in gpu_buffers.keys():
     if len(pos) == 1:
