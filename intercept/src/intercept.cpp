@@ -8819,9 +8819,9 @@ void CLIntercept::startAubCapture(
         {
             if( m_AubCaptureKernelEnqueueSkipCounter < m_Config.AubCaptureNumKernelEnqueuesSkip )
             {
-                logf( "Skipping kernel aub capture: current skip counter is %u, requested skip counter is %u.\n",
-                    m_AubCaptureKernelEnqueueSkipCounter,
-                    m_Config.AubCaptureNumKernelEnqueuesSkip );
+                //logf( "Skipping kernel aub capture: current skip counter is %u, requested skip counter is %u.\n",
+                //    m_AubCaptureKernelEnqueueSkipCounter,
+                //    m_Config.AubCaptureNumKernelEnqueuesSkip );
 
                 skip = true;
                 ++m_AubCaptureKernelEnqueueSkipCounter;
@@ -8830,9 +8830,9 @@ void CLIntercept::startAubCapture(
             {
                 if( m_AubCaptureKernelEnqueueCaptureCounter >= m_Config.AubCaptureNumKernelEnqueuesCapture )
                 {
-                    logf( "Skipping kernel aub capture: current capture counter is %u, requested capture counter is %u.\n",
-                        m_AubCaptureKernelEnqueueCaptureCounter,
-                        m_Config.AubCaptureNumKernelEnqueuesCapture );
+                    //logf( "Skipping kernel aub capture: current capture counter is %u, requested capture counter is %u.\n",
+                    //    m_AubCaptureKernelEnqueueCaptureCounter,
+                    //    m_Config.AubCaptureNumKernelEnqueuesCapture );
                     skip = true;
                 }
 
@@ -14011,9 +14011,9 @@ bool CLIntercept::checkCaptureReplayKernelSkips( const cl_kernel kernel )
     bool    skip = false;
     if( m_CaptureReplayKernelEnqueueSkipCounter < m_Config.CaptureReplayNumKernelEnqueuesSkip )
     {
-        logf( "Skipping kernel capture replay: current skip counter is %u, requested skip counter is %u.\n",
-            m_CaptureReplayKernelEnqueueSkipCounter,
-            m_Config.CaptureReplayNumKernelEnqueuesSkip );
+        //logf( "Skipping kernel capture replay: current skip counter is %u, requested skip counter is %u.\n",
+        //    m_CaptureReplayKernelEnqueueSkipCounter,
+        //    m_Config.CaptureReplayNumKernelEnqueuesSkip );
 
         skip = true;
         ++m_CaptureReplayKernelEnqueueSkipCounter;
@@ -14022,9 +14022,9 @@ bool CLIntercept::checkCaptureReplayKernelSkips( const cl_kernel kernel )
     {
         if( m_CaptureReplayKernelEnqueueCaptureCounter >= m_Config.CaptureReplayNumKernelEnqueuesCapture )
         {
-            logf( "Skipping kernel capture replay: current capture counter is %u, requested capture counter is %u.\n",
-                m_CaptureReplayKernelEnqueueCaptureCounter,
-                m_Config.CaptureReplayNumKernelEnqueuesCapture );
+            //logf( "Skipping kernel capture replay: current capture counter is %u, requested capture counter is %u.\n",
+            //    m_CaptureReplayKernelEnqueueCaptureCounter,
+            //    m_Config.CaptureReplayNumKernelEnqueuesCapture );
             skip = true;
         }
 
@@ -14066,8 +14066,8 @@ bool CLIntercept::checkCaptureReplayKernelSkips( const cl_kernel kernel )
         }
         else
         {
-            logf( "Skipping capture replay: key %s was already captured.\n",
-                key.c_str() );
+            //logf( "Skipping capture replay: key %s was already captured.\n",
+            //    key.c_str() );
             skip = true;
         }
     }
