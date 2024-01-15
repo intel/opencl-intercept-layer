@@ -43,7 +43,7 @@ if print_help:
     sys.exit(1)
 
 intercept_location_win = 'C:\\Intel\\CLIntercept_Dump\\'
-intercept_location_posix = os.path.expanduser('~/CLIntercept_Dump/')
+intercept_location_posix = '~/CLIntercept_Dump/'
 intercept_location = ""
 
 if os.name == 'nt':
@@ -68,32 +68,37 @@ if args.enqueue_number != -1:
 else:
     os.environ['CLI_DumpReplayKernelName'] = args.kernel_name
 
-# Run ./cliloader, dumping via either enqueue number or the kernel name
 if args.cli_location == None:
     print('No cliloader executable was specified!')
     command = [args.app_location]
 else:
     command = [args.cli_location, args.app_location]
+command = [os.path.expanduser(p) for p in command]
 command.extend(args.args)
 
 print('\n\nRunning test application: {}'.format(' '.join(map(str,command))))
 subprocess.run(command)
 
+intercept_location = os.path.expanduser(intercept_location)
 search_dir = os.path.join(os.path.join(intercept_location, app_name, "Replay"))
 print('Done!\n\n')
 print('Looking for output in directory: {}'.format(search_dir))
+
 replay_location = None
 if args.enqueue_number >= 0:
     check = 'Enqueue_' + str(args.enqueue_number) + '_.*'
 else:
     check = 'Enqueue_[0-9]+_' + args.kernel_name
-for f in os.scandir(search_dir):
-    if f.is_dir() and re.match(check, f.name):
-        print('Using replay information from: {}'.format(f.path))
-        replay_location = f.path
-        break
-
-replay_location = os.path.expanduser(replay_location)
+if os.path.exists(search_dir):
+    for f in os.scandir(search_dir):
+        if f.is_dir() and re.match(check, f.name):
+            print('Using replay information from: {}'.format(f.path))
+            replay_location = f.path
+            break
+if replay_location == None:
+    print('No replay information was found!')
+    print('Please check that the kernel name and replay number was set correctly.')
+    exit()
 
 # Run extracted kernel to dump output buffers
 os.chdir(replay_location)
@@ -128,7 +133,6 @@ except:
     print("Information about argument data types not available!")
 
 dumped_location = os.path.join(intercept_location, app_name, "memDumpPostEnqueue")
-dumped_location = os.path.expanduser(dumped_location)
 os.chdir(dumped_location)
 
 # The CLI padds enqueue number so that it is at least 4 digits, do so too
@@ -169,5 +173,5 @@ else:
     print("Replayed standalone kernel differs from app's result, \n" 
           "this may due a slightly different order of operations on floating point \n"
           "numbers. Please check manually if the differences are significant. \n"
-          "If they are completely different, please open an issue on the Github \n"
+          "If they are completely different, please open an issue on Github \n"
           "so that we can look into it!")

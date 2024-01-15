@@ -8773,6 +8773,8 @@ void CLIntercept::startCaptureReplay(
 
     OS().MakeDumpDirectories( fileNamePrefix );
 
+    log( "Dumping kernel capture replay to directory: " + fileNamePrefix + "\n" );
+
     const char* pPythonScript = NULL;
     size_t pythonScriptLength = 0;
     if( m_OS.GetReplayScriptString(

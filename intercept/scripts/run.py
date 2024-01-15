@@ -106,7 +106,7 @@ for idx in buffer_idx:
 
 # Check if all input pointer addresses are unique
 if len(tmp_args) != len(set(tmp_args)):
-    print("Some of the buffers are aliasing, we will replicate this behavior")
+    print("Some of the buffers are aliasing, we will replicate this behavior.")
 
 ctx = cl.create_some_context()
 queue = cl.CommandQueue(ctx)
@@ -140,19 +140,19 @@ for idx in image_idx:
     gpu_images[idx] = cl.Image(ctx, mf.COPY_HOST_PTR, format, shape, hostbuf=input_images[idx])
 
 with open("buildOptions.txt", 'r') as file:
-    flags = [line.rstrip() for line in file]
-    print(f"Using flags: {flags}")
+    options = [line.rstrip() for line in file]
+    print(f"Using build options: {options}")
 
 with open('kernelName.txt') as file:
     kernel_name = file.read()
 
 if os.path.isfile("kernel.cl"):
-    print("Using kernel source code")
+    print("Using kernel source")
     with open("kernel.cl", 'r') as file:
         kernel = file.read()
-    prg = cl.Program(ctx, kernel).build(flags)
+    prg = cl.Program(ctx, kernel).build(options)
 else:
-    print("Using device binary")
+    print("Using kernel device binary")
     binary_files = gl.glob("./DeviceBinary*.bin")
     binaries = []
     for file in binary_files:
@@ -161,7 +161,7 @@ else:
     # Try the binaries to find one that works
     for idx in range(len(binaries)):
         try:
-            prg = cl.Program(ctx, [devices[0]], [binaries[idx]]).build(flags)
+            prg = cl.Program(ctx, [devices[0]], [binaries[idx]]).build(options)
             getattr(prg, kernel_name)
             break
         except Exception as e:
@@ -186,24 +186,24 @@ for pos, sampler in samplers.items():
 
 gws = []
 lws = []
-gws_offset = []
+gwo = []
 
 with open("worksizes.txt", 'r') as file:
     lines = file.read().splitlines()
     
 gws.extend([int(value) for value in lines[0].split()])
 lws.extend([int(value) for value in lines[1].split()])
-gws_offset.extend([int(value) for value in lines[2].split()])
+gwo.extend([int(value) for value in lines[2].split()])
     
-print(f"Global Worksize: {gws}")
-print(f"Local Worksize: {lws}")
-print(f"Global Worksize Offsets: {gws_offset}")
+print(f"Global Work Size: {gws}")
+print(f"Local Work Size: {lws}")
+print(f"Global Work Offsets: {gwo}")
     
 if lws == [0] or lws == [0, 0] or lws == [0, 0, 0]:
     lws = None
 
 for _ in range(args.repetitions):
-    cl.enqueue_nd_range_kernel(queue, kernel, gws, lws, gws_offset)
+    cl.enqueue_nd_range_kernel(queue, kernel, gws, lws, gwo)
 
 for pos in gpu_buffers.keys():
     if len(pos) == 1:
