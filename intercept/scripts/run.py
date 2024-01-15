@@ -112,7 +112,6 @@ ctx = cl.create_some_context()
 queue = cl.CommandQueue(ctx)
 devices = ctx.get_info(cl.context_info.DEVICES)
 
-# TODO Samplers
 samplers = {}
 sampler_files = gl.glob("./Sampler*.txt")
 for sampler in sampler_files:
