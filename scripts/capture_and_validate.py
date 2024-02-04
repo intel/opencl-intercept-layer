@@ -56,17 +56,16 @@ else:
 
 app_name = os.path.basename(args.app_location)
 
-os.environ['CLI_InitializeBuffers'] = str(1)
+os.environ['CLI_CaptureReplay'] = "1"
+os.environ['CLI_InitializeBuffers'] = "1"
 os.environ['CLI_AppendBuildOptions'] = "-cl-kernel-arg-info"
 
 if args.enqueue_number != -1:
-    os.environ['CLI_DumpReplayKernelEnqueue'] = str(args.enqueue_number)
-    os.environ['CLI_DumpBuffersMinEnqueue'] = str(args.enqueue_number)
-    os.environ['CLI_DumpBuffersMaxEnqueue'] = str(args.enqueue_number)
-    os.environ['CLI_DumpImagesMinEnqueue'] = str(args.enqueue_number)
-    os.environ['CLI_DumpImagesMaxEnqueue'] = str(args.enqueue_number)
+    os.environ['CLI_CaptureReplayMinEnqueue'] = str(args.enqueue_number)
+    os.environ['CLI_CaptureReplayMaxEnqueue'] = str(args.enqueue_number)
 else:
-    os.environ['CLI_DumpReplayKernelName'] = args.kernel_name
+    os.environ['CLI_CaptureReplayKernelName'] = args.kernel_name
+    os.environ['CLI_CaptureReplayNumKernelEnqueuesCapture'] = "1"
 
 if args.cli_location == None:
     print('No cliloader executable was specified!')
@@ -113,17 +112,22 @@ print('Now starting validation...')
 with open('./enqueueNumber.txt') as file:
     enqueue_number = file.read().splitlines()[0]
 
+# Pad the enqueue number to at least 4 digits
+padded_enqueue_num = str(enqueue_number).rjust(4, "0")
+
 # Compare the buffers for binary equality
-replayed_buffers = gl.glob("./output_buffer*.bin")
+replayed_buffers = gl.glob("./Test/Enqueue_" + padded_enqueue_num + "_Kernel_*.bin")
 replayed_hashes = {}
 for replayed_buffer in replayed_buffers:
-    idx = int(re.findall(r'\d+', replayed_buffer)[0])
+    start = replayed_buffer.find("_Arg_")
+    idx = int(re.findall(r'\d+', replayed_buffer[start:])[0])
     replayed_hashes[idx] = hashlib.md5(np.fromfile(replayed_buffer)).hexdigest()
 
 # Compare the images for binary equality
-replayed_images = gl.glob("./output_image*.raw")
+replayed_images = gl.glob("./Test/Enqueue_" + padded_enqueue_num + "_Kernel_*.raw")
 for replayed_image in replayed_images:
-    idx = int(re.findall(r'\d+', replayed_image)[0])
+    start = replayed_image.find("_Arg_")
+    idx = int(re.findall(r'\d+', replayed_image[start:])[0])
     replayed_hashes[idx] = hashlib.md5(np.fromfile(replayed_image)).hexdigest()
 
 try:
@@ -132,24 +136,14 @@ try:
 except:
     print("Information about argument data types not available!")
 
-dumped_location = os.path.join(intercept_location, app_name, "memDumpPostEnqueue")
-os.chdir(dumped_location)
-
-# The CLI padds enqueue number so that it is at least 4 digits, do so too
-padded_enqueue_num = ""
-if int(enqueue_number) < 10000:
-    padded_enqueue_num = str(enqueue_number).rjust(4, "0")
-else:
-    padded_enqueue_num = str(enqueue_number)
-
-dumped_buffers = gl.glob("./Enqueue_" + padded_enqueue_num + "_Kernel_*.bin")
+dumped_buffers = gl.glob("./Post/Enqueue_" + padded_enqueue_num + "_Kernel_*.bin")
 dumped_hashes = {}
 for dumped_buffer in dumped_buffers:
     start = dumped_buffer.find("_Arg_")
     idx = int(re.findall(r'\d+', dumped_buffer[start:])[0])
     dumped_hashes[idx] = hashlib.md5(np.fromfile(dumped_buffer)).hexdigest()
 
-dumped_images = gl.glob("./Enqueue_" + padded_enqueue_num + "_Kernel_*.raw")
+dumped_images = gl.glob("./Post/Enqueue_" + padded_enqueue_num + "_Kernel_*.raw")
 for dumped_image in dumped_images:
     start = dumped_image.find("_Arg_")
     idx = int(re.findall(r'\d+', dumped_image[start:])[0])

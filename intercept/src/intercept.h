@@ -553,11 +553,15 @@ public:
                 const void* arg );
     void    dumpBuffersForKernel(
                 const std::string& name,
+                const bool forCaptureReplay,
+                const bool forInspection,
                 const uint64_t enqueueCounter,
                 cl_kernel kernel,
                 cl_command_queue command_queue );
     void    dumpImagesForKernel(
                 const std::string& name,
+                const bool forCaptureReplay,
+                const bool forInspection,
                 const uint64_t enqueueCounter,
                 cl_kernel kernel,
                 cl_command_queue command_queue );
@@ -2484,43 +2488,51 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     }
 
 #define DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue )                \
-    if( captureReplay ||                                                    \
-        ( pIntercept->config().DumpBuffersBeforeEnqueue &&                  \
-          pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&     \
-          pIntercept->checkDumpBuffersForKernel( kernel ) ) )               \
+    bool dumpBuffersBeforeEnqueue =                                         \
+        pIntercept->config().DumpBuffersBeforeEnqueue &&                    \
+        pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&       \
+        pIntercept->checkDumpBuffersForKernel( kernel );                    \
+    if( captureReplay || dumpBuffersBeforeEnqueue )                         \
     {                                                                       \
         pIntercept->dumpBuffersForKernel(                                   \
-            "Pre", enqueueCounter, kernel, command_queue );                 \
+            "Pre", captureReplay, dumpBuffersBeforeEnqueue,                 \
+            enqueueCounter, kernel, command_queue );                        \
     }
 
 #define DUMP_BUFFERS_AFTER_ENQUEUE( kernel, command_queue )                 \
-    if( captureReplay ||                                                    \
-        ( pIntercept->config().DumpBuffersAfterEnqueue &&                   \
-          pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&     \
-          pIntercept->checkDumpBuffersForKernel( kernel ) ) )               \
+    bool dumpBuffersAfterEnqueue =                                          \
+        pIntercept->config().DumpBuffersAfterEnqueue &&                     \
+        pIntercept->checkDumpBufferEnqueueLimits( enqueueCounter ) &&       \
+        pIntercept->checkDumpBuffersForKernel( kernel );                    \
+    if( captureReplay || dumpBuffersAfterEnqueue )                          \
     {                                                                       \
         pIntercept->dumpBuffersForKernel(                                   \
-            "Post", enqueueCounter, kernel, command_queue );                \
+            "Post", captureReplay, dumpBuffersAfterEnqueue,                 \
+            enqueueCounter, kernel, command_queue );                        \
     }
 
 #define DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue )                 \
-    if( captureReplay ||                                                    \
-        ( pIntercept->config().DumpImagesBeforeEnqueue &&                   \
-          pIntercept->checkDumpImageEnqueueLimits( enqueueCounter ) &&      \
-          pIntercept->checkDumpImagesForKernel( kernel ) ) )                \
+    bool dumpImagesBeforeEnqueue =                                          \
+        pIntercept->config().DumpImagesBeforeEnqueue &&                     \
+        pIntercept->checkDumpImageEnqueueLimits( enqueueCounter ) &&        \
+        pIntercept->checkDumpImagesForKernel( kernel );                     \
+    if( captureReplay || dumpImagesBeforeEnqueue )                          \
     {                                                                       \
         pIntercept->dumpImagesForKernel(                                    \
-            "Pre", enqueueCounter, kernel, command_queue );                 \
+            "Pre", captureReplay, dumpImagesBeforeEnqueue,                  \
+            enqueueCounter, kernel, command_queue );                        \
     }
 
 #define DUMP_IMAGES_AFTER_ENQUEUE( kernel, command_queue )                  \
-    if( captureReplay ||                                                    \
-        ( pIntercept->config().DumpImagesAfterEnqueue &&                    \
-          pIntercept->checkDumpImageEnqueueLimits( enqueueCounter )  &&     \
-          pIntercept->checkDumpImagesForKernel( kernel ) ) )                \
+    bool dumpImagesAfterEnqueue =                                           \
+        pIntercept->config().DumpImagesAfterEnqueue &&                      \
+        pIntercept->checkDumpImageEnqueueLimits( enqueueCounter )  &&       \
+        pIntercept->checkDumpImagesForKernel( kernel );                     \
+    if( captureReplay || dumpImagesAfterEnqueue )                           \
     {                                                                       \
         pIntercept->dumpImagesForKernel(                                    \
-            "Post", enqueueCounter, kernel, command_queue );                \
+            "Post", captureReplay, dumpImagesAfterEnqueue,                  \
+            enqueueCounter, kernel, command_queue );                        \
     }
 
 #define ADD_MAP_POINTER( _ptr, _flags, _sz )                                \

@@ -54,11 +54,7 @@ args = parser.parse_args()
 with open('./enqueueNumber.txt') as file:
     enqueue_number = file.read().splitlines()[0]
 
-padded_enqueue_num = ""
-if int(enqueue_number) < 10000:
-    padded_enqueue_num = str(enqueue_number).rjust(4, "0")
-else:
-    padded_enqueue_num = str(enqueue_number)
+padded_enqueue_num = str(enqueue_number).rjust(4, "0")
 
 arguments = {}
 argument_files = gl.glob("./Argument*.bin")
@@ -69,7 +65,7 @@ for argument in argument_files:
 buffer_idx = []
 input_buffers = {}
 output_buffers = {}
-buffer_files = gl.glob("../../memDumpPreEnqueue/Enqueue_" + padded_enqueue_num + "*.bin")
+buffer_files = gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.bin")
 input_buffer_ptrs = defaultdict(list)
 for buffer in buffer_files:
     start = buffer.find("_Arg_")
@@ -82,7 +78,7 @@ for buffer in buffer_files:
 image_idx = []
 input_images = {}
 output_images = {}
-image_files = gl.glob("../../memDumpPreEnqueue/Enqueue_" + padded_enqueue_num + "*.raw")
+image_files = gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.raw")
 input_images_ptrs = defaultdict(list)
 for image in image_files:
     start = image.find("_Arg_")
@@ -214,8 +210,15 @@ for pos in gpu_buffers.keys():
 for pos in gpu_images.keys():
     cl.enqueue_copy(queue, output_images[pos], gpu_images[pos], region=shape, origin=(0,0,0))
 
+if not os.path.exists("./Test"):
+    os.makedirs("./Test")
+
 for pos, cpu_buffer in output_buffers.items():
-    cpu_buffer.tofile("output_buffer" + str(pos) + ".bin")
+    outbuf = "./Test/Enqueue_" + padded_enqueue_num + "_Kernel_" + kernel_name + "_Arg_" + str(pos) + "_Buffer.bin"
+    print(f"Writing buffer output to file: {outbuf}")
+    cpu_buffer.tofile(outbuf)
 
 for pos, cpu_image in output_images.items():
-    cpu_image.tofile("output_image" + str(pos) + ".raw")
+    outimg = "./Test/Enqueue_" + padded_enqueue_num + "_Kernel_" + kernel_name + "_Arg_" + str(pos) + "_Image.raw"
+    print(f"Writing image output to file: {outimg}")
+    cpu_image.tofile(outimg)
