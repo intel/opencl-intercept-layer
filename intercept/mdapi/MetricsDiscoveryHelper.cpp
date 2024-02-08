@@ -314,14 +314,14 @@ bool MDHelper::InitMetricsDiscovery(
     bool found = false;
     for( uint32_t cg = 0; !found && cg < deviceParams->ConcurrentGroupsCount; cg++ )
     {
-        IConcurrentGroup_1_1 *group = m_MetricsDevice->GetConcurrentGroup(cg);
-        TConcurrentGroupParams_1_0* groupParams = group->GetParams();
+        IConcurrentGroupLatest *group = m_MetricsDevice->GetConcurrentGroup(cg);
+        TConcurrentGroupParamsLatest* groupParams = group->GetParams();
         if( groupParams )
         {
             for( uint32_t ms = 0; !found && ms < groupParams->MetricSetsCount; ms++)
             {
-                IMetricSet_1_1* metricSet = group->GetMetricSet(ms);
-                TMetricSetParams_1_0* setParams = metricSet->GetParams();
+                IMetricSetLatest* metricSet = group->GetMetricSet(ms);
+                TMetricSetParamsLatest* setParams = metricSet->GetParams();
 
                 if( setParams &&
                     ( setParams->ApiMask & m_APIMask ) &&

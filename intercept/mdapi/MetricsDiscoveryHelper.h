@@ -128,9 +128,9 @@ private:
     uint32_t                m_APIMask;
     uint32_t                m_CategoryMask;
 
-    IMetricsDevice_1_5*     m_MetricsDevice;
-    IConcurrentGroup_1_1*   m_ConcurrentGroup;
-    IMetricSet_1_1*         m_MetricSet;
+    IMetricsDeviceLatest*   m_MetricsDevice;
+    IConcurrentGroupLatest* m_ConcurrentGroup;
+    IMetricSetLatest*       m_MetricSet;
 
     // Report data for time based sampling:
     std::vector<char>       m_SavedReportData;

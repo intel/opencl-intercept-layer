@@ -65,7 +65,7 @@ static bool printMetricsHelper(const std::string& metricsFileName)
 
     TCompletionCode res = CC_OK;
 
-    IMetricsDevice_1_5* metricsDevice;
+    IMetricsDeviceLatest* metricsDevice;
 
     void* pLibrary = OpenLibrary();
     if (pLibrary == NULL)
@@ -142,8 +142,8 @@ static bool printMetricsHelper(const std::string& metricsFileName)
     bool found = false;
     for (uint32_t cg = 0; !found && cg < deviceParams->ConcurrentGroupsCount; cg++)
     {
-        IConcurrentGroup_1_1* group = metricsDevice->GetConcurrentGroup(cg);
-        TConcurrentGroupParams_1_0* groupParams = group->GetParams();
+        IConcurrentGroupLatest* group = metricsDevice->GetConcurrentGroup(cg);
+        TConcurrentGroupParamsLatest* groupParams = group->GetParams();
 
         if (groupParams)
         {
@@ -155,8 +155,8 @@ static bool printMetricsHelper(const std::string& metricsFileName)
 
             for (uint32_t ms = 0; ms < groupParams->MetricSetsCount; ms++)
             {
-                IMetricSet_1_1* metricSet = group->GetMetricSet(ms);
-                TMetricSetParams_1_0* setParams = metricSet->GetParams();
+                IMetricSetLatest* metricSet = group->GetMetricSet(ms);
+                TMetricSetParamsLatest* setParams = metricSet->GetParams();
 
                 if (setParams)
                 {
