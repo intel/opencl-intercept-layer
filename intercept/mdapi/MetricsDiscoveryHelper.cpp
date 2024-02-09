@@ -276,7 +276,7 @@ bool MDHelper::InitMetricsDiscovery(
         }
     }
 
-    TMetricsDeviceParams_1_0* deviceParams = m_MetricsDevice->GetParams();
+    TMetricsDeviceParamsLatest* deviceParams = m_MetricsDevice->GetParams();
     if (NULL == deviceParams)
     {
         DebugPrint("DeviceParams null\n");
@@ -429,8 +429,8 @@ void MDHelper::SetMetricSetFiltering( TMetricApiType apiMask )
 uint32_t MDHelper::GetMetricsFromReports(
     const uint32_t numReports,
     const char* pReportData,
-    std::vector<TTypedValue_1_0>& results,
-    std::vector<TTypedValue_1_0>& maxValues )
+    std::vector<TTypedValueLatest>& results,
+    std::vector<TTypedValueLatest>& maxValues )
 {
     if( !m_Initialized || !m_MetricSet )
     {
@@ -453,14 +453,14 @@ uint32_t MDHelper::GetMetricsFromReports(
     if( m_IncludeMaxValues )
     {
         maxValues.resize( metricsCount * numReports );
-        res = ((MetricsDiscovery::IMetricSet_1_5*)m_MetricSet)->CalculateMetrics(
+        res = m_MetricSet->CalculateMetrics(
             (const unsigned char*)pReportData,
             reportSize,
             results.data(),
-            (uint32_t)(results.size() * sizeof(TTypedValue_1_0)),
+            (uint32_t)(results.size() * sizeof(TTypedValueLatest)),
             &outReportCount,
             maxValues.data(),
-            (uint32_t)(maxValues.size() * sizeof(TTypedValue_1_0)) );
+            (uint32_t)(maxValues.size() * sizeof(TTypedValueLatest)) );
     }
     else
     {
@@ -468,7 +468,7 @@ uint32_t MDHelper::GetMetricsFromReports(
             (const unsigned char*)pReportData,
             reportSize,
             results.data(),
-            (uint32_t)(results.size() * sizeof(TTypedValue_1_0)),
+            (uint32_t)(results.size() * sizeof(TTypedValueLatest)),
             &outReportCount,
             false );
     }
@@ -489,7 +489,7 @@ uint32_t MDHelper::GetMetricsFromReports(
 /* GetIOMeasurementInformation                                          */
 /************************************************************************/
 void MDHelper::GetIOMeasurementInformation(
-    std::vector<TTypedValue_1_0>& ioInfoValues )
+    std::vector<TTypedValueLatest>& ioInfoValues )
 {
     if (!m_Initialized || !m_ConcurrentGroup || !m_MetricSet )
     {
@@ -509,7 +509,7 @@ void MDHelper::GetIOMeasurementInformation(
     ioInfoValues.resize(ioInformationCount);
     TCompletionCode res = m_MetricSet->CalculateIoMeasurementInformation(
         ioInfoValues.data(),
-        (uint32_t)(ioInfoValues.size() * sizeof(TTypedValue_1_0)) );
+        (uint32_t)(ioInfoValues.size() * sizeof(TTypedValueLatest)) );
     if( res != CC_OK )
     {
         DebugPrint("CalculateIoMeasurementInformation failed!\n");
@@ -536,7 +536,7 @@ void MDHelper::OpenStream( uint32_t timerPeriod, uint32_t bufferSize, uint32_t p
 
     if( bufferSize == 0 )
     {
-        TTypedValue_1_0* oaBufferSize = m_MetricsDevice->
+        TTypedValueLatest* oaBufferSize = m_MetricsDevice->
             GetGlobalSymbolValueByName( "OABufferMaxSize" );
         if( oaBufferSize )
         {
@@ -647,8 +647,8 @@ bool MDHelper::SaveReportsFromStream( void )
 /* GetMetricsFromSavedReports                                           */
 /************************************************************************/
 uint32_t MDHelper::GetMetricsFromSavedReports(
-    std::vector<TTypedValue_1_0>& results,
-    std::vector<TTypedValue_1_0>& maxValues )
+    std::vector<TTypedValueLatest>& results,
+    std::vector<TTypedValueLatest>& maxValues )
 {
     DebugPrint("Getting metrics from %d saved reports...\n", m_NumSavedReports);
 
@@ -786,9 +786,9 @@ void MDHelper::PrintMetricValues(
     std::ostream& os,
     const std::string& name,
     const uint32_t numResults,
-    const std::vector<TTypedValue_1_0>& results,
-    const std::vector<TTypedValue_1_0>& maxValues,
-    const std::vector<TTypedValue_1_0>& ioInfoValues )
+    const std::vector<TTypedValueLatest>& results,
+    const std::vector<TTypedValueLatest>& maxValues,
+    const std::vector<TTypedValueLatest>& ioInfoValues )
 {
     if( !m_Initialized || !m_ConcurrentGroup || !m_MetricSet || !os.good() )
     {
@@ -843,7 +843,7 @@ void MDHelper::PrintMetricValues(
 void MDHelper::AggregateMetrics(
     CMetricAggregations& aggregations,
     const std::string& name,
-    const std::vector<TTypedValue_1_0>& results )
+    const std::vector<TTypedValueLatest>& results )
 {
     if( !m_Initialized || !m_MetricSet )
     {
@@ -856,7 +856,7 @@ void MDHelper::AggregateMetrics(
     uint32_t metricsCount = m_MetricSet->GetParams()->MetricsCount;
     for( uint32_t i = 0; i < metricsCount; i++ )
     {
-        TMetricParams_1_0* metricParams = m_MetricSet->GetMetric( i )->GetParams();
+        TMetricParamsLatest* metricParams = m_MetricSet->GetMetric( i )->GetParams();
 
         // Find profile data for metric
         const char* metricName = metricParams->SymbolName;
@@ -876,7 +876,7 @@ void MDHelper::AggregateMetrics(
 /************************************************************************/
 /* PrintValue                                                           */
 /************************************************************************/
-void MDHelper::PrintValue( std::ostream& os, const TTypedValue_1_0& value )
+void MDHelper::PrintValue( std::ostream& os, const TTypedValueLatest& value )
 {
     switch( value.ValueType )
     {
@@ -904,12 +904,12 @@ void MDHelper::PrintValue( std::ostream& os, const TTypedValue_1_0& value )
 /************************************************************************/
 /* GetGlobalSymbolValue                                                 */
 /************************************************************************/
-TTypedValue_1_0* MDHelper::GetGlobalSymbolValue(
+TTypedValueLatest* MDHelper::GetGlobalSymbolValue(
     const char* SymbolName )
 {
     for( uint32_t i = 0; i < m_MetricsDevice->GetParams()->GlobalSymbolsCount; i++ )
     {
-        TGlobalSymbol_1_0* symbol = m_MetricsDevice->GetGlobalSymbol( i );
+        TGlobalSymbolLatest* symbol = m_MetricsDevice->GetGlobalSymbol( i );
         if( strcmp( symbol->SymbolName, SymbolName ) == 0 )
         {
             return &( symbol->SymbolTypedValue );
@@ -921,7 +921,7 @@ TTypedValue_1_0* MDHelper::GetGlobalSymbolValue(
 /************************************************************************/
 /* CastToUInt64                                                         */
 /************************************************************************/
-uint64_t MDHelper::CastToUInt64(TTypedValue_1_0 value)
+uint64_t MDHelper::CastToUInt64(TTypedValueLatest value)
 {
     switch( value.ValueType )
     {

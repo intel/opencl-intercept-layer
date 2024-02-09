@@ -65,10 +65,10 @@ public:
     uint32_t GetMetricsFromReports(
                 const uint32_t numReports,
                 const char* pData,
-                std::vector<TTypedValue_1_0>& results,
-                std::vector<TTypedValue_1_0>& maxValues );
+                std::vector<TTypedValueLatest>& results,
+                std::vector<TTypedValueLatest>& maxValues );
     void    GetIOMeasurementInformation(
-                std::vector<TTypedValue_1_0>& ioInfoValues );
+                std::vector<TTypedValueLatest>& ioInfoValues );
 
     void    OpenStream(
                 uint32_t timerPeriod,
@@ -76,8 +76,8 @@ public:
                 uint32_t pid );
     bool    SaveReportsFromStream( void );
     uint32_t GetMetricsFromSavedReports(
-                std::vector<TTypedValue_1_0>& results,
-                std::vector<TTypedValue_1_0>& maxValues );
+                std::vector<TTypedValueLatest>& results,
+                std::vector<TTypedValueLatest>& maxValues );
     void    ResetSavedReports( void );
     void    CloseStream( void );
 
@@ -90,14 +90,14 @@ public:
                 std::ostream& os,
                 const std::string& name,
                 const uint32_t numResults,
-                const std::vector<TTypedValue_1_0>& results,
-                const std::vector<TTypedValue_1_0>& maxValues,
-                const std::vector<TTypedValue_1_0>& ioInfoValues );
+                const std::vector<TTypedValueLatest>& results,
+                const std::vector<TTypedValueLatest>& maxValues,
+                const std::vector<TTypedValueLatest>& ioInfoValues );
 
     void    AggregateMetrics(
                 CMetricAggregations& aggregations,
                 const std::string& name,
-                const std::vector<TTypedValue_1_0>& results );
+                const std::vector<TTypedValueLatest>& results );
 
 private:
     MDHelper(uint32_t apiMask);
@@ -111,12 +111,12 @@ private:
 
     void    PrintValue(
                 std::ostream& os,
-                const TTypedValue_1_0& value );
+                const TTypedValueLatest& value );
 
-    TTypedValue_1_0* GetGlobalSymbolValue(
+    TTypedValueLatest* GetGlobalSymbolValue(
                 const char* symbolName );
 
-    static uint64_t CastToUInt64(TTypedValue_1_0 value );
+    static uint64_t CastToUInt64(TTypedValueLatest value );
 
     OpenMetricsDevice_fn            OpenMetricsDevice;
     CloseMetricsDevice_fn           CloseMetricsDevice;
