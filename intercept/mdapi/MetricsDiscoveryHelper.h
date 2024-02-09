@@ -45,12 +45,14 @@ public:
         const std::string& metricsLibraryName,
         const std::string& metricSetSymbolName,
         const std::string& metricsFileName,
-        const bool includeMaxValues );
+        uint32_t adapterIndex,
+        bool includeMaxValues );
     static MDHelper* CreateTBS(
         const std::string& metricsLibraryName,
         const std::string& metricSetSymbolName,
         const std::string& metricsFileName,
-        const bool includeMaxValues );
+        uint32_t adapterIndex,
+        bool includeMaxValues );
     static void Delete( MDHelper*& pMDHelper );
 
     uint32_t GetMetricsConfiguration();
@@ -107,7 +109,20 @@ private:
         const std::string& metricsLibraryName,
         const std::string& metricSetSymbolName,
         const std::string& metricsFileName,
-        const bool includeMaxValues );
+        uint32_t adapterIndex,
+        bool includeMaxValues );
+
+    bool InitMetricsDiscoveryAdapterGroup(
+        const std::string& metricSetSymbolName,
+        const std::string& metricsFileName,
+        uint32_t adapterIndex );
+    bool InitMetricsDiscoveryLegacy(
+        const std::string& metricSetSymbolName,
+        const std::string& metricsFileName );
+
+    bool FindMetricSetForDevice(
+        IMetricsDeviceLatest* pMetricsDevice,
+        const std::string& metricSetSymbolName );
 
     void    PrintValue(
                 std::ostream& os,
@@ -118,9 +133,10 @@ private:
 
     static uint64_t CastToUInt64(TTypedValueLatest value );
 
+    OpenAdapterGroup_fn             OpenAdapterGroup;
     OpenMetricsDevice_fn            OpenMetricsDevice;
-    CloseMetricsDevice_fn           CloseMetricsDevice;
     OpenMetricsDeviceFromFile_fn    OpenMetricsDeviceFromFile;
+    CloseMetricsDevice_fn           CloseMetricsDevice;
 
     bool                    m_Initialized;
     bool                    m_Activated;
@@ -128,6 +144,8 @@ private:
     uint32_t                m_APIMask;
     uint32_t                m_CategoryMask;
 
+    IAdapterGroupLatest*    m_AdapterGroup;
+    IAdapterLatest*         m_Adapter;
     IMetricsDeviceLatest*   m_MetricsDevice;
     IConcurrentGroupLatest* m_ConcurrentGroup;
     IMetricSetLatest*       m_MetricSet;

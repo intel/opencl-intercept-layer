@@ -70,50 +70,50 @@ static const char* adapterTypeToString(TAdapterType type)
 
 static bool printMetricsForDevice(IMetricsDeviceLatest* pMetricsDevice)
 {
-    TMetricsDeviceParamsLatest* deviceParams = pMetricsDevice->GetParams();
-    if (NULL == deviceParams)
+    TMetricsDeviceParamsLatest* pDeviceParams = pMetricsDevice->GetParams();
+    if (NULL == pDeviceParams)
     {
         fprintf(stderr, "MetricsDevice->GetParams() returned NULL\n");
         return false;
     }
 
-    for (uint32_t cg = 0; cg < deviceParams->ConcurrentGroupsCount; cg++)
+    for (uint32_t cg = 0; cg < pDeviceParams->ConcurrentGroupsCount; cg++)
     {
-        IConcurrentGroupLatest* group = pMetricsDevice->GetConcurrentGroup(cg);
-        TConcurrentGroupParamsLatest* groupParams = group->GetParams();
+        IConcurrentGroupLatest* pGroup = pMetricsDevice->GetConcurrentGroup(cg);
+        TConcurrentGroupParamsLatest* pGroupParams = pGroup->GetParams();
 
-        if (NULL == groupParams)
+        if (NULL == pGroupParams)
         {
             continue;
         }
 
         fprintf(stderr, "\nMetric Group: %s (%d Metric Set%s)\n",
-            groupParams->Description,
-            groupParams->MetricSetsCount,
-            groupParams->MetricSetsCount > 1 ? "s" : "");
+            pGroupParams->Description,
+            pGroupParams->MetricSetsCount,
+            pGroupParams->MetricSetsCount > 1 ? "s" : "");
         fprintf(stderr, "========================================\n\n");
 
-        for (uint32_t ms = 0; ms < groupParams->MetricSetsCount; ms++)
+        for (uint32_t ms = 0; ms < pGroupParams->MetricSetsCount; ms++)
         {
-            IMetricSetLatest* metricSet = group->GetMetricSet(ms);
-            TMetricSetParamsLatest* setParams = metricSet->GetParams();
+            IMetricSetLatest* pMetricSet = pGroup->GetMetricSet(ms);
+            TMetricSetParamsLatest* pSetParams = pMetricSet->GetParams();
 
-            if (NULL == setParams)
+            if (NULL == pSetParams)
             {
                 continue;
             }
 
             fprintf(stderr, "Metric Set: %s (%d Metric%s)\n",
-                setParams->ShortName,
-                setParams->MetricsCount,
-                setParams->MetricsCount > 1 ? "s" : "");
+                pSetParams->ShortName,
+                pSetParams->MetricsCount,
+                pSetParams->MetricsCount > 1 ? "s" : "");
             fprintf(stderr, "----------------------------------------\n\n");
 
-            for (uint32_t m = 0; m < setParams->MetricsCount; m++)
+            for (uint32_t m = 0; m < pSetParams->MetricsCount; m++)
             {
-                TMetricParamsLatest* metricParams = metricSet->GetMetric(m)->GetParams();
+                TMetricParamsLatest* pMetricParams = pMetricSet->GetMetric(m)->GetParams();
 
-                if (NULL == metricParams)
+                if (NULL == pMetricParams)
                 {
                     continue;
                 }
@@ -121,10 +121,10 @@ static bool printMetricsForDevice(IMetricsDeviceLatest* pMetricsDevice)
                 fprintf(stderr,
                     "%s\\%s (%s):\n"
                     "%s\n\n",
-                    setParams->SymbolName,
-                    metricParams->SymbolName,
-                    metricParams->ShortName,
-                    metricParams->LongName);
+                    pSetParams->SymbolName,
+                    pMetricParams->SymbolName,
+                    pMetricParams->ShortName,
+                    pMetricParams->LongName);
             }
         }
     }
@@ -236,7 +236,6 @@ static bool printMetricsForLegacyDevice(void* pLibrary)
 
     OpenMetricsDevice_fn            OpenMetricsDevice;
     CloseMetricsDevice_fn           CloseMetricsDevice;
-    OpenMetricsDeviceFromFile_fn    OpenMetricsDeviceFromFile;
 
     OpenMetricsDevice = (OpenMetricsDevice_fn)GetFunctionAddress(pLibrary, "OpenMetricsDevice");
     if (OpenMetricsDevice == NULL)
@@ -260,8 +259,8 @@ static bool printMetricsForLegacyDevice(void* pLibrary)
         return false;
     }
 
-    TMetricsDeviceParams_1_0* deviceParams = pMetricsDevice->GetParams();
-    if (NULL == deviceParams)
+    TMetricsDeviceParams_1_0* pDeviceParams = pMetricsDevice->GetParams();
+    if (NULL == pDeviceParams)
     {
         fprintf(stderr, "MetricsDevice->GetParams() returned NULL\n");
         return false;
@@ -271,11 +270,11 @@ static bool printMetricsForLegacyDevice(void* pLibrary)
         MD_API_MAJOR_NUMBER_CURRENT,
         MD_API_MINOR_NUMBER_CURRENT,
         MD_API_BUILD_NUMBER_CURRENT,
-        deviceParams->Version.MajorNumber,
-        deviceParams->Version.MinorNumber,
-        deviceParams->Version.BuildNumber);
-    if (deviceParams->Version.MajorNumber < 1 ||
-        (deviceParams->Version.MajorNumber == 1 && deviceParams->Version.MinorNumber < 1))
+        pDeviceParams->Version.MajorNumber,
+        pDeviceParams->Version.MinorNumber,
+        pDeviceParams->Version.BuildNumber);
+    if (pDeviceParams->Version.MajorNumber < 1 ||
+        (pDeviceParams->Version.MajorNumber == 1 && pDeviceParams->Version.MinorNumber < 1))
     {
         fprintf(stderr, "MDAPI Lib version must be at least v1.1!\n");
         return false;

@@ -363,6 +363,10 @@ If set to a nonzero value and DevicePerfCounterCustom is set, the Intercept Laye
 
 If set to a nonzero value and DevicePerfCounterCustom is set, the Intercept Layer for OpenCL Applications will enable Intel GPU Performance Counters to track performance counter deltas at regular time intervals. This operation may be fairly intrusive and may have side effects. This feature will only function if the Intercept Layer for OpenCL Applications is built with MDAPI support.
 
+##### `DevicePerfCounterAdapterIndex` (uint32_t)
+
+Select which MDAPI device to report performance counters.
+
 ##### `DevicePerfCounterCustom` (string)
 
 If set, the Intercept Layer for OpenCL Applications will collect MDAPI metrics for the Metric Set corresponding to this value for each OpenCL command.  Frequently used Metric Sets include: ComputeBasic, ComputeExtended, L3\_1, Sampler. The output file has the potential to be very big depending on the work load. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. When the process exits, this information will be included in the file "clintercept\_perfcounter\_dump\_\<Set Name\>.txt".  This feature will only function if the Intercept Layer for OpenCL Applications is built with MDAPI support.

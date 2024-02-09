@@ -16,7 +16,7 @@
 
 // Enables logs:
 //#ifdef _DEBUG
-//#define MD_DEBUG
+#define MD_DEBUG
 //#endif
 
 #if defined(_WIN32)
@@ -110,6 +110,7 @@ MDHelper::MDHelper(uint32_t apiMask) :
     m_Activated( false ),
     m_APIMask( apiMask ),
     m_CategoryMask( GPU_RENDER | GPU_COMPUTE | GPU_MEDIA | GPU_GENERIC ),
+    m_AdapterGroup( NULL ),
     m_MetricsDevice( NULL ),
     m_ConcurrentGroup( NULL ),
     m_MetricSet( NULL ),
@@ -127,7 +128,19 @@ MDHelper::~MDHelper()
         DeactivateMetricSet();
     }
 
-    if( CloseMetricsDevice != NULL && m_MetricsDevice )
+    if( m_AdapterGroup != NULL )
+    {
+        if( m_Adapter && m_MetricsDevice )
+        {
+            m_Adapter->CloseMetricsDevice( m_MetricsDevice );
+            m_MetricsDevice = NULL;
+        }
+
+        m_AdapterGroup->Close();
+        m_AdapterGroup = NULL;
+        m_Adapter = NULL;
+    }
+    else if( CloseMetricsDevice != NULL && m_MetricsDevice )
     {
         CloseMetricsDevice( m_MetricsDevice );
         m_MetricsDevice = NULL;
@@ -143,7 +156,8 @@ MDHelper* MDHelper::CreateEBS(
     const std::string& metricsLibraryName,
     const std::string& metricSetSymbolName,
     const std::string& metricsFileName,
-    const bool includeMaxValues )
+    uint32_t adapterIndex,
+    bool includeMaxValues )
 {
 #if defined(__linux__) || defined(__FreeBSD__)
     // This is a temporary workaround until the Linux MDAPI is updated
@@ -158,6 +172,7 @@ MDHelper* MDHelper::CreateEBS(
                 metricsLibraryName,
                 metricSetSymbolName,
                 metricsFileName,
+                adapterIndex,
                 includeMaxValues ) == false )
         {
             Delete( pMDHelper );
@@ -173,7 +188,8 @@ MDHelper* MDHelper::CreateTBS(
     const std::string& metricsLibraryName,
     const std::string& metricSetSymbolName,
     const std::string& metricsFileName,
-    const bool includeMaxValues )
+    uint32_t adapterIndex,
+    bool includeMaxValues )
 {
     MDHelper*   pMDHelper = new MDHelper(API_TYPE_IOSTREAM);
     if( pMDHelper )
@@ -182,6 +198,7 @@ MDHelper* MDHelper::CreateTBS(
                 metricsLibraryName,
                 metricSetSymbolName,
                 metricsFileName,
+                adapterIndex,
                 includeMaxValues ) == false )
         {
             Delete( pMDHelper );
@@ -206,16 +223,16 @@ bool MDHelper::InitMetricsDiscovery(
     const std::string& metricsLibraryName,
     const std::string& metricSetSymbolName,
     const std::string& metricsFileName,
-    const bool includeMaxValues )
+    uint32_t adapterIndex,
+    bool includeMaxValues )
 {
     m_Initialized = false;
     m_IncludeMaxValues = includeMaxValues;
 
-    CloseMetricsDevice = NULL;
+    OpenAdapterGroup = NULL;
     OpenMetricsDevice = NULL;
     OpenMetricsDeviceFromFile = NULL;
-
-    TCompletionCode res = CC_OK;
+    CloseMetricsDevice = NULL;
 
     if (m_APIMask & API_TYPE_IOSTREAM && m_APIMask != API_TYPE_IOSTREAM)
     {
@@ -232,11 +249,11 @@ bool MDHelper::InitMetricsDiscovery(
         return false;
     }
 
-    CloseMetricsDevice = (CloseMetricsDevice_fn)GetFunctionAddress(pLibrary, "CloseMetricsDevice");
-    if (CloseMetricsDevice == NULL)
+    OpenAdapterGroup = (OpenAdapterGroup_fn)GetFunctionAddress(pLibrary, "OpenAdapterGroup");
+    if (OpenAdapterGroup == NULL)
     {
-        DebugPrint("Couldn't get pointer to CloseMetricsDevice!\n");
-        return false;
+        DebugPrint("Couldn't get pointer to OpenAdapterGroup!\n");
+        // OpenAdapterGroup is a newer function that is not supported by older MDAPI.
     }
 
     OpenMetricsDevice = (OpenMetricsDevice_fn)GetFunctionAddress(pLibrary, "OpenMetricsDevice");
@@ -252,6 +269,146 @@ bool MDHelper::InitMetricsDiscovery(
         DebugPrint("Couldn't get pointer to OpenMetricsDeviceFromFile!\n");
         return false;
     }
+
+    CloseMetricsDevice = (CloseMetricsDevice_fn)GetFunctionAddress(pLibrary, "CloseMetricsDevice");
+    if (CloseMetricsDevice == NULL)
+    {
+        DebugPrint("Couldn't get pointer to CloseMetricsDevice!\n");
+        return false;
+    }
+
+    bool success = InitMetricsDiscoveryAdapterGroup(
+        metricSetSymbolName,
+        metricsFileName,
+        adapterIndex );
+    if (!success)
+    {
+        success = InitMetricsDiscoveryLegacy(
+            metricSetSymbolName,
+            metricsFileName );
+    }
+
+    if (success)
+    {
+        m_MetricSet->SetApiFiltering( m_APIMask );
+        m_Initialized = true;
+    }
+
+    DebugPrint("MetricsDiscoveryInit End\n");
+    return m_Initialized;
+}
+
+/************************************************************************/
+/* InitMetricsDiscoveryAdapterGroup                                     */
+/************************************************************************/
+bool MDHelper::InitMetricsDiscoveryAdapterGroup(
+    const std::string& metricSetSymbolName,
+    const std::string& metricsFileName,
+    uint32_t adapterIndex )
+{
+    TCompletionCode res = CC_OK;
+
+    res = OpenAdapterGroup(&m_AdapterGroup);
+    if (res != CC_OK)
+    {
+        DebugPrint("OpenAdapterGroup failed, res: %d\n", res);
+        return false;
+    }
+
+    const TAdapterGroupParamsLatest* pAdapterGroupParams = m_AdapterGroup->GetParams();
+    if (NULL == pAdapterGroupParams)
+    {
+        DebugPrint("AdapterGroup->GetParams() returned NULL\n");
+        return false;
+    }
+
+    DebugPrint("MDAPI Headers: v%d.%d.%d, MDAPI Lib: v%d.%d.%d\n",
+        MD_API_MAJOR_NUMBER_CURRENT,
+        MD_API_MINOR_NUMBER_CURRENT,
+        MD_API_BUILD_NUMBER_CURRENT,
+        pAdapterGroupParams->Version.MajorNumber,
+        pAdapterGroupParams->Version.MinorNumber,
+        pAdapterGroupParams->Version.BuildNumber);
+    if (pAdapterGroupParams->Version.MajorNumber < 1 ||
+        (pAdapterGroupParams->Version.MajorNumber == 1 && pAdapterGroupParams->Version.MinorNumber < 1))
+    {
+        DebugPrint("MDAPI Lib version must be at least v1.1!\n");
+        return false;
+    }
+    if( pAdapterGroupParams->Version.MajorNumber < 1 ||
+        ( pAdapterGroupParams->Version.MajorNumber == 1 && pAdapterGroupParams->Version.MinorNumber < 5 ) )
+    {
+        if( m_IncludeMaxValues )
+        {
+            DebugPrint("MDAPI Lib version must be at least v1.5 for maximum value tracking - disabling.\n");
+            m_IncludeMaxValues = false;
+        }
+    }
+
+    if (adapterIndex >= pAdapterGroupParams->AdapterCount)
+    {
+        DebugPrint("Requested adapter index is %u bug only %u adapters were found.  Using adapter 0.\n");
+        adapterIndex = 0;
+    }
+
+    m_Adapter = m_AdapterGroup->GetAdapter(adapterIndex);
+    if (NULL == m_Adapter)
+    {
+        DebugPrint("AdapterGroup->GetAdapter() returned NULL\n");
+        return false;
+    }
+
+    const TAdapterParamsLatest* pAdapterParams = m_Adapter->GetParams();
+    if (pAdapterParams)
+    {
+        DebugPrint("Adapter: %s\n",
+            pAdapterParams->ShortName);
+        DebugPrint("PCI Vendor Id: %04X, Device Id: %04X, Bus Info: %02X:%02X.%02X\n",
+            pAdapterParams->VendorId,
+            pAdapterParams->DeviceId,
+            pAdapterParams->BusNumber,
+            pAdapterParams->DeviceNumber,
+            pAdapterParams->FunctionNumber);
+    }
+
+    if (!metricsFileName.empty())
+    {
+        res = m_Adapter->OpenMetricsDeviceFromFile(metricsFileName.c_str(), (void*)"", &m_MetricsDevice);
+        if (res != CC_OK)
+        {
+            res = m_Adapter->OpenMetricsDeviceFromFile(metricsFileName.c_str(), (void*)"abcdefghijklmnop", &m_MetricsDevice);
+        }
+        if (res != CC_OK)
+        {
+            DebugPrint("OpenMetricsDeviceFromFile failed, res: %d\n", res);
+            return false;
+        }
+    }
+    else
+    {
+        res = m_Adapter->OpenMetricsDevice(&m_MetricsDevice);
+        if (res != CC_OK)
+        {
+            DebugPrint("OpenMetricsDevice failed, res: %d\n", res);
+            return false;
+        }
+    }
+
+    bool found = FindMetricSetForDevice(
+        m_MetricsDevice,
+        metricSetSymbolName );
+
+    return found;
+}
+
+/************************************************************************/
+/* InitMetricsDiscoveryLegacy                                           */
+/************************************************************************/
+bool MDHelper::InitMetricsDiscoveryLegacy(
+    const std::string& metricSetSymbolName,
+    const std::string& metricsFileName )
+{
+    TCompletionCode res = CC_OK;
 
     if (!metricsFileName.empty())
     {
@@ -279,7 +436,7 @@ bool MDHelper::InitMetricsDiscovery(
     TMetricsDeviceParamsLatest* deviceParams = m_MetricsDevice->GetParams();
     if (NULL == deviceParams)
     {
-        DebugPrint("DeviceParams null\n");
+        DebugPrint("MetricsDevice->GetParams() returned NULL\n");
         return false;
     }
 
@@ -306,65 +463,84 @@ bool MDHelper::InitMetricsDiscovery(
         }
     }
 
+    bool found = FindMetricSetForDevice(
+        m_MetricsDevice,
+        metricSetSymbolName );
+
+    return found;
+}
+
+/************************************************************************/
+/* FindMetricSetForDevice                                               */
+/************************************************************************/
+bool MDHelper::FindMetricSetForDevice(
+    IMetricsDeviceLatest* pMetricsDevice,
+    const std::string& metricSetSymbolName )
+{
     DebugPrint("Looking for MetricSet: %s, API: %X, Category: %X\n",
         metricSetSymbolName.c_str(),
         m_APIMask,
         m_CategoryMask );
 
-    bool found = false;
-    for( uint32_t cg = 0; !found && cg < deviceParams->ConcurrentGroupsCount; cg++ )
+    TMetricsDeviceParamsLatest* pDeviceParams = pMetricsDevice->GetParams();
+    if (NULL == pDeviceParams)
     {
-        IConcurrentGroupLatest *group = m_MetricsDevice->GetConcurrentGroup(cg);
-        TConcurrentGroupParamsLatest* groupParams = group->GetParams();
-        if( groupParams )
+        DebugPrint("MetricsDevice->GetParams returned NULL\n");
+        return false;
+    }
+
+    bool found = false;
+    for( uint32_t cg = 0; !found && cg < pDeviceParams->ConcurrentGroupsCount; cg++ )
+    {
+        IConcurrentGroupLatest *pGroup = pMetricsDevice->GetConcurrentGroup(cg);
+        TConcurrentGroupParamsLatest* pGroupParams = pGroup->GetParams();
+
+        if (NULL == pGroupParams)
         {
-            for( uint32_t ms = 0; !found && ms < groupParams->MetricSetsCount; ms++)
+            continue;
+        }
+        
+        for( uint32_t ms = 0; !found && ms < pGroupParams->MetricSetsCount; ms++)
+        {
+            IMetricSetLatest* pMetricSet = pGroup->GetMetricSet(ms);
+            TMetricSetParamsLatest* pSetParams = pMetricSet->GetParams();
+
+            if( pSetParams &&
+                ( pSetParams->ApiMask & m_APIMask ) &&
+                ( pSetParams->CategoryMask & m_CategoryMask ) &&
+                ( metricSetSymbolName == pSetParams->SymbolName ) )
             {
-                IMetricSetLatest* metricSet = group->GetMetricSet(ms);
-                TMetricSetParamsLatest* setParams = metricSet->GetParams();
+                DebugPrint("Matched Group: %s MetricSet: %s MetricCount: %d API: %X, Category: %X\n",
+                    pGroupParams->SymbolName,
+                    pSetParams->SymbolName,
+                    pSetParams->MetricsCount,
+                    pSetParams->ApiMask,
+                    pSetParams->CategoryMask );
 
-                if( setParams &&
-                    ( setParams->ApiMask & m_APIMask ) &&
-                    ( setParams->CategoryMask & m_CategoryMask ) &&
-                    ( metricSetSymbolName == setParams->SymbolName ) )
-                {
-                    DebugPrint("Matched Group: %s MetricSet: %s MetricCount: %d API: %X, Category: %X\n",
-                        groupParams->SymbolName,
-                        setParams->SymbolName,
-                        setParams->MetricsCount,
-                        setParams->ApiMask,
-                        setParams->CategoryMask );
-
-                    found = true;
-                    m_ConcurrentGroup = group;
-                    m_MetricSet = metricSet;
-                }
-                else if( setParams )
-                {
-                    DebugPrint("Skipped Group: %s MetricSet: %s MetricCount: %d API: %X, Category: %X\n",
-                        groupParams->SymbolName,
-                        setParams->SymbolName,
-                        setParams->MetricsCount,
-                        setParams->ApiMask,
-                        setParams->CategoryMask );
-                }
+                found = true;
+                m_ConcurrentGroup = pGroup;
+                m_MetricSet = pMetricSet;
+            }
+            else if( pSetParams )
+            {
+                DebugPrint("Skipped Group: %s MetricSet: %s MetricCount: %d API: %X, Category: %X\n",
+                    pGroupParams->SymbolName,
+                    pSetParams->SymbolName,
+                    pSetParams->MetricsCount,
+                    pSetParams->ApiMask,
+                    pSetParams->CategoryMask );
             }
         }
     }
 
     if (m_MetricSet == NULL)
     {
-        DebugPrint("MetricSet is null\n");
-        return false;
+        DebugPrint("MetricSet not found.\n");
     }
 
-    m_MetricSet->SetApiFiltering( m_APIMask );
-
-    m_Initialized = true;
-
-    DebugPrint("MetricsDiscoveryInit End\n");
-    return m_Initialized;
+    return found;
 }
+
 
 /************************************************************************/
 /* ActivateMetricSet                                                    */
