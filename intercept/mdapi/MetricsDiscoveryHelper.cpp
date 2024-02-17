@@ -499,7 +499,7 @@ bool MDHelper::FindMetricSetForDevice(
         {
             continue;
         }
-        
+
         for( uint32_t ms = 0; !found && ms < pGroupParams->MetricSetsCount; ms++)
         {
             IMetricSetLatest* pMetricSet = pGroup->GetMetricSet(ms);
