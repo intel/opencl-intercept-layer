@@ -5061,7 +5061,7 @@ void CLIntercept::dumpProgramSPIRV(
             {
                 std::string command =
                     config().SPIRVDis +
-                    " -o " + fileName + "t" +
+                    " -o " + fileName + "asm" +
                     " " + fileName;
 
                 logf( "Running: %s\n", command.c_str() );
@@ -10307,7 +10307,7 @@ void CLIntercept::autoCreateSPIRV(
     {
         command =
             config().SPIRVDis +
-            " -o " + outputFileName + "t" +
+            " -o " + outputFileName + "asm" +
             " " + outputFileName;
 
         logf( "Running: %s\n", command.c_str() );
