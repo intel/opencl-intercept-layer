@@ -4793,20 +4793,11 @@ void CLIntercept::dumpProgramSourceScript(
 
     if( singleString )
     {
-        std::ofstream os;
-        os.open(
+        dumpMemoryToFile(
             filepath,
-            std::ios::out | std::ios::binary );
-        if( os.good() )
-        {
-            os.write( singleString, strlen( singleString ) );
-            os.close();
-        }
-        else
-        {
-            logf( "Failed to open program source dump file for writing: %s\n",
-                filepath );
-        }
+            false,
+            singleString,
+            strlen(singleString) );
     }
 
     SProgramInfo&   programInfo = m_ProgramInfoMap[ program ];
@@ -4871,23 +4862,12 @@ void CLIntercept::dumpProgramSource(
     // Dump the program source to a .cl file.
     if( singleString )
     {
-        std::ofstream os;
-        os.open(
-            fileName.c_str(),
-            std::ios::out | std::ios::binary );
-        if( os.good() )
-        {
-            log( "Dumping program to file (inject): " + fileName + "\n" );
-
-            // don't write the null terminator to the file
-            os.write( singleString, strlen( singleString ) );
-            os.close();
-        }
-        else
-        {
-            logf( "Failed to open program source dump file for writing: %s\n",
-                fileName.c_str() );
-        }
+        log( "Dumping program to file (inject): " + fileName + "\n" );
+        dumpMemoryToFile(
+            fileName,
+            false,
+            singleString,
+            strlen(singleString) );
     }
 
     SProgramInfo&   programInfo = m_ProgramInfoMap[ program ];
@@ -4984,24 +4964,12 @@ void CLIntercept::dumpInputProgramBinaries(
 
         outputFileName += ".bin";
 
-        std::ofstream os;
-        os.open(
-            outputFileName.c_str(),
-            std::ios::out | std::ios::binary );
-        if( os.good() )
-        {
-            log( "Dumping input program binary to file: " + outputFileName + "\n" );
-
-            os.write(
-                (const char*)binaries[ i ],
-                lengths[ i ] );
-            os.close();
-        }
-        else
-        {
-            logf( "Failed to open program binary dump file for writing: %s\n",
-                outputFileName.c_str());
-        }
+        log( "Dumping input program binary to file: " + outputFileName + "\n" );
+        dumpMemoryToFile(
+            outputFileName,
+            false,
+            binaries[ i ],
+            lengths[ i ] );
     }
 
     SProgramInfo&   programInfo = m_ProgramInfoMap[ program ];
@@ -5064,33 +5032,23 @@ void CLIntercept::dumpProgramSPIRV(
 
     // Dump the program source to a .spv file.
     {
-        std::ofstream os;
-        os.open(
-            fileName.c_str(),
-            std::ios::out | std::ios::binary );
-        if( os.good() )
+        log( "Dumping program to file (inject): " + fileName + "\n" );
+        dumpMemoryToFile(
+            fileName,
+            false,
+            il,
+            length );
+
+        // Optionally, run spirv-dis to disassemble the dumped file.
+        if( !config().SPIRVDis.empty() )
         {
-            log( "Dumping program to file (inject): " + fileName + "\n" );
+            std::string command =
+                config().SPIRVDis +
+                " -o " + fileName + "asm" +
+                " " + fileName;
 
-            os.write( (const char*)il, length );
-            os.close();
-
-            // Optionally, run spirv-dis to disassemble the generated module.
-            if( !config().SPIRVDis.empty() )
-            {
-                std::string command =
-                    config().SPIRVDis +
-                    " -o " + fileName + "asm" +
-                    " " + fileName;
-
-                logf( "Running: %s\n", command.c_str() );
-                OS().ExecuteCommand( command );
-            }
-        }
-        else
-        {
-            logf( "Failed to open il program dump file for writing: %s\n",
-                fileName.c_str() );
+            logf( "Running: %s\n", command.c_str() );
+            OS().ExecuteCommand( command );
         }
     }
 
@@ -5204,20 +5162,11 @@ void CLIntercept::dumpProgramOptionsScript(
 
         CLI_SPRINTF( filepath, MAX_PATH, "%s/%s.%s", dirname, filename, "txt" );
 
-        std::ofstream os;
-        os.open(
+        dumpMemoryToFile(
             filepath,
-            std::ios::out | std::ios::binary );
-        if( os.good() )
-        {
-            os.write( options, strlen( options ) );
-            os.close();
-        }
-        else
-        {
-            logf( "Failed to open program options dump file for writing: %s\n",
-                filepath );
-        }
+            false,
+            options,
+            strlen(options) );
     }
 
 #else
@@ -5294,23 +5243,12 @@ void CLIntercept::dumpProgramOptions(
                 isCompile ? "_compile_options.txt" :
                 isLink ? "_link_options.txt" :
                 "_options.txt";
-            std::ofstream os;
-            os.open(
-                fileName.c_str(),
-                std::ios::out | std::ios::binary );
-            if( os.good() )
-            {
-                log( "Dumping program options to file (inject): " + fileName + "\n" );
-
-                // don't write the null terminator to the file
-                os.write( options, strlen( options) );
-                os.close();
-            }
-            else
-            {
-                logf( "Failed to open program options dump file for writing: %s\n",
-                    fileName.c_str() );
-            }
+            log( "Dumping program options to file (inject): " + fileName + "\n" );
+            dumpMemoryToFile(
+                fileName,
+                false,
+                options,
+                strlen(options) );
         }
     }
 }
@@ -5398,24 +5336,12 @@ void CLIntercept::dumpProgramBuildLog(
 
     fileName += "_build_log.txt";
 
-    std::ofstream os;
-    os.open(
-        fileName.c_str(),
-        std::ios::out | std::ios::binary );
-    if( os.good() )
-    {
-        log( "Dumping build log to file: " + fileName + "\n" );
-
-        os.write(
-            buildLog,
-            buildLogSize );
-        os.close();
-    }
-    else
-    {
-        logf( "Failed to open program build log dump file for writing: %s\n",
-            fileName.c_str() );
-    }
+    log( "Dumping build log to file: " + fileName + "\n" );
+    dumpMemoryToFile(
+        fileName,
+        false,
+        buildLog,
+        buildLogSize );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7857,7 +7783,7 @@ void CLIntercept::dumpBuffersForKernel(
                             const std::string fullFileName = inspectionPrefix + fileName;
                             dumpMemoryToFile(
                                 fullFileName,
-                                config().DumpMemoryHashes,
+                                config().DumpBufferHashes,
                                 transferBuf.data(),
                                 size );
                         }
@@ -7893,7 +7819,7 @@ void CLIntercept::dumpBuffersForKernel(
                         const std::string fullFileName = inspectionPrefix + fileName;
                         dumpMemoryToFile(
                             fullFileName,
-                            config().DumpMemoryHashes,
+                            config().DumpBufferHashes,
                             allocation,
                             size );
                     }
@@ -7938,7 +7864,7 @@ void CLIntercept::dumpBuffersForKernel(
                         const std::string fullFileName = inspectionPrefix + fileName;
                         dumpMemoryToFile(
                             fullFileName,
-                            config().DumpMemoryHashes,
+                            config().DumpBufferHashes,
                             ptr,
                             size );
                     }
@@ -8107,7 +8033,7 @@ void CLIntercept::dumpImagesForKernel(
                         const std::string fullFileName = inspectionPrefix + fileName;
                         dumpMemoryToFile(
                             fullFileName,
-                            config().DumpMemoryHashes,
+                            config().DumpImageHashes,
                             transferBuf.data(),
                             size );
                     }
@@ -8177,21 +8103,11 @@ void CLIntercept::dumpArgument(
         // Dump the buffer contents to the file.
         if( pBuffer != NULL)
         {
-            std::ofstream os;
-            os.open(
-                fileName.c_str(),
-                std::ios_base::out | std::ios_base::binary );
-
-            if( os.good() )
-            {
-                os.write( (const char *)pBuffer, size );
-                os.close();
-            }
-            else
-            {
-                logf( "Failed to open program arg dump file for writing: %s\n",
-                    fileName.c_str() );
-            }
+            dumpMemoryToFile(
+                fileName,
+                false,
+                pBuffer,
+                size );
         }
     }
 }
@@ -8277,7 +8193,7 @@ void CLIntercept::dumpBuffer(
         {
             dumpMemoryToFile(
                 fileName,
-                config().DumpMemoryHashes,
+                config().DumpBufferHashes,
                 ptr,
                 size );
         }
@@ -8304,7 +8220,7 @@ void CLIntercept::dumpBuffer(
             {
                 dumpMemoryToFile(
                     fileName,
-                    config().DumpMemoryHashes,
+                    config().DumpBufferHashes,
                     ptr,
                     size );
 
@@ -9815,24 +9731,12 @@ void CLIntercept::dumpProgramBinary(
 
                 outputFileName += ".bin";
 
-                std::ofstream os;
-                os.open(
-                    outputFileName.c_str(),
-                    std::ios::out | std::ios::binary );
-                if( os.good() )
-                {
-                    log( "Dumping program binary to file: " + outputFileName + "\n" );
-
-                    os.write(
-                        programBinaries[ i ],
-                        programBinarySizes[ i ] );
-                    os.close();
-                }
-                else
-                {
-                    logf( "Failed to open program binary dump file for writing: %s\n",
-                        outputFileName.c_str() );
-                }
+                log( "Dumping program binary to file: " + outputFileName + "\n" );
+                dumpMemoryToFile(
+                    outputFileName,
+                    false,
+                    programBinaries[ i ],
+                    programBinarySizes[ i ] );
             }
         }
 
@@ -10012,24 +9916,12 @@ void CLIntercept::dumpKernelISABinaries(
                     fileName += kernelName;
                     fileName += ".isabin";
 
-                    std::ofstream os;
-                    os.open(
-                        fileName.c_str(),
-                        std::ios::out | std::ios::binary );
-                    if( os.good() )
-                    {
-                        log( "Dumping kernel ISA binary to file: " + fileName + "\n" );
-
-                        os.write(
-                            kernelISABinary,
-                            kernelISABinarySize );
-                        os.close();
-                    }
-                    else
-                    {
-                        logf( "Failed to open kernel ISA dump file for writing: %s\n",
-                            fileName.c_str() );
-                    }
+                    log( "Dumping kernel ISA binary to file: " + fileName + "\n" );
+                    dumpMemoryToFile(
+                        fileName,
+                        false,
+                        kernelISABinary,
+                        kernelISABinarySize );
                 }
 
                 delete [] kernelISABinary;
@@ -13491,7 +13383,7 @@ void CLIntercept::dumpMemoryToFile(
             os << std::hex << hashValue << "\n";
         }
         else
-        {      
+        {
             os.write( (const char*)ptr, size );
         }
 
