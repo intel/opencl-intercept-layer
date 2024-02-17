@@ -519,6 +519,10 @@ This is the list of options that is implicitly passed to CLANG to build an OpenC
 
 ### Controls for Dumping Buffers and Images
 
+##### `DumpMemoryHashes` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will hashes of the buffer or image contents rather than the full contents of the buffer or image.  This can be useful to identify which kernel enqueues generate different results without requiring a large amount of disk space.
+
 ##### `DumpArgumentsOnSet` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump the argument value on calls to clSetKernelArg(). Arguments are dumped as raw binary data.  The filenames will have the form "SetKernelArg\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>.bin".

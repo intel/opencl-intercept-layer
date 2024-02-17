@@ -7845,41 +7845,21 @@ void CLIntercept::dumpBuffersForKernel(
                     {
                         if( forCaptureReplay )
                         {
-                            std::string fullFileName = captureReplayPrefix + fileName;
-                            std::ofstream os;
-                            os.open(
-                                fullFileName.c_str(),
-                                std::ios::out | std::ios::binary );
-
-                            if( os.good() )
-                            {
-                                os.write( transferBuf.data(), size );
-                                os.close();
-                            }
-                            else
-                            {
-                                logf( "Failed to open buffer dump file for writing: %s\n",
-                                    fullFileName.c_str() );
-                            }
+                            const std::string fullFileName = captureReplayPrefix + fileName;
+                            dumpMemoryToFile(
+                                fullFileName,
+                                false,
+                                transferBuf.data(),
+                                size );
                         }
                         if( forInspection )
                         {
-                            std::string fullFileName = inspectionPrefix + fileName;
-                            std::ofstream os;
-                            os.open(
-                                fullFileName.c_str(),
-                                std::ios::out | std::ios::binary );
-
-                            if( os.good() )
-                            {
-                                os.write( transferBuf.data(), size );
-                                os.close();
-                            }
-                            else
-                            {
-                                logf( "Failed to open buffer dump file for writing: %s\n",
-                                    fullFileName.c_str() );
-                            }
+                            const std::string fullFileName = inspectionPrefix + fileName;
+                            dumpMemoryToFile(
+                                fullFileName,
+                                config().DumpMemoryHashes,
+                                transferBuf.data(),
+                                size );
                         }
                     }
                 }
@@ -7901,41 +7881,21 @@ void CLIntercept::dumpBuffersForKernel(
                 {
                     if( forCaptureReplay )
                     {
-                        std::string fullFileName = captureReplayPrefix + fileName;
-                        std::ofstream os;
-                        os.open(
-                            fullFileName.c_str(),
-                            std::ios::out | std::ios::binary );
-
-                        if( os.good() )
-                        {
-                            os.write( (const char*)allocation, size );
-                            os.close();
-                        }
-                        else
-                        {
-                            logf( "Failed to open buffer dump file for writing: %s\n",
-                                fullFileName.c_str() );
-                        }
+                        const std::string fullFileName = captureReplayPrefix + fileName;
+                        dumpMemoryToFile(
+                            fullFileName,
+                            false,
+                            allocation,
+                            size );
                     }
                     if( forInspection )
                     {
-                        std::string fullFileName = inspectionPrefix + fileName;
-                        std::ofstream os;
-                        os.open(
-                            fullFileName.c_str(),
-                            std::ios::out | std::ios::binary );
-
-                        if( os.good() )
-                        {
-                            os.write( (const char*)allocation, size );
-                            os.close();
-                        }
-                        else
-                        {
-                            logf( "Failed to open buffer dump file for writing: %s\n",
-                                fullFileName.c_str() );
-                        }
+                        const std::string fullFileName = inspectionPrefix + fileName;
+                        dumpMemoryToFile(
+                            fullFileName,
+                            config().DumpMemoryHashes,
+                            allocation,
+                            size );
                     }
 
                     dispatch().clEnqueueSVMUnmap(
@@ -7966,41 +7926,21 @@ void CLIntercept::dumpBuffersForKernel(
                 {
                     if( forCaptureReplay )
                     {
-                        std::string fullFileName = captureReplayPrefix + fileName;
-                        std::ofstream os;
-                        os.open(
-                            fullFileName.c_str(),
-                            std::ios::out | std::ios::binary );
-
-                        if( os.good() )
-                        {
-                            os.write( (const char*)ptr, size );
-                            os.close();
-                        }
-                        else
-                        {
-                            logf( "Failed to open buffer dump file for writing: %s\n",
-                                fullFileName.c_str() );
-                        }
+                        const std::string fullFileName = captureReplayPrefix + fileName;
+                        dumpMemoryToFile(
+                            fullFileName,
+                            false,
+                            ptr,
+                            size );
                     }
                     if( forInspection )
                     {
-                        std::string fullFileName = inspectionPrefix + fileName;
-                        std::ofstream os;
-                        os.open(
-                            fullFileName.c_str(),
-                            std::ios::out | std::ios::binary );
-
-                        if( os.good() )
-                        {
-                            os.write( (const char*)ptr, size );
-                            os.close();
-                        }
-                        else
-                        {
-                            logf( "Failed to open buffer dump file for writing: %s\n",
-                                fullFileName.c_str() );
-                        }
+                        const std::string fullFileName = inspectionPrefix + fileName;
+                        dumpMemoryToFile(
+                            fullFileName,
+                            config().DumpMemoryHashes,
+                            ptr,
+                            size );
                     }
 
                     dispatch().clEnqueueUnmapMemObject(
@@ -8125,7 +8065,6 @@ void CLIntercept::dumpImagesForKernel(
             }
 
             // Dump the image contents to the file.
-
             size_t  size =
                 info.Region[0] *
                 info.Region[1] *
@@ -8156,41 +8095,21 @@ void CLIntercept::dumpImagesForKernel(
                 {
                     if( forCaptureReplay )
                     {
-                        std::string fullFileName = captureReplayPrefix + fileName;
-                        std::ofstream os;
-                        os.open(
-                            fullFileName.c_str(),
-                            std::ios::out | std::ios::binary );
-
-                        if( os.good() )
-                        {
-                            os.write( transferBuf.data(), size );
-                            os.close();
-                        }
-                        else
-                        {
-                            logf( "Failed to open image dump file for writing: %s\n",
-                                fullFileName.c_str() );
-                        }
+                        const std::string fullFileName = captureReplayPrefix + fileName;
+                        dumpMemoryToFile(
+                            fullFileName,
+                            false,
+                            transferBuf.data(),
+                            size );
                     }
                     if( forInspection )
                     {
-                        std::string fullFileName = inspectionPrefix + fileName;
-                        std::ofstream os;
-                        os.open(
-                            fullFileName.c_str(),
-                            std::ios::out | std::ios::binary );
-
-                        if( os.good() )
-                        {
-                            os.write( transferBuf.data(), size );
-                            os.close();
-                        }
-                        else
-                        {
-                            logf( "Failed to open image dump file for writing: %s\n",
-                                fullFileName.c_str() );
-                        }
+                        const std::string fullFileName = inspectionPrefix + fileName;
+                        dumpMemoryToFile(
+                            fullFileName,
+                            config().DumpMemoryHashes,
+                            transferBuf.data(),
+                            size );
                     }
                 }
             }
@@ -8256,24 +8175,22 @@ void CLIntercept::dumpArgument(
         }
 
         // Dump the buffer contents to the file.
+        if( pBuffer != NULL)
         {
-            if( pBuffer != NULL)
-            {
-                std::ofstream os;
-                os.open(
-                    fileName.c_str(),
-                    std::ios_base::out | std::ios_base::binary );
+            std::ofstream os;
+            os.open(
+                fileName.c_str(),
+                std::ios_base::out | std::ios_base::binary );
 
-                if( os.good() )
-                {
-                    os.write( (const char *)pBuffer, size );
-                    os.close();
-                }
-                else
-                {
-                    logf( "Failed to open program arg dump file for writing: %s\n",
-                        fileName.c_str() );
-                }
+            if( os.good() )
+            {
+                os.write( (const char *)pBuffer, size );
+                os.close();
+            }
+            else
+            {
+                logf( "Failed to open program arg dump file for writing: %s\n",
+                    fileName.c_str() );
             }
         }
     }
@@ -8358,21 +8275,11 @@ void CLIntercept::dumpBuffer(
         //    map and dump the entire buffer.
         if( ptr != NULL && size != 0 )
         {
-            std::ofstream os;
-            os.open(
-                fileName.c_str(),
-                std::ios::out | std::ios::binary );
-
-            if( os.good() )
-            {
-                os.write( (const char*)ptr, size );
-                os.close();
-            }
-            else
-            {
-                logf( "Failed to open buffer dump file for writing: %s\n",
-                    fileName.c_str() );
-            }
+            dumpMemoryToFile(
+                fileName,
+                config().DumpMemoryHashes,
+                ptr,
+                size );
         }
         else
         {
@@ -8395,21 +8302,11 @@ void CLIntercept::dumpBuffer(
                 &error );
             if( error == CL_SUCCESS )
             {
-                std::ofstream os;
-                os.open(
-                    fileName.c_str(),
-                    std::ios::out | std::ios::binary );
-
-                if( os.good() )
-                {
-                    os.write( (const char*)ptr, size );
-                    os.close();
-                }
-                else
-                {
-                    logf( "Failed to open buffer dump file for writing: %s\n",
-                        fileName.c_str() );
-                }
+                dumpMemoryToFile(
+                    fileName,
+                    config().DumpMemoryHashes,
+                    ptr,
+                    size );
 
                 dispatch().clEnqueueUnmapMemObject(
                     command_queue,
@@ -13572,6 +13469,40 @@ bool CLIntercept::initDispatch( void )
 #else
 #error Unknown OS!
 #endif
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::dumpMemoryToFile(
+    const std::string& fileName,
+    bool hash,
+    const void* ptr,
+    size_t size  )
+{
+    std::ofstream os;
+    os.open(
+        fileName.c_str(),
+        std::ios::out | std::ios::binary );
+
+    if( os.good() )
+    {
+        if( hash )
+        {
+            uint64_t hashValue = computeHash(ptr, size);
+            os << std::hex << hashValue << "\n";
+        }
+        else
+        {      
+            os.write( (const char*)ptr, size );
+        }
+
+        os.close();
+    }
+    else
+    {
+        logf( "Failed to open dump file for writing: %s\n",
+            fileName.c_str() );
+    }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
