@@ -1,7 +1,8 @@
-
+#
 # Copyright (c) 2023-2024 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
+#
 
 import numpy as np
 import pyopencl as cl
@@ -18,9 +19,16 @@ def get_image_metadata(idx: int):
     with open(filename) as metadata:
         lines = metadata.readlines()
 
-    shape = [int(lines[0]),
-                   int(lines[1]),
-                   int(lines[2])]
+    image_type = int(lines[8])
+    if image_type in [cl.mem_object_type.IMAGE1D]:
+        shape = [int(lines[0])]
+    elif image_type in [cl.mem_object_type.IMAGE2D]:
+        shape = [int(lines[0]), int(lines[1])]
+    elif image_type in [cl.mem_object_type.IMAGE3D]:
+        shape = [int(lines[0]), int(lines[1]), int(lines[2])]
+    else:
+        print('Unsupported image type for playback!')
+        shape = [int(lines[0]), int(lines[1]), int(lines[2])]
 
     format = cl.ImageFormat(int(lines[7]), int(lines[6]))
     return format, shape
@@ -42,6 +50,12 @@ parser.add_argument('-repetitions', '--rep', type=int, dest='repetitions', defau
                     help='How often the kernel should be enqueued')
 args = parser.parse_args()
 
+# Read the enqueue number from the file
+with open('./enqueueNumber.txt') as file:
+    enqueue_number = file.read().splitlines()[0]
+
+padded_enqueue_num = str(enqueue_number).rjust(4, "0")
+
 arguments = {}
 argument_files = gl.glob("./Argument*.bin")
 for argument in argument_files:
@@ -51,10 +65,11 @@ for argument in argument_files:
 buffer_idx = []
 input_buffers = {}
 output_buffers = {}
-buffer_files = gl.glob("./Buffer*.bin")
+buffer_files = gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.bin")
 input_buffer_ptrs = defaultdict(list)
 for buffer in buffer_files:
-    idx = int(re.findall(r'\d+', buffer)[0])
+    start = buffer.find("_Arg_")
+    idx = int(re.findall(r'\d+', buffer[start:])[0])
     buffer_idx.append(idx)
     input_buffers[idx] = np.fromfile(buffer, dtype='uint8').tobytes()
     input_buffer_ptrs[arguments[idx]].append(idx)
@@ -63,10 +78,11 @@ for buffer in buffer_files:
 image_idx = []
 input_images = {}
 output_images = {}
-image_files = gl.glob("./Image*.raw")
+image_files = gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.raw")
 input_images_ptrs = defaultdict(list)
 for image in image_files:
-    idx = int(re.findall(r'\d+', image)[0])
+    start = image.find("_Arg_")
+    idx = int(re.findall(r'\d+', image[start:])[0])
     image_idx.append(idx)
     input_images[idx] = np.fromfile(image, dtype='uint8').tobytes()
     input_images_ptrs[arguments[idx]].append(idx)
@@ -86,13 +102,12 @@ for idx in buffer_idx:
 
 # Check if all input pointer addresses are unique
 if len(tmp_args) != len(set(tmp_args)):
-    print("Some of the buffers are aliasing, we will replicate this behavior")
+    print("Some of the buffers are aliasing, we will replicate this behavior.")
 
 ctx = cl.create_some_context()
 queue = cl.CommandQueue(ctx)
 devices = ctx.get_info(cl.context_info.DEVICES)
 
-# TODO Samplers
 samplers = {}
 sampler_files = gl.glob("./Sampler*.txt")
 for sampler in sampler_files:
@@ -120,19 +135,19 @@ for idx in image_idx:
     gpu_images[idx] = cl.Image(ctx, mf.COPY_HOST_PTR, format, shape, hostbuf=input_images[idx])
 
 with open("buildOptions.txt", 'r') as file:
-    flags = [line.rstrip() for line in file]
-    print(f"Using flags: {flags}")
+    options = [line.rstrip() for line in file]
+    print(f"Using build options: {options}")
 
-with open('knlName.txt') as file:
-        knl_name = file.read()
+with open('kernelName.txt') as file:
+    kernel_name = file.read()
 
 if os.path.isfile("kernel.cl"):
-    print("Using kernel source code")
+    print("Using kernel source")
     with open("kernel.cl", 'r') as file:
         kernel = file.read()
-    prg = cl.Program(ctx, kernel).build(flags)
+    prg = cl.Program(ctx, kernel).build(options)
 else:
-    print("Using device binary")
+    print("Using kernel device binary")
     binary_files = gl.glob("./DeviceBinary*.bin")
     binaries = []
     for file in binary_files:
@@ -141,50 +156,49 @@ else:
     # Try the binaries to find one that works
     for idx in range(len(binaries)):
         try:
-            prg = cl.Program(ctx, [devices[0]], [binaries[idx]]).build(flags)
-            getattr(prg, knl_name)
+            prg = cl.Program(ctx, [devices[0]], [binaries[idx]]).build(options)
+            getattr(prg, kernel_name)
             break
         except Exception as e:
             pass
 
-knl = getattr(prg, knl_name)
+kernel = getattr(prg, kernel_name)
 for pos, argument in arguments.items():
-    knl.set_arg(pos, argument)
+    kernel.set_arg(pos, argument)
 
 for pos, buffer in gpu_buffers.items():
     for idx in pos:
-        knl.set_arg(idx, buffer)
+        kernel.set_arg(idx, buffer)
 
 for pos, image in gpu_images.items():
-    knl.set_arg(pos, image)
+    kernel.set_arg(pos, image)
 
 for pos, size in local_sizes.items():
-    knl.set_arg(pos, cl.LocalMemory(size))
+    kernel.set_arg(pos, cl.LocalMemory(size))
 
 for pos, sampler in samplers.items():
-    knl.set_arg(pos, sampler)
+    kernel.set_arg(pos, sampler)
 
 gws = []
 lws = []
-gws_offset = []
+gwo = []
 
 with open("worksizes.txt", 'r') as file:
     lines = file.read().splitlines()
     
 gws.extend([int(value) for value in lines[0].split()])
 lws.extend([int(value) for value in lines[1].split()])
-gws_offset.extend([int(value) for value in lines[2].split()])
+gwo.extend([int(value) for value in lines[2].split()])
     
-print(f"Global Worksize: {gws}")
-print(f"Local Worksize: {lws}")
-print(f"Global Worksize Offsets: {gws_offset}")
+print(f"Global Work Size: {gws}")
+print(f"Local Work Size: {lws}")
+print(f"Global Work Offsets: {gwo}")
     
 if lws == [0] or lws == [0, 0] or lws == [0, 0, 0]:
     lws = None
 
 for _ in range(args.repetitions):
-    cl.enqueue_nd_range_kernel(queue, knl, gws, lws, gws_offset)
-
+    cl.enqueue_nd_range_kernel(queue, kernel, gws, lws, gwo)
 
 for pos in gpu_buffers.keys():
     if len(pos) == 1:
@@ -196,9 +210,15 @@ for pos in gpu_buffers.keys():
 for pos in gpu_images.keys():
     cl.enqueue_copy(queue, output_images[pos], gpu_images[pos], region=shape, origin=(0,0,0))
 
+if not os.path.exists("./Test"):
+    os.makedirs("./Test")
+
 for pos, cpu_buffer in output_buffers.items():
-    cpu_buffer.tofile("output_buffer" + str(pos) + ".bin")
+    outbuf = "./Test/Enqueue_" + padded_enqueue_num + "_Kernel_" + kernel_name + "_Arg_" + str(pos) + "_Buffer.bin"
+    print(f"Writing buffer output to file: {outbuf}")
+    cpu_buffer.tofile(outbuf)
 
 for pos, cpu_image in output_images.items():
-    cpu_image.tofile("output_image" + str(pos) + ".raw")
-
+    outimg = "./Test/Enqueue_" + padded_enqueue_num + "_Kernel_" + kernel_name + "_Arg_" + str(pos) + "_Image.raw"
+    print(f"Writing image output to file: {outimg}")
+    cpu_image.tofile(outimg)

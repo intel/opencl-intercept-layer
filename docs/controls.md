@@ -477,14 +477,6 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump kernel ISA binaries for every kernel, if supported.  Currently, kernel ISA binaries are only supported for Intel GPU devices.  Kernel ISA binaries can be decoded into ISA text with a disassembler.  The filename will have the form "CLI\_\<Program Number\>\_\<Unique Program Hash Code\>\_\<Compile Count\>\_\<Unique Build Options Hash Code\>\_\<Device Type\>\_\<Kernel Name\>.isabin".
 
-##### `DumpReplayKernelEnqueue` (int)
-
-If set to a positive value, the Intercept Layer for OpenCL Applications will dump in /Replay/Enqueue\_*/ a standalone (i.e. runs completely independent from the original program from which is was captured) playable set of files for the specified enqueue number which can be used for debugging or profiling. When a program was build from source code, it will dump that one, otherwise it will dump the device binary. It is advised to not use this setting directly, but use /scripts/capture\_and\_validate.py.
-
-##### `DumpReplayKernelName` (string)
-
-If set, the Intercept Layer for OpenCL Applications for dump the specified kernel the first time it is encountered so that it can be replayed independently. It is advised to not use this setting directly, but use /scripts/capture\_and\_validate.py
-
 ### Controls for Emulating Features
 
 ##### `Emulate_cl_khr_extended_versioning` (bool)
@@ -612,6 +604,36 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will try 
 ##### `AutoPartitionEqually` (cl_uint)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices into sub-devices with the specified number of compute units.
+
+### Capture and Replay Controls
+
+##### `CaptureReplay` (bool)
+
+This is the top-level control for kernel capture and replay.
+
+##### `CaptureReplayMinEnqueue` (cl_uint)
+
+The Intercept Layer for OpenCL Applications will only enable kernel capture and replay when the enqueue counter is greater than this value, inclusive.
+
+##### `CaptureReplayMaxEnqueue` (cl_uint)
+
+The Intercept Layer for OpenCL Applications will stop kernel capture and replay when the encounter is greater than this value, meaning that only enqueues less than this value, inclusive, will be captured.
+
+##### `CaptureReplayKernelName` (string)
+
+If set, the Intercept Layer for OpenCL Applications will only enable kernel capture and replay when the kernel name equals this name.
+
+##### `CaptureReplayUniqueKernels` (bool)
+
+If set, the Intercept Layer for OpenCL Applications will only enable kernel capture and replay if the kernel signature (i.e. hash + kernelname) has not been seen already.
+
+##### `CaptureReplayNumKernelEnqueuesSkip` (cl_uint)
+
+The Intercept Layer for OpenCL Applications will skip this many kernel enqueues before enabling kernel capture and replay.
+
+##### `CaptureReplayNumKernelEnqueuesCapture` (cl_uint)
+
+The Intercept Layer for OpenCL Applications will only capture this many kernel enqueues.
 
 ### AubCapture Controls
 

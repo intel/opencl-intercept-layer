@@ -17,25 +17,32 @@ To replay the captured kernels, you will need the following Python packages:
 
 ## Step by Step for Automatic Capturing
 
-* Set one of the two controls:
-  * `DumpReplayKernelName`, if you want to capture a kernel by its name.
-  * `DumpReplayKernelEnqueue`, if you want to capture a kernel by its enqueue number.
-* Then, simply run the program as usual!
-* Example on Linux: `CLI_DumpReplayKernelName=${NameOfKernel} cliloader /path/to/executable`
+1. Set the top-level control to enable kernel capturing and replay: `CaptureReplay`
+2. Set any additional controls to capture a specific range of kernels, or specific kernel names.  For example:
+    * `CaptureReplayMinEnqueue` and `CaptureReplayMaxEnqueue`, to capture a specific range of kernel enqueues.
+    * `CaptureReplayKernelName`, to capture a specific kernel name.
+    * `CaptureReplayUniqueKernels`, to capture only unique kernel and dispatch parameter combinations.
+    * `CaptureReplayNumKernelEnqueuesSkip`, to skip initial captures.
+    * `CaptureReplayNumKernelEnqueuesCapture`, to capture a limited number of kernel enqueues.
+3. Then, simply run the program as usual!
+
+For more details, please see the Capture and Replay Controls section in the [controls](controls.md) documentation.
 
 ## Step by Step for Automatic Capturing and Validation
 
-* Copy the [capture_and_validate.py](../scripts/capture_and_validate.py) script to the place where you run the app from.
-  * Not strictly necessary, but makes life easier.
-* Run this script with the following arguments:
-  - One of `--num EnqueueNumberToBeCaptured` or `--name NameOfKernelToBeCaptured`
-  - `-cli "/path/to/cliloader"`
-  - `--p "/path/to/program"`
-  - `--a ArgsForProgram`
+Use the [capture_and_validate.py](../scripts/capture_and_validate.py) script to capture a workload and validate that the replayed results match.
 
-Please make sure to follow this order of arguments!
+Arguments for the capture and validate script are:
 
-This will then run the program using `cliloader` with the given arguments, capture the the specified kernel, and verify that the buffers calculated by the standalone replay agree with the buffers calculated by the original program.
+* `-c` or `--cliloader`: Path to `cliloader`.  This can be a full path, or a relative path, or just `cliloader` if `cliloader` is already in the system path.
+* `-p` or `--program`: The command to execute the program to capture.
+* `-a` or `--args`: Any optional arguments to pass to the program to capture.
+* Either one of:
+    * `-k` or `--kernel_name`: The kernel name to capture.
+    * `-n` or `--enqueue_number`: The enqueue number that should be captured.
+
+The capture and validate script will then run the program using `cliloader` with the given arguments to capture the the specified kernel or enqueue number.
+The script will then verify that the buffers calculated by the standalone replay agree with the buffers calculated by the original program.
 If the buffers don't agree, it will show a message in the terminal.
 
 ## Supported Features
@@ -43,26 +50,28 @@ If the buffers don't agree, it will show a message in the terminal.
 * OpenCL Buffers
   * These may be aliased, then only one buffer is used.
     * Only true if the buffers use the same memory address, so not when using sub-buffers and having offsets.
-  * `__local` kernel arguments, i.e. those set by `clSetKernelArg(kernel, arg_index, local_size, nullptr)`.
+  * `__local` kernel arguments, i.e. those set by `clSetKernelArg(kernel, arg_index, local_size, NULL)`.
   * Device only buffers, i.e. those with `CL_MEM_HOST_NO_ACCESS`.  When kernel capture is enabled, any device-only access flags are removed.
 * OpenCL Images
+  * 2D, and 3D images are supported.
 * OpenCL Samplers
-* Build/replay from source
-* Build/replay from a device binary
+* OpenCL Kernels from source or IL
+* OpenCL Kernels from device binary
 
 ## Limitations (incomplete)
 
-* Does not work with OpenCL pipes
-* Untested for out-of-order queues
-* Sub-buffers are not dealt with explicitly, this may affect the results for both debugging and performance
-* The capture and validate script doesn't work with GUI apps
+* Does not work with OpenCL SVM or USM.
+* Does not work with OpenCL pipes.
+* Untested for out-of-order queues.
+* Sub-buffers are not dealt with explicitly, this may affect the results for both debugging and performance.
+* The capture and validate script may not work with some GUI apps.
 
 ## Advice
 
-* Use the following environment variables for `pyopencl`: `PYOPENCL_NO_CACHE=1` and `PYOPENCL_COMPILER_OUTPUT=1`
-* Minimize usage of other controls, to prevent unexpected behavior.
+* Use the following environment variables for `pyopencl`: `PYOPENCL_NO_CACHE=1` and `PYOPENCL_COMPILER_OUTPUT=1`.
+* Minimize usage of other controls, to prevent unexpected behavior, however:
   * Consider enabling `InitializeBuffers` for more predictable results between runs.
-  * Only set one of `DumpReplayKernelName` and `DumpReplayKernelEnqueue`.
+* When executing the capture and validate script consider removing any other kernel captures, or verifying that the validate script is using the correct capture.
 * Always make sure to check if your results make sense.
 * For some apps using `cliloader` doesn't work properly.  If this happens for your application, please try other [install](install.md) options.
 
