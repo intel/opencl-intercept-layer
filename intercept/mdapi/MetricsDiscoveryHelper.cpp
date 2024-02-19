@@ -347,7 +347,7 @@ bool MDHelper::InitMetricsDiscoveryAdapterGroup(
 
     if (adapterIndex >= pAdapterGroupParams->AdapterCount)
     {
-        DebugPrint("Requested adapter index is %u bug only %u adapters were found.  Using adapter 0.\n");
+        DebugPrint("Requested adapter index is %u but only %u adapters were found.  Using adapter 0.\n");
         adapterIndex = 0;
     }
 
