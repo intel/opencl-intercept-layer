@@ -7621,14 +7621,20 @@ void CLIntercept::dumpCaptureReplayKernelInfo(
     cl_device_id device = nullptr;
     dispatch().clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(cl_device_id), &device, nullptr);
 
-    size_t sizeOfOptions = 0;
-    dispatch().clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_OPTIONS, 0, nullptr, &sizeOfOptions);
+    {
+        std::ofstream outputBuildOptions{dumpDirectory + "buildOptions.txt"};
 
-    std::string optionsString(sizeOfOptions, ' ');
-    dispatch().clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_OPTIONS, sizeOfOptions, &optionsString[0], &sizeOfOptions);
+        size_t buildOptionsSize = 0;
+        dispatch().clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_OPTIONS, 0, nullptr, &buildOptionsSize);
 
-    std::ofstream outputBuildOptions{dumpDirectory + "buildOptions.txt", std::ios::out | std::ios::binary};
-    outputBuildOptions.write(optionsString.c_str(), optionsString.length() - 1);
+        std::string buildOptions(buildOptionsSize, ' ');
+        int error = dispatch().clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_OPTIONS, buildOptionsSize, &buildOptions[0], nullptr);
+        if( error == CL_SUCCESS )
+        {
+            buildOptions.pop_back();
+            outputBuildOptions << buildOptions << '\n';
+        }
+    }
 
     std::string kernelName = getShortKernelName(kernel);
     std::ofstream outputKernelName{dumpDirectory + "kernelName.txt"};
@@ -7642,14 +7648,15 @@ void CLIntercept::dumpCaptureReplayKernelInfo(
         std::ofstream outputArgTypes{dumpDirectory + "ArgumentDataTypes.txt"};
         for( cl_uint idx = 0; idx != numArgs; ++idx )
         {
-            size_t argNameSize = 0;
-            dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, 0, nullptr, &argNameSize);
+            size_t argTypeNameSize = 0;
+            dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, 0, nullptr, &argTypeNameSize);
 
-            std::string argName(argNameSize, ' ');
-            int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, argNameSize, &argName[0], nullptr);
+            std::string argTypeName(argTypeNameSize, ' ');
+            int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, argTypeNameSize, &argTypeName[0], nullptr);
             if( error == CL_SUCCESS )
             {
-                outputArgTypes << argName << '\n';
+                argTypeName.pop_back();
+                outputArgTypes << argTypeName << '\n';
             }
         }
     }
