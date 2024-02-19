@@ -115,6 +115,7 @@ public:
     GENERATE_MAP_AND_BITFIELD_FUNC( name_command_buffer_flags,       cl_command_buffer_flags_khr     );
     GENERATE_MAP_AND_FUNC(          name_command_buffer_structure_type, cl_command_buffer_structure_type_khr );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_mutable_dispatch_fields,    cl_mutable_dispatch_fields_khr  );
+    GENERATE_MAP_AND_BITFIELD_FUNC( name_mutable_dispatch_asserts,   cl_mutable_dispatch_asserts_khr );
 
     #undef GENERATE_MAP_AND_FUNC
     #undef GENERATE_MAP_AND_BITFIELD_FUNC

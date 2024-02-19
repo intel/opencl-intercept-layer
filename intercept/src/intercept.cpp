@@ -2386,15 +2386,15 @@ void CLIntercept::getMemPropertiesString(
 
             switch( property )
             {
-            case CL_DEVICE_HANDLE_LIST_KHR:
+            case CL_MEM_DEVICE_HANDLE_LIST_KHR:
                 {
                     ++properties;
                     str += "{ ";
                     while( true )
                     {
-                        if( *properties == CL_DEVICE_HANDLE_LIST_END_KHR )
+                        if( *properties == CL_MEM_DEVICE_HANDLE_LIST_END_KHR )
                         {
-                            str += "CL_DEVICE_HANDLE_LIST_END_KHR";
+                            str += "CL_MEM_DEVICE_HANDLE_LIST_END_KHR";
                             properties++;
                             break;
                         }
@@ -2499,15 +2499,16 @@ void CLIntercept::getSemaphorePropertiesString(
                     properties += 2;
                 }
                 break;
-            case CL_DEVICE_HANDLE_LIST_KHR:
+            case CL_SEMAPHORE_DEVICE_HANDLE_LIST_KHR:
+            case CL_MEM_DEVICE_HANDLE_LIST_KHR: // for older implementations, with shared enums.
                 {
                     ++properties;
                     str += "{ ";
                     while( true )
                     {
-                        if( *properties == CL_DEVICE_HANDLE_LIST_END_KHR )
+                        if( *properties == CL_SEMAPHORE_DEVICE_HANDLE_LIST_END_KHR )
                         {
-                            str += "CL_DEVICE_HANDLE_LIST_END_KHR";
+                            str += "CL_SEMAPHORE_DEVICE_HANDLE_LIST_END_KHR";
                             properties++;
                             break;
                         }
@@ -2598,6 +2599,13 @@ void CLIntercept::getCommandBufferPropertiesString(
                 {
                     auto pt = (const cl_command_buffer_flags_khr*)( properties + 1 );
                     str += enumName().name_command_buffer_flags( pt[0] );
+                    properties += 2;
+                }
+                break;
+            case CL_COMMAND_BUFFER_MUTABLE_DISPATCH_ASSERTS_KHR:
+                {
+                    auto pt = (const cl_mutable_dispatch_asserts_khr*)( properties + 1 );
+                    str += enumName().name_mutable_dispatch_asserts( pt[0] );
                     properties += 2;
                 }
                 break;

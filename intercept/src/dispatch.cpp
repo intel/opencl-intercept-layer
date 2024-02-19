@@ -11161,6 +11161,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
             std::string argsString;
             if( pIntercept->config().CallLogging )
             {
+                // TODO: properties string.
                 pIntercept->getEnqueueNDRangeKernelArgsString(
                     work_dim,
                     global_work_offset,

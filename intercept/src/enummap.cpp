@@ -758,6 +758,12 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_command_buffer_structure_type_khr, CL_STRUCTURE_TYPE_MUTABLE_BASE_CONFIG_KHR );
     ADD_ENUM_NAME( m_cl_command_buffer_structure_type_khr, CL_STRUCTURE_TYPE_MUTABLE_DISPATCH_CONFIG_KHR );
 
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_BUFFER_MUTABLE_DISPATCH_ASSERTS_KHR );
+
+    ADD_ENUM_NAME( m_cl_int, CL_MUTABLE_DISPATCH_ASSERTS_KHR );
+
+    ADD_ENUM_NAME( m_cl_mutable_dispatch_asserts_khr, CL_MUTABLE_DISPATCH_ASSERT_NO_ADDITIONAL_WORK_GROUPS_KHR );
+
     // cl_khr_extended_versioning extension
     // Most enums for this extension were added to OpenCL 3.0.
     //CL_PLATFORM_NUMERIC_VERSION_KHR                  0x0906
@@ -771,7 +777,8 @@ CEnumNameMap::CEnumNameMap()
     // cl_khr_external_memory
     ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_EXTERNAL_MEMORY_IMPORT_HANDLE_TYPES_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_EXTERNAL_MEMORY_IMPORT_HANDLE_TYPES_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_HANDLE_LIST_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_EXTERNAL_MEMORY_IMPORT_ASSUME_LINEAR_IMAGES_HANDLE_TYPES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_DEVICE_HANDLE_LIST_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_EXTERNAL_MEM_OBJECTS_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_EXTERNAL_MEM_OBJECTS_KHR );
 
@@ -797,6 +804,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SEMAPHORE_IMPORT_HANDLE_TYPES_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_EXPORTABLE_KHR );
 
     // cl_khr_external_semaphore_dx_fence
     ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_HANDLE_D3D12_FENCE_KHR );
@@ -843,8 +851,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_PROPERTIES_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_PAYLOAD_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_TYPE_KHR );
-    // Shared with cl_khr_external_memory:
-    //CL_DEVICE_HANDLE_LIST_KHR                      0x2051
+    ADD_ENUM_NAME( m_cl_int, CL_SEMAPHORE_DEVICE_HANDLE_LIST_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_SEMAPHORE_WAIT_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_SEMAPHORE_SIGNAL_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_SEMAPHORE_KHR );
@@ -955,6 +962,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_MODIFIER_ARM );
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_KERNEL_BATCHING_ARM );
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_DEFERRED_FLUSH_ARM );
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_COMPUTE_UNIT_LIMIT_ARM );
 
     // cl_intel_accelerator
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_ACCELERATOR_INTEL );
