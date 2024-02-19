@@ -48,7 +48,7 @@
 
 class CLIntercept
 {
-    struct Config;
+    struct SConfig;
 
 public:
 #if defined(CLINTERCEPT_HIGH_RESOLUTON_CLOCK)
@@ -826,7 +826,7 @@ public:
 
     const CEnumNameMap& enumName() const;
 
-    const Config&   config() const;
+    const SConfig&  config() const;
 
     uint64_t    getEnqueueCounter() const;
     uint64_t    incrementEnqueueCounter();
@@ -855,6 +855,12 @@ public:
     unsigned int    getProgramNumber() const;
 
     cl_device_type filterDeviceType( cl_device_type device_type ) const;
+
+    void    dumpMemoryToFile(
+                const std::string& fileName,
+                bool hash,
+                const void* ptr,
+                size_t size );
 
 #if defined(USE_ITT)
     __itt_domain*   ittDomain() const;
@@ -1332,7 +1338,7 @@ private:
     typedef std::map< cl_command_buffer_khr, CMutableCommandList >  CCommandBufferMutableCommandsMap;
     CCommandBufferMutableCommandsMap    m_CommandBufferMutableCommandsMap;
 
-    struct Config
+    struct SConfig
     {
 #define CLI_CONTROL( _type, _name, _init, _desc )   _type _name;
 #include "controls.h"
@@ -1889,7 +1895,7 @@ inline const CEnumNameMap& CLIntercept::enumName() const
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-inline const CLIntercept::Config& CLIntercept::config() const
+inline const CLIntercept::SConfig& CLIntercept::config() const
 {
     return m_Config;
 }
