@@ -273,7 +273,7 @@ clRemapCommandBufferKHR(
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_command_buffer_mutable_dispatch
 
-// Note: This implements the provisional extension v0.9.0.
+// Note: This implements the provisional extension v0.9.1.
 
 typedef cl_uint             cl_command_buffer_structure_type_khr;
 typedef cl_bitfield         cl_mutable_dispatch_fields_khr;
@@ -309,6 +309,7 @@ typedef struct _cl_mutable_base_config_khr {
     cl_uint num_mutable_dispatch;
     const cl_mutable_dispatch_config_khr* mutable_dispatch_list;
 } cl_mutable_base_config_khr;
+typedef cl_bitfield         cl_mutable_dispatch_asserts_khr;
 
 #define CL_COMMAND_BUFFER_MUTABLE_KHR                       (1 << 1)
 
@@ -335,6 +336,12 @@ typedef struct _cl_mutable_base_config_khr {
 
 #define CL_STRUCTURE_TYPE_MUTABLE_BASE_CONFIG_KHR           0
 #define CL_STRUCTURE_TYPE_MUTABLE_DISPATCH_CONFIG_KHR       1
+
+#define CL_COMMAND_BUFFER_MUTABLE_DISPATCH_ASSERTS_KHR      0x12B7
+
+#define CL_MUTABLE_DISPATCH_ASSERTS_KHR                     0x12B8
+
+#define CL_MUTABLE_DISPATCH_ASSERT_NO_ADDITIONAL_WORK_GROUPS_KHR (1 << 0)
 
 extern CL_API_ENTRY cl_int CL_API_CALL
 clUpdateMutableCommandsKHR(
@@ -646,16 +653,17 @@ typedef struct _cl_name_version_khr
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_external_memory
 
-// Note: This implements the provisional extension v0.9.0.
+// Note: This implements the provisional extension v0.9.3.
 
 typedef cl_uint             cl_external_memory_handle_type_khr;
 
 #define CL_PLATFORM_EXTERNAL_MEMORY_IMPORT_HANDLE_TYPES_KHR      0x2044
 
 #define CL_DEVICE_EXTERNAL_MEMORY_IMPORT_HANDLE_TYPES_KHR        0x204F
+#define CL_DEVICE_EXTERNAL_MEMORY_IMPORT_ASSUME_LINEAR_IMAGES_HANDLE_TYPES_KHR 0x2052
 
-#define CL_DEVICE_HANDLE_LIST_KHR                                0x2051
-#define CL_DEVICE_HANDLE_LIST_END_KHR                            0
+#define CL_MEM_DEVICE_HANDLE_LIST_KHR                            0x2051
+#define CL_MEM_DEVICE_HANDLE_LIST_END_KHR                        0
 
 #define CL_COMMAND_ACQUIRE_EXTERNAL_MEM_OBJECTS_KHR              0x2047
 #define CL_COMMAND_RELEASE_EXTERNAL_MEM_OBJECTS_KHR              0x2048
@@ -709,6 +717,8 @@ typedef cl_uint             cl_external_semaphore_handle_type_khr;
 #define CL_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR                0x203F
 #define CL_SEMAPHORE_EXPORT_HANDLE_TYPES_LIST_END_KHR       0
 
+#define CL_SEMAPHORE_EXPORTABLE_KHR                         0x2054
+
 extern CL_API_ENTRY cl_int CL_API_CALL
 clGetSemaphoreHandleForTypeKHR(
     cl_semaphore_khr semaphore,
@@ -726,6 +736,14 @@ clGetSemaphoreHandleForTypeKHR(
 
 // cl_khr_external_semaphore_sync_fd
 #define CL_SEMAPHORE_HANDLE_SYNC_FD_KHR                     0x2058
+
+typedef cl_properties       cl_semaphore_reimport_properties_khr;
+
+extern CL_API_ENTRY cl_int CL_API_CALL
+clReImportSemaphoreSyncFdKHR(
+    cl_semaphore_khr sema_object,
+    cl_semaphore_reimport_properties_khr* reimport_props,
+    int fd);
 
 // cl_khr_external_semaphore_win32
 #define CL_SEMAPHORE_HANDLE_OPAQUE_WIN32_KHR                0x2056
@@ -782,6 +800,9 @@ cl_program CL_API_CALL clCreateProgramWithILKHR(
 
 #define CL_CONTEXT_MEMORY_INITIALIZE_KHR            0x2030
 
+#define CL_CONTEXT_MEMORY_INITIALIZE_LOCAL_KHR              (1 << 0)
+#define CL_CONTEXT_MEMORY_INITIALIZE_PRIVATE_KHR            (1 << 1)
+
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_integer_dot_product
 
@@ -834,9 +855,8 @@ typedef cl_ulong cl_semaphore_payload_khr;
 #define CL_SEMAPHORE_PAYLOAD_KHR                                 0x203C
 #define CL_SEMAPHORE_TYPE_KHR                                    0x203D
 
-// Shared with cl_khr_external_memory:
-//#define CL_DEVICE_HANDLE_LIST_KHR                              0x2051
-//#define CL_DEVICE_HANDLE_LIST_END_KHR                          0
+#define CL_SEMAPHORE_DEVICE_HANDLE_LIST_KHR                      0x2053
+#define CL_SEMAPHORE_DEVICE_HANDLE_LIST_END_KHR                  0
 
 #define CL_COMMAND_SEMAPHORE_WAIT_KHR                            0x2042
 #define CL_COMMAND_SEMAPHORE_SIGNAL_KHR                          0x2043
@@ -1086,10 +1106,15 @@ cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
 #define CL_DEVICE_SCHEDULING_WORKGROUP_BATCH_SIZE_ARM           (1 << 1)
 #define CL_DEVICE_SCHEDULING_WORKGROUP_BATCH_SIZE_MODIFIER_ARM  (1 << 2)
 #define CL_DEVICE_SCHEDULING_DEFERRED_FLUSH_ARM                 (1 << 3)
+#define CL_DEVICE_SCHEDULING_REGISTER_ALLOCATION_ARM            (1 << 4)
+#define CL_DEVICE_SCHEDULING_WARP_THROTTLING_ARM                (1 << 5)
+#define CL_DEVICE_SCHEDULING_COMPUTE_UNIT_BATCH_QUEUE_SIZE_ARM  (1 << 6)
+#define CL_DEVICE_SCHEDULING_COMPUTE_UNIT_LIMIT_ARM             (1 << 7)
 #define CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_ARM            0x41E5
 #define CL_KERNEL_EXEC_INFO_WORKGROUP_BATCH_SIZE_MODIFIER_ARM   0x41E6
 #define CL_QUEUE_KERNEL_BATCHING_ARM                            0x41E7
 #define CL_QUEUE_DEFERRED_FLUSH_ARM                             0x41EC
+#define CL_QUEUE_COMPUTE_UNIT_LIMIT_ARM                         0x41F3
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_intel_accelerator
