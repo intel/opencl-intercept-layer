@@ -96,6 +96,8 @@ static void getCommandLine(char *argv[], int startArg)
 #define GETENV( _name, _value ) _dupenv_s( &_value, NULL, _name )
 #define FREEENV( _value ) free( _value )
 
+bool do_DLL_load = true;
+
 #else
 
 #include <limits.h>
@@ -379,7 +381,12 @@ static bool parseArguments(int argc, char *argv[])
             printMetrics();
             return false;
         }
-#if !defined(_WIN32)
+#if defined(_WIN32)
+        else if( !strcmp(argv[i], "--no-DLL-load") )
+        {
+            do_DLL_load = false;
+        }
+#else // not Windows
         else if( !strcmp(argv[i], "--no-LD_PRELOAD") )
         {
             set_LD_PRELOAD = false;
@@ -560,7 +567,9 @@ static bool parseArguments(int argc, char *argv[])
             "  --debug                          Enable cliloader Debug Messages\n"
             "  --controls                       Print All Controls and Exit\n"
             "  --metrics                        Print All MDAPI Metrics and Exit\n"
-#if !defined(_WIN32)
+#if defined(_WIN32)
+            "  --no-DLL-load                    Do not load the Intercept DLL into the child process\n"
+#else // not Windows
             "  --no-LD_PRELOAD                  Do not set LD_PRELOAD\n"
             "  --no-LD_LIBRARY_PATH             Do not set LD_LIBRARY_PATH\n"
 #endif
@@ -684,80 +693,83 @@ int main(int argc, char *argv[])
         // There is no 32-bit and 64-bit mismatch.
         // Start intercepting.
 
-        // Allocate child memory for the full DLL path:
-        void *childPath = VirtualAllocEx(
-            pinfo.hProcess,
-            NULL,
-            dllpath.size() + 1,
-            MEM_COMMIT,
-            PAGE_READWRITE );
-        if( childPath == NULL )
+        if( do_DLL_load )
         {
-            die("allocating child memory");
-        }
-        DEBUG("allocated child memory\n");
-
-        // Write DLL path to child:
-        if( WriteProcessMemory(
+            // Allocate child memory for the full DLL path:
+            void *childPath = VirtualAllocEx(
                 pinfo.hProcess,
-                childPath,
-                (void*)dllpath.c_str(),
+                NULL,
                 dllpath.size() + 1,
-                NULL ) == FALSE )
-        {
-            die("writing child memory");
-        }
-        DEBUG("wrote dll path to child memory\n");
+                MEM_COMMIT,
+                PAGE_READWRITE );
+            if( childPath == NULL )
+            {
+                die("allocating child memory");
+            }
+            DEBUG("allocated child memory\n");
 
-        // Create a thread to load the intercept DLL in the child process:
-        HANDLE childThread = CreateRemoteThread(
-            pinfo.hProcess,
-            NULL,
-            0,
-            (LPTHREAD_START_ROUTINE)GetProcAddress(
-                GetModuleHandleA("kernel32.dll"),
-                "LoadLibraryA"),
-            childPath,
-            0,
-            NULL );
-        if( childThread == NULL )
-        {
-            die("loading DLL in child process");
-        }
-        DEBUG("created child thread to load DLL\n");
+            // Write DLL path to child:
+            if( WriteProcessMemory(
+                    pinfo.hProcess,
+                    childPath,
+                    (void*)dllpath.c_str(),
+                    dllpath.size() + 1,
+                    NULL ) == FALSE )
+            {
+                die("writing child memory");
+            }
+            DEBUG("wrote dll path to child memory\n");
 
-        // Wait for child thread to complete:
-        if( WaitForSingleObject(childThread, INFINITE) != WAIT_OBJECT_0 )
-        {
-            die("waiting for DLL loading");
-        }
-        DEBUG("child thread to load DLL completed\n");
-        CloseHandle(childThread);
-        VirtualFreeEx(pinfo.hProcess, childPath, dllpath.size() + 1, MEM_RELEASE);
-        DEBUG("cleaned up child thread to load DLL\n");
+            // Create a thread to load the intercept DLL in the child process:
+            HANDLE childThread = CreateRemoteThread(
+                pinfo.hProcess,
+                NULL,
+                0,
+                (LPTHREAD_START_ROUTINE)GetProcAddress(
+                    GetModuleHandleA("kernel32.dll"),
+                    "LoadLibraryA"),
+                childPath,
+                0,
+                NULL );
+            if( childThread == NULL )
+            {
+                die("loading DLL in child process");
+            }
+            DEBUG("created child thread to load DLL\n");
 
-        childThread = CreateRemoteThread(
-            pinfo.hProcess,
-            NULL,
-            0,
-            cliprof_init,
-            NULL,
-            0,
-            NULL );
-        if( childThread == NULL )
-        {
-            die("replacing functions in child thread");
-        }
-        DEBUG("created child thread to replace functions\n");
+            // Wait for child thread to complete:
+            if( WaitForSingleObject(childThread, INFINITE) != WAIT_OBJECT_0 )
+            {
+                die("waiting for DLL loading");
+            }
+            DEBUG("child thread to load DLL completed\n");
+            CloseHandle(childThread);
+            VirtualFreeEx(pinfo.hProcess, childPath, dllpath.size() + 1, MEM_RELEASE);
+            DEBUG("cleaned up child thread to load DLL\n");
 
-        // Wait for child thread to complete:
-        if( WaitForSingleObject(childThread, INFINITE) != WAIT_OBJECT_0 )
-        {
-            die("waiting for initialization thread");
+            childThread = CreateRemoteThread(
+                pinfo.hProcess,
+                NULL,
+                0,
+                cliprof_init,
+                NULL,
+                0,
+                NULL );
+            if( childThread == NULL )
+            {
+                die("replacing functions in child thread");
+            }
+            DEBUG("created child thread to replace functions\n");
+
+            // Wait for child thread to complete:
+            if( WaitForSingleObject(childThread, INFINITE) != WAIT_OBJECT_0 )
+            {
+                die("waiting for initialization thread");
+            }
+            DEBUG("child thread to replace functions completed\n");
+            CloseHandle(childThread);
+            DEBUG("cleaned up child thread to replace functions\n");
         }
-        DEBUG("child thread to replace functions completed\n");
-        CloseHandle(childThread);
-        DEBUG("cleaned up child thread to replace functions\n");
     }
 
     FreeModule(dll);
