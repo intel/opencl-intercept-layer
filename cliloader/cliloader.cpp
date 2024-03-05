@@ -504,6 +504,30 @@ static bool parseArguments(int argc, char *argv[])
         {
             checkSetEnv("CLI_LeakChecking", "1");
         }
+        else if( !strcmp(argv[i], "--capture-enqueue") )
+        {
+            ++i;
+            if( i < argc )
+            {
+                checkSetEnv("CLI_CaptureReplay", "1");
+                checkSetEnv("CLI_InitializeBuffers", "1");
+                checkSetEnv("CLI_AppendBuildOptions", "-cl-kernel-arg-info");
+                checkSetEnv("CLI_CaptureReplayMinEnqueue", argv[i]);
+                checkSetEnv("CLI_CaptureReplayMaxEnqueue", argv[i]);
+            }
+        }
+        else if( !strcmp(argv[i], "--capture-kernel") )
+        {
+            ++i;
+            if( i < argc )
+            {
+                checkSetEnv("CLI_CaptureReplay", "1");
+                checkSetEnv("CLI_InitializeBuffers", "1");
+                checkSetEnv("CLI_AppendBuildOptions", "-cl-kernel-arg-info");
+                checkSetEnv("CLI_CaptureReplayKernelName", argv[i]);
+                checkSetEnv("CLI_CaptureReplayNumKernelEnqueuesCapture", "1");
+            }
+        }
         else if( !strcmp(argv[i], "-f") || !strcmp(argv[i], "--output-to-file") )
         {
             checkSetEnv("CLI_LogToFile", "1");
@@ -595,6 +619,8 @@ static bool parseArguments(int argc, char *argv[])
             "  --mdapi-tbs                      Report Time-Based MDAPI Metrics (Intel GPU Only)\n"
             "  --mdapi-group <NAME>             Choose MDAPI Metrics to Collect (Intel GPU Only)\n"
             "  --host-timing [-h]               Report Host API Execution Time\n"
+            "  --capture-enqueue <NUMBER>       Capture the Specified Kernel Enqueue\n"
+            "  --capture-kernel <NAME>          Capture the Specified Kernel Name\n"
             "  --leak-checking [-l]             Track and Report OpenCL Leaks\n"
             "  --output-to-file [-f]            Log and Report to Files vs. stderr\n"
             "  --dump-dir <DIR>                 Specify the dump directory for log and report files,\n"
