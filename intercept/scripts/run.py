@@ -106,7 +106,11 @@ if len(tmp_args) != len(set(tmp_args)):
 
 ctx = cl.create_some_context()
 queue = cl.CommandQueue(ctx)
-devices = ctx.get_info(cl.context_info.DEVICES)
+device = queue.get_info(cl.command_queue_info.DEVICE)
+platform = device.get_info(cl.device_info.PLATFORM)
+
+print(f"Running on platform: {platform.get_info(cl.platform_info.NAME)}")
+print(f"Running on device: {device.get_info(cl.device_info.NAME)}")
 
 samplers = {}
 sampler_files = gl.glob("./Sampler*.txt")
@@ -156,7 +160,7 @@ else:
     # Try the binaries to find one that works
     for idx in range(len(binaries)):
         try:
-            prg = cl.Program(ctx, [devices[0]], [binaries[idx]]).build(options)
+            prg = cl.Program(ctx, [device], [binaries[idx]]).build(options)
             getattr(prg, kernel_name)
             break
         except Exception as e:
