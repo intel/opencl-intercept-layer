@@ -2533,6 +2533,28 @@ void CLIntercept::getSemaphorePropertiesString(
                     str += " }";
                 }
                 break;
+            case CL_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR:
+                {
+                    ++properties;
+                    str += "{ ";
+                    while( true )
+                    {
+                        if( *properties == CL_SEMAPHORE_EXPORT_HANDLE_TYPES_LIST_END_KHR )
+                        {
+                            str += "CL_SEMAPHORE_EXPORT_HANDLE_TYPES_LIST_END_KHR";
+                            properties++;
+                            break;
+                        }
+                        else
+                        {
+                            auto pt = (const cl_external_semaphore_handle_type_khr *)properties++;
+                            str += enumName().name( pt[0] );
+                            str += ", ";
+                        }
+                    }
+                    str += " }";
+                }
+                break;
             case CL_SEMAPHORE_HANDLE_OPAQUE_FD_KHR:
             case CL_SEMAPHORE_HANDLE_SYNC_FD_KHR:
                 {
