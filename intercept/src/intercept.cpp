@@ -558,6 +558,12 @@ bool CLIntercept::init()
             "/usr/lib/" CLINTERCEPT_LIBRARY_ARCHITECTURE "/libOpenCL.so.1",
             "/usr/lib/" CLINTERCEPT_LIBRARY_ARCHITECTURE "/libOpenCL.so",
 #endif
+#ifdef CLINTERCEPT_LIBRARY_DIR
+            "/usr/" CLINTERCEPT_LIBRARY_DIR "/libOpenCL.so.1",
+            "/usr/" CLINTERCEPT_LIBRARY_DIR "/libOpenCL.so",
+            "/usr/local/" CLINTERCEPT_LIBRARY_DIR "/libOpenCL.so.1",
+            "/usr/local/" CLINTERCEPT_LIBRARY_DIR "/libOpenCL.so",
+#endif
             "/usr/lib/libOpenCL.so.1",
             "/usr/lib/libOpenCL.so",
             "/usr/local/lib/libOpenCL.so.1",
