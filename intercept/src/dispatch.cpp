@@ -10351,7 +10351,7 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clCreateCommandBufferKHR(
 
     if( pIntercept )
     {
-        cl_command_queue queue = num_queues ? queues[0] : NULL;
+        cl_command_queue queue = num_queues && queues ? queues[0] : NULL;
         const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clCreateCommandBufferKHR )
         {
@@ -11263,7 +11263,7 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clRemapCommandBufferKHR(
 
     if( pIntercept )
     {
-        cl_command_queue queue = num_queues ? queues[0] : NULL;
+        cl_command_queue queue = num_queues && queues ? queues[0] : NULL;
         const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clRemapCommandBufferKHR )
         {
