@@ -1143,7 +1143,8 @@ void CLIntercept::callLoggingInfo(
 void CLIntercept::callLoggingExit(
     const char* functionName,
     const cl_int errorCode,
-    const cl_event* event )
+    const cl_event* event,
+    const cl_sync_point_khr* syncPoint )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -1157,6 +1158,11 @@ void CLIntercept::callLoggingExit(
         CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " created event = %p", *event );
         str += m_StringBuffer;
     }
+    if( syncPoint )
+    {
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " is sync point = %u", *syncPoint );
+        str += m_StringBuffer;
+    }
 
     str += " -> ";
     str += m_EnumNameMap.name( errorCode );
@@ -1168,6 +1174,7 @@ void CLIntercept::callLoggingExit(
     const char* functionName,
     const cl_int errorCode,
     const cl_event* event,
+    const cl_sync_point_khr* syncPoint,
     const char* formatStr,
     ... )
 {
@@ -1184,6 +1191,11 @@ void CLIntercept::callLoggingExit(
     if( event )
     {
         CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " created event = %p", *event );
+        str += m_StringBuffer;
+    }
+    if( syncPoint )
+    {
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " is sync point = %u", *syncPoint );
         str += m_StringBuffer;
     }
 
@@ -2082,24 +2094,23 @@ void CLIntercept::getDevicePartitionPropertiesString(
     }
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::getEventListString(
-    cl_uint numEvents,
-    const cl_event* eventList,
+void CLIntercept::getSyncPointListString(
+    cl_uint numSyncPoints,
+    const cl_sync_point_khr* syncPointList,
     std::string& str ) const
 {
     {
         std::ostringstream  ss;
         ss << "( size = ";
-        ss << numEvents;
+        ss << numSyncPoints;
         ss << " )[ ";
         str += ss.str();
     }
-    if( eventList )
+    if( syncPointList )
     {
-        for( cl_uint i = 0; i < numEvents; i++ )
+        for( cl_uint i = 0; i < numSyncPoints; i++ )
         {
             if( i > 0 )
             {
@@ -2107,46 +2118,13 @@ void CLIntercept::getEventListString(
             }
             {
                 char    s[256];
-                CLI_SPRINTF( s, 256, "%p", eventList[i] );
+                CLI_SPRINTF( s, 256, "%u", syncPointList[i] );
                 str += s;
             }
         }
     }
     str += " ]";
 }
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::getSemaphoreListString(
-    cl_uint numSemaphores,
-    const cl_semaphore_khr* semaphoreList,
-    std::string& str ) const
-{
-    {
-        std::ostringstream  ss;
-        ss << "( size = ";
-        ss << numSemaphores;
-        ss << " )[ ";
-        str += ss.str();
-    }
-    if( semaphoreList )
-    {
-        for( cl_uint i = 0; i < numSemaphores; i++ )
-        {
-            if( i > 0 )
-            {
-                str += ", ";
-            }
-            {
-                char    s[256];
-                CLI_SPRINTF( s, 256, "%p", semaphoreList[i] );
-                str += s;
-            }
-        }
-    }
-    str += " ]";
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
