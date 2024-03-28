@@ -82,11 +82,13 @@ public:
     void    callLoggingExit(
                 const char* functionName,
                 const cl_int errorCode,
-                const cl_event* event );
+                const cl_event* event,
+                const cl_sync_point_khr* syncPoint );
     void    callLoggingExit(
                 const char* functionName,
                 const cl_int errorCode,
                 const cl_event* event,
+                const cl_sync_point_khr* syncPoint,
                 const char* formatStr,
                 ... );
 
@@ -147,6 +149,10 @@ public:
     void    getEventListString(
                 cl_uint num_events,
                 const cl_event* event_list,
+                std::string& str ) const;
+    void    getSyncPointListString(
+                cl_uint num_sync_points,
+                const cl_sync_point_khr* sync_point_list,
                 std::string& str ) const;
     void    getSemaphoreListString(
                 cl_uint num_semaphores,
@@ -2010,6 +2016,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             __FUNCTION__,                                                   \
             errorCode,                                                      \
             NULL,                                                           \
+            NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
     if( pIntercept->config().ChromeCallLogging )                            \
@@ -2031,6 +2038,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             __FUNCTION__,                                                   \
             errorCode,                                                      \
             event,                                                          \
+            NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
     if( pIntercept->config().ChromeCallLogging )                            \
@@ -2052,6 +2060,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             __FUNCTION__,                                                   \
             errorCode,                                                      \
             _event,                                                         \
+            NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
     if( pIntercept->config().ChromeCallLogging )                            \
@@ -2059,6 +2068,28 @@ inline CObjectTracker& CLIntercept::objectTracker()
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
             hostTag,                                                        \
+            true,                                                           \
+            enqueueCounter,                                                 \
+            cpuStart,                                                       \
+            cpuEnd );                                                       \
+    }                                                                       \
+    ITT_CALL_LOGGING_EXIT();
+
+#define CALL_LOGGING_EXIT_SYNC_POINT(errorCode, sync_point, ...)            \
+    if( pIntercept->config().CallLogging )                                  \
+    {                                                                       \
+        pIntercept->callLoggingExit(                                        \
+            __FUNCTION__,                                                   \
+            errorCode,                                                      \
+            NULL,                                                           \
+            sync_point,                                                     \
+            ##__VA_ARGS__ );                                                \
+    }                                                                       \
+    if( pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        pIntercept->chromeCallLoggingExit(                                  \
+            __FUNCTION__,                                                   \
+            "",                                                             \
             true,                                                           \
             enqueueCounter,                                                 \
             cpuStart,                                                       \
