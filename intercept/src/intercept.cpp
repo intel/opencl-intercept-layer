@@ -2096,38 +2096,6 @@ void CLIntercept::getDevicePartitionPropertiesString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::getEventListString(
-    cl_uint numEvents,
-    const cl_event* eventList,
-    std::string& str ) const
-{
-    {
-        std::ostringstream  ss;
-        ss << "( size = ";
-        ss << numEvents;
-        ss << " )[ ";
-        str += ss.str();
-    }
-    if( eventList )
-    {
-        for( cl_uint i = 0; i < numEvents; i++ )
-        {
-            if( i > 0 )
-            {
-                str += ", ";
-            }
-            {
-                char    s[256];
-                CLI_SPRINTF( s, 256, "%p", eventList[i] );
-                str += s;
-            }
-        }
-    }
-    str += " ]";
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
 void CLIntercept::getSyncPointListString(
     cl_uint numSyncPoints,
     const cl_sync_point_khr* syncPointList,
@@ -2140,7 +2108,7 @@ void CLIntercept::getSyncPointListString(
         ss << " )[ ";
         str += ss.str();
     }
-    if( numSyncPoints )
+    if( syncPointList )
     {
         for( cl_uint i = 0; i < numSyncPoints; i++ )
         {
@@ -2157,39 +2125,6 @@ void CLIntercept::getSyncPointListString(
     }
     str += " ]";
 }
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::getSemaphoreListString(
-    cl_uint numSemaphores,
-    const cl_semaphore_khr* semaphoreList,
-    std::string& str ) const
-{
-    {
-        std::ostringstream  ss;
-        ss << "( size = ";
-        ss << numSemaphores;
-        ss << " )[ ";
-        str += ss.str();
-    }
-    if( semaphoreList )
-    {
-        for( cl_uint i = 0; i < numSemaphores; i++ )
-        {
-            if( i > 0 )
-            {
-                str += ", ";
-            }
-            {
-                char    s[256];
-                CLI_SPRINTF( s, 256, "%p", semaphoreList[i] );
-                str += s;
-            }
-        }
-    }
-    str += " ]";
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //

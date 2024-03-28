@@ -19,7 +19,7 @@ static std::string getFormattedEventWaitList(
     if( pIntercept->config().CallLogging && num_events_in_wait_list )
     {
         eventWaitListString += ", event_wait_list = ";
-        pIntercept->getEventListString(
+        pIntercept->getObjectListString(
             num_events_in_wait_list,
             event_wait_list,
             eventWaitListString );
@@ -2951,7 +2951,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
         std::string eventList;
         if( pIntercept->config().CallLogging )
         {
-            pIntercept->getEventListString(
+            pIntercept->getObjectListString(
                 num_events,
                 event_list,
                 eventList );
@@ -5093,16 +5093,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWaitForEvents)(
         if( pIntercept->config().NullEnqueue == false )
         {
             std::string eventWaitListString;
-            if( pIntercept->config().CallLogging &&
-                num_events )
+            if( pIntercept->config().CallLogging && num_events )
             {
-                std::string eventString;
-                pIntercept->getEventListString(
+                eventWaitListString += ", event_list = ";
+                pIntercept->getObjectListString(
                     num_events,
                     event_list,
-                    eventString );
-                eventWaitListString += ", event_list = ";
-                eventWaitListString += eventString;
+                    eventWaitListString );
             }
             CALL_LOGGING_ENTER( "queue = %p%s",
                 command_queue,
@@ -5456,16 +5453,13 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueWaitSemaphoresKHR(
             if( pIntercept->config().NullEnqueue == false )
             {
                 std::string semaphoreString;
-                if( pIntercept->config().CallLogging &&
-                    num_sema_objects )
+                if( pIntercept->config().CallLogging && num_sema_objects )
                 {
-                    std::string str;
-                    pIntercept->getSemaphoreListString(
+                    semaphoreString += ", sema_objects = ";
+                    pIntercept->getObjectListString(
                         num_sema_objects,
                         sema_objects,
-                        str );
-                    semaphoreString += ", sema_objects = ";
-                    semaphoreString += str;
+                        semaphoreString );
                 }
                 CALL_LOGGING_ENTER( "queue = %p%s",
                     queue,
@@ -5527,16 +5521,13 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSignalSemaphoresKHR(
             if( pIntercept->config().NullEnqueue == false )
             {
                 std::string semaphoreString;
-                if( pIntercept->config().CallLogging &&
-                    num_sema_objects )
+                if( pIntercept->config().CallLogging && num_sema_objects )
                 {
-                    std::string str;
-                    pIntercept->getSemaphoreListString(
+                    semaphoreString += ", sema_objects = ";
+                    pIntercept->getObjectListString(
                         num_sema_objects,
                         sema_objects,
-                        str );
-                    semaphoreString += ", sema_objects = ";
-                    semaphoreString += str;
+                        semaphoreString );
                 }
                 CALL_LOGGING_ENTER( "queue = %p%s",
                     queue,
@@ -10376,15 +10367,20 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clCreateCommandBufferKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            std::string queueList;
             std::string propsStr;
             if( pIntercept->config().CallLogging )
             {
+                pIntercept->getObjectListString(
+                    num_queues,
+                    queues,
+                    queueList );
                 pIntercept->getCommandBufferPropertiesString(
                     properties,
                     propsStr );
             }
-            CALL_LOGGING_ENTER( "num_queues = %u, properties = [ %s ]",
-                num_queues,
+            CALL_LOGGING_ENTER( "queues = %s, properties = [ %s ]",
+                queueList.c_str(),
                 propsStr.c_str() );
             CHECK_ERROR_INIT( errcode_ret );
             HOST_PERFORMANCE_TIMING_START();
@@ -10553,13 +10549,21 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueCommandBufferKHR(
 
             if( pIntercept->config().NullEnqueue == false )
             {
-                const std::string eventWaitListString = getFormattedEventWaitList(
-                    pIntercept,
-                    num_events_in_wait_list,
-                    event_wait_list);
-                CALL_LOGGING_ENTER( "num_queues = %u, queues = %p, command_buffer = %p%s",
-                    num_queues,
-                    queues,
+                std::string queueList;
+                std::string eventWaitListString;
+                if( pIntercept->config().CallLogging )
+                {
+                    pIntercept->getObjectListString(
+                        num_queues,
+                        queues,
+                        queueList );
+                    eventWaitListString = getFormattedEventWaitList(
+                        pIntercept,
+                        num_events_in_wait_list,
+                        event_wait_list);
+                }
+                CALL_LOGGING_ENTER( "queues = %s, command_buffer = %p%s",
+                    queueList.c_str(),
                     command_buffer,
                     eventWaitListString.c_str() );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
@@ -11351,11 +11355,24 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clRemapCommandBufferKHR(
         {
             GET_ENQUEUE_COUNTER();
 
-            CALL_LOGGING_ENTER( "command_buffer = %p, %s, num_queues = %u, num_handles = %u",
+            std::string queueList;
+            std::string handleList;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getObjectListString(
+                    num_queues,
+                    queues,
+                    queueList );
+                pIntercept->getObjectListString(
+                    num_handles,
+                    handles,
+                    handleList );
+            }
+            CALL_LOGGING_ENTER( "command_buffer = %p, %s, queues = %s, handles = %s",
                 command_buffer,
                 automatic ? "automatic" : "non-automatic",
-                num_queues,
-                num_handles );
+                queueList.c_str(),
+                handleList.c_str() );
             CHECK_ERROR_INIT( errcode_ret );
             HOST_PERFORMANCE_TIMING_START();
 

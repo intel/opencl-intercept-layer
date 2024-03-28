@@ -146,17 +146,14 @@ public:
     void    getDevicePartitionPropertiesString(
                 const cl_device_partition_property* properties,
                 std::string& str ) const;
-    void    getEventListString(
-                cl_uint num_events,
-                const cl_event* event_list,
+    template< class T >
+    void    getObjectListString(
+                cl_uint num_objects,
+                const T* object_list,
                 std::string& str ) const;
     void    getSyncPointListString(
                 cl_uint num_sync_points,
                 const cl_sync_point_khr* sync_point_list,
-                std::string& str ) const;
-    void    getSemaphoreListString(
-                cl_uint num_semaphores,
-                const cl_semaphore_khr* semaphore_list,
                 std::string& str ) const;
     void    getContextPropertiesString(
                 const cl_context_properties* properties,
@@ -1436,6 +1433,33 @@ private:
 
     DISALLOW_COPY_AND_ASSIGN( CLIntercept );
 };
+
+///////////////////////////////////////////////////////////////////////////////
+//
+template< class T >
+void CLIntercept::getObjectListString(
+    cl_uint numObjects,
+    const T* objectList,
+    std::string& str ) const
+{
+    char    s[256];
+    CLI_SPRINTF(s, 256, "( size = %u )[ ", numObjects);
+    str += s;
+
+    if( objectList )
+    {
+        for( cl_uint i = 0; i < numObjects; i++ )
+        {
+            if( i > 0 )
+            {
+                str += ", ";
+            }
+            CLI_SPRINTF( s, 256, "%p", objectList[i] );
+            str += s;
+        }
+    }
+    str += " ]";
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
