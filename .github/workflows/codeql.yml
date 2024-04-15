@@ -1,0 +1,54 @@
+name: CodeQL
+
+permissions:
+  contents: read
+
+on:
+  push:
+    paths-ignore:
+      - '**/*.md'
+  pull_request:
+    paths-ignore:
+      - '**/*.md'
+    branches:
+      - main
+
+env:
+  BUILD_TYPE: RelWithDebInfo
+
+jobs:
+  analyze:
+    strategy:
+      fail-fast: false
+      matrix:
+        #os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
+
+    runs-on: ${{matrix.os}}
+
+    permissions:
+      security-events: write
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: cpp
+
+    - name: Create Build Directory
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Run CMake
+      shell: bash
+      working-directory: ${{runner.workspace}}/build
+      run: cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE $GITHUB_WORKSPACE
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake --build . --parallel 4 --config $BUILD_TYPE
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
