@@ -11122,7 +11122,8 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
                 command_queue,
                 dst_ptr,
                 src_ptr,
-                size );
+                size,
+                syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandSVMMemcpyKHR(

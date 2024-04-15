@@ -1,4 +1,4 @@
-name: CodeQL
+name: analyze
 
 permissions:
   contents: read
@@ -21,8 +21,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        #os: [ubuntu-latest, windows-latest]
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
 
     runs-on: ${{matrix.os}}
 
