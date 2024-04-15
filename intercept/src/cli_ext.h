@@ -814,6 +814,17 @@ typedef cl_bitfield         cl_device_integer_dot_product_capabilities_khr;
 #define CL_DEVICE_INTEGER_DOT_PRODUCT_CAPABILITIES_KHR      0x1073
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_khr_kernel_clock
+
+typedef cl_bitfield         cl_device_kernel_clock_capabilities_khr;
+
+#define CL_DEVICE_KERNEL_CLOCK_CAPABILITIES_KHR             0x1076
+
+#define CL_DEVICE_KERNEL_CLOCK_SCOPE_DEVICE_KHR             (1 << 0)
+#define CL_DEVICE_KERNEL_CLOCK_SCOPE_WORK_GROUP_KHR         (1 << 1)
+#define CL_DEVICE_KERNEL_CLOCK_SCOPE_SUB_GROUP_KHR          (1 << 2)
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_khr_pci_bus_info
 
 typedef struct _cl_device_pci_bus_info_khr {
@@ -1115,6 +1126,35 @@ cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
 #define CL_QUEUE_KERNEL_BATCHING_ARM                            0x41E7
 #define CL_QUEUE_DEFERRED_FLUSH_ARM                             0x41EC
 #define CL_QUEUE_COMPUTE_UNIT_LIMIT_ARM                         0x41F3
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_img_cached_allocations
+
+#define CL_MEM_USE_UNCACHED_CPU_MEMORY_IMG              (1 << 26)
+#define CL_MEM_USE_CACHED_CPU_MEMORY_IMG                (1 << 27)
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_img_cancel_command
+
+#define CL_CANCELLED_IMG                                -1126
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_img_generate_mipmap
+
+#define CL_COMMAND_GENERATE_MIPMAP_IMG                  0x40D6
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_img_mem_properties
+
+#define CL_MEM_ALLOC_FLAGS_IMG                          0x40D7
+
+#define CL_DEVICE_MEMORY_CAPABILITIES_IMG               0x40D8
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_img_yuv_image
+
+#define CL_NV21_IMG                                     0x40D0
+#define CL_YV12_IMG                                     0x40D1
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_intel_accelerator

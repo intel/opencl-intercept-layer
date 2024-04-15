@@ -837,6 +837,9 @@ CEnumNameMap::CEnumNameMap()
     // cl_khr_integer_dot_product
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_INTEGER_DOT_PRODUCT_CAPABILITIES_KHR );
 
+    // cl_khr_kernel_clock
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_KERNEL_CLOCK_CAPABILITIES_KHR );
+
     // cl_khr_pci_bus_info extension
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PCI_BUS_INFO_KHR );
 
@@ -963,6 +966,24 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_KERNEL_BATCHING_ARM );
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_DEFERRED_FLUSH_ARM );
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_COMPUTE_UNIT_LIMIT_ARM );
+
+    // cl_img_cached_allocations
+    ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_USE_UNCACHED_CPU_MEMORY_IMG );
+    ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_USE_CACHED_CPU_MEMORY_IMG );
+
+    // cl_img_cancel_command
+    ADD_ENUM_NAME( m_cl_int, CL_CANCELLED_IMG );
+
+    // cl_img_generate_mipmap
+    ADD_ENUM_NAME( m_cl_int, CL_COMMAND_GENERATE_MIPMAP_IMG );
+
+    // cl_img_mem_properties
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_ALLOC_FLAGS_IMG );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MEMORY_CAPABILITIES_IMG );
+
+    // cl_img_yuv_image
+    ADD_ENUM_NAME( m_cl_int, CL_NV21_IMG );
+    ADD_ENUM_NAME( m_cl_int, CL_YV12_IMG );
 
     // cl_intel_accelerator
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_ACCELERATOR_INTEL );
