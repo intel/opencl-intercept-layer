@@ -227,7 +227,9 @@ inline void Services_Common::GetDumpDirectoryNameWithoutPid(
         const char *envVal = getenv("HOME");
         if( envVal && stat(envVal, &sb) == 0 && S_ISDIR(sb.st_mode) )
         {
-            directoryName = envVal;
+            char* resolved_path = realpath(envVal, nullptr);
+            directoryName = resolved_path;
+            free(resolved_path);
         }
         else
         {
