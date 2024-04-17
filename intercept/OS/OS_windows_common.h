@@ -75,9 +75,6 @@ public:
     void    GetDumpDirectoryNameWithoutPid(
                 const std::string& subDir,
                 std::string& directoryName ) const;
-    void    GetDumpDirectoryNameWithoutProcessName(
-                const std::string& subDir,
-                std::string& directoryName) const;
     void    MakeDumpDirectories(
                 const std::string& fileName ) const;
 
@@ -285,33 +282,6 @@ inline void Services_Common::GetDumpDirectoryName(
     {
         directoryName += ".";
         directoryName += std::to_string(GetProcessID());
-    }
-}
-
-inline void Services_Common::GetDumpDirectoryNameWithoutProcessName(
-    const std::string& subDir,
-    std::string& directoryName) const
-{
-    // Return log dir override if set in regkeys
-    if( LOG_DIR )
-    {
-        directoryName = LOG_DIR;
-        return;
-    }
-
-    // Get the system root and add our directory name.
-    {
-        char*   systemDrive = NULL;
-        size_t  length = 0;
-
-        _dupenv_s(&systemDrive, &length, "SystemDrive");
-
-        directoryName = systemDrive;
-        directoryName += "/Intel/";
-        directoryName += subDir;
-        directoryName += "/";
-
-        free(systemDrive);
     }
 }
 
