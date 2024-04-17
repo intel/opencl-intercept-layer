@@ -214,11 +214,11 @@ inline bool Services::CheckMDAPIPermissions(
             buf[n] = 0;
             value = strtoull(buf, NULL, 0);
         }
-    }
 
-    if( value == 0 || geteuid() == 0 )
-    {
-        available = true;
+        if( value == 0 || geteuid() == 0 )
+        {
+            available = true;
+        }
     }
 
     if( available == false )

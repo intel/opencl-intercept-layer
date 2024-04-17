@@ -215,21 +215,21 @@ inline void Services_Common::GetDumpDirectoryNameWithoutPid(
     const std::string& subDir,
     std::string& directoryName ) const
 {
-    struct stat sb;
-    if( LOG_DIR && stat(LOG_DIR, &sb) == 0 && S_ISDIR(sb.st_mode) )
+    if( LOG_DIR )
     {
-        // Return log dir override if set.
+        // Return log dir override if set in regkeys
         directoryName = LOG_DIR;
     }
     else
     {
         // Get the home directory and add our directory name.
         const char *envVal = getenv("HOME");
-        if( envVal && stat(envVal, &sb) == 0 && S_ISDIR(sb.st_mode) )
+        char* resolved_path = realpath(envVal, nullptr);
+        if( resolved_path )
         {
-            char* resolved_path = realpath(envVal, nullptr);
             directoryName = resolved_path;
             free(resolved_path);
+            resolved_path = nullptr;
         }
         else
         {
