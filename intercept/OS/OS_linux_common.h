@@ -99,9 +99,6 @@ public:
     void    GetDumpDirectoryNameWithoutPid(
                 const std::string& subDir,
                 std::string& directoryName ) const;
-    void    GetDumpDirectoryNameWithoutProcessName(
-                const std::string& subDir,
-                std::string& directoryName) const;
     void    MakeDumpDirectories(
                 const std::string& fileName ) const;
 
@@ -219,7 +216,7 @@ inline void Services_Common::GetDumpDirectoryNameWithoutPid(
     std::string& directoryName ) const
 {
     struct stat sb;
-    if( LOG_DIR && stat(LOG_DIR, &sb) == 0 )
+    if( LOG_DIR && stat(LOG_DIR, &sb) == 0 && S_ISDIR(sb.st_mode) )
     {
         // Return log dir override if set.
         directoryName = LOG_DIR;
@@ -228,7 +225,7 @@ inline void Services_Common::GetDumpDirectoryNameWithoutPid(
     {
         // Get the home directory and add our directory name.
         const char *envVal = getenv("HOME");
-        if( envVal && stat(envVal, &sb) == 0 )
+        if( envVal && stat(envVal, &sb) == 0 && S_ISDIR(sb.st_mode) )
         {
             directoryName = envVal;
         }
@@ -263,28 +260,6 @@ inline void Services_Common::GetDumpDirectoryName(
         directoryName += ".";
         directoryName += std::to_string(GetProcessID());
     }
-}
-
-inline void Services_Common::GetDumpDirectoryNameWithoutProcessName(
-    const std::string& subDir,
-    std::string& directoryName) const
-{
-    // Get the home directory and add our directory name.
-    if( LOG_DIR )
-    {
-       // Return log dir override if set in regkeys
-        directoryName = LOG_DIR;
-    }
-    else
-    {
-        directoryName = getenv("HOME");
-        directoryName += "/";
-        directoryName += subDir;
-        directoryName += "/";
-    }
-#ifdef __ANDROID__
-    __android_log_print(ANDROID_LOG_INFO, "clIntercept", "dumpDir=%s\n", directoryName.c_str());
-#endif
 }
 
 inline void Services_Common::MakeDumpDirectories(
