@@ -10103,6 +10103,7 @@ void CLIntercept::autoCreateSPIRV(
     const cl_program program,
     const char* raw_options )
 {
+#if 0
     std::lock_guard<std::mutex> lock(m_Mutex);
 
     const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
@@ -10217,6 +10218,7 @@ void CLIntercept::autoCreateSPIRV(
         logf( "Running: %s\n", command.c_str() );
         OS().ExecuteCommand( command );
     }
+#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////
