@@ -7419,13 +7419,18 @@ void CLIntercept::setKernelArgSVMPointer(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
+    if( m_SVMAllocInfoMap.empty() )
+    {
+        return;
+    }
+
     // Unlike clSetKernelArg(), which must pass a cl_mem, clSetKernelArgSVMPointer
     // can pass a pointer to the base of a SVM allocation or anywhere inside of
     // an SVM allocation.  As a result, we need to search the SVM map to find the
     // base address and size of the SVM allocation.
 
     CSVMAllocInfoMap::iterator iter = m_SVMAllocInfoMap.lower_bound( arg );
-    if( iter->first != arg && iter != m_SVMAllocInfoMap.begin() )
+    if( iter == m_SVMAllocInfoMap.end() || (iter->first != arg && iter != m_SVMAllocInfoMap.begin()) )
     {
         // Go to the previous iterator.
         --iter;
@@ -7449,8 +7454,13 @@ void CLIntercept::setKernelArgUSMPointer(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
+    if( m_SVMAllocInfoMap.empty() )
+    {
+        return;
+    }
+
     CUSMAllocInfoMap::iterator iter = m_USMAllocInfoMap.lower_bound( arg );
-    if( iter->first != arg && iter != m_USMAllocInfoMap.begin() )
+    if( iter == m_USMAllocInfoMap.end() || (iter->first != arg && iter != m_USMAllocInfoMap.begin()) )
     {
         // Go to the previous iterator.
         --iter;
