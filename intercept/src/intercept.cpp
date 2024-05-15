@@ -7454,7 +7454,7 @@ void CLIntercept::setKernelArgUSMPointer(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    if( m_SVMAllocInfoMap.empty() )
+    if( m_USMAllocInfoMap.empty() )
     {
         return;
     }
