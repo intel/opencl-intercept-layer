@@ -14555,7 +14555,7 @@ cl_int CLIntercept::emulatedGetMemAllocInfoINTEL(
 
     SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
 
-    if( usmContextInfo.AllocMap.size() == 0 )
+    if( usmContextInfo.AllocMap.empty() )
     {
         // No pointers allocated?
         return CL_INVALID_MEM_OBJECT;   // TODO: new error code?
@@ -14563,7 +14563,7 @@ cl_int CLIntercept::emulatedGetMemAllocInfoINTEL(
 
     CUSMAllocMap::iterator iter = usmContextInfo.AllocMap.lower_bound( ptr );
 
-    if( iter->first != ptr )
+    if( iter == usmContextInfo.AllocMap.end() || iter->first != ptr )
     {
         if( iter == usmContextInfo.AllocMap.begin() )
         {
