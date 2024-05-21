@@ -4795,6 +4795,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
             local_work_size );
         DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue );
         DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue );
+        INJECT_BUFFERS( kernel, command_queue );
         CHECK_AUBCAPTURE_START_KERNEL(
             kernel,
             work_dim,

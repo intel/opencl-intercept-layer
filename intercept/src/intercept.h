@@ -568,6 +568,10 @@ public:
                 const uint64_t enqueueCounter,
                 cl_kernel kernel,
                 cl_command_queue command_queue );
+    void    injectBuffersForKernel(
+                const uint64_t enqueueCounter,
+                cl_kernel kernel,
+                cl_command_queue command_queue );
 
     void    dumpArgument(
                 const uint64_t enqueueCounter,
@@ -2363,6 +2367,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().DumpBuffersBeforeUnmap ||                    \
           pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue  ||                  \
+          pIntercept->config().InjectBuffers ||                             \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->addBuffer( _buffer );                                   \
@@ -2386,6 +2391,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
           pIntercept->config().DumpImagesAfterEnqueue ||                    \
+          pIntercept->config().InjectBuffers ||                             \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->checkRemoveMemObj( _memobj );                           \
@@ -2411,6 +2417,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     if( svmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().InjectBuffers ||                             \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->addSVMAllocation( svmPtr, size );                       \
@@ -2420,6 +2427,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     if( svmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().InjectBuffers ||                             \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->removeSVMAllocation( svmPtr );                          \
@@ -2429,6 +2437,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     if( usmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().InjectBuffers ||                             \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->addUSMAllocation( usmPtr, size );                       \
@@ -2438,6 +2447,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     if( usmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().InjectBuffers ||                             \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->removeUSMAllocation( usmPtr );                          \
@@ -2467,6 +2477,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
         pIntercept->config().DumpBuffersAfterEnqueue ||                     \
         pIntercept->config().DumpImagesBeforeEnqueue ||                     \
         pIntercept->config().DumpImagesAfterEnqueue ||                      \
+        pIntercept->config().InjectBuffers ||                               \
         pIntercept->config().CaptureReplay )                                \
     {                                                                       \
         pIntercept->setKernelArg( kernel, arg_index, arg_value, arg_size ); \
@@ -2475,6 +2486,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 #define SET_KERNEL_ARG_SVM_POINTER( kernel, arg_index, arg_value )          \
     if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
         pIntercept->config().DumpBuffersAfterEnqueue ||                     \
+        pIntercept->config().InjectBuffers ||                               \
         pIntercept->config().CaptureReplay )                                \
     {                                                                       \
         pIntercept->setKernelArgSVMPointer( kernel, arg_index, arg_value ); \
@@ -2483,6 +2495,7 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 #define SET_KERNEL_ARG_USM_POINTER( kernel, arg_index, arg_value )          \
     if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
         pIntercept->config().DumpBuffersAfterEnqueue ||                     \
+        pIntercept->config().InjectBuffers ||                               \
         pIntercept->config().CaptureReplay )                                \
     {                                                                       \
         pIntercept->setKernelArgUSMPointer( kernel, arg_index, arg_value ); \
@@ -2618,6 +2631,15 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().DevicePerfCounterEventBasedSampling ) )      \
     {                                                                       \
         pIntercept->removeMapPointer( _ptr );                               \
+    }
+
+#define INJECT_BUFFERS( kernel, command_queue )                             \
+    if( pIntercept->config().InjectBuffers )                                \
+    {                                                                       \
+        pIntercept->injectBuffersForKernel(                                 \
+            enqueueCounter,                                                 \
+            kernel,                                                         \
+            command_queue );                                                \
     }
 
 ///////////////////////////////////////////////////////////////////////////////

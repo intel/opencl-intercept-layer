@@ -517,7 +517,7 @@ This is the list of options that is implicitly passed to CLANG to build a non-Op
 
 This is the list of options that is implicitly passed to CLANG to build an OpenCL 2.0 SPIR-V module.  Any application-provided build options will be appended to these build options.
 
-### Controls for Dumping Buffers and Images
+### Controls for Dumping and Injecting Buffers and Images
 
 ##### `DumpBufferHashes` (bool)
 
@@ -590,6 +590,10 @@ The Intercept Layer for OpenCL Applications will only dump argument values when 
 ##### `DumpArgumentsOnSetMaxEnqueue` (cl_uint)
 
 The Intercept Layer for OpenCL Applications will only dump kernel arguments when the enqueue counter is less than this value, inclusive.
+
+##### `InjectBuffers` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified buffer contents before calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued may be injected.  TODO: Document filename, etc.
 
 ### Device Partitioning Controls
 
