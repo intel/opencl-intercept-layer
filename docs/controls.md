@@ -593,7 +593,11 @@ The Intercept Layer for OpenCL Applications will only dump kernel arguments when
 
 ##### `InjectBuffers` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified buffer contents before calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued may be injected.  TODO: Document filename, etc.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified buffer, SVM, and USM contents before calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued may be injected.  The filename to inject will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Buffer\_\<Unique Memory Object Number\>.bin", which matches the filename for dumped buffers.
+
+##### `InjectImages` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified image contents before calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued may be injected.  The filename to inject will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Image\_\<Unique Memory Object Number\>\_\<Width\>x\<Height\>x\<Depth\>\_\<Element Size\>bpp.raw", which matches the filename for dumped images.
 
 ### Device Partitioning Controls
 
