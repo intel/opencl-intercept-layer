@@ -37,6 +37,7 @@ Troubleshooting steps and answers to frequently asked questions can be found [he
 
 Detailed instructions:
 * [How to Inject Modified Programs](docs/injecting_programs.md)
+* [How to Inject Buffers and Images](docs/injecting_buffers_images.md)
 * [How to Dump and Disassemble Kernel ISA](docs/kernel_isa.md)
 * [How to Capture AUB Files](docs/aubcapture.md)
 * [How to Collect MDAPI Performance Metrics](docs/mdapi.md)

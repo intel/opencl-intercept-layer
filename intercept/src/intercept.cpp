@@ -8164,7 +8164,7 @@ void CLIntercept::injectBuffersForKernel(
 
                 if( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() )
                 {
-                    size_t size = m_SVMAllocInfoMap[ memobj ];
+                    size_t size = m_USMAllocInfoMap[ allocation ];
                     if( size < fileSize )
                     {
                         logf("Skipping injection: USM alloc size (%zu bytes) is less than file size (%zu bytes)!\n",
@@ -8203,7 +8203,7 @@ void CLIntercept::injectBuffersForKernel(
                 }
                 else if( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() )
                 {
-                    size_t size = m_SVMAllocInfoMap[ memobj ];
+                    size_t size = m_SVMAllocInfoMap[ allocation ];
                     if( size < fileSize )
                     {
                         logf("Skipping injection: SVM alloc size (%zu bytes) is less than file size (%zu bytes)!\n",
