@@ -10935,9 +10935,11 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
                 sync_point_wait_list);
 
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p%s",
+                "command_buffer = %p, command_queue = %p, src_image = %p, dst_buffer = %p%s",
                 command_buffer,
                 command_queue,
+                src_image,
+                dst_buffer,
                 syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
