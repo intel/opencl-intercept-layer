@@ -8385,7 +8385,7 @@ void CLIntercept::injectImagesForKernel(
                 if( transferBuf.size() >= size )
                 {
                     size_t  origin[3] = { 0, 0, 0 };
-                    cl_int  error = dispatch().clEnqueueWriteImage(
+                    dispatch().clEnqueueWriteImage(
                         command_queue,
                         memobj,
                         CL_TRUE,
