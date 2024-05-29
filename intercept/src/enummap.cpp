@@ -865,6 +865,9 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIR_VERSIONS );
     ADD_ENUM_NAME( m_cl_int, CL_PROGRAM_BINARY_TYPE_INTERMEDIATE );
 
+    // cl_khr_subgroup_named_barrier
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_NAMED_BARRIER_COUNT_KHR );
+
     // cl_khr_subgroups
     // These enums were promoted to core in OpenCL 2.1.
     //CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR    0x2033

@@ -923,6 +923,11 @@ cl_int CL_API_CALL clReleaseSemaphoreKHR(
 #define CL_PROGRAM_BINARY_TYPE_INTERMEDIATE         0x40E1
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_khr_subgroup_named_barrier
+
+#define CL_DEVICE_MAX_NAMED_BARRIER_COUNT_KHR       0x2035
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_khr_subgroups
 
 #define CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR    0x2033
