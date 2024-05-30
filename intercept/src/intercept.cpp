@@ -8384,6 +8384,8 @@ void CLIntercept::injectImagesForKernel(
 
                 if( transferBuf.size() >= size )
                 {
+                    is.read( (char*)transferBuf.data(), size );
+
                     size_t  origin[3] = { 0, 0, 0 };
                     dispatch().clEnqueueWriteImage(
                         command_queue,
