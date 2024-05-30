@@ -61,6 +61,7 @@ in your log.
 If the size of the buffer is smaller than the size of the file then injection will fail.
 If the size of the buffer is larger than the size of the file then only the initial contents of the buffer will be modified.
 * For OpenCL images, the size of the image must match the size of the file or injection will fail.
+* Because buffer and image injection modifies the memory object itself and not a copy of the memory object, any usage of the memory object after injection will also be affected.
 
 ---
 
