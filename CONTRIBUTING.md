@@ -11,7 +11,7 @@ requests.  Private or sensitive issues may be submitted via email to
 this project's maintainer (Ben Ashbaugh - ben 'dot' ashbaugh 'at' intel 'dot'
 com), or to any other Intel GitHub maintainer (see profile for email address).
 
-## How to Fix and Issue or Add a Feature
+## How to Fix an Issue or Add a Feature
 
 If you have an idea how to improve the Intercept Layer for OpenCL Applications:
 
@@ -19,6 +19,11 @@ If you have an idea how to improve the Intercept Layer for OpenCL Applications:
    you're working on and gives others an opportunity to provide early feedback.
 1. Implement, validate, and document your fix or feature.  Be sure it doesn't
    break any existing functionality!
+1. Test the fix or feature.  You will be asked how you tested your changes when
+   you create a pull request.  Many features can be exercised by the [OpenCL
+   CTS](https://github.com/KhronosGroup/OpenCL-CTS) (Conformance Test Suite).
+   Other features should be exercised via specific targeted applications.  Ask
+   for help if needed!
 1. Submit a pull request with your changes.
 
 After submitting a pull request your contribution will be reviewed.  Your pull
