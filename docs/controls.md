@@ -517,7 +517,7 @@ This is the list of options that is implicitly passed to CLANG to build a non-Op
 
 This is the list of options that is implicitly passed to CLANG to build an OpenCL 2.0 SPIR-V module.  Any application-provided build options will be appended to these build options.
 
-### Controls for Dumping Buffers and Images
+### Controls for Dumping and Injecting Buffers and Images
 
 ##### `DumpBufferHashes` (bool)
 
@@ -590,6 +590,14 @@ The Intercept Layer for OpenCL Applications will only dump argument values when 
 ##### `DumpArgumentsOnSetMaxEnqueue` (cl_uint)
 
 The Intercept Layer for OpenCL Applications will only dump kernel arguments when the enqueue counter is less than this value, inclusive.
+
+##### `InjectBuffers` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified buffer, SVM, and USM contents before calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued may be injected.  The filename to inject will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Buffer\_\<Unique Memory Object Number\>.bin", which matches the filename for dumped buffers.
+
+##### `InjectImages` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified image contents before calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued may be injected.  The filename to inject will have the form "Enqueue\_\<Enqueue Number\>\_Kernel\_\<Kernel Name\>\_Arg\_\<Argument Number\>\_Image\_\<Unique Memory Object Number\>\_\<Width\>x\<Height\>x\<Depth\>\_\<Element Size\>bpp.raw", which matches the filename for dumped images.
 
 ### Device Partitioning Controls
 

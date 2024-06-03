@@ -7720,10 +7720,13 @@ void CLIntercept::dumpBuffersForKernel(
     while( i != kernelArgMemMap.end() )
     {
         CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
+
         cl_uint arg_index = (*i).first;
         void*   allocation = (void*)(*i).second;
         cl_mem  memobj = (cl_mem)allocation;
+
         ++i;
+
         if( ( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() ) ||
             ( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() ) ||
             ( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() ) )
@@ -8068,6 +8071,334 @@ void CLIntercept::dumpImagesForKernel(
                             transferBuf.data(),
                             size );
                     }
+                }
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::injectBuffersForKernel(
+    const uint64_t enqueueCounter,
+    cl_kernel kernel,
+    cl_command_queue command_queue )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_platform_id  platform = getPlatform(kernel);
+
+    std::vector<char>   transferBuf;
+    std::string prefix;
+
+    OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, prefix );
+    prefix += "/Inject/";
+
+    CArgMemMap& kernelArgMemMap = m_KernelArgMemMap[ kernel ];
+    CArgMemMap::iterator  i = kernelArgMemMap.begin();
+    while( i != kernelArgMemMap.end() )
+    {
+        CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
+
+        cl_uint arg_index = (*i).first;
+        void*   allocation = (void*)(*i).second;
+        cl_mem  memobj = (cl_mem)allocation;
+
+        ++i;
+
+        if( ( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() ) ||
+            ( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() ) ||
+            ( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() ) )
+        {
+            unsigned int        number = m_MemAllocNumberMap[ memobj ];
+
+            std::string fileName( prefix );
+            char    tmpStr[ MAX_PATH ];
+
+            // Add the enqueue count to file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
+                    (unsigned int)enqueueCounter );
+
+                fileName += "Enqueue_";
+                fileName += tmpStr;
+            }
+
+            // Add the kernel name to the filename
+            {
+                fileName += "_Kernel_";
+                fileName += getShortKernelName(kernel);
+            }
+
+            // Add the arg number to the file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%u", arg_index );
+
+                fileName += "_Arg_";
+                fileName += tmpStr;
+            }
+
+            // Add the buffer number to the file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", number );
+
+                fileName += "_Buffer_";
+                fileName += tmpStr;
+            }
+
+            // Add extension to file name
+            {
+                fileName += ".bin";
+            }
+
+            std::ifstream is;
+            is.open( fileName.c_str(), std::ios::in | std::ios::binary );
+            if( is.good() )
+            {
+                log("Injecting buffer file: " + fileName + "\n");
+
+                size_t  fileSize = 0;
+                is.seekg( 0, std::ios::end );
+                fileSize = (size_t)is.tellg();
+                is.seekg( 0, std::ios::beg );
+
+                if( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() )
+                {
+                    size_t size = m_USMAllocInfoMap[ allocation ];
+                    if( size < fileSize )
+                    {
+                        logf("Skipping injection: USM alloc size (%zu bytes) is less than file size (%zu bytes)!\n",
+                            size, fileSize );
+                    }
+                    else
+                    {
+                        if( dispatchX(platform).clEnqueueMemcpyINTEL == NULL )
+                        {
+                            getExtensionFunctionAddress(
+                                platform,
+                                "clEnqueueMemcpyINTEL" );
+                        }
+                        if( transferBuf.size() < size )
+                        {
+                            transferBuf.resize(size);
+                        }
+
+                        const auto& dispatchX = this->dispatchX(platform);
+                        if( dispatchX.clEnqueueMemcpyINTEL &&
+                            transferBuf.size() >= size )
+                        {
+                            is.read( transferBuf.data(), size );
+
+                            dispatchX.clEnqueueMemcpyINTEL(
+                                command_queue,
+                                CL_TRUE,
+                                allocation,
+                                transferBuf.data(),
+                                size,
+                                0,
+                                NULL,
+                                NULL );
+                        }
+                    }
+                }
+                else if( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() )
+                {
+                    size_t size = m_SVMAllocInfoMap[ allocation ];
+                    if( size < fileSize )
+                    {
+                        logf("Skipping injection: SVM alloc size (%zu bytes) is less than file size (%zu bytes)!\n",
+                            size, fileSize );
+                    }
+                    else
+                    {
+                        cl_int  error = dispatch().clEnqueueSVMMap(
+                            command_queue,
+                            CL_TRUE,
+                            CL_MAP_WRITE_INVALIDATE_REGION,
+                            allocation,
+                            size,
+                            0,
+                            NULL,
+                            NULL );
+                        if( error == CL_SUCCESS )
+                        {
+                            is.read( (char*)allocation, size );
+
+                            dispatch().clEnqueueSVMUnmap(
+                                command_queue,
+                                allocation,
+                                0,
+                                NULL,
+                                NULL );
+                        }
+                    }
+                }
+                else if( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() )
+                {
+                    size_t size = m_BufferInfoMap[ memobj ];
+                    if( size < fileSize )
+                    {
+                        logf("Skipping injection: buffer size (%zu bytes) is less than file size (%zu bytes)!\n",
+                            size, fileSize );
+                    }
+                    else
+                    {
+                        cl_int  error = CL_SUCCESS;
+                        void*   ptr = dispatch().clEnqueueMapBuffer(
+                            command_queue,
+                            memobj,
+                            CL_TRUE,
+                            CL_MAP_WRITE_INVALIDATE_REGION,
+                            0,
+                            size,
+                            0,
+                            NULL,
+                            NULL,
+                            &error );
+                        if( error == CL_SUCCESS )
+                        {
+                            is.read( (char*)ptr, size );
+
+                            dispatch().clEnqueueUnmapMemObject(
+                                command_queue,
+                                memobj,
+                                ptr,
+                                0,
+                                NULL,
+                                NULL );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::injectImagesForKernel(
+    const uint64_t enqueueCounter,
+    cl_kernel kernel,
+    cl_command_queue command_queue )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    std::vector<char>   transferBuf;
+    std::string prefix;
+
+    OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, prefix );
+    prefix += "/Inject/";
+
+    CArgMemMap& kernelArgMemMap = m_KernelArgMemMap[ kernel ];
+    CArgMemMap::iterator  i = kernelArgMemMap.begin();
+    while( i != kernelArgMemMap.end() )
+    {
+        CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
+
+        cl_uint arg_index = (*i).first;
+        cl_mem  memobj = (cl_mem)(*i).second;
+
+        ++i;
+
+        if( m_ImageInfoMap.find( memobj ) != m_ImageInfoMap.end() )
+        {
+            const SImageInfo&   info = m_ImageInfoMap[ memobj ];
+            unsigned int        number = m_MemAllocNumberMap[ memobj ];
+
+            std::string fileName( prefix );
+            char    tmpStr[ MAX_PATH ];
+
+            // Add the enqueue count to file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
+                    (unsigned int)enqueueCounter );
+
+                fileName += "Enqueue_";
+                fileName += tmpStr;
+            }
+
+            // Add the kernel name to the filename
+            {
+                fileName += "_Kernel_";
+                fileName += getShortKernelName(kernel);
+            }
+
+            // Add the arg number to the file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%u", arg_index );
+
+                fileName += "_Arg_";
+                fileName += tmpStr;
+            }
+
+            // Add the image number to the file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", number );
+
+                fileName += "_Image_";
+                fileName += tmpStr;
+            }
+
+            // Add the image dimensions to the file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "_%zux%zux%zu_%zubpp",
+                    info.Region[0],
+                    info.Region[1],
+                    info.Region[2],
+                    info.ElementSize * 8 );
+
+                fileName += tmpStr;
+            }
+
+            // Add extension to file name
+            {
+                fileName += ".raw";
+            }
+
+            std::ifstream is;
+            is.open( fileName.c_str(), std::ios::in | std::ios::binary );
+            if( is.good() )
+            {
+                log("Injecting image file: " + fileName + "\n");
+
+                size_t  fileSize = 0;
+                is.seekg( 0, std::ios::end );
+                fileSize = (size_t)is.tellg();
+                is.seekg( 0, std::ios::beg );
+
+                size_t  size =
+                    info.Region[0] *
+                    info.Region[1] *
+                    info.Region[2] *
+                    info.ElementSize;
+
+                if( size != fileSize )
+                {
+                    logf("Skipping injection: image size (%zu bytes) is not equal to file size (%zu bytes)!\n",
+                        size, fileSize );
+                }
+                else if( transferBuf.size() < size )
+                {
+                    transferBuf.resize(size);
+                }
+
+                if( transferBuf.size() >= size )
+                {
+                    is.read( (char*)transferBuf.data(), size );
+
+                    size_t  origin[3] = { 0, 0, 0 };
+                    dispatch().clEnqueueWriteImage(
+                        command_queue,
+                        memobj,
+                        CL_TRUE,
+                        origin,
+                        info.Region,
+                        0,
+                        0,
+                        transferBuf.data(),
+                        0,
+                        NULL,
+                        NULL );
                 }
             }
         }
