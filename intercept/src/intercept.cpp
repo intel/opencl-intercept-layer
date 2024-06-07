@@ -13171,6 +13171,9 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clRetainAcceleratorINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clReleaseAcceleratorINTEL );
 
+    // cl_intel_create_buffer_with_properties
+    CHECK_RETURN_EXTENSION_FUNCTION( clCreateBufferWithPropertiesINTEL );
+
 #if defined(_WIN32)
     // cl_intel_dx9_media_sharing
     CHECK_RETURN_EXTENSION_FUNCTION( clGetDeviceIDsFromDX9INTEL );
