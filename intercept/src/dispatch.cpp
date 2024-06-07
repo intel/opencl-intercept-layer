@@ -1072,6 +1072,68 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_intel_create_buffer_with_properties
+// This function should stay in sync with clCreateBufferWithProperties, above.
+CL_API_ENTRY cl_mem CL_API_CALL clCreateBufferWithPropertiesINTEL(
+    cl_context context,
+    const cl_mem_properties_intel* properties,
+    cl_mem_flags flags,
+    size_t size,
+    void* host_ptr,
+    cl_int* errcode_ret )
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clCreateBufferWithPropertiesINTEL )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            std::string propsStr;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getMemPropertiesString(
+                    properties,
+                    propsStr );
+            }
+            CALL_LOGGING_ENTER( "context = %p, properties = [ %s ], flags = %s (%llX), size = %zu, host_ptr = %p",
+                context,
+                propsStr.c_str(),
+                pIntercept->enumName().name_mem_flags( flags ).c_str(),
+                flags,
+                size,
+                host_ptr );
+            INITIALIZE_BUFFER_CONTENTS_INIT( flags, size, host_ptr );
+            CHECK_ERROR_INIT( errcode_ret );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_mem  retVal = dispatchX.clCreateBufferWithPropertiesINTEL(
+                context,
+                properties,
+                flags,
+                size,
+                host_ptr,
+                errcode_ret );
+
+            HOST_PERFORMANCE_TIMING_END();
+            ADD_BUFFER( retVal );
+            INITIALIZE_BUFFER_CONTENTS_CLEANUP( flags, host_ptr );
+            DUMP_BUFFER_AFTER_CREATE( retVal, flags, host_ptr, size );
+            CHECK_ERROR( errcode_ret[0] );
+            ADD_OBJECT_ALLOCATION( retVal );
+            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_nv_create_buffer
 CL_API_ENTRY cl_mem CL_API_CALL clCreateBufferNV(
     cl_context context,

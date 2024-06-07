@@ -535,6 +535,15 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clReleaseAcceleratorINTEL) (
         cl_accelerator_intel accelerator );
 
+    // cl_intel_create_buffer_with_properties
+    cl_mem (CL_API_CALL *clCreateBufferWithPropertiesINTEL) (
+        cl_context context,
+        const cl_mem_properties_intel* properties,
+        cl_mem_flags flags,
+        size_t size,
+        void* host_ptr,
+        cl_int* errcode_ret);
+
 #if defined(_WIN32)
     // cl_intel_dx9_media_sharing
     cl_int  (CL_API_CALL *clGetDeviceIDsFromDX9INTEL) (
