@@ -27,6 +27,8 @@ public:
 
     ~CChromeTracer()
     {
+        flush();
+
         // Add an eof metadata event without a trailing comma to properly end
         // the json file.
         m_TraceFile
@@ -34,7 +36,6 @@ public:
             << ",\"tid\":0"
             << "}\n"
             << "]\n";
-        flush();
         m_TraceFile.close();
     }
 
