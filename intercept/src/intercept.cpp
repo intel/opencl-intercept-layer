@@ -442,9 +442,8 @@ bool CLIntercept::init()
         bool        addFlowEvents = m_Config.ChromeFlowEvents;
         m_ChromeTrace.init( fileName, processId, bufferSize, addFlowEvents );
 
-        uint64_t    threadId = OS().GetThreadID();
         std::string processName = OS().GetProcessName();
-        m_ChromeTrace.addProcessMetadata( threadId, processName );
+        m_ChromeTrace.addProcessMetadata( processName );
     }
 
     std::string name = "";
@@ -639,12 +638,10 @@ bool CLIntercept::init()
     if( m_Config.ChromeCallLogging ||
         m_Config.ChromePerformanceTiming )
     {
-        uint64_t    threadId = OS().GetThreadID();
-
         using us = std::chrono::microseconds;
         uint64_t    usStartTime =
             std::chrono::duration_cast<us>(m_StartTime.time_since_epoch()).count();
-        m_ChromeTrace.addStartTimeMetadata( threadId, usStartTime );
+        m_ChromeTrace.addStartTimeMetadata( usStartTime );
     }
 
     log( "... loading complete.\n" );
