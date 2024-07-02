@@ -711,6 +711,10 @@ The Intercept Layer for OpenCL Applications will wait for this many milliseconds
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will cause all OpenCL APIs to return a successful error status.
 
+##### `StopOnEnqueueCount` (cl_uint)
+
+If set, CLIntercept will terminate the application on achieved enqueue count. Useful to debug sporadic issues in applications. In case issue is not visible in identified faulting kernel, not needed to wait application normal exit.
+
 ##### `NullContextCallback` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will force the context callback to be NULL.  With both context callback logging and NULL context callback set, the context callback will still be logged, but any application context callback will not be called.
