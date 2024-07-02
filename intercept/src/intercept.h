@@ -1947,10 +1947,15 @@ inline uint64_t CLIntercept::getEnqueueCounter() const
 
 inline uint64_t CLIntercept::incrementEnqueueCounter()
 {
+    uint64_t enqueueCounter = m_EnqueueCounter.load();
+    if( enqueueCounter == m_Config.StopOnEnqueueCount ) {
+        log(">>> Stop enqueue counter " + std::to_string(enqueueCounter) + " reached - terminating application...\n");
+        exit(0);
+    }
+
     uint64_t reportInterval = m_Config.ReportInterval;
     if( reportInterval != 0 )
     {
-        uint64_t enqueueCounter = m_EnqueueCounter.load();
         if( enqueueCounter != 0 && enqueueCounter % reportInterval == 0 )
         {
             report();
