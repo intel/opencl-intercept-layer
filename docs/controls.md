@@ -707,13 +707,13 @@ The Intercept Layer for OpenCL Applications will wait for this many milliseconds
 
 ### Execution Controls
 
-##### `ExitOnEnqueueCount` (uint64_t)
-
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will exit the application on achieved enqueue count. This can be used to debug sporadic issues in applications. In case issue is not visible in identified faulting kernel, not needed to wait application normal exit
-
 ##### `NoErrors` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will cause all OpenCL APIs to return a successful error status.
+
+##### `ExitOnEnqueueCount` (uint64_t)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will exit the application when the enqueue counter reaches the specified value.  This can be useful to debug sporadic issues by exiting an application immediately, without needing to wait for the application to exit normally.
 
 ##### `NullContextCallback` (bool)
 

@@ -1947,11 +1947,18 @@ inline uint64_t CLIntercept::getEnqueueCounter() const
 
 inline uint64_t CLIntercept::incrementEnqueueCounter()
 {
-    uint64_t enqueueCounter = m_EnqueueCounter.load();
-    if( enqueueCounter != 0 ) {
+    if( m_Config.ExitOnEnqueueCount != 0 )
+    {
+        uint64_t enqueueCounter = m_EnqueueCounter.load();
         if( enqueueCounter >= m_Config.ExitOnEnqueueCount )
         {
-            log("Exit enqueue counter " + std::to_string(enqueueCounter) + " reached - exiting the application...\n");
+            // Note: we need to release the mutex before calling exit:
+            {
+                std::lock_guard<std::mutex> lock(m_Mutex);
+                logf("Exit enqueue counter reached (%" PRIu64 " >= %" PRIu64 "): exiting the application.\n",
+                    enqueueCounter,
+                    m_Config.ExitOnEnqueueCount);
+            }
             exit(0);
         }
     }
@@ -1959,6 +1966,7 @@ inline uint64_t CLIntercept::incrementEnqueueCounter()
     uint64_t reportInterval = m_Config.ReportInterval;
     if( reportInterval != 0 )
     {
+        uint64_t enqueueCounter = m_EnqueueCounter.load();
         if( enqueueCounter != 0 && enqueueCounter % reportInterval == 0 )
         {
             report();
