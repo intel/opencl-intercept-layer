@@ -48,6 +48,7 @@ public:
     void addProcessMetadata(
             const std::string& processName )
     {
+        std::lock_guard<std::mutex> lock(m_Mutex);
         m_TraceFile
             << "{\"ph\":\"M\",\"name\":\"process_name\",\"pid\":" << m_ProcessId
             << ",\"tid\":0"
@@ -59,6 +60,7 @@ public:
             uint64_t threadId,
             uint32_t threadNumber )
     {
+        std::lock_guard<std::mutex> lock(m_Mutex);
         m_TraceFile
             << "{\"ph\":\"M\",\"name\":\"thread_name\",\"pid\":" << m_ProcessId
             << ",\"tid\":" << threadId
@@ -74,6 +76,7 @@ public:
     void addStartTimeMetadata(
             uint64_t startTime )
     {
+        std::lock_guard<std::mutex> lock(m_Mutex);
         m_TraceFile
             << "{\"ph\":\"M\",\"name\":\"clintercept_start_time\",\"pid\":" << m_ProcessId
             << ",\"tid\":0"
@@ -85,6 +88,7 @@ public:
             uint32_t queueNumber,
             const std::string& queueName )
     {
+        std::lock_guard<std::mutex> lock(m_Mutex);
         m_TraceFile
             << "{\"ph\":\"M\",\"name\":\"thread_name\",\"pid\":" << m_ProcessId
             << ",\"tid\":" << queueNumber
