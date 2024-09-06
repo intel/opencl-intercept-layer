@@ -13,7 +13,7 @@ extern "C" {
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_command_buffer
 
-// Note: This implements the provisional extension v0.9.2.
+// Note: This implements the provisional extension v0.9.5.
 
 typedef cl_bitfield         cl_device_command_buffer_capabilities_khr;
 typedef struct _cl_command_buffer_khr* cl_command_buffer_khr;
@@ -22,7 +22,7 @@ typedef cl_uint             cl_command_buffer_info_khr;
 typedef cl_uint             cl_command_buffer_state_khr;
 typedef cl_properties       cl_command_buffer_properties_khr;
 typedef cl_bitfield         cl_command_buffer_flags_khr;
-typedef cl_properties       cl_ndrange_kernel_command_properties_khr;
+typedef cl_properties       cl_command_properties_khr;
 typedef struct _cl_mutable_command_khr* cl_mutable_command_khr;
 
 #define CL_DEVICE_COMMAND_BUFFER_CAPABILITIES_KHR           0x12A9
@@ -86,6 +86,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clCommandBarrierWithWaitListKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_uint num_sync_points_in_wait_list,
     const cl_sync_point_khr* sync_point_wait_list,
     cl_sync_point_khr* sync_point,
@@ -95,6 +96,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clCommandCopyBufferKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_buffer,
     cl_mem dst_buffer,
     size_t src_offset,
@@ -109,6 +111,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clCommandCopyBufferRectKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_buffer,
     cl_mem dst_buffer,
     const size_t* src_origin,
@@ -127,6 +130,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clCommandCopyBufferToImageKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_buffer,
     cl_mem dst_image,
     size_t src_offset,
@@ -141,6 +145,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clCommandCopyImageKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_image,
     cl_mem dst_image,
     const size_t* src_origin,
@@ -155,6 +160,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clCommandCopyImageToBufferKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_image,
     cl_mem dst_buffer,
     const size_t* src_origin,
@@ -169,6 +175,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clCommandFillBufferKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem buffer,
     const void* pattern,
     size_t pattern_size,
@@ -183,6 +190,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clCommandFillImageKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem image,
     const void* fill_color,
     const size_t* origin,
@@ -196,6 +204,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clCommandSVMMemcpyKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     void* dst_ptr,
     const void* src_ptr,
     size_t size,
@@ -208,6 +217,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clCommandSVMMemFillKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     void* svm_ptr,
     const void* pattern,
     size_t pattern_size,
@@ -221,7 +231,7 @@ extern CL_API_ENTRY cl_int CL_API_CALL
 clCommandNDRangeKernelKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
-    const cl_ndrange_kernel_command_properties_khr* properties,
+    const cl_command_properties_khr* properties,
     cl_kernel kernel,
     cl_uint work_dim,
     const size_t* global_work_offset,
@@ -273,9 +283,9 @@ clRemapCommandBufferKHR(
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_command_buffer_mutable_dispatch
 
-// Note: This implements the provisional extension v0.9.1.
+// Note: This implements the provisional extension v0.9.3.
 
-typedef cl_uint             cl_command_buffer_structure_type_khr;
+typedef cl_uint             cl_command_buffer_update_type_khr;
 typedef cl_bitfield         cl_mutable_dispatch_fields_khr;
 typedef cl_uint             cl_mutable_command_info_khr;
 typedef struct _cl_mutable_dispatch_arg_khr {
@@ -289,8 +299,6 @@ typedef struct _cl_mutable_dispatch_exec_info_khr {
     const void* param_value;
 } cl_mutable_dispatch_exec_info_khr;
 typedef struct _cl_mutable_dispatch_config_khr {
-    cl_command_buffer_structure_type_khr type;
-    const void* next;
     cl_mutable_command_khr command;
     cl_uint num_args;
     cl_uint num_svm_args;
@@ -303,12 +311,6 @@ typedef struct _cl_mutable_dispatch_config_khr {
     const size_t* global_work_size;
     const size_t* local_work_size;
 } cl_mutable_dispatch_config_khr;
-typedef struct _cl_mutable_base_config_khr {
-    cl_command_buffer_structure_type_khr type;
-    const void* next;
-    cl_uint num_mutable_dispatch;
-    const cl_mutable_dispatch_config_khr* mutable_dispatch_list;
-} cl_mutable_base_config_khr;
 typedef cl_bitfield         cl_mutable_dispatch_asserts_khr;
 
 #define CL_COMMAND_BUFFER_MUTABLE_KHR                       (1 << 1)
@@ -327,15 +329,14 @@ typedef cl_bitfield         cl_mutable_dispatch_asserts_khr;
 #define CL_MUTABLE_COMMAND_COMMAND_QUEUE_KHR                0x12A0
 #define CL_MUTABLE_COMMAND_COMMAND_BUFFER_KHR               0x12A1
 #define CL_MUTABLE_COMMAND_COMMAND_TYPE_KHR                 0x12AD
-#define CL_MUTABLE_DISPATCH_PROPERTIES_ARRAY_KHR            0x12A2
+#define CL_MUTABLE_COMMAND_PROPERTIES_ARRAY_KHR             0x12A2
 #define CL_MUTABLE_DISPATCH_KERNEL_KHR                      0x12A3
 #define CL_MUTABLE_DISPATCH_DIMENSIONS_KHR                  0x12A4
 #define CL_MUTABLE_DISPATCH_GLOBAL_WORK_OFFSET_KHR          0x12A5
 #define CL_MUTABLE_DISPATCH_GLOBAL_WORK_SIZE_KHR            0x12A6
 #define CL_MUTABLE_DISPATCH_LOCAL_WORK_SIZE_KHR             0x12A7
 
-#define CL_STRUCTURE_TYPE_MUTABLE_BASE_CONFIG_KHR           0
-#define CL_STRUCTURE_TYPE_MUTABLE_DISPATCH_CONFIG_KHR       1
+#define CL_STRUCTURE_TYPE_MUTABLE_DISPATCH_CONFIG_KHR       0
 
 #define CL_COMMAND_BUFFER_MUTABLE_DISPATCH_ASSERTS_KHR      0x12B7
 
@@ -346,7 +347,9 @@ typedef cl_bitfield         cl_mutable_dispatch_asserts_khr;
 extern CL_API_ENTRY cl_int CL_API_CALL
 clUpdateMutableCommandsKHR(
     cl_command_buffer_khr command_buffer,
-    const cl_mutable_base_config_khr* mutable_config) ;
+    cl_uint num_configs,
+    const cl_command_buffer_update_type_khr* config_types,
+    const void** configs);
 
 extern CL_API_ENTRY cl_int CL_API_CALL
 clGetMutableCommandInfoKHR(

@@ -188,6 +188,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clCommandBarrierWithWaitListKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
+        const cl_command_properties_khr* properties,
         cl_uint num_sync_points_in_wait_list,
         const cl_sync_point_khr* sync_point_wait_list,
         cl_sync_point_khr* sync_point,
@@ -197,6 +198,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clCommandCopyBufferKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
+        const cl_command_properties_khr* properties,
         cl_mem src_buffer,
         cl_mem dst_buffer,
         size_t src_offset,
@@ -211,6 +213,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clCommandCopyBufferRectKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
+        const cl_command_properties_khr* properties,
         cl_mem src_buffer,
         cl_mem dst_buffer,
         const size_t* src_origin,
@@ -229,6 +232,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clCommandCopyBufferToImageKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
+        const cl_command_properties_khr* properties,
         cl_mem src_buffer,
         cl_mem dst_image,
         size_t src_offset,
@@ -243,6 +247,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clCommandCopyImageKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
+        const cl_command_properties_khr* properties,
         cl_mem src_image,
         cl_mem dst_image,
         const size_t* src_origin,
@@ -257,6 +262,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clCommandCopyImageToBufferKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
+        const cl_command_properties_khr* properties,
         cl_mem src_image,
         cl_mem dst_buffer,
         const size_t* src_origin,
@@ -271,6 +277,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clCommandFillBufferKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
+        const cl_command_properties_khr* properties,
         cl_mem buffer,
         const void* pattern,
         size_t pattern_size,
@@ -285,6 +292,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clCommandFillImageKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
+        const cl_command_properties_khr* properties,
         cl_mem image,
         const void* fill_color,
         const size_t* origin,
@@ -298,6 +306,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clCommandSVMMemcpyKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
+        const cl_command_properties_khr* properties,
         void* dst_ptr,
         const void* src_ptr,
         size_t size,
@@ -310,6 +319,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clCommandSVMMemFillKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
+        const cl_command_properties_khr* properties,
         void* svm_ptr,
         const void* pattern,
         size_t pattern_size,
@@ -323,7 +333,7 @@ struct CLdispatchX
     cl_int (CL_API_CALL *clCommandNDRangeKernelKHR) (
         cl_command_buffer_khr command_buffer,
         cl_command_queue command_queue,
-        const cl_ndrange_kernel_command_properties_khr* properties,
+        const cl_command_properties_khr* properties,
         cl_kernel kernel,
         cl_uint work_dim,
         const size_t* global_work_offset,
@@ -356,7 +366,9 @@ struct CLdispatchX
     // cl_khr_command_buffer_mutable_dispatch
     cl_int (CL_API_CALL *clUpdateMutableCommandsKHR) (
         cl_command_buffer_khr command_buffer,
-        const cl_mutable_base_config_khr* mutable_config) ;
+        cl_uint num_configs,
+        const cl_command_buffer_update_type_khr* config_types,
+        const void** configs);
 
     // cl_khr_command_buffer_mutable_dispatch
     cl_int (CL_API_CALL *clGetMutableCommandInfoKHR) (
