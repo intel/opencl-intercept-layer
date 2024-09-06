@@ -2639,34 +2639,34 @@ void CLIntercept::getCommandBufferPropertiesString(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::getCommandBufferMutableConfigString(
-    const cl_mutable_base_config_khr* mutable_config,
+    cl_uint num_configs,
+    const cl_command_buffer_update_type_khr* config_types,
+    const void** configs,
     std::string& str ) const
 {
     str = "";
 
-    if( mutable_config )
+    if( num_configs > 0 && config_types != nullptr && configs != nullptr )
     {
         char s[256];
-        CLI_SPRINTF(s, 256, "type = %s (%u), next = %p, num_mutable_dispatch = %u",
-            enumName().name_command_buffer_structure_type(mutable_config->type).c_str(),
-            mutable_config->type,
-            mutable_config->next,
-            mutable_config->num_mutable_dispatch);
-        str += s;
 
-        for( cl_uint i = 0; i < mutable_config->num_mutable_dispatch; i++ )
+        for( cl_uint i = 0; i < num_configs; i++ )
         {
-            const cl_mutable_dispatch_config_khr* dispatchConfig =
-                &mutable_config->mutable_dispatch_list[i];
-            CLI_SPRINTF(s, 256, "\n  dispatch config %u: type = %s (%u), next = %p, command = %p:",
-                i,
-                enumName().name_command_buffer_structure_type(dispatchConfig->type).c_str(),
-                dispatchConfig->type,
-                dispatchConfig->next,
-                dispatchConfig->command);
-            str += s;
-            if( dispatchConfig->type == CL_STRUCTURE_TYPE_MUTABLE_DISPATCH_CONFIG_KHR )
+            if( configs[i] == nullptr )
             {
+                CLI_SPRINTF(s, 256, "\n  config %u: NULL!", i );
+                str += s;
+            }
+            else if( config_types[i] == CL_STRUCTURE_TYPE_MUTABLE_DISPATCH_CONFIG_KHR )
+            {
+                auto dispatchConfig = (const cl_mutable_dispatch_config_khr*)configs[i];
+                CLI_SPRINTF(s, 256, "\n  config %u: type = %s (%u), command = %p:",
+                    i,
+                    enumName().name_command_buffer_update_type(config_types[i]).c_str(),
+                    config_types[i],
+                    dispatchConfig->command);
+                str += s;
+
                 CLI_SPRINTF(s, 256, "\n    num_args = %u, num_svm_args = %u, num_exec_infos = %u, work_dim = %u",
                     dispatchConfig->num_args,
                     dispatchConfig->num_svm_args,
@@ -2802,11 +2802,14 @@ void CLIntercept::getCommandBufferMutableConfigString(
                     }
                 }
             }
+            else
+            {
+                CLI_SPRINTF(s, 256, "\n  config %u: unknown type %u!",
+                    i,
+                    config_types[i] );
+                str += s;
+            }
         }
-    }
-    else
-    {
-        str = "NULL";
     }
 }
 

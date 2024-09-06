@@ -174,7 +174,9 @@ public:
                 const cl_command_buffer_properties_khr* properties,
                 std::string& str ) const;
     void    getCommandBufferMutableConfigString(
-                const cl_mutable_base_config_khr* mutable_config,
+                cl_uint num_configs,
+                const cl_command_buffer_update_type_khr* config_types,
+                const void** configs,
                 std::string& str ) const;
     void    getCreateKernelsInProgramRetString(
                 cl_int retVal,
@@ -3299,6 +3301,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
         pIntercept->config().DevicePerfCounterEventBasedSampling )          \
+        /* TODO: checkDevicePerformanceTimingEnqueueLimits? */              \
     {                                                                       \
         queuedTime = CLIntercept::clock::now();                             \
         if( pEvent == NULL )                                                \

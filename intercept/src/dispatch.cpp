@@ -10665,6 +10665,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueCommandBufferKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_uint num_sync_points_in_wait_list,
     const cl_sync_point_khr* sync_point_wait_list,
     cl_sync_point_khr* sync_point,
@@ -10694,6 +10695,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
             cl_int  retVal = dispatchX.clCommandBarrierWithWaitListKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 num_sync_points_in_wait_list,
                 sync_point_wait_list,
                 sync_point,
@@ -10717,6 +10719,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_buffer,
     cl_mem dst_buffer,
     size_t src_offset,
@@ -10751,6 +10754,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
             cl_int  retVal = dispatchX.clCommandCopyBufferKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 src_buffer,
                 dst_buffer,
                 src_offset,
@@ -10779,6 +10783,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_buffer,
     cl_mem dst_buffer,
     const size_t* src_origin,
@@ -10817,6 +10822,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
             cl_int  retVal = dispatchX.clCommandCopyBufferRectKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 src_buffer,
                 dst_buffer,
                 src_origin,
@@ -10849,6 +10855,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_buffer,
     cl_mem dst_image,
     size_t src_offset,
@@ -10883,6 +10890,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
             cl_int  retVal = dispatchX.clCommandCopyBufferToImageKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 src_buffer,
                 dst_image,
                 src_offset,
@@ -10911,6 +10919,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_image,
     cl_mem dst_image,
     const size_t* src_origin,
@@ -10945,6 +10954,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
             cl_int  retVal = dispatchX.clCommandCopyImageKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 src_image,
                 dst_image,
                 src_origin,
@@ -10973,6 +10983,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_image,
     cl_mem dst_buffer,
     const size_t* src_origin,
@@ -11009,6 +11020,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
             cl_int  retVal = dispatchX.clCommandCopyImageToBufferKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 src_image,
                 dst_buffer,
                 src_origin,
@@ -11037,6 +11049,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem buffer,
     const void* pattern,
     size_t pattern_size,
@@ -11071,6 +11084,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
             cl_int  retVal = dispatchX.clCommandFillBufferKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 buffer,
                 pattern,
                 pattern_size,
@@ -11099,6 +11113,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem image,
     const void* fill_color,
     const size_t* origin,
@@ -11132,6 +11147,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
             cl_int  retVal = dispatchX.clCommandFillImageKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 image,
                 fill_color,
                 origin,
@@ -11159,6 +11175,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     void* dst_ptr,
     const void* src_ptr,
     size_t size,
@@ -11194,6 +11211,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
             cl_int  retVal = dispatchX.clCommandSVMMemcpyKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 dst_ptr,
                 src_ptr,
                 size,
@@ -11220,6 +11238,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemFillKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     void* svm_ptr,
     const void* pattern,
     size_t pattern_size,
@@ -11256,6 +11275,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemFillKHR(
             cl_int  retVal = dispatchX.clCommandSVMMemFillKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 svm_ptr,
                 pattern,
                 pattern_size,
@@ -11283,7 +11303,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemFillKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
-    const cl_ndrange_kernel_command_properties_khr* properties,
+    const cl_command_properties_khr* properties,
     cl_kernel kernel,
     cl_uint work_dim,
     const size_t* global_work_offset,
@@ -11476,7 +11496,9 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clRemapCommandBufferKHR(
 // cl_khr_command_buffer_mutable_dispatch
 CL_API_ENTRY cl_int CL_API_CALL clUpdateMutableCommandsKHR(
     cl_command_buffer_khr command_buffer,
-    const cl_mutable_base_config_khr* mutable_config)
+    cl_uint num_configs,
+    const cl_command_buffer_update_type_khr* config_types,
+    const void** configs)
 {
     CLIntercept*    pIntercept = GetIntercept();
 
@@ -11486,24 +11508,27 @@ CL_API_ENTRY cl_int CL_API_CALL clUpdateMutableCommandsKHR(
         if( dispatchX.clUpdateMutableCommandsKHR )
         {
             GET_ENQUEUE_COUNTER();
-            CALL_LOGGING_ENTER( "command_buffer = %p, mutable_config = %p",
+            CALL_LOGGING_ENTER( "command_buffer = %p, num_configs = %u",
                 command_buffer,
-                mutable_config );
+                num_configs );
             if( pIntercept->config().CallLogging )
             {
                 std::string configStr;
                 pIntercept->getCommandBufferMutableConfigString(
-                    mutable_config,
+                    num_configs,
+                    config_types,
+                    configs,
                     configStr );
-                CALL_LOGGING_INFO("mutable_config %p: %s",
-                    mutable_config,
+                CALL_LOGGING_INFO(" configs = %s",
                     configStr.c_str() );
             }
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clUpdateMutableCommandsKHR(
                 command_buffer,
-                mutable_config );
+                num_configs,
+                config_types,
+                configs );
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
