@@ -622,13 +622,13 @@ uint32_t MDHelper::GetMetricsFromReports(
     const uint32_t metricsCount     = m_MetricSet->GetParams()->MetricsCount;
     const uint32_t informationCount = m_MetricSet->GetParams()->InformationCount;
 
-    results.resize( ( metricsCount + informationCount ) * numReports );
+    results.resize( ( metricsCount + informationCount ) * (size_t)numReports );
 
     TCompletionCode res = MetricsDiscovery::CC_ERROR_GENERAL;
     uint32_t    outReportCount = 0;
     if( m_IncludeMaxValues )
     {
-        maxValues.resize( metricsCount * numReports );
+        maxValues.resize( metricsCount * (size_t)numReports );
         res = m_MetricSet->CalculateMetrics(
             (const unsigned char*)pReportData,
             reportSize,

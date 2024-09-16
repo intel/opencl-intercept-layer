@@ -96,6 +96,10 @@ static bool GetIntelDriverStoreFullPath(
     unsigned long* pDriverStorePathLengthInCharacters)
 {
     bool result = false;
+    unsigned long deviceIndex = 0;
+    unsigned long interfaceIndex = 0;
+    unsigned long driverStorePathLengthInCharacters = 0;
+
     // allocated memory must be freed with delete operation
     unsigned char* pPropertyInfName = NULL;
     // allocated memory must be freed with delete operation
@@ -112,15 +116,12 @@ static bool GetIntelDriverStoreFullPath(
         goto END;
     }
 
-    unsigned long deviceIndex = 0;
     SP_DEVINFO_DATA devInfoData;
     ZeroMemory(&devInfoData, sizeof(SP_DEVINFO_DATA));
-    unsigned long interfaceIndex = 0;
     SP_DEVICE_INTERFACE_DATA deviceInterfaceData;
     ZeroMemory(&deviceInterfaceData, sizeof(SP_DEVICE_INTERFACE_DATA));
     DEVPROPKEY devPropKey;
     ZeroMemory(&devPropKey, sizeof(DEVPROPKEY));
-    unsigned long driverStorePathLengthInCharacters = 0;
 
     // enumerate display adapters
     while (true)

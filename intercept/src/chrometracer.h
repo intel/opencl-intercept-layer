@@ -28,6 +28,14 @@ public:
     ~CChromeTracer()
     {
         flush();
+
+        // Add an eof metadata event without a trailing comma to properly end
+        // the json file.
+        m_TraceFile
+            << "{\"ph\":\"M\",\"name\":\"clintercept_eof\",\"pid\":" << m_ProcessId
+            << ",\"tid\":0"
+            << "}\n"
+            << "]\n";
         m_TraceFile.close();
     }
 
@@ -38,13 +46,13 @@ public:
             bool addFlowEvents );
 
     void addProcessMetadata(
-            uint64_t threadId,
             const std::string& processName )
     {
+        std::lock_guard<std::mutex> lock(m_Mutex);
         m_TraceFile
-            << "{\"ph\":\"M\", \"name\":\"process_name\", \"pid\":" << m_ProcessId
-            << ", \"tid\":" << threadId
-            << ", \"args\":{\"name\":\"" << processName
+            << "{\"ph\":\"M\",\"name\":\"process_name\",\"pid\":" << m_ProcessId
+            << ",\"tid\":0"
+            << ",\"args\":{\"name\":\"" << processName
             << "\"}},\n";
     }
 
@@ -52,26 +60,27 @@ public:
             uint64_t threadId,
             uint32_t threadNumber )
     {
+        std::lock_guard<std::mutex> lock(m_Mutex);
         m_TraceFile
-            << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << m_ProcessId
-            << ", \"tid\":" << threadId
-            << ", \"args\":{\"name\":\"Host Thread " << threadId
+            << "{\"ph\":\"M\",\"name\":\"thread_name\",\"pid\":" << m_ProcessId
+            << ",\"tid\":" << threadId
+            << ",\"args\":{\"name\":\"Host Thread " << threadId
             << "\"}},\n";
         m_TraceFile
-            << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << m_ProcessId
-            << ", \"tid\":" << threadId
-            << ", \"args\":{\"sort_index\":\"" << threadNumber + 10000
+            << "{\"ph\":\"M\",\"name\":\"thread_sort_index\",\"pid\":" << m_ProcessId
+            << ",\"tid\":" << threadId
+            << ",\"args\":{\"sort_index\":\"" << threadNumber + 10000
             << "\"}},\n";
     }
 
     void addStartTimeMetadata(
-            uint64_t threadId,
             uint64_t startTime )
     {
+        std::lock_guard<std::mutex> lock(m_Mutex);
         m_TraceFile
-            << "{\"ph\":\"M\", \"name\":\"clintercept_start_time\", \"pid\":" << m_ProcessId
-            << ", \"tid\":" << threadId
-            << ", \"args\":{\"start_time\":" << startTime
+            << "{\"ph\":\"M\",\"name\":\"clintercept_start_time\",\"pid\":" << m_ProcessId
+            << ",\"tid\":0"
+            << ",\"args\":{\"start_time\":" << startTime
             << "}},\n";
     }
 
@@ -79,15 +88,16 @@ public:
             uint32_t queueNumber,
             const std::string& queueName )
     {
+        std::lock_guard<std::mutex> lock(m_Mutex);
         m_TraceFile
-            << "{\"ph\":\"M\", \"name\":\"thread_name\", \"pid\":" << m_ProcessId
-            << ", \"tid\":" << queueNumber
-            << ".1, \"args\":{\"name\":\"" << queueName
+            << "{\"ph\":\"M\",\"name\":\"thread_name\",\"pid\":" << m_ProcessId
+            << ",\"tid\":" << queueNumber
+            << ".1,\"args\":{\"name\":\"" << queueName
             << "\"}},\n";
         m_TraceFile
-            << "{\"ph\":\"M\", \"name\":\"thread_sort_index\", \"pid\":" << m_ProcessId
-            << ", \"tid\":" << queueNumber
-            << ".1, \"args\":{\"sort_index\":\"" << queueNumber
+            << "{\"ph\":\"M\",\"name\":\"thread_sort_index\",\"pid\":" << m_ProcessId
+            << ",\"tid\":" << queueNumber
+            << ".1,\"args\":{\"sort_index\":\"" << queueNumber
             << "\"}},\n";
     }
 
@@ -352,12 +362,6 @@ public:
 
             checkFlushRecords();
         }
-    }
-
-    // temp
-    std::ostream& write( const char* str, std::streamsize count )
-    {
-        return m_TraceFile.write(str, count);
     }
 
     std::ostream& flush()

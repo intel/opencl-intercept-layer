@@ -442,9 +442,8 @@ bool CLIntercept::init()
         bool        addFlowEvents = m_Config.ChromeFlowEvents;
         m_ChromeTrace.init( fileName, processId, bufferSize, addFlowEvents );
 
-        uint64_t    threadId = OS().GetThreadID();
         std::string processName = OS().GetProcessName();
-        m_ChromeTrace.addProcessMetadata( threadId, processName );
+        m_ChromeTrace.addProcessMetadata( processName );
     }
 
     std::string name = "";
@@ -558,6 +557,12 @@ bool CLIntercept::init()
             "/usr/lib/" CLINTERCEPT_LIBRARY_ARCHITECTURE "/libOpenCL.so.1",
             "/usr/lib/" CLINTERCEPT_LIBRARY_ARCHITECTURE "/libOpenCL.so",
 #endif
+#ifdef CLINTERCEPT_LIBRARY_DIR
+            "/usr/" CLINTERCEPT_LIBRARY_DIR "/libOpenCL.so.1",
+            "/usr/" CLINTERCEPT_LIBRARY_DIR "/libOpenCL.so",
+            "/usr/local/" CLINTERCEPT_LIBRARY_DIR "/libOpenCL.so.1",
+            "/usr/local/" CLINTERCEPT_LIBRARY_DIR "/libOpenCL.so",
+#endif
             "/usr/lib/libOpenCL.so.1",
             "/usr/lib/libOpenCL.so",
             "/usr/local/lib/libOpenCL.so.1",
@@ -633,12 +638,10 @@ bool CLIntercept::init()
     if( m_Config.ChromeCallLogging ||
         m_Config.ChromePerformanceTiming )
     {
-        uint64_t    threadId = OS().GetThreadID();
-
         using us = std::chrono::microseconds;
         uint64_t    usStartTime =
             std::chrono::duration_cast<us>(m_StartTime.time_since_epoch()).count();
-        m_ChromeTrace.addStartTimeMetadata( threadId, usStartTime );
+        m_ChromeTrace.addStartTimeMetadata( usStartTime );
     }
 
     log( "... loading complete.\n" );
@@ -1137,7 +1140,8 @@ void CLIntercept::callLoggingInfo(
 void CLIntercept::callLoggingExit(
     const char* functionName,
     const cl_int errorCode,
-    const cl_event* event )
+    const cl_event* event,
+    const cl_sync_point_khr* syncPoint )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -1151,6 +1155,11 @@ void CLIntercept::callLoggingExit(
         CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " created event = %p", *event );
         str += m_StringBuffer;
     }
+    if( syncPoint )
+    {
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " is sync point = %u", *syncPoint );
+        str += m_StringBuffer;
+    }
 
     str += " -> ";
     str += m_EnumNameMap.name( errorCode );
@@ -1162,6 +1171,7 @@ void CLIntercept::callLoggingExit(
     const char* functionName,
     const cl_int errorCode,
     const cl_event* event,
+    const cl_sync_point_khr* syncPoint,
     const char* formatStr,
     ... )
 {
@@ -1178,6 +1188,11 @@ void CLIntercept::callLoggingExit(
     if( event )
     {
         CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " created event = %p", *event );
+        str += m_StringBuffer;
+    }
+    if( syncPoint )
+    {
+        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " is sync point = %u", *syncPoint );
         str += m_StringBuffer;
     }
 
@@ -2076,24 +2091,23 @@ void CLIntercept::getDevicePartitionPropertiesString(
     }
 }
 
-
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::getEventListString(
-    cl_uint numEvents,
-    const cl_event* eventList,
+void CLIntercept::getSyncPointListString(
+    cl_uint numSyncPoints,
+    const cl_sync_point_khr* syncPointList,
     std::string& str ) const
 {
     {
         std::ostringstream  ss;
         ss << "( size = ";
-        ss << numEvents;
+        ss << numSyncPoints;
         ss << " )[ ";
         str += ss.str();
     }
-    if( eventList )
+    if( syncPointList )
     {
-        for( cl_uint i = 0; i < numEvents; i++ )
+        for( cl_uint i = 0; i < numSyncPoints; i++ )
         {
             if( i > 0 )
             {
@@ -2101,46 +2115,13 @@ void CLIntercept::getEventListString(
             }
             {
                 char    s[256];
-                CLI_SPRINTF( s, 256, "%p", eventList[i] );
+                CLI_SPRINTF( s, 256, "%u", syncPointList[i] );
                 str += s;
             }
         }
     }
     str += " ]";
 }
-
-///////////////////////////////////////////////////////////////////////////////
-//
-void CLIntercept::getSemaphoreListString(
-    cl_uint numSemaphores,
-    const cl_semaphore_khr* semaphoreList,
-    std::string& str ) const
-{
-    {
-        std::ostringstream  ss;
-        ss << "( size = ";
-        ss << numSemaphores;
-        ss << " )[ ";
-        str += ss.str();
-    }
-    if( semaphoreList )
-    {
-        for( cl_uint i = 0; i < numSemaphores; i++ )
-        {
-            if( i > 0 )
-            {
-                str += ", ";
-            }
-            {
-                char    s[256];
-                CLI_SPRINTF( s, 256, "%p", semaphoreList[i] );
-                str += s;
-            }
-        }
-    }
-    str += " ]";
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -2386,15 +2367,15 @@ void CLIntercept::getMemPropertiesString(
 
             switch( property )
             {
-            case CL_DEVICE_HANDLE_LIST_KHR:
+            case CL_MEM_DEVICE_HANDLE_LIST_KHR:
                 {
                     ++properties;
                     str += "{ ";
                     while( true )
                     {
-                        if( *properties == CL_DEVICE_HANDLE_LIST_END_KHR )
+                        if( *properties == CL_MEM_DEVICE_HANDLE_LIST_END_KHR )
                         {
-                            str += "CL_DEVICE_HANDLE_LIST_END_KHR";
+                            str += "CL_MEM_DEVICE_HANDLE_LIST_END_KHR";
                             properties++;
                             break;
                         }
@@ -2499,15 +2480,16 @@ void CLIntercept::getSemaphorePropertiesString(
                     properties += 2;
                 }
                 break;
-            case CL_DEVICE_HANDLE_LIST_KHR:
+            case CL_SEMAPHORE_DEVICE_HANDLE_LIST_KHR:
+            case CL_MEM_DEVICE_HANDLE_LIST_KHR: // for older implementations, with shared enums.
                 {
                     ++properties;
                     str += "{ ";
                     while( true )
                     {
-                        if( *properties == CL_DEVICE_HANDLE_LIST_END_KHR )
+                        if( *properties == CL_SEMAPHORE_DEVICE_HANDLE_LIST_END_KHR )
                         {
-                            str += "CL_DEVICE_HANDLE_LIST_END_KHR";
+                            str += "CL_SEMAPHORE_DEVICE_HANDLE_LIST_END_KHR";
                             properties++;
                             break;
                         }
@@ -2526,6 +2508,28 @@ void CLIntercept::getSemaphorePropertiesString(
                                 pDevice,
                                 deviceInfo );
                             str += deviceInfo;
+                            str += ", ";
+                        }
+                    }
+                    str += " }";
+                }
+                break;
+            case CL_SEMAPHORE_EXPORT_HANDLE_TYPES_KHR:
+                {
+                    ++properties;
+                    str += "{ ";
+                    while( true )
+                    {
+                        if( *properties == CL_SEMAPHORE_EXPORT_HANDLE_TYPES_LIST_END_KHR )
+                        {
+                            str += "CL_SEMAPHORE_EXPORT_HANDLE_TYPES_LIST_END_KHR";
+                            properties++;
+                            break;
+                        }
+                        else
+                        {
+                            auto pt = (const cl_external_semaphore_handle_type_khr *)properties++;
+                            str += enumName().name( pt[0] );
                             str += ", ";
                         }
                     }
@@ -2601,6 +2605,13 @@ void CLIntercept::getCommandBufferPropertiesString(
                     properties += 2;
                 }
                 break;
+            case CL_COMMAND_BUFFER_MUTABLE_DISPATCH_ASSERTS_KHR:
+                {
+                    auto pt = (const cl_mutable_dispatch_asserts_khr*)( properties + 1 );
+                    str += enumName().name_mutable_dispatch_asserts( pt[0] );
+                    properties += 2;
+                }
+                break;
             default:
                 {
                     CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
@@ -2628,34 +2639,34 @@ void CLIntercept::getCommandBufferPropertiesString(
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::getCommandBufferMutableConfigString(
-    const cl_mutable_base_config_khr* mutable_config,
+    cl_uint num_configs,
+    const cl_command_buffer_update_type_khr* config_types,
+    const void** configs,
     std::string& str ) const
 {
     str = "";
 
-    if( mutable_config )
+    if( num_configs > 0 && config_types != nullptr && configs != nullptr )
     {
         char s[256];
-        CLI_SPRINTF(s, 256, "type = %s (%u), next = %p, num_mutable_dispatch = %u",
-            enumName().name_command_buffer_structure_type(mutable_config->type).c_str(),
-            mutable_config->type,
-            mutable_config->next,
-            mutable_config->num_mutable_dispatch);
-        str += s;
 
-        for( cl_uint i = 0; i < mutable_config->num_mutable_dispatch; i++ )
+        for( cl_uint i = 0; i < num_configs; i++ )
         {
-            const cl_mutable_dispatch_config_khr* dispatchConfig =
-                &mutable_config->mutable_dispatch_list[i];
-            CLI_SPRINTF(s, 256, "\n  dispatch config %u: type = %s (%u), next = %p, command = %p:",
-                i,
-                enumName().name_command_buffer_structure_type(dispatchConfig->type).c_str(),
-                dispatchConfig->type,
-                dispatchConfig->next,
-                dispatchConfig->command);
-            str += s;
-            if( dispatchConfig->type == CL_STRUCTURE_TYPE_MUTABLE_DISPATCH_CONFIG_KHR )
+            if( configs[i] == nullptr )
             {
+                CLI_SPRINTF(s, 256, "\n  config %u: NULL!", i );
+                str += s;
+            }
+            else if( config_types[i] == CL_STRUCTURE_TYPE_MUTABLE_DISPATCH_CONFIG_KHR )
+            {
+                auto dispatchConfig = (const cl_mutable_dispatch_config_khr*)configs[i];
+                CLI_SPRINTF(s, 256, "\n  config %u: type = %s (%u), command = %p:",
+                    i,
+                    enumName().name_command_buffer_update_type(config_types[i]).c_str(),
+                    config_types[i],
+                    dispatchConfig->command);
+                str += s;
+
                 CLI_SPRINTF(s, 256, "\n    num_args = %u, num_svm_args = %u, num_exec_infos = %u, work_dim = %u",
                     dispatchConfig->num_args,
                     dispatchConfig->num_svm_args,
@@ -2791,11 +2802,14 @@ void CLIntercept::getCommandBufferMutableConfigString(
                     }
                 }
             }
+            else
+            {
+                CLI_SPRINTF(s, 256, "\n  config %u: unknown type %u!",
+                    i,
+                    config_types[i] );
+                str += s;
+            }
         }
-    }
-    else
-    {
-        str = "NULL";
     }
 }
 
@@ -7405,13 +7419,18 @@ void CLIntercept::setKernelArgSVMPointer(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
+    if( m_SVMAllocInfoMap.empty() )
+    {
+        return;
+    }
+
     // Unlike clSetKernelArg(), which must pass a cl_mem, clSetKernelArgSVMPointer
     // can pass a pointer to the base of a SVM allocation or anywhere inside of
     // an SVM allocation.  As a result, we need to search the SVM map to find the
     // base address and size of the SVM allocation.
 
     CSVMAllocInfoMap::iterator iter = m_SVMAllocInfoMap.lower_bound( arg );
-    if( iter->first != arg && iter != m_SVMAllocInfoMap.begin() )
+    if( iter == m_SVMAllocInfoMap.end() || (iter->first != arg && iter != m_SVMAllocInfoMap.begin()) )
     {
         // Go to the previous iterator.
         --iter;
@@ -7435,8 +7454,13 @@ void CLIntercept::setKernelArgUSMPointer(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
+    if( m_USMAllocInfoMap.empty() )
+    {
+        return;
+    }
+
     CUSMAllocInfoMap::iterator iter = m_USMAllocInfoMap.lower_bound( arg );
-    if( iter->first != arg && iter != m_USMAllocInfoMap.begin() )
+    if( iter == m_USMAllocInfoMap.end() || (iter->first != arg && iter != m_USMAllocInfoMap.begin()) )
     {
         // Go to the previous iterator.
         --iter;
@@ -7696,10 +7720,13 @@ void CLIntercept::dumpBuffersForKernel(
     while( i != kernelArgMemMap.end() )
     {
         CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
+
         cl_uint arg_index = (*i).first;
         void*   allocation = (void*)(*i).second;
         cl_mem  memobj = (cl_mem)allocation;
+
         ++i;
+
         if( ( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() ) ||
             ( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() ) ||
             ( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() ) )
@@ -8044,6 +8071,334 @@ void CLIntercept::dumpImagesForKernel(
                             transferBuf.data(),
                             size );
                     }
+                }
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::injectBuffersForKernel(
+    const uint64_t enqueueCounter,
+    cl_kernel kernel,
+    cl_command_queue command_queue )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    cl_platform_id  platform = getPlatform(kernel);
+
+    std::vector<char>   transferBuf;
+    std::string prefix;
+
+    OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, prefix );
+    prefix += "/Inject/";
+
+    CArgMemMap& kernelArgMemMap = m_KernelArgMemMap[ kernel ];
+    CArgMemMap::iterator  i = kernelArgMemMap.begin();
+    while( i != kernelArgMemMap.end() )
+    {
+        CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
+
+        cl_uint arg_index = (*i).first;
+        void*   allocation = (void*)(*i).second;
+        cl_mem  memobj = (cl_mem)allocation;
+
+        ++i;
+
+        if( ( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() ) ||
+            ( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() ) ||
+            ( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() ) )
+        {
+            unsigned int        number = m_MemAllocNumberMap[ memobj ];
+
+            std::string fileName( prefix );
+            char    tmpStr[ MAX_PATH ];
+
+            // Add the enqueue count to file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
+                    (unsigned int)enqueueCounter );
+
+                fileName += "Enqueue_";
+                fileName += tmpStr;
+            }
+
+            // Add the kernel name to the filename
+            {
+                fileName += "_Kernel_";
+                fileName += getShortKernelName(kernel);
+            }
+
+            // Add the arg number to the file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%u", arg_index );
+
+                fileName += "_Arg_";
+                fileName += tmpStr;
+            }
+
+            // Add the buffer number to the file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", number );
+
+                fileName += "_Buffer_";
+                fileName += tmpStr;
+            }
+
+            // Add extension to file name
+            {
+                fileName += ".bin";
+            }
+
+            std::ifstream is;
+            is.open( fileName.c_str(), std::ios::in | std::ios::binary );
+            if( is.good() )
+            {
+                log("Injecting buffer file: " + fileName + "\n");
+
+                size_t  fileSize = 0;
+                is.seekg( 0, std::ios::end );
+                fileSize = (size_t)is.tellg();
+                is.seekg( 0, std::ios::beg );
+
+                if( m_USMAllocInfoMap.find( allocation ) != m_USMAllocInfoMap.end() )
+                {
+                    size_t size = m_USMAllocInfoMap[ allocation ];
+                    if( size < fileSize )
+                    {
+                        logf("Skipping injection: USM alloc size (%zu bytes) is less than file size (%zu bytes)!\n",
+                            size, fileSize );
+                    }
+                    else
+                    {
+                        if( dispatchX(platform).clEnqueueMemcpyINTEL == NULL )
+                        {
+                            getExtensionFunctionAddress(
+                                platform,
+                                "clEnqueueMemcpyINTEL" );
+                        }
+                        if( transferBuf.size() < size )
+                        {
+                            transferBuf.resize(size);
+                        }
+
+                        const auto& dispatchX = this->dispatchX(platform);
+                        if( dispatchX.clEnqueueMemcpyINTEL &&
+                            transferBuf.size() >= size )
+                        {
+                            is.read( transferBuf.data(), size );
+
+                            dispatchX.clEnqueueMemcpyINTEL(
+                                command_queue,
+                                CL_TRUE,
+                                allocation,
+                                transferBuf.data(),
+                                size,
+                                0,
+                                NULL,
+                                NULL );
+                        }
+                    }
+                }
+                else if( m_SVMAllocInfoMap.find( allocation ) != m_SVMAllocInfoMap.end() )
+                {
+                    size_t size = m_SVMAllocInfoMap[ allocation ];
+                    if( size < fileSize )
+                    {
+                        logf("Skipping injection: SVM alloc size (%zu bytes) is less than file size (%zu bytes)!\n",
+                            size, fileSize );
+                    }
+                    else
+                    {
+                        cl_int  error = dispatch().clEnqueueSVMMap(
+                            command_queue,
+                            CL_TRUE,
+                            CL_MAP_WRITE_INVALIDATE_REGION,
+                            allocation,
+                            size,
+                            0,
+                            NULL,
+                            NULL );
+                        if( error == CL_SUCCESS )
+                        {
+                            is.read( (char*)allocation, size );
+
+                            dispatch().clEnqueueSVMUnmap(
+                                command_queue,
+                                allocation,
+                                0,
+                                NULL,
+                                NULL );
+                        }
+                    }
+                }
+                else if( m_BufferInfoMap.find( memobj ) != m_BufferInfoMap.end() )
+                {
+                    size_t size = m_BufferInfoMap[ memobj ];
+                    if( size < fileSize )
+                    {
+                        logf("Skipping injection: buffer size (%zu bytes) is less than file size (%zu bytes)!\n",
+                            size, fileSize );
+                    }
+                    else
+                    {
+                        cl_int  error = CL_SUCCESS;
+                        void*   ptr = dispatch().clEnqueueMapBuffer(
+                            command_queue,
+                            memobj,
+                            CL_TRUE,
+                            CL_MAP_WRITE_INVALIDATE_REGION,
+                            0,
+                            size,
+                            0,
+                            NULL,
+                            NULL,
+                            &error );
+                        if( error == CL_SUCCESS )
+                        {
+                            is.read( (char*)ptr, size );
+
+                            dispatch().clEnqueueUnmapMemObject(
+                                command_queue,
+                                memobj,
+                                ptr,
+                                0,
+                                NULL,
+                                NULL );
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::injectImagesForKernel(
+    const uint64_t enqueueCounter,
+    cl_kernel kernel,
+    cl_command_queue command_queue )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    std::vector<char>   transferBuf;
+    std::string prefix;
+
+    OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, prefix );
+    prefix += "/Inject/";
+
+    CArgMemMap& kernelArgMemMap = m_KernelArgMemMap[ kernel ];
+    CArgMemMap::iterator  i = kernelArgMemMap.begin();
+    while( i != kernelArgMemMap.end() )
+    {
+        CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
+
+        cl_uint arg_index = (*i).first;
+        cl_mem  memobj = (cl_mem)(*i).second;
+
+        ++i;
+
+        if( m_ImageInfoMap.find( memobj ) != m_ImageInfoMap.end() )
+        {
+            const SImageInfo&   info = m_ImageInfoMap[ memobj ];
+            unsigned int        number = m_MemAllocNumberMap[ memobj ];
+
+            std::string fileName( prefix );
+            char    tmpStr[ MAX_PATH ];
+
+            // Add the enqueue count to file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u",
+                    (unsigned int)enqueueCounter );
+
+                fileName += "Enqueue_";
+                fileName += tmpStr;
+            }
+
+            // Add the kernel name to the filename
+            {
+                fileName += "_Kernel_";
+                fileName += getShortKernelName(kernel);
+            }
+
+            // Add the arg number to the file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%u", arg_index );
+
+                fileName += "_Arg_";
+                fileName += tmpStr;
+            }
+
+            // Add the image number to the file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "%04u", number );
+
+                fileName += "_Image_";
+                fileName += tmpStr;
+            }
+
+            // Add the image dimensions to the file name
+            {
+                CLI_SPRINTF( tmpStr, MAX_PATH, "_%zux%zux%zu_%zubpp",
+                    info.Region[0],
+                    info.Region[1],
+                    info.Region[2],
+                    info.ElementSize * 8 );
+
+                fileName += tmpStr;
+            }
+
+            // Add extension to file name
+            {
+                fileName += ".raw";
+            }
+
+            std::ifstream is;
+            is.open( fileName.c_str(), std::ios::in | std::ios::binary );
+            if( is.good() )
+            {
+                log("Injecting image file: " + fileName + "\n");
+
+                size_t  fileSize = 0;
+                is.seekg( 0, std::ios::end );
+                fileSize = (size_t)is.tellg();
+                is.seekg( 0, std::ios::beg );
+
+                size_t  size =
+                    info.Region[0] *
+                    info.Region[1] *
+                    info.Region[2] *
+                    info.ElementSize;
+
+                if( size != fileSize )
+                {
+                    logf("Skipping injection: image size (%zu bytes) is not equal to file size (%zu bytes)!\n",
+                        size, fileSize );
+                }
+                else if( transferBuf.size() < size )
+                {
+                    transferBuf.resize(size);
+                }
+
+                if( transferBuf.size() >= size )
+                {
+                    is.read( (char*)transferBuf.data(), size );
+
+                    size_t  origin[3] = { 0, 0, 0 };
+                    dispatch().clEnqueueWriteImage(
+                        command_queue,
+                        memobj,
+                        CL_TRUE,
+                        origin,
+                        info.Region,
+                        0,
+                        0,
+                        transferBuf.data(),
+                        0,
+                        NULL,
+                        NULL );
                 }
             }
         }
@@ -12816,6 +13171,9 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clRetainAcceleratorINTEL );
     CHECK_RETURN_EXTENSION_FUNCTION( clReleaseAcceleratorINTEL );
 
+    // cl_intel_create_buffer_with_properties
+    CHECK_RETURN_EXTENSION_FUNCTION( clCreateBufferWithPropertiesINTEL );
+
 #if defined(_WIN32)
     // cl_intel_dx9_media_sharing
     CHECK_RETURN_EXTENSION_FUNCTION( clGetDeviceIDsFromDX9INTEL );
@@ -14531,7 +14889,7 @@ cl_int CLIntercept::emulatedGetMemAllocInfoINTEL(
 
     SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
 
-    if( usmContextInfo.AllocMap.size() == 0 )
+    if( usmContextInfo.AllocMap.empty() )
     {
         // No pointers allocated?
         return CL_INVALID_MEM_OBJECT;   // TODO: new error code?
@@ -14539,7 +14897,7 @@ cl_int CLIntercept::emulatedGetMemAllocInfoINTEL(
 
     CUSMAllocMap::iterator iter = usmContextInfo.AllocMap.lower_bound( ptr );
 
-    if( iter->first != ptr )
+    if( iter == usmContextInfo.AllocMap.end() || iter->first != ptr )
     {
         if( iter == usmContextInfo.AllocMap.begin() )
         {

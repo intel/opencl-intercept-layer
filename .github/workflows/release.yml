@@ -23,7 +23,7 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
     - name: Create Build Directory
       run: cmake -E make_directory ./build
@@ -42,7 +42,7 @@ jobs:
       if: |
         startsWith(github.ref, 'refs/tags/') &&
         matrix.os == 'windows-latest'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
       with:
         draft: true
         files: |
@@ -52,7 +52,7 @@ jobs:
       if: |
         startsWith(github.ref, 'refs/tags/') &&
         matrix.os == 'ubuntu-latest'
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191 # v2.0.8
       with:
         draft: true
         files: |

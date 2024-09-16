@@ -134,6 +134,38 @@ Here are several ways to work around this issue:
 
 Note, for a "local install" the OpenCL Intercept Layer should be copied to the directory with the real Python executable, not to the "Scripts" directory with the different virtual environment Python executable.
 
+## My app runs but does not generate a report file.
+
+The most likely cause of this issue is an application that terminates atypically.
+The report file is generated when the OpenCL Intercept Layer unloads, which happens when the Windows DLL receives the `DLL_PROCESS_DETATCH` message, or when a registered destructor function is invoked.
+If the OpenCL Intercept Layer is not properly unloaded then the report file will never be generated.
+For example, destructor functions typically are not invoked if an application calls `quick_exit`, `_Exit`, or `abort`.
+
+A good method to generate a report file for an application that terminates atypically is to set the `ReportInterval` control.
+`ReportInterval` causes a report file to be generated at regular intervals, even if the OpenCL Intercept Layer never properly unloads, guaranteeing that a report file will be generated as long as the `ReportInterval` is reached.
+
+If the application runs deterministically, you can use `CallLoggingEnqueueCounter` to determine an appropriate value to set as the `ReportInterval`, by choosing a `ReportInterval` that is close to but smaller than the maximum enqueue counter.
+Otherwise, for applications that run non-deterministically, try to choose a value that minimizes data loss (which may occur if `ReportInterval` is too large) and minimizes overhead (which may occur if `ReportInterval` is too small).
+A value around 1000 is usually a reasonable place to start.
+
+## My app generates a log or report file but it is empty or missing data.
+
+The most likely cause of this issue is an application that loads and unloads the OpenCL Intercept Layer multiple times.
+When this occurs, the report file will only contain data collected between the last time the OpenCL Intercept Layer was loaded and unloaded, which could be no data at all.
+
+To determine if this issue is occurring, and to work around the issue if it is occurring, set the `AppendFiles` control.
+`AppendFiles` causes logs and reports to append to an existing file instead of overwriting the file each time the OpenCL Intercept Layer is unloaded, preserving log or report data even when the OpenCL Intercept Layer is loaded and unloaded multiple times.
+
+## How can I debug or analyze multiple instances of an application?
+
+By default, the OpenCL Intercept Layer dumps logs and other files to a dump directory based on the process name.
+This works well for single instances of an application, but when there are multiple instances of an application, they will dump to the same directory, overwriting data or otherwise making complicating analysis.
+
+The easiest way to debug or analyze multiple instances of an application is to set the `AppendPid` controls, which appends the process ID to the dump directory.
+This causes each instance of the application to dump to a unique directory.
+
+Some other setups may choose set a unique `DumpDir` for each process instance via environment variables, although setting `AppendPid` is usually sufficient and a much simpler solution.
+
 ## How do I submit a bug?
 
 Please file a GitHub issue to report a bug.

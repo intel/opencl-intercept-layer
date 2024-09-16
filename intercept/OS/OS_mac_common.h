@@ -82,9 +82,6 @@ public:
     void    GetDumpDirectoryNameWithoutPid(
                 const std::string& subDir,
                 std::string& directoryName ) const;
-    void    GetDumpDirectoryNameWithoutProcessName(
-                const std::string& subDir,
-                std::string& directoryName) const;
     void    MakeDumpDirectories(
                 const std::string& fileName ) const;
 
@@ -210,19 +207,6 @@ inline void Services_Common::GetDumpDirectoryName(
     {
        directoryName += ".";
        directoryName += std::to_string(GetProcessID());
-    }
-}
-
-inline void Services_Common::GetDumpDirectoryNameWithoutProcessName(
-    const std::string& subDir,
-    std::string& directoryName) const
-{
-    // Get the home directory and add our directory name.
-    {
-        directoryName = getenv("HOME");
-        directoryName += "/";
-        directoryName += subDir;
-        directoryName += "/";
     }
 }
 

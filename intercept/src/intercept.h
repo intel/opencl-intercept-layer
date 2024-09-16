@@ -82,11 +82,13 @@ public:
     void    callLoggingExit(
                 const char* functionName,
                 const cl_int errorCode,
-                const cl_event* event );
+                const cl_event* event,
+                const cl_sync_point_khr* syncPoint );
     void    callLoggingExit(
                 const char* functionName,
                 const cl_int errorCode,
                 const cl_event* event,
+                const cl_sync_point_khr* syncPoint,
                 const char* formatStr,
                 ... );
 
@@ -144,13 +146,14 @@ public:
     void    getDevicePartitionPropertiesString(
                 const cl_device_partition_property* properties,
                 std::string& str ) const;
-    void    getEventListString(
-                cl_uint num_events,
-                const cl_event* event_list,
+    template< class T >
+    void    getObjectListString(
+                cl_uint num_objects,
+                const T* object_list,
                 std::string& str ) const;
-    void    getSemaphoreListString(
-                cl_uint num_semaphores,
-                const cl_semaphore_khr* semaphore_list,
+    void    getSyncPointListString(
+                cl_uint num_sync_points,
+                const cl_sync_point_khr* sync_point_list,
                 std::string& str ) const;
     void    getContextPropertiesString(
                 const cl_context_properties* properties,
@@ -171,7 +174,9 @@ public:
                 const cl_command_buffer_properties_khr* properties,
                 std::string& str ) const;
     void    getCommandBufferMutableConfigString(
-                const cl_mutable_base_config_khr* mutable_config,
+                cl_uint num_configs,
+                const cl_command_buffer_update_type_khr* config_types,
+                const void** configs,
                 std::string& str ) const;
     void    getCreateKernelsInProgramRetString(
                 cl_int retVal,
@@ -562,6 +567,14 @@ public:
                 const std::string& name,
                 const bool forCaptureReplay,
                 const bool forInspection,
+                const uint64_t enqueueCounter,
+                cl_kernel kernel,
+                cl_command_queue command_queue );
+    void    injectBuffersForKernel(
+                const uint64_t enqueueCounter,
+                cl_kernel kernel,
+                cl_command_queue command_queue );
+    void    injectImagesForKernel(
                 const uint64_t enqueueCounter,
                 cl_kernel kernel,
                 cl_command_queue command_queue );
@@ -1434,6 +1447,33 @@ private:
 ///////////////////////////////////////////////////////////////////////////////
 //
 template< class T >
+void CLIntercept::getObjectListString(
+    cl_uint numObjects,
+    const T* objectList,
+    std::string& str ) const
+{
+    char    s[256];
+    CLI_SPRINTF(s, 256, "( size = %u )[ ", numObjects);
+    str += s;
+
+    if( objectList )
+    {
+        for( cl_uint i = 0; i < numObjects; i++ )
+        {
+            if( i > 0 )
+            {
+                str += ", ";
+            }
+            CLI_SPRINTF( s, 256, "%p", objectList[i] );
+            str += s;
+        }
+    }
+    str += " ]";
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+template< class T >
 cl_int CLIntercept::writeVectorToMemory(
     size_t param_value_size,
     const std::vector<T>& param,
@@ -1909,6 +1949,22 @@ inline uint64_t CLIntercept::getEnqueueCounter() const
 
 inline uint64_t CLIntercept::incrementEnqueueCounter()
 {
+    if( m_Config.ExitOnEnqueueCount != 0 )
+    {
+        uint64_t enqueueCounter = m_EnqueueCounter.load();
+        if( enqueueCounter >= m_Config.ExitOnEnqueueCount )
+        {
+            // Note: we need to release the mutex before calling exit:
+            {
+                std::lock_guard<std::mutex> lock(m_Mutex);
+                logf("Exit enqueue counter reached (%" PRIu64 " >= %" PRIu64 "): exiting the application.\n",
+                    enqueueCounter,
+                    m_Config.ExitOnEnqueueCount);
+            }
+            exit(0);
+        }
+    }
+
     uint64_t reportInterval = m_Config.ReportInterval;
     if( reportInterval != 0 )
     {
@@ -2010,6 +2066,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             __FUNCTION__,                                                   \
             errorCode,                                                      \
             NULL,                                                           \
+            NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
     if( pIntercept->config().ChromeCallLogging )                            \
@@ -2031,6 +2088,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             __FUNCTION__,                                                   \
             errorCode,                                                      \
             event,                                                          \
+            NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
     if( pIntercept->config().ChromeCallLogging )                            \
@@ -2052,6 +2110,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             __FUNCTION__,                                                   \
             errorCode,                                                      \
             _event,                                                         \
+            NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
     if( pIntercept->config().ChromeCallLogging )                            \
@@ -2059,6 +2118,28 @@ inline CObjectTracker& CLIntercept::objectTracker()
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
             hostTag,                                                        \
+            true,                                                           \
+            enqueueCounter,                                                 \
+            cpuStart,                                                       \
+            cpuEnd );                                                       \
+    }                                                                       \
+    ITT_CALL_LOGGING_EXIT();
+
+#define CALL_LOGGING_EXIT_SYNC_POINT(errorCode, sync_point, ...)            \
+    if( pIntercept->config().CallLogging )                                  \
+    {                                                                       \
+        pIntercept->callLoggingExit(                                        \
+            __FUNCTION__,                                                   \
+            errorCode,                                                      \
+            NULL,                                                           \
+            sync_point,                                                     \
+            ##__VA_ARGS__ );                                                \
+    }                                                                       \
+    if( pIntercept->config().ChromeCallLogging )                            \
+    {                                                                       \
+        pIntercept->chromeCallLoggingExit(                                  \
+            __FUNCTION__,                                                   \
+            "",                                                             \
             true,                                                           \
             enqueueCounter,                                                 \
             cpuStart,                                                       \
@@ -2308,6 +2389,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().DumpBuffersBeforeUnmap ||                    \
           pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue  ||                  \
+          pIntercept->config().InjectBuffers ||                             \
+          pIntercept->config().InjectImages ||                              \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->addBuffer( _buffer );                                   \
@@ -2331,6 +2414,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
           pIntercept->config().DumpImagesBeforeEnqueue ||                   \
           pIntercept->config().DumpImagesAfterEnqueue ||                    \
+          pIntercept->config().InjectBuffers ||                             \
+          pIntercept->config().InjectImages ||                              \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->checkRemoveMemObj( _memobj );                           \
@@ -2356,6 +2441,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     if( svmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().InjectBuffers ||                             \
+          pIntercept->config().InjectImages ||                              \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->addSVMAllocation( svmPtr, size );                       \
@@ -2365,6 +2452,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     if( svmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().InjectBuffers ||                             \
+          pIntercept->config().InjectImages ||                              \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->removeSVMAllocation( svmPtr );                          \
@@ -2374,6 +2463,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     if( usmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().InjectBuffers ||                             \
+          pIntercept->config().InjectImages ||                              \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->addUSMAllocation( usmPtr, size );                       \
@@ -2383,6 +2474,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
     if( usmPtr &&                                                           \
         ( pIntercept->config().DumpBuffersBeforeEnqueue ||                  \
           pIntercept->config().DumpBuffersAfterEnqueue ||                   \
+          pIntercept->config().InjectBuffers ||                             \
+          pIntercept->config().InjectImages ||                              \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         pIntercept->removeUSMAllocation( usmPtr );                          \
@@ -2412,6 +2505,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
         pIntercept->config().DumpBuffersAfterEnqueue ||                     \
         pIntercept->config().DumpImagesBeforeEnqueue ||                     \
         pIntercept->config().DumpImagesAfterEnqueue ||                      \
+        pIntercept->config().InjectBuffers ||                               \
+        pIntercept->config().InjectImages ||                                \
         pIntercept->config().CaptureReplay )                                \
     {                                                                       \
         pIntercept->setKernelArg( kernel, arg_index, arg_value, arg_size ); \
@@ -2420,6 +2515,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 #define SET_KERNEL_ARG_SVM_POINTER( kernel, arg_index, arg_value )          \
     if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
         pIntercept->config().DumpBuffersAfterEnqueue ||                     \
+        pIntercept->config().InjectBuffers ||                               \
+        pIntercept->config().InjectImages ||                                \
         pIntercept->config().CaptureReplay )                                \
     {                                                                       \
         pIntercept->setKernelArgSVMPointer( kernel, arg_index, arg_value ); \
@@ -2428,6 +2525,8 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
 #define SET_KERNEL_ARG_USM_POINTER( kernel, arg_index, arg_value )          \
     if( pIntercept->config().DumpBuffersBeforeEnqueue ||                    \
         pIntercept->config().DumpBuffersAfterEnqueue ||                     \
+        pIntercept->config().InjectBuffers ||                               \
+        pIntercept->config().InjectImages ||                                \
         pIntercept->config().CaptureReplay )                                \
     {                                                                       \
         pIntercept->setKernelArgUSMPointer( kernel, arg_index, arg_value ); \
@@ -2563,6 +2662,22 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().DevicePerfCounterEventBasedSampling ) )      \
     {                                                                       \
         pIntercept->removeMapPointer( _ptr );                               \
+    }
+
+#define INJECT_MEMORY_OBJECTS( kernel, command_queue )                      \
+    if( pIntercept->config().InjectBuffers )                                \
+    {                                                                       \
+        pIntercept->injectBuffersForKernel(                                 \
+            enqueueCounter,                                                 \
+            kernel,                                                         \
+            command_queue );                                                \
+    }                                                                       \
+    if( pIntercept->config().InjectImages )                                 \
+    {                                                                       \
+        pIntercept->injectImagesForKernel(                                  \
+            enqueueCounter,                                                 \
+            kernel,                                                         \
+            command_queue );                                                \
     }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3186,6 +3301,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
         pIntercept->config().DevicePerfCounterEventBasedSampling )          \
+        /* TODO: checkDevicePerformanceTimingEnqueueLimits? */              \
     {                                                                       \
         queuedTime = CLIntercept::clock::now();                             \
         if( pEvent == NULL )                                                \

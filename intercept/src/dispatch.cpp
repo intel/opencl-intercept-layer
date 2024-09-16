@@ -19,12 +19,31 @@ static std::string getFormattedEventWaitList(
     if( pIntercept->config().CallLogging && num_events_in_wait_list )
     {
         eventWaitListString += ", event_wait_list = ";
-        pIntercept->getEventListString(
+        pIntercept->getObjectListString(
             num_events_in_wait_list,
             event_wait_list,
             eventWaitListString );
     }
     return eventWaitListString;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+static std::string getFormattedSyncPointWaitList(
+    const CLIntercept* pIntercept,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list )
+{
+    std::string syncPointWaitListString;
+    if( pIntercept->config().CallLogging && num_sync_points_in_wait_list )
+    {
+        syncPointWaitListString += ", sync_point_wait_list = ";
+        pIntercept->getSyncPointListString(
+            num_sync_points_in_wait_list,
+            sync_point_wait_list,
+            syncPointWaitListString );
+    }
+    return syncPointWaitListString;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1046,6 +1065,68 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
         CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
         return retVal;
+    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_intel_create_buffer_with_properties
+// This function should stay in sync with clCreateBufferWithProperties, above.
+CL_API_ENTRY cl_mem CL_API_CALL clCreateBufferWithPropertiesINTEL(
+    cl_context context,
+    const cl_mem_properties_intel* properties,
+    cl_mem_flags flags,
+    size_t size,
+    void* host_ptr,
+    cl_int* errcode_ret )
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clCreateBufferWithPropertiesINTEL )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            std::string propsStr;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getMemPropertiesString(
+                    properties,
+                    propsStr );
+            }
+            CALL_LOGGING_ENTER( "context = %p, properties = [ %s ], flags = %s (%llX), size = %zu, host_ptr = %p",
+                context,
+                propsStr.c_str(),
+                pIntercept->enumName().name_mem_flags( flags ).c_str(),
+                flags,
+                size,
+                host_ptr );
+            INITIALIZE_BUFFER_CONTENTS_INIT( flags, size, host_ptr );
+            CHECK_ERROR_INIT( errcode_ret );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_mem  retVal = dispatchX.clCreateBufferWithPropertiesINTEL(
+                context,
+                properties,
+                flags,
+                size,
+                host_ptr,
+                errcode_ret );
+
+            HOST_PERFORMANCE_TIMING_END();
+            ADD_BUFFER( retVal );
+            INITIALIZE_BUFFER_CONTENTS_CLEANUP( flags, host_ptr );
+            DUMP_BUFFER_AFTER_CREATE( retVal, flags, host_ptr, size );
+            CHECK_ERROR( errcode_ret[0] );
+            ADD_OBJECT_ALLOCATION( retVal );
+            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+
+            return retVal;
+        }
     }
 
     NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
@@ -2932,7 +3013,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
         std::string eventList;
         if( pIntercept->config().CallLogging )
         {
-            pIntercept->getEventListString(
+            pIntercept->getObjectListString(
                 num_events,
                 event_list,
                 eventList );
@@ -4776,6 +4857,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
             local_work_size );
         DUMP_BUFFERS_BEFORE_ENQUEUE( kernel, command_queue );
         DUMP_IMAGES_BEFORE_ENQUEUE( kernel, command_queue );
+        INJECT_MEMORY_OBJECTS( kernel, command_queue );
         CHECK_AUBCAPTURE_START_KERNEL(
             kernel,
             work_dim,
@@ -5074,16 +5156,13 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWaitForEvents)(
         if( pIntercept->config().NullEnqueue == false )
         {
             std::string eventWaitListString;
-            if( pIntercept->config().CallLogging &&
-                num_events )
+            if( pIntercept->config().CallLogging && num_events )
             {
-                std::string eventString;
-                pIntercept->getEventListString(
+                eventWaitListString += ", event_list = ";
+                pIntercept->getObjectListString(
                     num_events,
                     event_list,
-                    eventString );
-                eventWaitListString += ", event_list = ";
-                eventWaitListString += eventString;
+                    eventWaitListString );
             }
             CALL_LOGGING_ENTER( "queue = %p%s",
                 command_queue,
@@ -5437,16 +5516,13 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueWaitSemaphoresKHR(
             if( pIntercept->config().NullEnqueue == false )
             {
                 std::string semaphoreString;
-                if( pIntercept->config().CallLogging &&
-                    num_sema_objects )
+                if( pIntercept->config().CallLogging && num_sema_objects )
                 {
-                    std::string str;
-                    pIntercept->getSemaphoreListString(
+                    semaphoreString += ", sema_objects = ";
+                    pIntercept->getObjectListString(
                         num_sema_objects,
                         sema_objects,
-                        str );
-                    semaphoreString += ", sema_objects = ";
-                    semaphoreString += str;
+                        semaphoreString );
                 }
                 CALL_LOGGING_ENTER( "queue = %p%s",
                     queue,
@@ -5508,16 +5584,13 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSignalSemaphoresKHR(
             if( pIntercept->config().NullEnqueue == false )
             {
                 std::string semaphoreString;
-                if( pIntercept->config().CallLogging &&
-                    num_sema_objects )
+                if( pIntercept->config().CallLogging && num_sema_objects )
                 {
-                    std::string str;
-                    pIntercept->getSemaphoreListString(
+                    semaphoreString += ", sema_objects = ";
+                    pIntercept->getObjectListString(
                         num_sema_objects,
                         sema_objects,
-                        str );
-                    semaphoreString += ", sema_objects = ";
-                    semaphoreString += str;
+                        semaphoreString );
                 }
                 CALL_LOGGING_ENTER( "queue = %p%s",
                     queue,
@@ -10351,21 +10424,26 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clCreateCommandBufferKHR(
 
     if( pIntercept )
     {
-        cl_command_queue queue = num_queues ? queues[0] : NULL;
+        cl_command_queue queue = num_queues && queues ? queues[0] : NULL;
         const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clCreateCommandBufferKHR )
         {
             GET_ENQUEUE_COUNTER();
 
+            std::string queueList;
             std::string propsStr;
             if( pIntercept->config().CallLogging )
             {
+                pIntercept->getObjectListString(
+                    num_queues,
+                    queues,
+                    queueList );
                 pIntercept->getCommandBufferPropertiesString(
                     properties,
                     propsStr );
             }
-            CALL_LOGGING_ENTER( "num_queues = %u, properties = [ %s ]",
-                num_queues,
+            CALL_LOGGING_ENTER( "queues = %s, properties = [ %s ]",
+                queueList.c_str(),
                 propsStr.c_str() );
             CHECK_ERROR_INIT( errcode_ret );
             HOST_PERFORMANCE_TIMING_START();
@@ -10534,13 +10612,21 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueCommandBufferKHR(
 
             if( pIntercept->config().NullEnqueue == false )
             {
-                const std::string eventWaitListString = getFormattedEventWaitList(
-                    pIntercept,
-                    num_events_in_wait_list,
-                    event_wait_list);
-                CALL_LOGGING_ENTER( "num_queues = %u, queues = %p, command_buffer = %p%s",
-                    num_queues,
-                    queues,
+                std::string queueList;
+                std::string eventWaitListString;
+                if( pIntercept->config().CallLogging )
+                {
+                    pIntercept->getObjectListString(
+                        num_queues,
+                        queues,
+                        queueList );
+                    eventWaitListString = getFormattedEventWaitList(
+                        pIntercept,
+                        num_events_in_wait_list,
+                        event_wait_list);
+                }
+                CALL_LOGGING_ENTER( "queues = %s, command_buffer = %p%s",
+                    queueList.c_str(),
                     command_buffer,
                     eventWaitListString.c_str() );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
@@ -10579,6 +10665,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueCommandBufferKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_uint num_sync_points_in_wait_list,
     const cl_sync_point_khr* sync_point_wait_list,
     cl_sync_point_khr* sync_point,
@@ -10593,15 +10680,22 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            const std::string syncPointWaitList = getFormattedSyncPointWaitList(
+                pIntercept,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list);
+
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p",
+                "command_buffer = %p, command_queue = %p%s",
                 command_buffer,
-                command_queue );
+                command_queue,
+                syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandBarrierWithWaitListKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 num_sync_points_in_wait_list,
                 sync_point_wait_list,
                 sync_point,
@@ -10609,7 +10703,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+            CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
@@ -10625,6 +10719,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_buffer,
     cl_mem dst_buffer,
     size_t src_offset,
@@ -10644,15 +10739,22 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            const std::string syncPointWaitList = getFormattedSyncPointWaitList(
+                pIntercept,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list);
+
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p",
+                "command_buffer = %p, command_queue = %p%s",
                 command_buffer,
-                command_queue );
+                command_queue,
+                syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandCopyBufferKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 src_buffer,
                 dst_buffer,
                 src_offset,
@@ -10665,7 +10767,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+            CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
@@ -10681,6 +10783,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_buffer,
     cl_mem dst_buffer,
     const size_t* src_origin,
@@ -10704,15 +10807,22 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            const std::string syncPointWaitList = getFormattedSyncPointWaitList(
+                pIntercept,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list);
+
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p",
+                "command_buffer = %p, command_queue = %p%s",
                 command_buffer,
-                command_queue );
+                command_queue,
+                syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandCopyBufferRectKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 src_buffer,
                 dst_buffer,
                 src_origin,
@@ -10729,7 +10839,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+            CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
@@ -10745,6 +10855,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_buffer,
     cl_mem dst_image,
     size_t src_offset,
@@ -10764,15 +10875,22 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            const std::string syncPointWaitList = getFormattedSyncPointWaitList(
+                pIntercept,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list);
+
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p",
+                "command_buffer = %p, command_queue = %p%s",
                 command_buffer,
-                command_queue );
+                command_queue,
+                syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandCopyBufferToImageKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 src_buffer,
                 dst_image,
                 src_offset,
@@ -10785,7 +10903,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+            CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
@@ -10801,6 +10919,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_image,
     cl_mem dst_image,
     const size_t* src_origin,
@@ -10820,15 +10939,22 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            const std::string syncPointWaitList = getFormattedSyncPointWaitList(
+                pIntercept,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list);
+
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p",
+                "command_buffer = %p, command_queue = %p%s",
                 command_buffer,
-                command_queue );
+                command_queue,
+                syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandCopyImageKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 src_image,
                 dst_image,
                 src_origin,
@@ -10841,7 +10967,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+            CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
@@ -10857,6 +10983,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem src_image,
     cl_mem dst_buffer,
     const size_t* src_origin,
@@ -10876,15 +11003,24 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            const std::string syncPointWaitList = getFormattedSyncPointWaitList(
+                pIntercept,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list);
+
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p",
+                "command_buffer = %p, command_queue = %p, src_image = %p, dst_buffer = %p%s",
                 command_buffer,
-                command_queue );
+                command_queue,
+                src_image,
+                dst_buffer,
+                syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandCopyImageToBufferKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 src_image,
                 dst_buffer,
                 src_origin,
@@ -10897,7 +11033,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+            CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
@@ -10913,6 +11049,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem buffer,
     const void* pattern,
     size_t pattern_size,
@@ -10932,15 +11069,22 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            const std::string syncPointWaitList = getFormattedSyncPointWaitList(
+                pIntercept,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list);
+
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p",
+                "command_buffer = %p, command_queue = %p%s",
                 command_buffer,
-                command_queue );
+                command_queue,
+                syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandFillBufferKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 buffer,
                 pattern,
                 pattern_size,
@@ -10953,7 +11097,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+            CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
@@ -10969,6 +11113,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     cl_mem image,
     const void* fill_color,
     const size_t* origin,
@@ -10987,15 +11132,22 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            const std::string syncPointWaitList = getFormattedSyncPointWaitList(
+                pIntercept,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list);
+
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p",
+                "command_buffer = %p, command_queue = %p%s",
                 command_buffer,
-                command_queue );
+                command_queue,
+                syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandFillImageKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 image,
                 fill_color,
                 origin,
@@ -11007,7 +11159,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+            CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
@@ -11023,6 +11175,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     void* dst_ptr,
     const void* src_ptr,
     size_t size,
@@ -11040,18 +11193,25 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            const std::string syncPointWaitList = getFormattedSyncPointWaitList(
+                pIntercept,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list);
+
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p, dst_ptr = %p, src_ptr = %p, size = %zu",
+                "command_buffer = %p, command_queue = %p, dst_ptr = %p, src_ptr = %p, size = %zu%s",
                 command_buffer,
                 command_queue,
                 dst_ptr,
                 src_ptr,
-                size );
+                size,
+                syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandSVMMemcpyKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 dst_ptr,
                 src_ptr,
                 size,
@@ -11062,7 +11222,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+            CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
@@ -11078,6 +11238,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemFillKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
+    const cl_command_properties_khr* properties,
     void* svm_ptr,
     const void* pattern,
     size_t pattern_size,
@@ -11096,18 +11257,25 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemFillKHR(
         {
             GET_ENQUEUE_COUNTER();
 
+            const std::string syncPointWaitList = getFormattedSyncPointWaitList(
+                pIntercept,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list);
+
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p, svm_ptr = %p, pattern_size = %zu, size = %zu",
+                "command_buffer = %p, command_queue = %p, svm_ptr = %p, pattern_size = %zu, size = %zu%s",
                 command_buffer,
                 command_queue,
                 svm_ptr,
                 pattern_size,
-                size );
+                size,
+                syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandSVMMemFillKHR(
                 command_buffer,
                 command_queue,
+                properties,
                 svm_ptr,
                 pattern,
                 pattern_size,
@@ -11119,7 +11287,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemFillKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+            CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
             return retVal;
@@ -11135,7 +11303,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemFillKHR(
 CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
     cl_command_buffer_khr command_buffer,
     cl_command_queue command_queue,
-    const cl_ndrange_kernel_command_properties_khr* properties,
+    const cl_command_properties_khr* properties,
     cl_kernel kernel,
     cl_uint work_dim,
     const size_t* global_work_offset,
@@ -11161,12 +11329,17 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
             std::string argsString;
             if( pIntercept->config().CallLogging )
             {
+                // TODO: properties string.
                 pIntercept->getEnqueueNDRangeKernelArgsString(
                     work_dim,
                     global_work_offset,
                     global_work_size,
                     local_work_size,
                     argsString );
+                argsString += getFormattedSyncPointWaitList(
+                    pIntercept,
+                    num_sync_points_in_wait_list,
+                    sync_point_wait_list);
             }
             CALL_LOGGING_ENTER_KERNEL(
                 kernel,
@@ -11193,7 +11366,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            CALL_LOGGING_EXIT( retVal );
+            CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND_NDRANGE( mutable_handle, command_buffer, work_dim );
 
             return retVal;
@@ -11262,17 +11435,30 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clRemapCommandBufferKHR(
 
     if( pIntercept )
     {
-        cl_command_queue queue = num_queues ? queues[0] : NULL;
+        cl_command_queue queue = num_queues && queues ? queues[0] : NULL;
         const auto& dispatchX = pIntercept->dispatchX(queue);
         if( dispatchX.clRemapCommandBufferKHR )
         {
             GET_ENQUEUE_COUNTER();
 
-            CALL_LOGGING_ENTER( "command_buffer = %p, %s, num_queues = %u, num_handles = %u",
+            std::string queueList;
+            std::string handleList;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getObjectListString(
+                    num_queues,
+                    queues,
+                    queueList );
+                pIntercept->getObjectListString(
+                    num_handles,
+                    handles,
+                    handleList );
+            }
+            CALL_LOGGING_ENTER( "command_buffer = %p, %s, queues = %s, handles = %s",
                 command_buffer,
                 automatic ? "automatic" : "non-automatic",
-                num_queues,
-                num_handles );
+                queueList.c_str(),
+                handleList.c_str() );
             CHECK_ERROR_INIT( errcode_ret );
             HOST_PERFORMANCE_TIMING_START();
 
@@ -11310,7 +11496,9 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clRemapCommandBufferKHR(
 // cl_khr_command_buffer_mutable_dispatch
 CL_API_ENTRY cl_int CL_API_CALL clUpdateMutableCommandsKHR(
     cl_command_buffer_khr command_buffer,
-    const cl_mutable_base_config_khr* mutable_config)
+    cl_uint num_configs,
+    const cl_command_buffer_update_type_khr* config_types,
+    const void** configs)
 {
     CLIntercept*    pIntercept = GetIntercept();
 
@@ -11320,24 +11508,27 @@ CL_API_ENTRY cl_int CL_API_CALL clUpdateMutableCommandsKHR(
         if( dispatchX.clUpdateMutableCommandsKHR )
         {
             GET_ENQUEUE_COUNTER();
-            CALL_LOGGING_ENTER( "command_buffer = %p, mutable_config = %p",
+            CALL_LOGGING_ENTER( "command_buffer = %p, num_configs = %u",
                 command_buffer,
-                mutable_config );
+                num_configs );
             if( pIntercept->config().CallLogging )
             {
                 std::string configStr;
                 pIntercept->getCommandBufferMutableConfigString(
-                    mutable_config,
+                    num_configs,
+                    config_types,
+                    configs,
                     configStr );
-                CALL_LOGGING_INFO("mutable_config %p: %s",
-                    mutable_config,
+                CALL_LOGGING_INFO(" configs = %s",
                     configStr.c_str() );
             }
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clUpdateMutableCommandsKHR(
                 command_buffer,
-                mutable_config );
+                num_configs,
+                config_types,
+                configs );
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
