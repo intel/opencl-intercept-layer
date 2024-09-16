@@ -277,12 +277,14 @@ bool MDHelper::InitMetricsDiscovery(
         return false;
     }
 
+    DebugPrint("InitMetricsDiscoveryAdapterGroup for adapter index %u...\n", adapterIndex);
     bool success = InitMetricsDiscoveryAdapterGroup(
         metricSetSymbolName,
         metricsFileName,
         adapterIndex );
     if (!success)
     {
+        DebugPrint("InitMetricsDiscoveryLegacy...\n", adapterIndex);
         success = InitMetricsDiscoveryLegacy(
             metricSetSymbolName,
             metricsFileName );
