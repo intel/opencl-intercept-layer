@@ -461,9 +461,21 @@ void CLIntercept::getMDAPICountersFromEvent(
             }
             else
             {
-                logf("Couldn't get MDAPI data!  clGetEventProfilingInfo returned '%s' (%08X)!\n",
-                    enumName().name(errorCode).c_str(),
-                    errorCode );
+                // Currently, MDAPI data is only included for kernels, so only
+                // report an errors for kernel events.
+                cl_command_type type = 0;
+                dispatch().clGetEventInfo(
+                    event,
+                    CL_EVENT_COMMAND_TYPE,
+                    sizeof(type),
+                    &type,
+                    NULL );
+                if( type == CL_COMMAND_NDRANGE_KERNEL )
+                {
+                    logf("Couldn't get MDAPI data for kernel!  clGetEventProfilingInfo returned '%s' (%08X)!\n",
+                        enumName().name(errorCode).c_str(),
+                        errorCode );
+                }
             }
 
             delete [] pReport;
