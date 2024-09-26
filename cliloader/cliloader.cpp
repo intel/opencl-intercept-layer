@@ -583,7 +583,7 @@ static bool parseArguments(int argc, char *argv[])
         std::string defaultDumpDir = getDefaultDumpDirectory();
         fprintf(stdout,
             "cliloader - A utility to simplify using the Intercept Layer for OpenCL Applications\n"
-            "  Version: %s, from %s\n"
+            "  Version: %s%s%s\n"
             "\n"
             "Usage: cliloader [OPTIONS] COMMAND\n"
             "\n"
@@ -630,7 +630,8 @@ static bool parseArguments(int argc, char *argv[])
             "    %s\n"
             "\n",
             g_scGitDescribe,
-            g_scGitRefSpec,
+            strlen(g_scGitRefSpec) > 0 ? ", from " : "",
+            strlen(g_scGitRefSpec) > 0 ? g_scGitRefSpec : "",
             defaultDumpDir.c_str(),
             g_scURL );
         return false;

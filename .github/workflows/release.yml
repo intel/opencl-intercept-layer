@@ -24,6 +24,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+    # This isn't working currently, see https://github.com/actions/checkout/issues/1467.
+    # Instead, get the git information manually with the step below.
+    #   with:
+    #     fetch-tags: true
+
+    - name: Refresh Git Information
+      if: startsWith(github.ref, 'refs/tags/')
+      shell: bash
+      run: |
+          git fetch --force --tags
+          git checkout "${GITHUB_REF_NAME}"
 
     - name: Create Build Directory
       run: cmake -E make_directory ./build
