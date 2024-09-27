@@ -284,7 +284,7 @@ static bool parseArguments(int argc, char *argv[])
     {
         fprintf(stdout,
             "cliprof - A simple utility to enable profiling using the Intercept Layer for OpenCL Applications\n"
-            "  Version: %s, from %s\n"
+            "  Version: %s%s%s\n"
             "\n"
             "Usage: cliprof [OPTIONS] COMMAND\n"
             "\n"
@@ -298,7 +298,8 @@ static bool parseArguments(int argc, char *argv[])
             "    %s\n"
             "\n",
             g_scGitDescribe,
-            g_scGitRefSpec,
+            strlen(g_scGitRefSpec) > 0 ? ", from " : "",
+            strlen(g_scGitRefSpec) > 0 ? g_scGitRefSpec : "",
             g_scURL );
         return false;
     }
