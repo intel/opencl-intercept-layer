@@ -50,7 +50,8 @@
         }                       \
     }
 #else
-    #define CLI_ASSERT(x)
+    #include <tuple>
+    #define CLI_ASSERT(x) std::ignore = (x)
 #endif
 
 #if defined(_WIN32) || defined(__linux__) || defined(__FreeBSD__)
