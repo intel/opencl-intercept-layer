@@ -784,18 +784,21 @@ int main(int argc, char *argv[])
                 NULL );
             if( childThread == NULL )
             {
-                die("replacing functions in child thread");
+                DEBUG("couldn't create child thread to replace functions\n");
             }
-            DEBUG("created child thread to replace functions\n");
-
-            // Wait for child thread to complete:
-            if( WaitForSingleObject(childThread, INFINITE) != WAIT_OBJECT_0 )
+            else
             {
-                die("waiting for initialization thread");
+                DEBUG("created child thread to replace functions\n");
+
+                // Wait for child thread to complete:
+                if( WaitForSingleObject(childThread, INFINITE) != WAIT_OBJECT_0 )
+                {
+                    die("waiting for initialization thread");
+                }
+                DEBUG("child thread to replace functions completed\n");
+                CloseHandle(childThread);
+                DEBUG("cleaned up child thread to replace functions\n");
             }
-            DEBUG("child thread to replace functions completed\n");
-            CloseHandle(childThread);
-            DEBUG("cleaned up child thread to replace functions\n");
         }
     }
 
