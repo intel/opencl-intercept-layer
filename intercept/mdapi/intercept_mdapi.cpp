@@ -9,6 +9,7 @@
 
 #include "common.h"
 #include "intercept.h"
+#include "utils.h"
 
 #define CL_PROFILING_COMMAND_PERFCOUNTERS_INTEL 0x407F
 
@@ -202,12 +203,16 @@ void CLIntercept::initCustomPerfCounters()
             std::string fileName = "";
             OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
             fileName += '/';
-            fileName += sc_DumpPerfCountersFileNamePrefix;
+            fileName += sc_PerfCountersFileNamePrefix;
             fileName += "_";
             fileName += metricSetSymbolName;
             fileName += ".csv";
 
             OS().MakeDumpDirectories( fileName );
+            if( m_Config.UniqueFiles )
+            {
+                fileName = Utils::GetUniqueFileName(fileName);
+            }
 
             m_MetricDump.open( fileName.c_str(), std::ios::out | std::ios::binary );
 

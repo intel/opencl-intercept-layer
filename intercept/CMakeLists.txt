@@ -79,6 +79,8 @@ set(CLINTERCEPT_SOURCE_FILES
     src/main.cpp
     src/objtracker.cpp
     src/objtracker.h
+    src/utils.cpp
+    src/utils.h
     "${CMAKE_CURRENT_BINARY_DIR}/git_version.cpp"
 )
 source_group(Source FILES

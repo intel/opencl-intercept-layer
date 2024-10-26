@@ -17,6 +17,7 @@
 #include "demangle.h"
 #include "emulate.h"
 #include "intercept.h"
+#include "utils.h"
 
 /*****************************************************************************\
 
@@ -90,7 +91,7 @@ const char* CLIntercept::sc_URL = "https://github.com/intel/opencl-intercept-lay
 const char* CLIntercept::sc_DumpDirectoryName = "CLIntercept_Dump";
 const char* CLIntercept::sc_ReportFileName = "clintercept_report.txt";
 const char* CLIntercept::sc_LogFileName = "clintercept_log.txt";
-const char* CLIntercept::sc_DumpPerfCountersFileNamePrefix = "clintercept_perfcounter";
+const char* CLIntercept::sc_PerfCountersFileNamePrefix = "clintercept_perfcounter";
 const char* CLIntercept::sc_TraceFileName = "clintercept_trace.json";
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -411,6 +412,10 @@ bool CLIntercept::init()
         fileName += sc_LogFileName;
 
         OS().MakeDumpDirectories( fileName );
+        if( m_Config.UniqueFiles )
+        {
+            fileName = Utils::GetUniqueFileName(fileName);
+        }
 
         if( m_Config.AppendFiles )
         {
@@ -436,6 +441,10 @@ bool CLIntercept::init()
         fileName += sc_TraceFileName;
 
         OS().MakeDumpDirectories( fileName );
+        if( m_Config.UniqueFiles )
+        {
+            fileName = Utils::GetUniqueFileName(fileName);
+        }
 
         uint64_t    processId = OS().GetProcessID();
         uint32_t    bufferSize = m_Config.ChromeTraceBufferSize;
@@ -655,13 +664,13 @@ void CLIntercept::report()
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    char    filepath[MAX_PATH] = "";
+    char    filePath[MAX_PATH] = "";
 
 #if defined(_WIN32)
     if( config().DumpProgramSourceScript )
     {
-        char    dirname[MAX_PATH] = "";
-        char    filename[MAX_PATH] = "";
+        char    dirName[MAX_PATH] = "";
+        char    fileName[MAX_PATH] = "";
 
         size_t  remaining = MAX_PATH;
 
@@ -673,7 +682,7 @@ void CLIntercept::report()
 
         // Directory:
 
-        curPos = dirname;
+        curPos = dirName;
         remaining = MAX_PATH;
         memset( curPos, 0, MAX_PATH );
 
@@ -696,21 +705,21 @@ void CLIntercept::report()
         curPos += 2;
         remaining -= 2;
 
-        ::CreateDirectoryA( dirname, NULL );
+        ::CreateDirectoryA( dirName, NULL );
 
         // File:
 
-        curPos = filename;
+        curPos = fileName;
         remaining = MAX_PATH;
         memset( curPos, 0, MAX_PATH );
 
-        if( GetModuleFileNameA( NULL, filename, MAX_PATH-1 ) == 0 )
+        if( GetModuleFileNameA( NULL, fileName, MAX_PATH-1 ) == 0 )
         {
             CLI_ASSERT( 0 );
             strcpy_s( curPos, remaining, "process.exe" );
         }
 
-        pch = strrchr( filename, '\\' );
+        pch = strrchr( fileName, '\\' );
         pch++;
         memcpy_s( curPos, remaining, pch, strlen( pch ) );
         curPos += strlen( pch ) - 4;    // -4 to cut off ".exe"
@@ -736,7 +745,7 @@ void CLIntercept::report()
         curPos += 1;
         remaining -= 1;
 
-        CLI_SPRINTF( filepath, MAX_PATH, "%s/%s.%s", dirname, filename, "log" );
+        CLI_SPRINTF( filePath, MAX_PATH, "%s/%s.%s", dirName, fileName, "log" );
     }
     else
 #endif
@@ -748,8 +757,12 @@ void CLIntercept::report()
         fileName += sc_ReportFileName;
 
         OS().MakeDumpDirectories( fileName );
+        if( m_Config.UniqueFiles )
+        {
+            fileName = Utils::GetUniqueFileName(fileName);
+        }
 
-        CLI_SPRINTF( filepath, MAX_PATH, "%s", fileName.c_str() );
+        CLI_SPRINTF( filePath, MAX_PATH, "%s", fileName.c_str() );
     }
 
     // Report
@@ -765,13 +778,13 @@ void CLIntercept::report()
         if( m_Config.AppendFiles )
         {
             os.open(
-                filepath,
+                filePath,
                 std::ios::out | std::ios::binary | std::ios::app );
         }
         else
         {
             os.open(
-                filepath,
+                filePath,
                 std::ios::out | std::ios::binary );
         }
         if( os.good() )
@@ -781,7 +794,7 @@ void CLIntercept::report()
         }
         else
         {
-            logf( "Failed to open report file for writing: %s\n", filepath );
+            logf( "Failed to open report file for writing: %s\n", filePath );
         }
     }
 }
@@ -4185,7 +4198,7 @@ bool CLIntercept::injectProgramSource(
         fileName += "/Inject";
     }
 
-    // Make two candidate filenames.  They will have the form:
+    // Make two candidate file names.  They will have the form:
     //   CLI_<program number>_<hash>_source.cl, or
     //   CLI_<hash>_source.cl
     {
@@ -4295,7 +4308,7 @@ bool CLIntercept::prependProgramSource(
         fileName += "/Inject";
     }
 
-    // Make three candidate filenames.  They will have the form:
+    // Make three candidate file names.  They will have the form:
     //   CLI_<program number>_<hash>_prepend.cl, or
     //   CLI_<hash>_prepend.cl, or
     //   CLI_prepend.cl
@@ -4425,7 +4438,7 @@ bool CLIntercept::injectProgramSPIRV(
         fileName += "/Inject";
     }
 
-    // Make two candidate filenames.  They will have the form:
+    // Make two candidate file names.  They will have the form:
     //   CLI_<program number>_<hash>_0000.spv, or
     //   CLI_<hash>_0000.spv
     {
@@ -4527,7 +4540,7 @@ bool CLIntercept::injectProgramOptions(
         OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, fileName );
         fileName += "/Inject";
     }
-    // Make four candidate filenames.  They will have the form:
+    // Make four candidate file names.  They will have the form:
     //   CLI_<program number>_<program hash>_<compile count>_<options hash>_options.txt, or
     //   CLI_<program hash>_<compile count>_<options hash>_options.txt, or
     //   CLI_<program hash>_options.txt, or
@@ -4718,9 +4731,9 @@ void CLIntercept::dumpProgramSourceScript(
 
     CLI_ASSERT( config().DumpProgramSourceScript || config().SimpleDumpProgramSource );
 
-    char    dirname[MAX_PATH] = "";
-    char    filename[MAX_PATH] = "";
-    char    filepath[MAX_PATH] = "";
+    char    dirName[MAX_PATH] = "";
+    char    fileName[MAX_PATH] = "";
+    char    filePath[MAX_PATH] = "";
 
     if( config().DumpProgramSourceScript )
     {
@@ -4734,7 +4747,7 @@ void CLIntercept::dumpProgramSourceScript(
 
         // Directory:
 
-        curPos = dirname;
+        curPos = dirName;
         remaining = MAX_PATH;
         memset( curPos, 0, MAX_PATH );
 
@@ -4757,21 +4770,21 @@ void CLIntercept::dumpProgramSourceScript(
         curPos += 2;
         remaining -= 2;
 
-        ::CreateDirectoryA( dirname, NULL );
+        ::CreateDirectoryA( dirName, NULL );
 
         // File:
 
-        curPos = filename;
+        curPos = fileName;
         remaining = MAX_PATH;
         memset( curPos, 0, MAX_PATH );
 
-        if( GetModuleFileNameA( NULL, filename, MAX_PATH-1 ) == 0 )
+        if( GetModuleFileNameA( NULL, fileName, MAX_PATH-1 ) == 0 )
         {
             CLI_ASSERT( 0 );
             strcpy_s( curPos, remaining, "process.exe" );
         }
 
-        pch = strrchr( filename, '\\' );
+        pch = strrchr( fileName, '\\' );
         pch++;
         memcpy_s( curPos, remaining, pch, strlen( pch ) );
         curPos += strlen( pch ) - 4;    // -4 to cut off ".exe"
@@ -4799,16 +4812,16 @@ void CLIntercept::dumpProgramSourceScript(
     }
     else
     {
-        CLI_SPRINTF( dirname, MAX_PATH, "." );
-        CLI_SPRINTF( filename, MAX_PATH, "kernel" );
+        CLI_SPRINTF( dirName, MAX_PATH, "." );
+        CLI_SPRINTF( fileName, MAX_PATH, "kernel" );
     }
 
-    CLI_SPRINTF( filepath, MAX_PATH, "%s/%s.%s", dirname, filename, "cl" );
+    CLI_SPRINTF( filePath, MAX_PATH, "%s/%s.%s", dirName, fileName, "cl" );
 
     if( singleString )
     {
         dumpMemoryToFile(
-            filepath,
+            filePath,
             false,
             singleString,
             strlen(singleString) );
@@ -4848,7 +4861,7 @@ void CLIntercept::dumpProgramSource(
         fileName += "/Modified";
     }
 
-    // Make the filename.  It will have the form:
+    // Make the file name.  It will have the form:
     //   CLI_<program number>_<hash>_source.cl
     {
         char    numberString[256] = "";
@@ -4917,7 +4930,7 @@ void CLIntercept::dumpInputProgramBinaries(
         fileName += "/Modified";
     }
 
-    // Make the filename.  It will have the form:
+    // Make the file name.  It will have the form:
     //   CLI_<program number>_<hash>
     // Leave off the extension for now.
     {
@@ -5017,7 +5030,7 @@ void CLIntercept::dumpProgramSPIRV(
         fileName += "/Modified";
     }
 
-    // Make the filename.  It will have the form:
+    // Make the file name.  It will have the form:
     //   CLI_<program number>_<hash>_0000.spv
     {
         char    numberString[256] = "";
@@ -5089,9 +5102,9 @@ void CLIntercept::dumpProgramOptionsScript(
 
     if( options )
     {
-        char    dirname[MAX_PATH] = "";
-        char    filename[MAX_PATH] = "";
-        char    filepath[MAX_PATH] = "";
+        char    dirName[MAX_PATH] = "";
+        char    fileName[MAX_PATH] = "";
+        char    filePath[MAX_PATH] = "";
 
         if( config().DumpProgramSourceScript )
         {
@@ -5105,7 +5118,7 @@ void CLIntercept::dumpProgramOptionsScript(
 
             // Directory:
 
-            curPos = dirname;
+            curPos = dirName;
             remaining = MAX_PATH;
             memset( curPos, 0, MAX_PATH );
 
@@ -5128,21 +5141,21 @@ void CLIntercept::dumpProgramOptionsScript(
             curPos += 2;
             remaining -= 2;
 
-            ::CreateDirectoryA( dirname, NULL );
+            ::CreateDirectoryA( dirName, NULL );
 
             // File:
 
-            curPos = filename;
+            curPos = fileName;
             remaining = MAX_PATH;
             memset( curPos, 0, MAX_PATH );
 
-            if( GetModuleFileNameA( NULL, filename, MAX_PATH-1 ) == 0 )
+            if( GetModuleFileNameA( NULL, fileName, MAX_PATH-1 ) == 0 )
             {
                 CLI_ASSERT( 0 );
                 strcpy_s( curPos, remaining, "process.exe" );
             }
 
-            pch = strrchr( filename, '\\' );
+            pch = strrchr( fileName, '\\' );
             pch++;
             memcpy_s( curPos, remaining, pch, strlen( pch ) );
             curPos += strlen( pch ) - 4;    // -4 to cut off ".exe"
@@ -5170,14 +5183,14 @@ void CLIntercept::dumpProgramOptionsScript(
         }
         else
         {
-            CLI_SPRINTF( dirname, MAX_PATH, "." );
-            CLI_SPRINTF( filename, MAX_PATH, "kernel" );
+            CLI_SPRINTF( dirName, MAX_PATH, "." );
+            CLI_SPRINTF( fileName, MAX_PATH, "kernel" );
         }
 
-        CLI_SPRINTF( filepath, MAX_PATH, "%s/%s.%s", dirname, filename, "txt" );
+        CLI_SPRINTF( filePath, MAX_PATH, "%s/%s.%s", dirName, fileName, "txt" );
 
         dumpMemoryToFile(
-            filepath,
+            filePath,
             false,
             options,
             strlen(options) );
@@ -5220,7 +5233,7 @@ void CLIntercept::dumpProgramOptions(
             fileName += "/Modified";
         }
 
-        // Make the filename.  It will have the form:
+        // Make the file name.  It will have the form:
         //   CLI_<program number>_<program hash>_<compile count>_<options hash>
         // Leave off the extension for now.
         {
@@ -5289,7 +5302,7 @@ void CLIntercept::dumpProgramBuildLog(
     {
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
     }
-    // Make the filename.  It will have the form:
+    // Make the file name.  It will have the form:
     //   CLI_<program number>_<program hash>_<compile count>_<options hash>
     // Leave off the extension for now.
     {
@@ -7745,7 +7758,7 @@ void CLIntercept::dumpBuffersForKernel(
                 fileName += tmpStr;
             }
 
-            // Add the kernel name to the filename
+            // Add the kernel name to the file name
             {
                 fileName += "_Kernel_";
                 fileName += getShortKernelName(kernel);
@@ -7986,7 +7999,7 @@ void CLIntercept::dumpImagesForKernel(
                 fileName += tmpStr;
             }
 
-            // Add the kernel name to the filename
+            // Add the kernel name to the file name
             {
                 fileName += "_Kernel_";
                 fileName += getShortKernelName(kernel);
@@ -8124,7 +8137,7 @@ void CLIntercept::injectBuffersForKernel(
                 fileName += tmpStr;
             }
 
-            // Add the kernel name to the filename
+            // Add the kernel name to the file name
             {
                 fileName += "_Kernel_";
                 fileName += getShortKernelName(kernel);
@@ -8317,7 +8330,7 @@ void CLIntercept::injectImagesForKernel(
                 fileName += tmpStr;
             }
 
-            // Add the kernel name to the filename
+            // Add the kernel name to the file name
             {
                 fileName += "_Kernel_";
                 fileName += getShortKernelName(kernel);
@@ -8441,7 +8454,7 @@ void CLIntercept::dumpArgument(
             fileName += enqueueCount;
         }
 
-        // Add the kernel name to the filename
+        // Add the kernel name to the file name
         {
             fileName += "_Kernel_";
             fileName += getShortKernelName(kernel);
@@ -9260,7 +9273,7 @@ void CLIntercept::startAubCapture(
                     fileName,
                     config().AubCaptureStartWait );
             }
-            log( "AubCapture started... maybe.  Filename is: " + fileName + "\n" );
+            log( "AubCapture started... maybe.  File name is: " + fileName + "\n" );
 
             // No matter what, set the flag that aubcapture is started, so we
             // don't try again.
@@ -9716,7 +9729,7 @@ cl_program CLIntercept::createProgramWithInjectionBinaries(
             OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, fileName );
             fileName += "/Inject";
         }
-        // Make two candidate filenames.  They will have the form:
+        // Make two candidate file names.  They will have the form:
         //   CLI_<program number>_<hash>_0000, or
         //   CLI_<hash>_0000
         // Leave off the extension for now.
@@ -9943,7 +9956,7 @@ void CLIntercept::dumpProgramBinary(
     {
         OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
     }
-    // Make the filename.  It will have the form:
+    // Make the file name.  It will have the form:
     //   CLI_<program number>_<program hash>_<compile count>_<options hash>
     // Leave off the extension for now.
     {
@@ -10183,7 +10196,7 @@ void CLIntercept::dumpKernelISABinaries(
         {
             OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileNamePrefix );
         }
-        // Make the filename prefix.  It will have the form:
+        // Make the file name prefix.  It will have the form:
         //   CLI_<program number>_<program hash>_<compile count>_<options hash>_<device type>_<kernel name>.isabin
         // We'll fill in the device type and kernel name later.
         {
@@ -10342,7 +10355,7 @@ cl_program CLIntercept::createProgramWithInjectionSPIRV(
             fileName += "/Inject";
         }
 
-        // Make three candidate filenames.  They will have the form:
+        // Make three candidate file names.  They will have the form:
         //   CLI_<program number>_<hash>_0000.spv, or
         //   CLI_<hash>_0000.spv
         {

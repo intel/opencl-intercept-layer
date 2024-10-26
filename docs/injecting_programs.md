@@ -43,23 +43,23 @@ that this is a subdirectory of the dump directory.
 If the application compiles programs deterministically the program(s) or program
 options can be copied unchanged. If the application compiles programs
 non-deterministically, you may need rename the programs to modify to remove the
-program number or compile count from the filename.
+program number or compile count from the file name.
 
 The Intercept Layer for OpenCL Applications searches for program source filenames
 to inject in this order:
 
-* `CLI_<program number>_<hash>_source.cl` - This is the default filename dumped
+* `CLI_<program number>_<hash>_source.cl` - This is the default file name dumped
   by DumpProgramSource.
-* `CLI_<hash>_source.cl` - This is the default filename with the program number
+* `CLI_<hash>_source.cl` - This is the default file name with the program number
   removed, so the order the application calls clCreateProgramWithSource() does
   not matter.
 
 The Intercept Layer for OpenCL Applications searches for program option filenames
 to inject in this order:
 
-* `CLI_<program number>_<hash>_<count>_options.txt` - This is the default filename
+* `CLI_<program number>_<hash>_<count>_options.txt` - This is the default file name
   dumped by DumpProgramSource.
-* `CLI_<hash>_<count>_options.txt` - This is the default filename with the program
+* `CLI_<hash>_<count>_options.txt` - This is the default file name with the program
   number removed, so the order the application calls clCreateProgramWithSource()
   does not matter.
 * `CLI_<hash>_options.txt` - This has both the program number and compile count

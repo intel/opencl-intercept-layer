@@ -15,8 +15,8 @@ import argparse
 from collections import defaultdict
 
 def get_image_metadata(idx: int):
-    filename = f"./Image_MetaData_{idx}.txt"
-    with open(filename) as metadata:
+    fileName = f"./Image_MetaData_{idx}.txt"
+    with open(fileName) as metadata:
         lines = metadata.readlines()
 
     image_type = int(lines[8])
