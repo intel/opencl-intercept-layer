@@ -71,15 +71,15 @@ def main():
     if len(files) < 2:
         print("ERROR: you must specify at least two traces to combine.")
         sys.exit(1)
-    for filename in files:
-        if not os.path.isfile(filename):
-            print("ERROR: specified file {} cannot be found.".format(filename))
+    for fileName in files:
+        if not os.path.isfile(fileName):
+            print("ERROR: specified file {} cannot be found.".format(fileName))
             sys.exit(1)
 
     # Read input files
     inputFiles = []
-    for filename in files:
-        f = open(filename,'r')
+    for fileName in files:
+        f = open(fileName,'r')
         currentFile = f.readlines()
         f.close()
         inputFiles.append(currentFile)

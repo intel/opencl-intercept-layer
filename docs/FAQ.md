@@ -154,7 +154,10 @@ The most likely cause of this issue is an application that loads and unloads the
 When this occurs, the report file will only contain data collected between the last time the OpenCL Intercept Layer was loaded and unloaded, which could be no data at all.
 
 To determine if this issue is occurring, and to work around the issue if it is occurring, set the `AppendFiles` control.
-`AppendFiles` causes logs and reports to append to an existing file instead of overwriting the file each time the OpenCL Intercept Layer is unloaded, preserving log or report data even when the OpenCL Intercept Layer is loaded and unloaded multiple times.
+`AppendFiles` causes logs and reports to append to an existing file instead of overwriting the file each time the OpenCL Intercept Layer is loaded, preserving log or report data even when the OpenCL Intercept Layer is loaded and unloaded multiple times.
+
+For another option, set the `UniqueFiles` control.
+`UniqueFiles` will find a unique file name for each log and report file instead of overwriting the file each time the OpenCL Intercept Layer is loaded.
 
 ## How can I debug or analyze multiple instances of an application?
 

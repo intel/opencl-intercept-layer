@@ -972,7 +972,7 @@ private:
     static const char* sc_ReportFileName;
     static const char* sc_LogFileName;
     static const char* sc_TraceFileName;
-    static const char* sc_DumpPerfCountersFileNamePrefix;
+    static const char* sc_PerfCountersFileNamePrefix;
 
 #if defined(CLINTERCEPT_CMAKE)
     static const char* sc_GitDescribe;

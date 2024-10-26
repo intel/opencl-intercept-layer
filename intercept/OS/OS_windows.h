@@ -37,7 +37,7 @@ public:
                 size_t& length ) const;
 
     bool    ExecuteCommand(
-                const std::string& filename ) const;
+                const std::string& fileName ) const;
     bool    StartAubCapture(
                 const std::string& fileName,
                 uint64_t delay ) const;
