@@ -39,6 +39,16 @@ If the Intercept Layer for OpenCL Applications is properly installed but is stil
 Do you see any errors or unexpected output in the log file?
 Are all of the controls you set listed in the log file?
 
+If everything looks fine, here are a few things uncommon things to check:
+
+* Because the Intercept Layer for OpenCL Applications is a DLL or shared library, it will only work for applications that dynamically link with the OpenCL ICD loader or an OpenCL implementation.
+The Intercept Layer for OpenCL Applications does not currently support applications that statically link with OpenCL.
+* Applications that dynamically load OpenCL (via `LoadLibrary` or `dlopen`) may bypass the Intercept Layer for OpenCL Applications, especially when used through `cliloader`, and especially on Windows.
+In some cases, switching to the "local install" method is sufficient begin intercepting OpenCL commands.
+In other cases though, switching to the "global install" method is required, see the [install](install.md) directions for more detail.
+* Applications that dynamically load other DLLs or shared libraries that make OpenCL calls may also bypass the Intercept Layer for OpenCL Applications, especially when used through `cliloader`, and especially on Windows.
+In these cases, switching to a "global install" or "local install" method is also usually sufficient to begin intercepting OpenCL commands.
+
 ## It crashed!
 
 If your application is running correctly without the Intercept Layer for OpenCL Applications, but crashing with it, then it is very likely that the Intercept Layer for OpenCL Applications was unable to find the "real" OpenCL library (usually an OpenCL ICD loader) to load and pass calls to.
