@@ -4,8 +4,6 @@
 // SPDX-License-Identifier: MIT
 */
 
-#pragma once
-
 #include "utils.h"
 
 #include <algorithm>
