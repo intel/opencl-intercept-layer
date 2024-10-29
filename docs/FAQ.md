@@ -1,14 +1,14 @@
 # Troubleshooting and Frequently Asked Questions
 
-This document describes common troubleshooting steps, solutions to common problems encountered when using the Intercept Layer for OpenCL Applications, and other answers to other frequently asked questions.
+This document describes troubleshooting steps, solutions to common problems, and answers to other frequently asked questions.
 
 ## What is the Intercept Layer for OpenCL Applications?  Why should I use it?
 
-In short, the Intercept Layer for OpenCL Applications is a tool enabling OpenCL developers to quickly debug, analyze, and optimize OpenCL applications.
+In short, the Intercept Layer for OpenCL Applications is a tool that enables OpenCL developers to quickly debug, analyze, and optimize OpenCL applications.
 It is thin and fast.
 It can easily be enabled during development and testing, then disabled for deployment.
 It almost always works without any application modifications and has been tested with OpenCL implementations from multiple vendors.
-It is regularly used on Windows and Linux, generally works on OSX, and has been successfully used on Android.
+It is regularly used on Windows and Linux, generally works on OSX, and has been successfully used on Android and other operating systems.
 
 The Intercept Layer for OpenCL Applications can:
 
@@ -53,7 +53,7 @@ In these cases, switching to a "global install" or "local install" method is als
 
 If your application is running correctly without the Intercept Layer for OpenCL Applications, but crashing with it, then it is very likely that the Intercept Layer for OpenCL Applications was unable to find the "real" OpenCL library (usually an OpenCL ICD loader) to load and pass calls to.
 This is more likely to happen on non-Windows operating systems, since different Linux distributions or system configurations may install the real OpenCL library or OpenCL ICD loader to different locations in the file system, but it can happen on Windows as well.
-When the Intercept Layer for OpenCL Applications cannot find the "real" OpenCL library, or finds the wrong "real" OpenCL library, the "real" OpenCL library or OpenCL ICD loader may be specified manually via the `OpenCLFileName` control.
+When the Intercept Layer for OpenCL Applications cannot find the "real" OpenCL library, or finds the wrong "real" OpenCL library, the correct "real" OpenCL library or OpenCL ICD loader may be specified manually via the `OpenCLFileName` control.
 In most scenarios, this control should be the full path name to the OpenCL library or OpenCL ICD loader, typically `/path/to/libOpenCL.so` on Linux, or `drive:\path\to\OpenCL.dll` on Windows.
 
 If all goes well, you should see output like the following in your log:
@@ -63,14 +63,14 @@ Trying to load dispatch from: path/to/OpenCLFileName
 ... success!
 ```
 
-It's OK if you see lines like:
+It's OK if you see lines like this:
 
 ```
 Couldn't get exported function pointer to: clSetProgramReleaseCallback
 Couldn't get exported function pointer to: clSetProgramSpecializationConstant
 ```
 
-This may happen if your OpenCL library or OpenCL ICD loader does not support the newest OpenCL APIs.
+This output may happen if your OpenCL library or OpenCL ICD loader does not support the newest OpenCL APIs.
 This will only cause a problem if the application you are trying to intercept requires the newer APIs.
 Of course, this will cause a problem without the Intercept Layer for OpenCL Applications installed, also!
 
@@ -80,7 +80,7 @@ On Linux operating systems, you may find the path to the real OpenCL library or 
 $ ldd ./your_opencl_application
 ```
 
-This should produce output like:
+This should produce output like this:
 
 ```sh
     libOpenCL.so.1 => /path/to/your/libOpenCL.so.1 (0x00007f9182d27000)
@@ -110,7 +110,7 @@ If you think you are setting a control but it does not appear to be taking effec
     ErrorLogging is set to a non-default value!
     ````
 * If you are setting a control via an environment variable, be aware that on many operating systems, such as Linux, environment variables are case sensitive.
-  Likewise, if you are executing your application via a non-standard method, such as via `sudo` or a syscall, be extra sure that you are properly inheriting the environment.
+  If you are executing your application via a non-standard method, such as via `sudo` or a syscall, be extra sure that you are properly inheriting the environment.
 * Please remember as well that environment variable controls have a "CLI_" prefix before the name of the control, so to set the `CallLogging` control you would set the environment variable `CLI_CallLogging`.
 * If you are setting a variable via the registry or a configuration file, double-check that the config file is in the proper location (typically the user's home directory, as defined by the `$HOME` environment variable), or the proper location in the registry.
 * Windows users may find it most convenient to set controls via the `cliconfig` configuration application.
@@ -172,7 +172,7 @@ For another option, set the `UniqueFiles` control.
 ## How can I debug or analyze multiple instances of an application?
 
 By default, the OpenCL Intercept Layer dumps logs and other files to a dump directory based on the process name.
-This works well for single instances of an application, but when there are multiple instances of an application, they will dump to the same directory, overwriting data or otherwise making complicating analysis.
+This works well for single instances of an application, but when there are multiple instances of an application, they will dump to the same directory, overwriting data or otherwise complicating analysis.
 
 The easiest way to debug or analyze multiple instances of an application is to set the `AppendPid` controls, which appends the process ID to the dump directory.
 This causes each instance of the application to dump to a unique directory.
