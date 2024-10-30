@@ -42,6 +42,35 @@ void CObjectTracker::ReportHelper(
     }
 }
 
+void CObjectTracker::ReportHelper(
+    const std::string& label,
+    const CObjectTracker::CPointerTracker& tracker,
+    std::ostream& os )
+{
+    size_t  numAllocations = tracker.NumAllocations.load(std::memory_order_relaxed);
+    size_t  numFrees = tracker.NumFrees.load(std::memory_order_relaxed);
+
+    if( numFrees < numAllocations )
+    {
+        os << "Possible leak of type " << label << "!" << std::endl;
+        os << "    Number of Allocations: " << numAllocations << std::endl;
+        os << "    Number of Frees:       " << numFrees << std::endl;
+    }
+    else if( numFrees > numAllocations )
+    {
+        // If there are more frees than allocations then this is an unexpected
+        // situation.  It usually means that some allocations aren't tracked
+        // correctly, or that a free returned an error.
+        os << "Unexpected counts for type " << label << "!" << std::endl;
+        os << "    Number of Allocations: " << numAllocations << std::endl;
+        os << "    Number of Frees:       " << numFrees << std::endl;
+    }
+    else if( numAllocations )
+    {
+        os << "No " << label << " leaks detected." << std::endl;
+    }
+}
+
 void CObjectTracker::writeReport( std::ostream& os )
 {
     os << std::endl;
@@ -55,4 +84,5 @@ void CObjectTracker::writeReport( std::ostream& os )
     ReportHelper( "cl_event",           m_Events,           os );
     ReportHelper( "cl_semaphore_khr",   m_Semaphores,       os );
     ReportHelper( "cl_command_buffer_khr", m_CommandBuffers, os );
+    ReportHelper( "SVM/USM allocation", m_Pointers,         os );
 }

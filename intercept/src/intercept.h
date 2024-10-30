@@ -2008,6 +2008,18 @@ inline CObjectTracker& CLIntercept::objectTracker()
         pIntercept->objectTracker().AddRelease(_obj);                       \
     }
 
+#define ADD_POINTER_ALLOCATION( _ptr )                                      \
+    if( pIntercept->config().LeakChecking )                                 \
+    {                                                                       \
+        pIntercept->objectTracker().AddPointerAllocation(_ptr);             \
+    }
+
+#define ADD_POINTER_FREE( _ptr )                                            \
+    if( pIntercept->config().LeakChecking )                                 \
+    {                                                                       \
+        pIntercept->objectTracker().AddPointerFree(_ptr);                   \
+    }
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 #define LOG_CLINFO()                                                        \

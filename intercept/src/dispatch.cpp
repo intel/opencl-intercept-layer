@@ -6338,6 +6338,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clSVMAlloc) (
         // if ErrorLogging is enabled.
         cl_int  errorCode = ( retVal != NULL ) ? CL_SUCCESS : CL_INVALID_OPERATION;
         CHECK_ERROR( errorCode );
+        ADD_POINTER_ALLOCATION( retVal );
         CALL_LOGGING_EXIT( errorCode, "returned %p", retVal );
 
         return retVal;
@@ -6370,6 +6371,7 @@ CL_API_ENTRY void CL_API_CALL CLIRN(clSVMFree) (
 
         HOST_PERFORMANCE_TIMING_END();
         REMOVE_SVM_ALLOCATION( svm_pointer );
+        ADD_POINTER_FREE( svm_pointer );
         CALL_LOGGING_EXIT( CL_SUCCESS );
     }
 }
@@ -9736,6 +9738,7 @@ CL_API_ENTRY void* CL_API_CALL clHostMemAllocINTEL(
             ADD_USM_ALLOCATION( retVal, size );
             USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
+            ADD_POINTER_ALLOCATION( retVal );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
             return retVal;
@@ -9812,6 +9815,7 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
             ADD_USM_ALLOCATION( retVal, size );
             USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
+            ADD_POINTER_ALLOCATION( retVal );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
             return retVal;
@@ -9888,6 +9892,7 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
             ADD_USM_ALLOCATION( retVal, size );
             USM_ALLOC_PROPERTIES_CLEANUP( newProperties );
             CHECK_ERROR( errcode_ret[0] );
+            ADD_POINTER_ALLOCATION( retVal );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
             return retVal;
@@ -9924,6 +9929,7 @@ CL_API_ENTRY cl_int CL_API_CALL clMemFreeINTEL(
             HOST_PERFORMANCE_TIMING_END();
             REMOVE_USM_ALLOCATION( ptr );
             CHECK_ERROR( retVal );
+            ADD_POINTER_FREE( ptr );
             CALL_LOGGING_EXIT( retVal );
 
             return retVal;
@@ -9961,6 +9967,7 @@ clMemBlockingFreeINTEL(
             HOST_PERFORMANCE_TIMING_END();
             REMOVE_USM_ALLOCATION( ptr );
             CHECK_ERROR( retVal );
+            ADD_POINTER_FREE( ptr );
             CALL_LOGGING_EXIT( retVal );
             DEVICE_PERFORMANCE_TIMING_CHECK();
             FLUSH_CHROME_TRACE_BUFFERING();
