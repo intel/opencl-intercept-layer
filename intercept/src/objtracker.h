@@ -44,6 +44,22 @@ public:
         }
     }
 
+    void    AddPointerAllocation( const void* ptr )
+    {
+        if( ptr )
+        {
+            m_Pointers.NumAllocations.fetch_add(1, std::memory_order_relaxed);
+        }
+    }
+
+    void    AddPointerFree( const void* ptr )
+    {
+        if( ptr )
+        {
+            m_Pointers.NumFrees.fetch_add(1, std::memory_order_relaxed);
+        }
+    }
+
 private:
     struct CTracker
     {
@@ -55,6 +71,16 @@ private:
         std::atomic<size_t> NumAllocations;
         std::atomic<size_t> NumRetains;
         std::atomic<size_t> NumReleases;
+    };
+
+    struct CPointerTracker
+    {
+        CPointerTracker() :
+            NumAllocations(0),
+            NumFrees(0) {};
+
+        std::atomic<size_t> NumAllocations;
+        std::atomic<size_t> NumFrees;
     };
 
     CTracker    m_Devices;
@@ -80,9 +106,15 @@ private:
     CTracker&   GetTracker( cl_semaphore_khr )  { return m_Semaphores;      }
     CTracker&   GetTracker( cl_command_buffer_khr ) { return m_CommandBuffers; }
 
+    CPointerTracker m_Pointers;
+
     static void ReportHelper(
         const std::string& label,
         const CTracker& tracker,
+        std::ostream& os );
+    static void ReportHelper(
+        const std::string& label,
+        const CPointerTracker& tracker,
         std::ostream& os );
 
     DISALLOW_COPY_AND_ASSIGN( CObjectTracker );
