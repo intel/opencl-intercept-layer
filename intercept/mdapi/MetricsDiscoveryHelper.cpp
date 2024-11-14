@@ -61,6 +61,12 @@ static void* OpenLibrary( const std::string& metricsLibraryName )
             ret = dlopen(cMDLibFileName, RTLD_LAZY | RTLD_LOCAL);
         }
 #if !defined(__APPLE__)
+        if (ret == NULL)
+        {
+            // try adding an explicit soversion
+            std::string check(cMDLibFileName); check += ".1";
+            ret = dlopen(check.c_str(), RTLD_LAZY | RTLD_LOCAL);
+        }
         if( ret == NULL )
         {
             // old alternate name, may eventually be removed
