@@ -588,7 +588,7 @@ static bool parseArguments(int argc, char *argv[])
         std::string defaultDumpDir = getDefaultDumpDirectory();
         fprintf(stdout,
             "cliloader - A utility to simplify using the Intercept Layer for OpenCL Applications\n"
-            "  Version: %s, from %s\n"
+            "  Version: %s%s%s\n"
             "\n"
             "Usage: cliloader [OPTIONS] COMMAND\n"
             "\n"
@@ -636,7 +636,8 @@ static bool parseArguments(int argc, char *argv[])
             "    %s\n"
             "\n",
             g_scGitDescribe,
-            g_scGitRefSpec,
+            strlen(g_scGitRefSpec) > 0 ? ", from " : "",
+            strlen(g_scGitRefSpec) > 0 ? g_scGitRefSpec : "",
             defaultDumpDir.c_str(),
             g_scURL );
         return false;
@@ -789,18 +790,21 @@ int main(int argc, char *argv[])
                 NULL );
             if( childThread == NULL )
             {
-                die("replacing functions in child thread");
+                DEBUG("couldn't create child thread to replace functions\n");
             }
-            DEBUG("created child thread to replace functions\n");
-
-            // Wait for child thread to complete:
-            if( WaitForSingleObject(childThread, INFINITE) != WAIT_OBJECT_0 )
+            else
             {
-                die("waiting for initialization thread");
+                DEBUG("created child thread to replace functions\n");
+
+                // Wait for child thread to complete:
+                if( WaitForSingleObject(childThread, INFINITE) != WAIT_OBJECT_0 )
+                {
+                    die("waiting for initialization thread");
+                }
+                DEBUG("child thread to replace functions completed\n");
+                CloseHandle(childThread);
+                DEBUG("cleaned up child thread to replace functions\n");
             }
-            DEBUG("child thread to replace functions completed\n");
-            CloseHandle(childThread);
-            DEBUG("cleaned up child thread to replace functions\n");
         }
     }
 

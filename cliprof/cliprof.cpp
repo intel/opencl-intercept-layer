@@ -284,7 +284,7 @@ static bool parseArguments(int argc, char *argv[])
     {
         fprintf(stdout,
             "cliprof - A simple utility to enable profiling using the Intercept Layer for OpenCL Applications\n"
-            "  Version: %s, from %s\n"
+            "  Version: %s%s%s\n"
             "\n"
             "Usage: cliprof [OPTIONS] COMMAND\n"
             "\n"
@@ -298,7 +298,8 @@ static bool parseArguments(int argc, char *argv[])
             "    %s\n"
             "\n",
             g_scGitDescribe,
-            g_scGitRefSpec,
+            strlen(g_scGitRefSpec) > 0 ? ", from " : "",
+            strlen(g_scGitRefSpec) > 0 ? g_scGitRefSpec : "",
             g_scURL );
         return false;
     }
@@ -431,18 +432,21 @@ int main(int argc, char *argv[])
             NULL );
         if( childThread == NULL )
         {
-            die("replacing functions in child thread");
+            DEBUG("couldn't create child thread to replace functions\n");
         }
-        DEBUG("created child thread to replace functions\n");
-
-        // Wait for child thread to complete:
-        if( WaitForSingleObject(childThread, INFINITE) != WAIT_OBJECT_0 )
+        else
         {
-            die("waiting for initialization thread");
+            DEBUG("created child thread to replace functions\n");
+
+            // Wait for child thread to complete:
+            if( WaitForSingleObject(childThread, INFINITE) != WAIT_OBJECT_0 )
+            {
+                die("waiting for initialization thread");
+            }
+            DEBUG("child thread to replace functions completed\n");
+            CloseHandle(childThread);
+            DEBUG("cleaned up child thread to replace functions\n");
         }
-        DEBUG("child thread to replace functions completed\n");
-        CloseHandle(childThread);
-        DEBUG("cleaned up child thread to replace functions\n");
     }
 
     // Resume child process:
