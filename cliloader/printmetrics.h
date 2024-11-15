@@ -132,7 +132,7 @@ static bool printMetricsForDevice(IMetricsDeviceLatest* pMetricsDevice)
     return true;
 }
 
-static bool printMetricsForAdapterGroup(void* pLibrary)
+static bool printMetricsForAdapterGroup(void* pLibrary, bool devicesOnly)
 {
     TCompletionCode res = CC_OK;
 
@@ -173,7 +173,7 @@ static bool printMetricsForAdapterGroup(void* pLibrary)
     }
     else
     {
-        fprintf(stderr, "Found %u MDAPI Adapter%s.\n\n",
+        fprintf(stderr, "Found %u MDAPI Adapter%s:\n",
             pAdapterGroupParams->AdapterCount,
             pAdapterGroupParams->AdapterCount > 1 ? "s" : "");
         for (uint32_t a = 0; a < pAdapterGroupParams->AdapterCount; a++)
@@ -192,7 +192,7 @@ static bool printMetricsForAdapterGroup(void* pLibrary)
                 continue;
             }
 
-            fprintf(stderr, "\nAdapter %u: %s (%s)\n",
+            fprintf(stderr, "Adapter %u: %s (%s)\n",
                 a,
                 pAdapterParams->ShortName,
                 adapterTypeToString(pAdapterParams->Type));
@@ -202,22 +202,52 @@ static bool printMetricsForAdapterGroup(void* pLibrary)
                 pAdapterParams->BusNumber,
                 pAdapterParams->DeviceNumber,
                 pAdapterParams->FunctionNumber);
-            fprintf(stderr, "########################################\n\n");
-
-            IMetricsDeviceLatest* pMetricsDevice = NULL;
-            res = pAdapter->OpenMetricsDevice(&pMetricsDevice);
-            if (res != CC_OK)
+        }
+        if (!devicesOnly)
+        {
+            for (uint32_t a = 0; a < pAdapterGroupParams->AdapterCount; a++)
             {
-                fprintf(stderr, "OpenMetricsDevice failed, res: %d, skipping adapter.\n", res);
-                continue;
-            }
+                IAdapterLatest* pAdapter = pAdapterGroup->GetAdapter(a);
+                if (NULL == pAdapter)
+                {
+                    fprintf(stderr, "AdapterGroup->GetAdapter() returned NULL, skipping adapter.\n");
+                    continue;
+                }
 
-            printMetricsForDevice(pMetricsDevice);
+                const TAdapterParamsLatest* pAdapterParams = pAdapter->GetParams();
+                if (NULL == pAdapterParams)
+                {
+                    fprintf(stderr, "Adapter->GetParams() returned NULL, skipping adapter.\n");
+                    continue;
+                }
 
-            res = pAdapter->CloseMetricsDevice(pMetricsDevice);
-            if (res != CC_OK)
-            {
-                fprintf(stderr, "CloseMetricsDevice failed, res: %d\n", res);
+                fprintf(stderr, "\nAdapter %u: %s (%s)\n",
+                    a,
+                    pAdapterParams->ShortName,
+                    adapterTypeToString(pAdapterParams->Type));
+                fprintf(stderr, "\tPCI Vendor Id: %04X, Device Id: %04X, Bus Info: %02X:%02X.%02X\n",
+                    pAdapterParams->VendorId,
+                    pAdapterParams->DeviceId,
+                    pAdapterParams->BusNumber,
+                    pAdapterParams->DeviceNumber,
+                    pAdapterParams->FunctionNumber);
+                fprintf(stderr, "########################################\n\n");
+
+                IMetricsDeviceLatest* pMetricsDevice = NULL;
+                res = pAdapter->OpenMetricsDevice(&pMetricsDevice);
+                if (res != CC_OK)
+                {
+                    fprintf(stderr, "OpenMetricsDevice failed, res: %d, skipping adapter.\n", res);
+                    continue;
+                }
+
+                printMetricsForDevice(pMetricsDevice);
+
+                res = pAdapter->CloseMetricsDevice(pMetricsDevice);
+                if (res != CC_OK)
+                {
+                    fprintf(stderr, "CloseMetricsDevice failed, res: %d\n", res);
+                }
             }
         }
     }
@@ -294,7 +324,7 @@ static bool printMetricsForLegacyDevice(void* pLibrary)
     return true;
 }
 
-static bool printMetricsHelper()
+static bool printMetricsHelper(bool devicesOnly)
 {
     void* pLibrary = OpenLibrary();
     if (pLibrary == NULL)
@@ -303,8 +333,8 @@ static bool printMetricsHelper()
         return false;
     }
 
-    bool success = printMetricsForAdapterGroup(pLibrary);
-    if (!success)
+    bool success = printMetricsForAdapterGroup(pLibrary, devicesOnly);
+    if (!success && !devicesOnly)
     {
         success = printMetricsForLegacyDevice(pLibrary);
     }
@@ -312,108 +342,14 @@ static bool printMetricsHelper()
     return success;
 }
 
-static bool printMetricDevicesForAdapterGroup(void* pLibrary)
-{
-    TCompletionCode res = CC_OK;
-
-    OpenAdapterGroup_fn             OpenAdapterGroup;
-    OpenAdapterGroup = (OpenAdapterGroup_fn)GetFunctionAddress(pLibrary, "OpenAdapterGroup");
-    if (OpenAdapterGroup == NULL)
-    {
-        fprintf(stderr, "Couldn't get pointer to OpenAdapterGroup!\n");
-        return false;
-    }
-
-    IAdapterGroupLatest* pAdapterGroup = NULL;
-    res = OpenAdapterGroup(&pAdapterGroup);
-    if (res != CC_OK)
-    {
-        fprintf(stderr, "OpenAdapterGroup failed, res: %d\n", res);
-        return false;
-    }
-
-    const TAdapterGroupParamsLatest* pAdapterGroupParams = pAdapterGroup->GetParams();
-    if (NULL == pAdapterGroupParams)
-    {
-        fprintf(stderr, "AdapterGroup->GetParams() returned NULL\n");
-        return false;
-    }
-
-    fprintf(stderr, "MDAPI Headers: v%d.%d.%d, MDAPI Lib: v%d.%d.%d\n",
-        MD_API_MAJOR_NUMBER_CURRENT,
-        MD_API_MINOR_NUMBER_CURRENT,
-        MD_API_BUILD_NUMBER_CURRENT,
-        pAdapterGroupParams->Version.MajorNumber,
-        pAdapterGroupParams->Version.MinorNumber,
-        pAdapterGroupParams->Version.BuildNumber);
-    if (pAdapterGroupParams->Version.MajorNumber < 1 ||
-        (pAdapterGroupParams->Version.MajorNumber == 1 && pAdapterGroupParams->Version.MinorNumber < 1))
-    {
-        fprintf(stderr, "MDAPI Lib version must be at least v1.1!\n");
-    }
-    else
-    {
-        fprintf(stderr, "Found %u MDAPI Adapter%s.\n\n",
-            pAdapterGroupParams->AdapterCount,
-            pAdapterGroupParams->AdapterCount > 1 ? "s" : "");
-        for (uint32_t a = 0; a < pAdapterGroupParams->AdapterCount; a++)
-        {
-            IAdapterLatest* pAdapter = pAdapterGroup->GetAdapter(a);
-            if (NULL == pAdapter)
-            {
-                fprintf(stderr, "AdapterGroup->GetAdapter() returned NULL, skipping adapter.\n");
-                continue;
-            }
-
-            const TAdapterParamsLatest* pAdapterParams = pAdapter->GetParams();
-            if (NULL == pAdapterParams)
-            {
-                fprintf(stderr, "Adapter->GetParams() returned NULL, skipping adapter.\n");
-                continue;
-            }
-
-            fprintf(stderr, "\nAdapter %u: %s (%s)\n",
-                a,
-                pAdapterParams->ShortName,
-                adapterTypeToString(pAdapterParams->Type));
-            fprintf(stderr, "\tPCI Vendor Id: %04X, Device Id: %04X, Bus Info: %02X:%02X.%02X\n",
-                pAdapterParams->VendorId,
-                pAdapterParams->DeviceId,
-                pAdapterParams->BusNumber,
-                pAdapterParams->DeviceNumber,
-                pAdapterParams->FunctionNumber);
-        }
-    }
-
-    res = pAdapterGroup->Close();
-    if (res != CC_OK)
-    {
-        fprintf(stderr, "AdapterGroup->Close() failed, res: %d\n", res);
-    }
-
-    return true;
-}
-
-static bool printMetricDevicesHelper()
-{
-    void* pLibrary = OpenLibrary();
-    if (pLibrary == NULL)
-    {
-        fprintf(stderr, "Couldn't load metrics discovery library!\n");
-        return false;
-    }
-
-    return printMetricDevicesForAdapterGroup(pLibrary);
-}
-
 };
 
 static void printMetrics()
 {
-    MetricsDiscovery::printMetricsHelper();
+    MetricsDiscovery::printMetricsHelper(false);
 }
 
 static void printMetricDevices()
 {
-    MetricsDiscovery::printMetricDevicesHelper();
+    MetricsDiscovery::printMetricsHelper(true);
 }

@@ -501,6 +501,14 @@ static bool parseArguments(int argc, char *argv[])
                 mdapiGroup = argv[i];
             }
         }
+        else if( !strcmp(argv[i], "--mdapi-device") )
+        {
+            ++i;
+            if( i < argc )
+            {
+                checkSetEnv("CLI_DevicePerfCounterAdapterIndex", argv[i]);
+            }
+        }
         else if( !strcmp(argv[i], "-h") || !strcmp(argv[i], "--host-timing") )
         {
             checkSetEnv("CLI_HostPerformanceTiming", "1");
@@ -624,6 +632,7 @@ static bool parseArguments(int argc, char *argv[])
             "  --mdapi-ebs                      Report Event-Based MDAPI Metrics (Intel GPU Only)\n"
             "  --mdapi-tbs                      Report Time-Based MDAPI Metrics (Intel GPU Only)\n"
             "  --mdapi-group <NAME>             Choose MDAPI Metrics to Collect (Intel GPU Only)\n"
+            "  --mdapi-device <INDEX>           Choose MDAPI Device for Metrics (Intel GPU Only)\n"
             "  --host-timing [-h]               Report Host API Execution Time\n"
             "  --capture-enqueue <NUMBER>       Capture the Specified Kernel Enqueue\n"
             "  --capture-kernel <NAME>          Capture the Specified Kernel Name\n"
