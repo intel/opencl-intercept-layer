@@ -11082,9 +11082,10 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
                 sync_point_wait_list);
 
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p%s",
+                "command_buffer = %p, command_queue = %p, buffer=%p%s",
                 command_buffer,
                 command_queue,
+                buffer,
                 syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
@@ -11145,9 +11146,10 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
                 sync_point_wait_list);
 
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p%s",
+                "command_buffer = %p, command_queue = %p, image = %p%s",
                 command_buffer,
                 command_queue,
+                image,
                 syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
