@@ -3866,14 +3866,14 @@ inline CLIntercept* GetIntercept()
     return g_pIntercept;
 }
 
-#define NULL_FUNCTION_POINTER_RETURN_ERROR()                                \
+#define NULL_FUNCTION_POINTER_RETURN_ERROR(_errorCode)                      \
     CLI_ASSERT(0);                                                          \
-    return CL_INVALID_OPERATION;
+    return _errorCode;
 
-#define NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(pErrorCode)             \
+#define NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(pErrorCode, _errorCode) \
     CLI_ASSERT(0);                                                          \
     if( pErrorCode )                                                        \
     {                                                                       \
-        pErrorCode[0] = CL_INVALID_OPERATION;                               \
+        pErrorCode[0] = _errorCode;                                         \
     }                                                                       \
     return NULL;

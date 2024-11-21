@@ -75,7 +75,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformIDs)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_PLATFORM_NOT_FOUND_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PLATFORM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -195,7 +195,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceIDs)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PLATFORM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -252,7 +252,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_DEVICE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -328,7 +328,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateSubDevices)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_DEVICE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -365,7 +365,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainDevice)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_DEVICE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -411,7 +411,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseDevice)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_DEVICE);
 }
 
 #ifdef __ANDROID__
@@ -499,7 +499,7 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContext)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_OPERATION);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -575,7 +575,7 @@ CL_API_ENTRY cl_context CL_API_CALL CLIRN(clCreateContextFromType)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_PLATFORM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -611,7 +611,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainContext)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -660,7 +660,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -696,7 +696,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetContextInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -727,7 +727,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetContextDestructorCallback(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -818,7 +818,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueue)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -854,7 +854,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainCommandQueue)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -889,7 +889,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseCommandQueue)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -926,7 +926,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetCommandQueueInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -958,7 +958,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetCommandQueueProperty)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1010,7 +1010,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1067,7 +1067,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1129,7 +1129,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateBufferWithPropertiesINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1183,7 +1183,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateBufferNV(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1234,7 +1234,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateSubBuffer)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_MEM_OBJECT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1314,7 +1314,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1405,7 +1405,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImageWithProperties)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1474,7 +1474,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage2D)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1551,7 +1551,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage3D)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1587,7 +1587,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainMemObject)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_MEM_OBJECT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1621,7 +1621,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseMemObject)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_MEM_OBJECT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1662,7 +1662,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetSupportedImageFormats)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1699,7 +1699,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetMemObjectInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_MEM_OBJECT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1736,7 +1736,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetImageInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_MEM_OBJECT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1767,7 +1767,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetMemObjectDestructorCallback)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_MEM_OBJECT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1822,7 +1822,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSampler)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1858,7 +1858,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainSampler)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_SAMPLER);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1892,7 +1892,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseSampler)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_SAMPLER);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1928,7 +1928,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetSamplerInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_SAMPLER);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2003,7 +2003,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithSource)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2070,7 +2070,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBinary)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2122,7 +2122,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBuiltInKernels)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2158,7 +2158,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainProgram)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PROGRAM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2191,7 +2191,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseProgram)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PROGRAM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2261,7 +2261,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clBuildProgram)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PROGRAM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2337,7 +2337,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PROGRAM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2423,7 +2423,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clLinkProgram)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2454,7 +2454,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramReleaseCallback)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PROGRAM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2490,7 +2490,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramSpecializationConstant)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PROGRAM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2517,7 +2517,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clUnloadPlatformCompiler)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PLATFORM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2541,7 +2541,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clUnloadCompiler)( void )
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_OPERATION);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2577,7 +2577,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PROGRAM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2615,7 +2615,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramBuildInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PROGRAM);
 }
 
 
@@ -2679,7 +2679,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_PROGRAM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2754,7 +2754,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateKernelsInProgram)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PROGRAM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2790,7 +2790,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainKernel)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2824,7 +2824,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseKernel)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2872,7 +2872,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArg)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2908,7 +2908,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2947,7 +2947,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelArgInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2995,7 +2995,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelWorkGroupInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3036,7 +3036,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_EVENT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3073,7 +3073,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_EVENT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3105,7 +3105,7 @@ CL_API_ENTRY cl_event CL_API_CALL CLIRN(clCreateUserEvent)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3141,7 +3141,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clRetainEvent)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_EVENT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3175,7 +3175,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseEvent)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_EVENT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3207,7 +3207,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetUserEventStatus)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_EVENT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3245,7 +3245,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetEventCallback)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_EVENT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3282,7 +3282,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetEventProfilingInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_EVENT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3308,7 +3308,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFlush)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3336,7 +3336,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFinish)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3427,7 +3427,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3526,7 +3526,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3617,7 +3617,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3716,7 +3716,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3786,7 +3786,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillBuffer)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3872,7 +3872,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBuffer)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3963,7 +3963,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferRect)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4074,7 +4074,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4169,7 +4169,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4233,7 +4233,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillImage)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4315,7 +4315,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImage)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4381,7 +4381,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImageToBuffer)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4447,7 +4447,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferToImage)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4553,7 +4553,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4677,7 +4677,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4763,7 +4763,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueUnmapMemObject)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4826,7 +4826,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMigrateMemObjects)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4971,7 +4971,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5031,7 +5031,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5091,7 +5091,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNativeKernel)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5134,7 +5134,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarker)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5188,7 +5188,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWaitForEvents)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5226,7 +5226,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrier)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5279,7 +5279,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarkerWithWaitList)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5333,7 +5333,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrierWithWaitList)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5486,7 +5486,7 @@ CL_API_ENTRY cl_semaphore_khr CL_API_CALL clCreateSemaphoreWithPropertiesKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5554,7 +5554,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueWaitSemaphoresKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5622,7 +5622,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSignalSemaphoresKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5664,7 +5664,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSemaphoreInfoKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_SEMAPHORE_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5705,7 +5705,7 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainSemaphoreKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_SEMAPHORE_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5744,7 +5744,7 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseSemaphoreKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_SEMAPHORE_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5798,7 +5798,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSemaphoreHandleForTypeKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_SEMAPHORE_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5846,7 +5846,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLBuffer)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5909,7 +5909,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5972,7 +5972,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture2D)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6035,7 +6035,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLTexture3D)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6083,7 +6083,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateFromGLRenderbuffer)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6121,7 +6121,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLObjectInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_MEM_OBJECT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6163,7 +6163,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetGLTextureInfo)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_MEM_OBJECT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6230,7 +6230,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueAcquireGLObjects)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6299,7 +6299,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6345,7 +6345,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clSVMAlloc) (
     }
 
     cl_int* errcode_ret = NULL;
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6441,7 +6441,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMFree) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6511,7 +6511,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6578,7 +6578,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemFill) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6650,7 +6650,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6709,7 +6709,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMUnmap) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6746,7 +6746,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelArgSVMPointer) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6795,7 +6795,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelExecInfo) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6839,7 +6839,7 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreatePipe) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6877,7 +6877,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPipeInfo) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_MEM_OBJECT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6969,7 +6969,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL CLIRN(clCreateCommandQueueWithProperti
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7066,7 +7066,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreateCommandQueueWithPropertiesKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7111,7 +7111,7 @@ CL_API_ENTRY cl_sampler CL_API_CALL CLIRN(clCreateSamplerWithProperties) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7142,7 +7142,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetDefaultDeviceCommandQueue) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7173,7 +7173,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetDeviceAndHostTimer) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_DEVICE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7202,7 +7202,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetHostTimer) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_DEVICE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7250,7 +7250,7 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithIL) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7303,7 +7303,7 @@ CL_API_ENTRY cl_program CL_API_CALL clCreateProgramWithILKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7339,7 +7339,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCloneKernel) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7392,7 +7392,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelSubGroupInfo) (
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7450,7 +7450,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7515,7 +7515,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7571,7 +7571,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireExternalMemObjectsKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7629,7 +7629,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseExternalMemObjectsKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7671,7 +7671,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetGLContextInfoKHR(
         return retVal;
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PLATFORM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7709,7 +7709,7 @@ CL_API_ENTRY cl_event CL_API_CALL clCreateEventFromGLsyncKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 #if defined(_WIN32)
@@ -7763,7 +7763,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D10KHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PLATFORM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7808,7 +7808,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10BufferKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7855,7 +7855,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture2DKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7902,7 +7902,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D10Texture3DKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7958,7 +7958,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8016,7 +8016,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8068,7 +8068,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromD3D11KHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PLATFORM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8113,7 +8113,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11BufferKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8160,7 +8160,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture2DKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8207,7 +8207,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromD3D11Texture3DKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8263,7 +8263,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8321,7 +8321,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8375,7 +8375,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9MediaAdapterKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PLATFORM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8424,7 +8424,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8480,7 +8480,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8538,7 +8538,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 #endif
 
@@ -8592,7 +8592,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromDX9INTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PLATFORM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8641,7 +8641,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromDX9MediaSurfaceINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8697,7 +8697,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8755,7 +8755,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 #endif
 
@@ -8823,7 +8823,7 @@ CL_API_ENTRY cl_command_queue CL_API_CALL clCreatePerfCountersCommandQueueINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8860,7 +8860,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_DEVICE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -8905,7 +8905,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9001,7 +9001,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9047,7 +9047,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9113,7 +9113,7 @@ CL_API_ENTRY cl_accelerator_intel CL_API_CALL clCreateAcceleratorINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9154,7 +9154,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetAcceleratorInfoINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_ACCELERATOR_INTEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9194,7 +9194,7 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainAcceleratorINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_ACCELERATOR_INTEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9232,7 +9232,7 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseAcceleratorINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_ACCELERATOR_INTEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9284,7 +9284,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetDeviceIDsFromVA_APIMediaAdapterINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_PLATFORM);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9331,7 +9331,7 @@ CL_API_ENTRY cl_mem CL_API_CALL clCreateFromVA_APIMediaSurfaceINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9387,7 +9387,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireVA_APIMediaSurfacesINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9445,7 +9445,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9491,7 +9491,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedGLTextureFormatsINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9539,7 +9539,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedDX9MediaSurfaceFormatsINTEL(
             return retVal;
         }
     }
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9584,7 +9584,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedD3D10TextureFormatsINTEL(
             return retVal;
         }
     }
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9632,7 +9632,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedD3D11TextureFormatsINTEL(
             return retVal;
         }
     }
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9680,7 +9680,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSupportedVA_APIMediaSurfaceFormatsINTEL(
             return retVal;
         }
     }
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9899,7 +9899,7 @@ CL_API_ENTRY void* CL_API_CALL clSharedMemAllocINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9936,7 +9936,7 @@ CL_API_ENTRY cl_int CL_API_CALL clMemFreeINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9976,7 +9976,7 @@ clMemBlockingFreeINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10021,7 +10021,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetMemAllocInfoINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10063,7 +10063,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgMemPointerINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10132,7 +10132,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10203,7 +10203,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10277,7 +10277,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10346,7 +10346,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10415,7 +10415,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10477,7 +10477,7 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clCreateCommandBufferKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_VALUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10510,7 +10510,7 @@ CL_API_ENTRY cl_int CL_API_CALL clFinalizeCommandBufferKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10551,7 +10551,7 @@ CL_API_ENTRY cl_int CL_API_CALL clRetainCommandBufferKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10590,7 +10590,7 @@ CL_API_ENTRY cl_int CL_API_CALL clReleaseCommandBufferKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10663,7 +10663,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueCommandBufferKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10717,7 +10717,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10781,7 +10781,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10853,7 +10853,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10917,7 +10917,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -10981,7 +10981,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11047,7 +11047,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11082,9 +11082,10 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
                 sync_point_wait_list);
 
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p%s",
+                "command_buffer = %p, command_queue = %p, buffer=%p%s",
                 command_buffer,
                 command_queue,
+                buffer,
                 syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
@@ -11111,7 +11112,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11145,9 +11146,10 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
                 sync_point_wait_list);
 
             CALL_LOGGING_ENTER(
-                "command_buffer = %p, command_queue = %p%s",
+                "command_buffer = %p, command_queue = %p, image = %p%s",
                 command_buffer,
                 command_queue,
+                image,
                 syncPointWaitList.c_str() );
             HOST_PERFORMANCE_TIMING_START();
 
@@ -11173,7 +11175,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11236,7 +11238,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11301,7 +11303,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemFillKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11380,7 +11382,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11422,7 +11424,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetCommandBufferInfoKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11495,7 +11497,7 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clRemapCommandBufferKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret);
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_VALUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11545,7 +11547,7 @@ CL_API_ENTRY cl_int CL_API_CALL clUpdateMutableCommandsKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_BUFFER_KHR);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -11587,7 +11589,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetMutableCommandInfoKHR(
         }
     }
 
-    NULL_FUNCTION_POINTER_RETURN_ERROR();
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_MUTABLE_COMMAND_KHR);
 }
 
 #if defined(__APPLE__)
