@@ -942,7 +942,12 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetCommandQueueProperty)(
     if( pIntercept && pIntercept->dispatch().clSetCommandQueueProperty )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER();
+        CALL_LOGGING_ENTER( "queue = %p, properties = %s (%llX), enable = %s, old_properties = %p",
+            command_queue,
+            pIntercept->enumName().name_command_queue_properties( properties ).c_str(),
+            properties,
+            enable ? "CL_TRUE" : "CL_FALSE",
+            old_properties );
         HOST_PERFORMANCE_TIMING_START();
 
         cl_int retVal = pIntercept->dispatch().clSetCommandQueueProperty(
