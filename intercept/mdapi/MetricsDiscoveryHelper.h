@@ -45,12 +45,14 @@ public:
         const std::string& metricsLibraryName,
         const std::string& metricSetSymbolName,
         const std::string& metricsFileName,
-        const bool includeMaxValues );
+        uint32_t adapterIndex,
+        bool includeMaxValues );
     static MDHelper* CreateTBS(
         const std::string& metricsLibraryName,
         const std::string& metricSetSymbolName,
         const std::string& metricsFileName,
-        const bool includeMaxValues );
+        uint32_t adapterIndex,
+        bool includeMaxValues );
     static void Delete( MDHelper*& pMDHelper );
 
     uint32_t GetMetricsConfiguration();
@@ -65,10 +67,10 @@ public:
     uint32_t GetMetricsFromReports(
                 const uint32_t numReports,
                 const char* pData,
-                std::vector<TTypedValue_1_0>& results,
-                std::vector<TTypedValue_1_0>& maxValues );
+                std::vector<TTypedValueLatest>& results,
+                std::vector<TTypedValueLatest>& maxValues );
     void    GetIOMeasurementInformation(
-                std::vector<TTypedValue_1_0>& ioInfoValues );
+                std::vector<TTypedValueLatest>& ioInfoValues );
 
     void    OpenStream(
                 uint32_t timerPeriod,
@@ -76,8 +78,8 @@ public:
                 uint32_t pid );
     bool    SaveReportsFromStream( void );
     uint32_t GetMetricsFromSavedReports(
-                std::vector<TTypedValue_1_0>& results,
-                std::vector<TTypedValue_1_0>& maxValues );
+                std::vector<TTypedValueLatest>& results,
+                std::vector<TTypedValueLatest>& maxValues );
     void    ResetSavedReports( void );
     void    CloseStream( void );
 
@@ -90,14 +92,14 @@ public:
                 std::ostream& os,
                 const std::string& name,
                 const uint32_t numResults,
-                const std::vector<TTypedValue_1_0>& results,
-                const std::vector<TTypedValue_1_0>& maxValues,
-                const std::vector<TTypedValue_1_0>& ioInfoValues );
+                const std::vector<TTypedValueLatest>& results,
+                const std::vector<TTypedValueLatest>& maxValues,
+                const std::vector<TTypedValueLatest>& ioInfoValues );
 
     void    AggregateMetrics(
                 CMetricAggregations& aggregations,
                 const std::string& name,
-                const std::vector<TTypedValue_1_0>& results );
+                const std::vector<TTypedValueLatest>& results );
 
 private:
     MDHelper(uint32_t apiMask);
@@ -107,20 +109,34 @@ private:
         const std::string& metricsLibraryName,
         const std::string& metricSetSymbolName,
         const std::string& metricsFileName,
-        const bool includeMaxValues );
+        uint32_t adapterIndex,
+        bool includeMaxValues );
+
+    bool InitMetricsDiscoveryAdapterGroup(
+        const std::string& metricSetSymbolName,
+        const std::string& metricsFileName,
+        uint32_t adapterIndex );
+    bool InitMetricsDiscoveryLegacy(
+        const std::string& metricSetSymbolName,
+        const std::string& metricsFileName );
+
+    bool FindMetricSetForDevice(
+        IMetricsDeviceLatest* pMetricsDevice,
+        const std::string& metricSetSymbolName );
 
     void    PrintValue(
                 std::ostream& os,
-                const TTypedValue_1_0& value );
+                const TTypedValueLatest& value );
 
-    TTypedValue_1_0* GetGlobalSymbolValue(
+    TTypedValueLatest* GetGlobalSymbolValue(
                 const char* symbolName );
 
-    static uint64_t CastToUInt64(TTypedValue_1_0 value );
+    static uint64_t CastToUInt64(TTypedValueLatest value );
 
+    OpenAdapterGroup_fn             OpenAdapterGroup;
     OpenMetricsDevice_fn            OpenMetricsDevice;
-    CloseMetricsDevice_fn           CloseMetricsDevice;
     OpenMetricsDeviceFromFile_fn    OpenMetricsDeviceFromFile;
+    CloseMetricsDevice_fn           CloseMetricsDevice;
 
     bool                    m_Initialized;
     bool                    m_Activated;
@@ -128,9 +144,11 @@ private:
     uint32_t                m_APIMask;
     uint32_t                m_CategoryMask;
 
-    IMetricsDevice_1_5*     m_MetricsDevice;
-    IConcurrentGroup_1_1*   m_ConcurrentGroup;
-    IMetricSet_1_1*         m_MetricSet;
+    IAdapterGroupLatest*    m_AdapterGroup;
+    IAdapterLatest*         m_Adapter;
+    IMetricsDeviceLatest*   m_MetricsDevice;
+    IConcurrentGroupLatest* m_ConcurrentGroup;
+    IMetricSetLatest*       m_MetricSet;
 
     // Report data for time based sampling:
     std::vector<char>       m_SavedReportData;

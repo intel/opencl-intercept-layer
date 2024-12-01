@@ -89,12 +89,25 @@ These controls can be enabled via `cliloader`, by specifying the `--mdapi-tbs` o
 
     * https://github.com/intel/metrics-library
 
+* On Linux, some GPUs (specifically the "Gen11" and "Gen12"-based GPUs,
+including the Arc A-series "Alchemist" discrete GPUs) require the out-of-tree
+i915 kernel mode driver.
+Please refer to the [installation docs](https://dgpu-docs.intel.com/) for
+instructions how to install the out-of-tree kernel mode driver.
 * On OSX, the path to the MDAPI library should be set manually with
 `DevicePerfCounterLibName` control. The library is named `libigdmd.dylib` and
 it usually resides under `/System/Library/Extensions/AppleIntel<CPU NAME>GraphicsMTLDriver.bundle/Contents/MacOS/libigdmd.dylib`,
 where `<CPU NAME>` is a short name of your CPU generation. For example, on Kaby
 Lake machines `<CPU NAME>` is `KBL`. You can also add path to `libigdmd.dylib`
 library to `DYLD_LIBRARY_PATH` environment library, so that it can be found system-wide.
+* On systems with multiple GPUs, metrics may only be collected for one GPU at a
+time. Use the control **DevicePerfCounterAdapterIndex** to choose which GPU to
+collect metrics for. This control may also be set via `cliloader`, by passing
+the `--mdapi-device` option.
+* To enumerate the available GPUs for metric collection and their adapter
+indices, use `cliloader` and pass the `--mdapi-devices` option.
+* To enumerate available metrics, use `cliloader` and pass the `--metrics`
+option.
 * Collecting MDAPI metrics currently requires elevated privileges
 because metrics are collected system-wide.
 * On Linux, MDAPI metrics may be enabled for non-root users

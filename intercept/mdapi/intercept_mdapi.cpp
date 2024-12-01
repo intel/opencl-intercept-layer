@@ -142,7 +142,8 @@ void CLIntercept::initCustomPerfCounters()
 {
     const std::string& metricSetSymbolName = config().DevicePerfCounterCustom;
     const std::string& metricsFileName = config().DevicePerfCounterFile;
-    const bool includeMaxValues = config().DevicePerfCounterReportMax;
+    uint32_t adapterIndex = config().DevicePerfCounterAdapterIndex;
+    bool includeMaxValues = config().DevicePerfCounterReportMax;
 
     if( m_pMDHelper == NULL )
     {
@@ -157,6 +158,7 @@ void CLIntercept::initCustomPerfCounters()
                 config().DevicePerfCounterLibName,
                 metricSetSymbolName,
                 metricsFileName,
+                adapterIndex,
                 includeMaxValues );
         }
         else if( config().DevicePerfCounterTimeBasedSampling )
@@ -165,6 +167,7 @@ void CLIntercept::initCustomPerfCounters()
                 config().DevicePerfCounterLibName,
                 metricSetSymbolName,
                 metricsFileName,
+                adapterIndex,
                 includeMaxValues );
         }
         else
