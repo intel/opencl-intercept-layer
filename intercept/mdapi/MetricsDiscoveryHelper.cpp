@@ -16,7 +16,7 @@
 
 // Enables logs:
 //#ifdef _DEBUG
-#define MD_DEBUG
+//#define MD_DEBUG
 //#endif
 
 #if defined(_WIN32)
