@@ -381,7 +381,7 @@ static bool parseArguments(int argc, char *argv[])
             printMetrics();
             return false;
         }
-        else if (!strcmp(argv[i], "--metric-devices"))
+        else if (!strcmp(argv[i], "--mdapi-devices"))
         {
             printMetricDevices();
             return false;
@@ -604,7 +604,7 @@ static bool parseArguments(int argc, char *argv[])
             "  --debug                          Enable cliloader Debug Messages\n"
             "  --controls                       Print All Controls and Exit\n"
             "  --metrics                        Print All MDAPI Metrics and Exit\n"
-            "  --metric-devices                 Print All MDAPI Devices and Exit\n"
+            "  --mdapi-devices                  Print All MDAPI Devices and Exit\n"
 #if defined(_WIN32)
             "  --no-DLL-load                    Do not load the Intercept DLL into the child process\n"
 #else // not Windows
