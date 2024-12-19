@@ -594,7 +594,7 @@ static bool parseArguments(int argc, char *argv[])
         )
     {
         std::string defaultDumpDir = getDefaultDumpDirectory();
-        fprintf(stdout,
+        printf(
             "cliloader - A utility to simplify using the Intercept Layer for OpenCL Applications\n"
             "  Version: %s%s%s\n"
             "\n"

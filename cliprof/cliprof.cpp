@@ -282,7 +282,7 @@ static bool parseArguments(int argc, char *argv[])
 #endif
         )
     {
-        fprintf(stdout,
+        printf(
             "cliprof - A simple utility to enable profiling using the Intercept Layer for OpenCL Applications\n"
             "  Version: %s%s%s\n"
             "\n"
