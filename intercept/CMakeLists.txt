@@ -144,14 +144,14 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
         set(CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/kernels)
         add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary
+            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary -z noexecstack
                 kernels/precompiled_kernels.cl
                 -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kernels/precompiled_kernels.cl
         )
         add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary
+            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary -z noexecstack
                 kernels/builtin_kernels.cl
                 -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kernels/builtin_kernels.cl
@@ -167,7 +167,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
         set(CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/scripts)
         add_custom_command(OUTPUT ${CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY}/run_py.o
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY}
-            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary
+            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary -z noexecstack
                 scripts/run.py
                 -o ${CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY}/run_py.o
             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run.py
