@@ -110,17 +110,41 @@ indices, use `cliloader` and pass the `--mdapi-devices` option.
 option.
 * Collecting MDAPI metrics currently requires elevated privileges
 because metrics are collected system-wide.
-* On Linux, MDAPI metrics may be enabled for non-root users
-by setting `/proc/sys/dev/i915/perf_stream_paranoid` to `0`:
+* On Linux, MDAPI metrics may be enabled for non-root users.
+The mechanism to do so depends on the kernel driver used for the GPU.
+To determine the kernel driver for your GPU, run:
 
     ```sh
-    $ echo 0 > /proc/sys/dev/i915/perf_stream_paranoid
+    $ lspci -nn -k | grep -Ei 'VGA|DISPLAY' -A2
+    ```
+
+    This will tell you if your kernel driver is the `i915` kernel driver or the
+    `xe` kernel driver.
+
+    For the `i915` kernel driver, set `/proc/sys/dev/i915/perf_stream_paranoid`
+    to `0`:
+
+    ```sh
+    $ echo 0 | sudo tee /proc/sys/dev/i915/perf_stream_paranoid
     ```
 
     or:
 
     ```sh
-    $ sysctl dev.i915.perf_stream_paranoid=0
+    $ sudo sysctl dev.i915.perf_stream_paranoid=0
+    ```
+
+    For the `xe` kernel driver, set `/proc/sys/dev/xe/observation_paranoid` to
+    `0`:
+
+    ```sh
+    $ echo 0 | sudo tee /proc/sys/dev/xe/observation_paranoid
+    ```
+
+    or:
+
+    ```sh
+    $ sudo sysctl dev.xe.observation_paranoid=0
     ```
 
     For more information, see:
