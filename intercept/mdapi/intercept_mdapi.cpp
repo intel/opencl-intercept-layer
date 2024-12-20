@@ -152,7 +152,8 @@ void CLIntercept::initCustomPerfCounters()
         {
             log( permissionString );
         }
-        else if( config().DevicePerfCounterEventBasedSampling )
+
+        if( config().DevicePerfCounterEventBasedSampling )
         {
             m_pMDHelper = MetricsDiscovery::MDHelper::CreateEBS(
                 config().DevicePerfCounterLibName,

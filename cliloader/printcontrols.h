@@ -51,13 +51,13 @@ static void printControls()
     {
         if (control.IsSeparator)
         {
-            fprintf(stdout, "%s\n", control.Name);
-            fprintf(stdout, "========================================\n\n");
+            printf("%s\n", control.Name);
+            printf("========================================\n\n");
         }
         else
         {
-            fprintf(stdout, "%s (%s):\n", control.Name, control.Type);
-            fprintf(stdout, "%s\n\n", control.Description);
+            printf("%s (%s):\n", control.Name, control.Type);
+            printf("%s\n\n", control.Description);
         }
     }
 }

@@ -199,35 +199,47 @@ inline bool Services::StopAubCapture(
 inline bool Services::CheckMDAPIPermissions(
     std::string& str ) const
 {
-    const char* path = "/proc/sys/dev/i915/perf_stream_paranoid";
-    bool available = false;
+    const char* i915_path = "/proc/sys/dev/i915/perf_stream_paranoid";
+    const char* xe_path = "/proc/sys/dev/xe/observation_paranoid";
 
-    uint64_t value = 1;
-    int fd = open(path, 0);
-    if( fd > 0 )
-    {
-        char buf[32];
-        int n = read(fd, buf, sizeof(buf) - 1);
-        close(fd);
-        if( n > 0 )
+    str.clear();
+
+    const auto readValueFromFile = [](const char* path) -> uint64_t {
+        uint64_t value = 1;
+        int fd = open(path, 0);
+        if( fd > 0 )
         {
-            buf[n] = 0;
-            value = strtoull(buf, NULL, 0);
+            char buf[32];
+            int n = read(fd, buf, sizeof(buf) - 1);
+            close(fd);
+
+            if( n > 0 )
+            {
+                buf[n] = 0;
+                value = strtoull(buf, NULL, 0);
+            }
+        }
+        return value;
+    };
+
+    if( geteuid() != 0 )
+    {
+        uint64_t i915_value = readValueFromFile(i915_path);
+        if (i915_value != 0)
+        {
+            str += "Warning: possibly insufficient permissions for MDAPI!"
+                "  Consider: sysctl dev.i915.perf_stream_paranoid=0\n";
         }
 
-        if( value == 0 || geteuid() == 0 )
+        uint64_t xe_value = readValueFromFile(xe_path);
+        if (xe_value != 0)
         {
-            available = true;
+            str += "Warning: possibly insufficient permissions for MDAPI!"
+                "  Consider: sysctl dev.xe.observation_paranoid=0\n";
         }
     }
 
-    if( available == false )
-    {
-        str = "Insufficient permissions for MDAPI!"
-            "  Consider: sysctl dev.i915.perf_stream_paranoid=0\n";
-    }
-
-    return available;
+    return str.empty();
 }
 
 }

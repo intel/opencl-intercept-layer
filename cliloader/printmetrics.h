@@ -93,11 +93,11 @@ static bool printMetricsForDevice(IMetricsDeviceLatest* pMetricsDevice)
             continue;
         }
 
-        fprintf(stderr, "\nMetric Group: %s (%d Metric Set%s)\n",
+        printf("\nMetric Group: %s (%d Metric Set%s)\n",
             pGroupParams->Description,
             pGroupParams->MetricSetsCount,
             pGroupParams->MetricSetsCount > 1 ? "s" : "");
-        fprintf(stderr, "========================================\n\n");
+        printf("========================================\n\n");
 
         for (uint32_t ms = 0; ms < pGroupParams->MetricSetsCount; ms++)
         {
@@ -109,11 +109,11 @@ static bool printMetricsForDevice(IMetricsDeviceLatest* pMetricsDevice)
                 continue;
             }
 
-            fprintf(stderr, "Metric Set: %s (%d Metric%s)\n",
+            printf("Metric Set: %s (%d Metric%s)\n",
                 pSetParams->ShortName,
                 pSetParams->MetricsCount,
                 pSetParams->MetricsCount > 1 ? "s" : "");
-            fprintf(stderr, "----------------------------------------\n\n");
+            printf("----------------------------------------\n\n");
 
             for (uint32_t m = 0; m < pSetParams->MetricsCount; m++)
             {
@@ -124,7 +124,7 @@ static bool printMetricsForDevice(IMetricsDeviceLatest* pMetricsDevice)
                     continue;
                 }
 
-                fprintf(stderr,
+                printf(
                     "%s\\%s (%s):\n"
                     "%s\n\n",
                     pSetParams->SymbolName,
@@ -165,7 +165,7 @@ static bool printMetricsForAdapterGroup(void* pLibrary, bool devicesOnly)
         return false;
     }
 
-    fprintf(stderr, "MDAPI Headers: v%d.%d.%d, MDAPI Lib: v%d.%d.%d\n",
+    printf("MDAPI Headers: v%d.%d.%d, MDAPI Lib: v%d.%d.%d\n",
         MD_API_MAJOR_NUMBER_CURRENT,
         MD_API_MINOR_NUMBER_CURRENT,
         MD_API_BUILD_NUMBER_CURRENT,
@@ -179,7 +179,7 @@ static bool printMetricsForAdapterGroup(void* pLibrary, bool devicesOnly)
     }
     else
     {
-        fprintf(stderr, "Found %u MDAPI Adapter%s:\n",
+        printf("Found %u MDAPI Adapter%s:\n",
             pAdapterGroupParams->AdapterCount,
             pAdapterGroupParams->AdapterCount > 1 ? "s" : "");
         for (uint32_t a = 0; a < pAdapterGroupParams->AdapterCount; a++)
@@ -198,11 +198,11 @@ static bool printMetricsForAdapterGroup(void* pLibrary, bool devicesOnly)
                 continue;
             }
 
-            fprintf(stderr, "Adapter %u: %s (%s)\n",
+            printf("Adapter %u: %s (%s)\n",
                 a,
                 pAdapterParams->ShortName,
                 adapterTypeToString(pAdapterParams->Type));
-            fprintf(stderr, "\tPCI Vendor Id: %04X, Device Id: %04X, Bus Info: %02X:%02X.%02X\n",
+            printf("\tPCI Vendor Id: %04X, Device Id: %04X, Bus Info: %02X:%02X.%02X\n",
                 pAdapterParams->VendorId,
                 pAdapterParams->DeviceId,
                 pAdapterParams->BusNumber,
@@ -227,17 +227,17 @@ static bool printMetricsForAdapterGroup(void* pLibrary, bool devicesOnly)
                     continue;
                 }
 
-                fprintf(stderr, "\nAdapter %u: %s (%s)\n",
+                printf("\nAdapter %u: %s (%s)\n",
                     a,
                     pAdapterParams->ShortName,
                     adapterTypeToString(pAdapterParams->Type));
-                fprintf(stderr, "\tPCI Vendor Id: %04X, Device Id: %04X, Bus Info: %02X:%02X.%02X\n",
+                printf("\tPCI Vendor Id: %04X, Device Id: %04X, Bus Info: %02X:%02X.%02X\n",
                     pAdapterParams->VendorId,
                     pAdapterParams->DeviceId,
                     pAdapterParams->BusNumber,
                     pAdapterParams->DeviceNumber,
                     pAdapterParams->FunctionNumber);
-                fprintf(stderr, "########################################\n\n");
+                printf("########################################\n\n");
 
                 IMetricsDeviceLatest* pMetricsDevice = NULL;
                 res = pAdapter->OpenMetricsDevice(&pMetricsDevice);
@@ -303,7 +303,7 @@ static bool printMetricsForLegacyDevice(void* pLibrary)
         return false;
     }
 
-    fprintf(stderr, "MDAPI Headers: v%d.%d.%d, MDAPI Lib: v%d.%d.%d\n",
+    printf("MDAPI Headers: v%d.%d.%d, MDAPI Lib: v%d.%d.%d\n",
         MD_API_MAJOR_NUMBER_CURRENT,
         MD_API_MINOR_NUMBER_CURRENT,
         MD_API_BUILD_NUMBER_CURRENT,
