@@ -1,5 +1,5 @@
 # Intercept Layer for OpenCL<sup>TM</sup> Applications
-GitHub Actions: [![GitHub Actions Build Status](https://github.com/intel/opencl-intercept-layer/workflows/build/badge.svg?branch=main)](https://github.com/intel/opencl-intercept-layer/actions?query=workflow%3Abuild+branch%3Amain)
+GitHub Actions: [![GitHub Actions Build Status](https://github.com/intel/opencl-intercept-layer/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/intel/opencl-intercept-layer/actions?query=workflow%3Abuild+branch%3Amain)
 
 The Intercept Layer for OpenCL Applications is a tool that can intercept
 and modify OpenCL calls for debugging and performance analysis.  Using the
