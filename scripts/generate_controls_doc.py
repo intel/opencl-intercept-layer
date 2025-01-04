@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2018-2024 Intel Corporation
+# Copyright (c) 2018-2025 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
@@ -150,7 +150,7 @@ def GetFooter():
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018-2024, Intel(R) Corporation
+Copyright (c) 2018-2025, Intel(R) Corporation
 """
 
 printHelp = False
