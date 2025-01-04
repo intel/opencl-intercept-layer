@@ -219,4 +219,4 @@ If you use the Intercept Layer for OpenCL Applications in your work please cite 
 
 \* Other names and brands may be claimed as the property of others.
 
-Copyright (c) 2018-2024, Intel(R) Corporation
+Copyright (c) 2018-2025, Intel(R) Corporation
