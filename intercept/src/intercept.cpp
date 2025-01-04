@@ -2461,6 +2461,77 @@ void CLIntercept::getMemPropertiesString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getSVMAllocPropertiesString(
+    const cl_svm_alloc_properties_khr* properties,
+    std::string& str ) const
+{
+    str = "";
+
+    if( properties )
+    {
+        char    s[256];
+
+        while( properties[0] != 0 )
+        {
+            cl_int  property = (cl_int)properties[0];
+            str += enumName().name( property ) + " = ";
+
+            switch( property )
+            {
+            case CL_SVM_ALLOC_ASSOCIATED_DEVICE_HANDLE_KHR:
+                {
+                    auto pDevice = (const cl_device_id*)( properties + 1 );
+                    std::string deviceInfo;
+                    getDeviceInfoString(
+                        1,
+                        pDevice,
+                        deviceInfo );
+                    str += deviceInfo;
+                    properties += 2;
+                }
+                break;
+            case CL_SVM_ALLOC_ACCESS_FLAGS_KHR:
+                {
+                    auto pAccessFlags = (const cl_svm_alloc_access_flags_khr*)( properties + 1);
+                    CLI_SPRINTF( s, 256, "0x%" PRIx64, pAccessFlags[0] );
+                    str += s;
+                    properties += 2;
+                }
+                break;
+            case CL_SVM_ALLOC_ALIGNMENT_KHR:
+                {
+                    auto pAlignment = (const size_t*)( properties + 1);
+                    CLI_SPRINTF( s, 256, "%zu", pAlignment[0] );
+                    str += s;
+                    properties += 2;
+                }
+                break;
+            default:
+                {
+                    CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
+                    str += s;
+                    // Advance by two properties.  This may not be correct,
+                    // but it's the best we can do when the property is
+                    // unknown.
+                    properties += 2;
+                }
+                break;
+            }
+
+            if( properties[0] != 0 )
+            {
+                str += ", ";
+            }
+        }
+    }
+    else
+    {
+        str = "NULL";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::getSemaphorePropertiesString(
     const cl_semaphore_properties_khr* properties,
     std::string& str ) const
@@ -13167,6 +13238,12 @@ void* CLIntercept::getExtensionFunctionAddress(
 
     // cl_khr_suggested_local_work_size
     CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeKHR );
+
+    // cl_khr_unified_svm
+    CHECK_RETURN_EXTENSION_FUNCTION( clSVMAllocWithPropertiesKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clSVMFreeWithPropertiesKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSVMPointerInfoKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSVMSuggestedTypeIndexKHR );
 
     // cl_ext_image_requirements_info
     CHECK_RETURN_EXTENSION_FUNCTION( clGetImageRequirementsInfoEXT );

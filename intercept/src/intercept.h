@@ -167,6 +167,9 @@ public:
     void    getMemPropertiesString(
                 const cl_mem_properties* properties,
                 std::string& str ) const;
+    void    getSVMAllocPropertiesString(
+                const cl_svm_alloc_properties_khr* properties,
+                std::string& str ) const;
     void    getSemaphorePropertiesString(
                 const cl_semaphore_properties_khr* properties,
                 std::string& str ) const;

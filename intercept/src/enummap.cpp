@@ -876,8 +876,27 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TERMINATE_CAPABILITY_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_TERMINATE_KHR );
 
-    // cl_khr_throttle_hints extension
+    // cl_khr_throttle_hints
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_THROTTLE_KHR );
+
+    // cl_khr_unified_svm
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_SVM_TYPE_CAPABILITIES_KHR );
+
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SVM_TYPE_CAPABILITIES_KHR );
+
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_ALLOC_ASSOCIATED_DEVICE_HANDLE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_ALLOC_ACCESS_FLAGS_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_ALLOC_ALIGNMENT_KHR );
+
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_TYPE_INDEX_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_CAPABILITIES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_PROPERTIES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_ACCESS_FLAGS_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_BASE_PTR_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_SIZE_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_ASSOCIATED_DEVICE_HANDLE_KHR );
+
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_SVM_INDIRECT_ACCESS_KHR );
 
     // cl_ext_atomic_counters
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT );
