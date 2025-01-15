@@ -2176,6 +2176,7 @@ void CLIntercept::getContextPropertiesString(
             case CL_CONTEXT_ADAPTER_D3D9EX_KHR:
             case CL_CONTEXT_ADAPTER_DXVA_KHR:
 #endif
+            case CL_PRINTF_CALLBACK_ARM:
                 {
                     const void** pp = (const void**)( properties + 1 );
                     const void*  value = pp[0];
@@ -2189,6 +2190,14 @@ void CLIntercept::getContextPropertiesString(
                     const cl_bool*  pb = (const cl_bool*)( properties + 1);
                     cl_bool value = pb[0];
                     str += enumName().name_bool( value );
+                }
+                break;
+            case CL_PRINTF_BUFFERSIZE_ARM:
+                {
+                    const size_t*   psz = (const size_t*)( properties + 1);
+                    size_t value = psz[0];
+                    CLI_SPRINTF( s, 256, "%zu", value );
+                    str += s;
                 }
                 break;
             case CL_CONTEXT_MEMORY_INITIALIZE_KHR:
