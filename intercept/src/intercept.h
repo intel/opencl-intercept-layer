@@ -23,6 +23,7 @@
 #include "common.h"
 
 #include "chrometracer.h"
+#include "cmdbuftracer.h"
 #include "enummap.h"
 #include "dispatch.h"
 #include "objtracker.h"
@@ -418,6 +419,15 @@ public:
                 const size_t* lws,
                 std::string& hostTag,
                 std::string& deviceTag );
+    void    getTimingTagsCommandBufferKernel(
+                const cl_command_buffer_khr cmdbuf,
+                const cl_kernel kernel,
+                const cl_uint workDim,
+                const size_t* gwo,
+                const size_t* gws,
+                const size_t* lws,
+                std::string& hostTag,
+                std::string& deviceTag );
 
     void    updateHostTimingStats(
                 const char* functionName,
@@ -454,7 +464,26 @@ public:
 
     cl_command_queue    getCommandBufferCommandQueue(
                 cl_uint numQueues,
-                cl_command_queue* queues,
+                const cl_command_queue* queues,
+                cl_command_buffer_khr cmdbuf );
+    void    traceCommandBufferCreate(
+                cl_command_buffer_khr cmdbuf,
+                cl_uint num_queues,
+                const cl_command_queue* queues );
+    void    traceCommandBufferCommand(
+                cl_command_buffer_khr cmdbuf,
+                const char* functionName,
+                const std::string& tag,
+                cl_uint num_sync_points_in_wait_list,
+                const cl_sync_point_khr* sync_point_wait_list,
+                cl_sync_point_khr* sync_point );
+    void    traceCommandBufferBarrier(
+                cl_command_buffer_khr cmdbuf,
+                const char* functionName,
+                cl_uint num_sync_points_in_wait_list,
+                const cl_sync_point_khr* sync_point_wait_list,
+                cl_sync_point_khr* sync_point );
+    void    traceCommandBufferFinalize(
                 cl_command_buffer_khr cmdbuf );
 
     cl_command_queue    createCommandQueueWithProperties(
@@ -1337,6 +1366,9 @@ private:
 
     typedef std::map< cl_command_buffer_khr, cl_platform_id >   CCommandBufferInfoMap;
     CCommandBufferInfoMap   m_CommandBufferInfoMap;
+
+    typedef std::map< cl_command_buffer_khr, SCommandBufferTraceInfo >   CCommandBufferTraceInfoMap;
+    CCommandBufferTraceInfoMap  m_CommandBufferTraceInfoMap;
 
     struct SMutableCommandInfo
     {
@@ -3167,6 +3199,21 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
             deviceTag );                                                    \
     }
 
+#define GET_TIMING_TAGS_COMMAND_BUFFER_KERNEL( _cmdbuf, _kernel, _dim, _gwo, _gws, _lws )\
+    std::string hostTag, deviceTag;                                         \
+    if( pIntercept->config().DumpCommandBuffers )                           \
+    {                                                                       \
+        pIntercept->getTimingTagsCommandBufferKernel(                       \
+            _cmdbuf,                                                        \
+            _kernel,                                                        \
+            _dim,                                                           \
+            _gwo,                                                           \
+            _gws,                                                           \
+            _lws,                                                           \
+            hostTag,                                                        \
+            deviceTag );                                                    \
+    }
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
@@ -3440,6 +3487,56 @@ inline void CLIntercept::flushChromeTraceBuffering()
             _numQueues,                                                     \
             _queues,                                                        \
             _cmdbuf );
+
+// TODO: Is "trace" the right verb here?
+#define TRACE_COMMAND_BUFFER_CREATE( _cmdbuf, _num_queues, _queues )        \
+    if( _cmdbuf && pIntercept->config().DumpCommandBuffers ) {              \
+        pIntercept->traceCommandBufferCreate(                               \
+            _cmdbuf,                                                        \
+            _num_queues,                                                    \
+            _queues );                                                      \
+    }
+
+#define TRACE_COMMAND_BUFFER_COMMAND( _errcode, _cmdbuf, _nspwl, _spwl, _sp )\
+    if( _errcode == CL_SUCCESS && _cmdbuf &&                                \
+        pIntercept->config().DumpCommandBuffers ) {                         \
+        pIntercept->traceCommandBufferCommand(                              \
+            _cmdbuf,                                                        \
+            __FUNCTION__,                                                   \
+            "",                                                             \
+            _nspwl,                                                         \
+            _spwl,                                                          \
+            _sp);                                                           \
+    }
+
+#define TRACE_COMMAND_BUFFER_COMMAND_WITH_TAG( _errcode, _cmdbuf, _nspwl, _spwl, _sp )\
+    if( _errcode == CL_SUCCESS && _cmdbuf &&                                \
+        pIntercept->config().DumpCommandBuffers ) {                         \
+        pIntercept->traceCommandBufferCommand(                              \
+            _cmdbuf,                                                        \
+            __FUNCTION__,                                                   \
+            hostTag,                                                        \
+            _nspwl,                                                         \
+            _spwl,                                                          \
+            _sp);                                                           \
+    }
+
+#define TRACE_COMMAND_BUFFER_BARRIER( _errcode, _cmdbuf, _nspwl, _spwl, _sp )\
+    if( _errcode == CL_SUCCESS && _cmdbuf &&                                \
+        pIntercept->config().DumpCommandBuffers ) {                         \
+        pIntercept->traceCommandBufferBarrier(                              \
+            _cmdbuf,                                                        \
+            __FUNCTION__,                                                   \
+            _nspwl,                                                         \
+            _spwl,                                                          \
+            _sp);                                                           \
+    }
+
+#define TRACE_COMMAND_BUFFER_FINALIZE( _errcode, _cmdbuf )                  \
+    if( _errcode == CL_SUCCESS && _cmdbuf &&                                \
+        pIntercept->config().DumpCommandBuffers ) {                         \
+        pIntercept->traceCommandBufferFinalize( _cmdbuf );                  \
+    }
 
 ///////////////////////////////////////////////////////////////////////////////
 //

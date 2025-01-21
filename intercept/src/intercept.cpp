@@ -6003,6 +6003,34 @@ void CLIntercept::getTimingTagsKernel(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getTimingTagsCommandBufferKernel(
+    const cl_command_buffer_khr cmdbuf,
+    const cl_kernel kernel,
+    const cl_uint workDim,
+    const size_t* gwo,
+    const size_t* gws,
+    const size_t* lws,
+    std::string& hostTag,
+    std::string& deviceTag )
+{
+    cl_command_queue queue = getCommandBufferCommandQueue(
+        0,
+        nullptr,
+        cmdbuf );
+
+    getTimingTagsKernel(
+        queue,
+        kernel,
+        workDim,
+        gwo,
+        gws,
+        lws,
+        hostTag,
+        deviceTag );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::updateHostTimingStats(
     const char* functionName,
     const std::string& tag,
@@ -6575,7 +6603,7 @@ void CLIntercept::checkTimingEvents()
 //
 cl_command_queue CLIntercept::getCommandBufferCommandQueue(
     cl_uint numQueues,
-    cl_command_queue* queues,
+    const cl_command_queue* queues,
     cl_command_buffer_khr cmdbuf )
 {
     if( numQueues != 0 && queues != NULL )
@@ -6631,6 +6659,88 @@ cl_command_queue CLIntercept::getCommandBufferCommandQueue(
     }
 
     return queue;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::traceCommandBufferCreate(
+    cl_command_buffer_khr cmdbuf,
+    cl_uint num_queues,
+    const cl_command_queue* queues )
+{
+    cl_command_queue queue = getCommandBufferCommandQueue(
+        num_queues,
+        queues,
+        cmdbuf );
+
+    cl_command_queue_properties props = 0xA5A5A5A5;
+    dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_PROPERTIES,
+        sizeof(props),
+        &props,
+        NULL );
+
+    bool isInOrder = (props & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE) == 0;
+
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    SCommandBufferTraceInfo& traceInfo = m_CommandBufferTraceInfoMap[ cmdbuf ];
+    traceInfo.create(cmdbuf, isInOrder);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::traceCommandBufferCommand(
+    cl_command_buffer_khr cmdbuf,
+    const char* functionName,
+    const std::string& tag,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    SCommandBufferTraceInfo& traceInfo = m_CommandBufferTraceInfoMap[ cmdbuf ];
+    traceInfo.traceCommand(
+        nullptr,
+        functionName,
+        tag.c_str(),
+        num_sync_points_in_wait_list,
+        sync_point_wait_list,
+        sync_point );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::traceCommandBufferBarrier(
+    cl_command_buffer_khr cmdbuf,
+    const char* functionName,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    SCommandBufferTraceInfo& traceInfo = m_CommandBufferTraceInfoMap[ cmdbuf ];
+    traceInfo.traceBarrier(
+        nullptr,
+        functionName,
+        num_sync_points_in_wait_list,
+        sync_point_wait_list,
+        sync_point );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::traceCommandBufferFinalize(
+    cl_command_buffer_khr cmdbuf )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    SCommandBufferTraceInfo& traceInfo = m_CommandBufferTraceInfoMap[ cmdbuf ];
+    traceInfo.finalize();
+    std::cout << "Command Buffer Trace:\n" << traceInfo.trace.str() << std::endl;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
