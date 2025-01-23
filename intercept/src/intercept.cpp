@@ -155,6 +155,8 @@ CLIntercept::CLIntercept( void* pGlobalData )
     m_AubCaptureKernelEnqueueSkipCounter = 0;
     m_AubCaptureKernelEnqueueCaptureCounter = 0;
 
+    m_CommandBufferNumber = 0;
+
 #define CLI_CONTROL( _type, _name, _init, _desc )   m_Config . _name = _init;
 #include "controls.h"
 #undef CLI_CONTROL
@@ -6740,7 +6742,56 @@ void CLIntercept::traceCommandBufferFinalize(
 
     SCommandBufferTraceInfo& traceInfo = m_CommandBufferTraceInfoMap[ cmdbuf ];
     traceInfo.finalize();
-    std::cout << "Command Buffer Trace:\n" << traceInfo.trace.str() << std::endl;
+
+    // Now dump the command buffer trace.
+
+    const auto& str = traceInfo.trace.str();
+    const char* ptr = str.c_str();
+    size_t size = str.size();
+
+    auto hash = computeHash( ptr, size );
+
+    std::string fileName;
+
+    // Get the dump directory name.
+    OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+
+    // Make the file name.  It will have the form:
+    //   CLI_<program number>_<hash>_cmdbuf.dot
+    {
+        char    numberString[256] = "";
+
+        if( config().OmitProgramNumber )    // TODO: add a different control?
+        {
+            CLI_SPRINTF( numberString, 256, "%08X",
+                (unsigned int)hash );
+        }
+        else
+        {
+            CLI_SPRINTF( numberString, 256, "%04u_%08X",
+                m_CommandBufferNumber,
+                (unsigned int)hash );
+        }
+
+        fileName += "/CLI_";
+        fileName += numberString;
+        fileName += "_cmdbuf.dot";
+    }
+
+    // Now make directories as appropriate.
+    OS().MakeDumpDirectories( fileName );
+
+    log( "Dumping command buffer to file: " + fileName + "\n" );
+    dumpMemoryToFile(
+        fileName,
+        false,
+        ptr,
+        size );
+
+    m_CommandBufferNumber++;
+
+    // Now that we are done tracing, we can remove the trace info.
+    m_CommandBufferTraceInfoMap.erase( cmdbuf );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

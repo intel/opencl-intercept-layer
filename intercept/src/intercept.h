@@ -1364,6 +1364,8 @@ private:
     typedef std::map< cl_semaphore_khr, cl_platform_id >    CSemaphoreInfoMap;
     CSemaphoreInfoMap   m_SemaphoreInfoMap;
 
+    unsigned int    m_CommandBufferNumber;
+
     typedef std::map< cl_command_buffer_khr, cl_platform_id >   CCommandBufferInfoMap;
     CCommandBufferInfoMap   m_CommandBufferInfoMap;
 
