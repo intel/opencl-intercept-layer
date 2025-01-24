@@ -10469,7 +10469,7 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clCreateCommandBufferKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( retVal );
-            TRACE_COMMAND_BUFFER_CREATE( retVal, num_queues, queues );
+            RECORD_COMMAND_BUFFER_CREATE( retVal, num_queues, queues );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
             if( retVal != NULL )
@@ -10510,7 +10510,8 @@ CL_API_ENTRY cl_int CL_API_CALL clFinalizeCommandBufferKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_FINALIZE( retVal, command_buffer );
+            RECORD_COMMAND_BUFFER_FINALIZE( retVal, command_buffer );
+            DUMP_COMMAND_BUFFER_RECORDING( retVal, command_buffer );
             CALL_LOGGING_EXIT( retVal );
 
             return retVal;
@@ -10717,7 +10718,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_BARRIER(
+            RECORD_COMMAND_BUFFER_BARRIER(
                 retVal,
                 command_buffer,
                 num_sync_points_in_wait_list,
@@ -10787,7 +10788,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_COMMAND(
+            RECORD_COMMAND_BUFFER_COMMAND(
                 retVal,
                 command_buffer,
                 num_sync_points_in_wait_list,
@@ -10865,7 +10866,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_COMMAND(
+            RECORD_COMMAND_BUFFER_COMMAND(
                 retVal,
                 command_buffer,
                 num_sync_points_in_wait_list,
@@ -10935,7 +10936,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_COMMAND(
+            RECORD_COMMAND_BUFFER_COMMAND(
                 retVal,
                 command_buffer,
                 num_sync_points_in_wait_list,
@@ -11005,7 +11006,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_COMMAND(
+            RECORD_COMMAND_BUFFER_COMMAND(
                 retVal,
                 command_buffer,
                 num_sync_points_in_wait_list,
@@ -11077,7 +11078,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_COMMAND(
+            RECORD_COMMAND_BUFFER_COMMAND(
                 retVal,
                 command_buffer,
                 num_sync_points_in_wait_list,
@@ -11148,7 +11149,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_COMMAND(
+            RECORD_COMMAND_BUFFER_COMMAND(
                 retVal,
                 command_buffer,
                 num_sync_points_in_wait_list,
@@ -11217,7 +11218,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_COMMAND(
+            RECORD_COMMAND_BUFFER_COMMAND(
                 retVal,
                 command_buffer,
                 num_sync_points_in_wait_list,
@@ -11286,7 +11287,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_COMMAND(
+            RECORD_COMMAND_BUFFER_COMMAND(
                 retVal,
                 command_buffer,
                 num_sync_points_in_wait_list,
@@ -11357,7 +11358,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemFillKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_COMMAND(
+            RECORD_COMMAND_BUFFER_COMMAND(
                 retVal,
                 command_buffer,
                 num_sync_points_in_wait_list,
@@ -11449,7 +11450,7 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
-            TRACE_COMMAND_BUFFER_COMMAND_WITH_TAG(
+            RECORD_COMMAND_BUFFER_COMMAND_WITH_TAG(
                 retVal,
                 command_buffer,
                 num_sync_points_in_wait_list,

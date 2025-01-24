@@ -23,7 +23,7 @@
 #include "common.h"
 
 #include "chrometracer.h"
-#include "cmdbuftracer.h"
+#include "cmdbufrecorder.h"
 #include "enummap.h"
 #include "dispatch.h"
 #include "objtracker.h"
@@ -466,24 +466,26 @@ public:
                 cl_uint numQueues,
                 const cl_command_queue* queues,
                 cl_command_buffer_khr cmdbuf );
-    void    traceCommandBufferCreate(
+    void    recordCommandBufferCreate(
                 cl_command_buffer_khr cmdbuf,
                 cl_uint num_queues,
                 const cl_command_queue* queues );
-    void    traceCommandBufferCommand(
+    void    recordCommandBufferCommand(
                 cl_command_buffer_khr cmdbuf,
                 const char* functionName,
                 const std::string& tag,
                 cl_uint num_sync_points_in_wait_list,
                 const cl_sync_point_khr* sync_point_wait_list,
                 cl_sync_point_khr* sync_point );
-    void    traceCommandBufferBarrier(
+    void    recordCommandBufferBarrier(
                 cl_command_buffer_khr cmdbuf,
                 const char* functionName,
                 cl_uint num_sync_points_in_wait_list,
                 const cl_sync_point_khr* sync_point_wait_list,
                 cl_sync_point_khr* sync_point );
-    void    traceCommandBufferFinalize(
+    void    recordCommandBufferFinalize(
+                cl_command_buffer_khr cmdbuf );
+    void    dumpCommandBufferRecording(
                 cl_command_buffer_khr cmdbuf );
 
     cl_command_queue    createCommandQueueWithProperties(
@@ -1369,8 +1371,8 @@ private:
     typedef std::map< cl_command_buffer_khr, cl_platform_id >   CCommandBufferInfoMap;
     CCommandBufferInfoMap   m_CommandBufferInfoMap;
 
-    typedef std::map< cl_command_buffer_khr, SCommandBufferTraceInfo >   CCommandBufferTraceInfoMap;
-    CCommandBufferTraceInfoMap  m_CommandBufferTraceInfoMap;
+    typedef std::map< cl_command_buffer_khr, SCommandBufferRecord > CCommandBufferRecordMap;
+    CCommandBufferRecordMap m_CommandBufferRecordMap;
 
     struct SMutableCommandInfo
     {
@@ -3490,19 +3492,18 @@ inline void CLIntercept::flushChromeTraceBuffering()
             _queues,                                                        \
             _cmdbuf );
 
-// TODO: Is "trace" the right verb here?
-#define TRACE_COMMAND_BUFFER_CREATE( _cmdbuf, _num_queues, _queues )        \
+#define RECORD_COMMAND_BUFFER_CREATE( _cmdbuf, _num_queues, _queues )       \
     if( _cmdbuf && pIntercept->config().DumpCommandBuffers ) {              \
-        pIntercept->traceCommandBufferCreate(                               \
+        pIntercept->recordCommandBufferCreate(                              \
             _cmdbuf,                                                        \
             _num_queues,                                                    \
             _queues );                                                      \
     }
 
-#define TRACE_COMMAND_BUFFER_COMMAND( _errcode, _cmdbuf, _nspwl, _spwl, _sp )\
+#define RECORD_COMMAND_BUFFER_COMMAND( _errcode, _cmdbuf, _nspwl, _spwl, _sp )\
     if( _errcode == CL_SUCCESS && _cmdbuf &&                                \
         pIntercept->config().DumpCommandBuffers ) {                         \
-        pIntercept->traceCommandBufferCommand(                              \
+        pIntercept->recordCommandBufferCommand(                             \
             _cmdbuf,                                                        \
             __FUNCTION__,                                                   \
             "",                                                             \
@@ -3511,10 +3512,10 @@ inline void CLIntercept::flushChromeTraceBuffering()
             _sp);                                                           \
     }
 
-#define TRACE_COMMAND_BUFFER_COMMAND_WITH_TAG( _errcode, _cmdbuf, _nspwl, _spwl, _sp )\
+#define RECORD_COMMAND_BUFFER_COMMAND_WITH_TAG( _errcode, _cmdbuf, _nspwl, _spwl, _sp )\
     if( _errcode == CL_SUCCESS && _cmdbuf &&                                \
         pIntercept->config().DumpCommandBuffers ) {                         \
-        pIntercept->traceCommandBufferCommand(                              \
+        pIntercept->recordCommandBufferCommand(                             \
             _cmdbuf,                                                        \
             __FUNCTION__,                                                   \
             hostTag,                                                        \
@@ -3523,10 +3524,10 @@ inline void CLIntercept::flushChromeTraceBuffering()
             _sp);                                                           \
     }
 
-#define TRACE_COMMAND_BUFFER_BARRIER( _errcode, _cmdbuf, _nspwl, _spwl, _sp )\
+#define RECORD_COMMAND_BUFFER_BARRIER( _errcode, _cmdbuf, _nspwl, _spwl, _sp )\
     if( _errcode == CL_SUCCESS && _cmdbuf &&                                \
         pIntercept->config().DumpCommandBuffers ) {                         \
-        pIntercept->traceCommandBufferBarrier(                              \
+        pIntercept->recordCommandBufferBarrier(                             \
             _cmdbuf,                                                        \
             __FUNCTION__,                                                   \
             _nspwl,                                                         \
@@ -3534,11 +3535,17 @@ inline void CLIntercept::flushChromeTraceBuffering()
             _sp);                                                           \
     }
 
-#define TRACE_COMMAND_BUFFER_FINALIZE( _errcode, _cmdbuf )                  \
+#define RECORD_COMMAND_BUFFER_FINALIZE( _errcode, _cmdbuf )                 \
     if( _errcode == CL_SUCCESS && _cmdbuf &&                                \
         pIntercept->config().DumpCommandBuffers ) {                         \
-        pIntercept->traceCommandBufferFinalize( _cmdbuf );                  \
+        pIntercept->recordCommandBufferFinalize( _cmdbuf );                 \
     }
+
+#define DUMP_COMMAND_BUFFER_RECORDING( _errcode, _cmdbuf )                  \
+    if( _errcode == CL_SUCCESS && _cmdbuf &&                                \
+        pIntercept->config().DumpCommandBuffers ) {                         \
+        pIntercept->dumpCommandBufferRecording( _cmdbuf );                  \
+    } 
 
 ///////////////////////////////////////////////////////////////////////////////
 //

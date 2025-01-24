@@ -6665,7 +6665,7 @@ cl_command_queue CLIntercept::getCommandBufferCommandQueue(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::traceCommandBufferCreate(
+void CLIntercept::recordCommandBufferCreate(
     cl_command_buffer_khr cmdbuf,
     cl_uint num_queues,
     const cl_command_queue* queues )
@@ -6687,13 +6687,13 @@ void CLIntercept::traceCommandBufferCreate(
 
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    SCommandBufferTraceInfo& traceInfo = m_CommandBufferTraceInfoMap[ cmdbuf ];
-    traceInfo.create(cmdbuf, isInOrder);
+    SCommandBufferRecord& recording = m_CommandBufferRecordMap[ cmdbuf ];
+    recording.recordCreate(cmdbuf, isInOrder);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::traceCommandBufferCommand(
+void CLIntercept::recordCommandBufferCommand(
     cl_command_buffer_khr cmdbuf,
     const char* functionName,
     const std::string& tag,
@@ -6703,8 +6703,8 @@ void CLIntercept::traceCommandBufferCommand(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    SCommandBufferTraceInfo& traceInfo = m_CommandBufferTraceInfoMap[ cmdbuf ];
-    traceInfo.traceCommand(
+    SCommandBufferRecord& recording = m_CommandBufferRecordMap[ cmdbuf ];
+    recording.recordCommand(
         nullptr,
         functionName,
         tag.c_str(),
@@ -6715,7 +6715,7 @@ void CLIntercept::traceCommandBufferCommand(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::traceCommandBufferBarrier(
+void CLIntercept::recordCommandBufferBarrier(
     cl_command_buffer_khr cmdbuf,
     const char* functionName,
     cl_uint num_sync_points_in_wait_list,
@@ -6724,8 +6724,8 @@ void CLIntercept::traceCommandBufferBarrier(
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    SCommandBufferTraceInfo& traceInfo = m_CommandBufferTraceInfoMap[ cmdbuf ];
-    traceInfo.traceBarrier(
+    SCommandBufferRecord& recording = m_CommandBufferRecordMap[ cmdbuf ];
+    recording.recordBarrier(
         nullptr,
         functionName,
         num_sync_points_in_wait_list,
@@ -6735,17 +6735,25 @@ void CLIntercept::traceCommandBufferBarrier(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::traceCommandBufferFinalize(
+void CLIntercept::recordCommandBufferFinalize(
     cl_command_buffer_khr cmdbuf )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    SCommandBufferTraceInfo& traceInfo = m_CommandBufferTraceInfoMap[ cmdbuf ];
-    traceInfo.finalize();
+    SCommandBufferRecord& recording = m_CommandBufferRecordMap[ cmdbuf ];
+    recording.recordFinalize();
+}
 
-    // Now dump the command buffer trace.
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::dumpCommandBufferRecording(
+    cl_command_buffer_khr cmdbuf )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
-    const auto& str = traceInfo.trace.str();
+    SCommandBufferRecord& recording = m_CommandBufferRecordMap[ cmdbuf ];
+
+    const auto& str = recording.getRecording();
     const char* ptr = str.c_str();
     size_t size = str.size();
 
@@ -6761,7 +6769,7 @@ void CLIntercept::traceCommandBufferFinalize(
     {
         char    numberString[256] = "";
 
-        if( config().OmitProgramNumber )    // TODO: add a different control?
+        if( config().OmitCommandBufferNumber )
         {
             CLI_SPRINTF( numberString, 256, "%08X",
                 (unsigned int)hash );
@@ -6791,7 +6799,7 @@ void CLIntercept::traceCommandBufferFinalize(
     m_CommandBufferNumber++;
 
     // Now that we are done tracing, we can remove the trace info.
-    m_CommandBufferTraceInfoMap.erase( cmdbuf );
+    m_CommandBufferRecordMap.erase( cmdbuf );
 }
 
 ///////////////////////////////////////////////////////////////////////////////

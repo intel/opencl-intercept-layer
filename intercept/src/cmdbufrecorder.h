@@ -15,20 +15,18 @@
 
 #include "common.h"
 
-struct SCommandBufferTraceInfo
+struct SCommandBufferRecord
 {
-    std::ostringstream trace;
-
-    void    create(
+    void    recordCreate(
                 cl_command_buffer_khr cmdbuf,
                 bool isInOrder)
     {
         queueIsInOrder = isInOrder;
-        trace << "digraph {\n";
-        trace << "  // " << (queueIsInOrder ? "in-order" : "out-of-order") << " command-buffer\n";
+        dotstring << "digraph {\n";
+        dotstring << "  // " << (queueIsInOrder ? "in-order" : "out-of-order") << " command-buffer\n";
     }
 
-    void    traceCommand(
+    void    recordCommand(
                 cl_command_queue queue,
                 const char* cmd,
                 const std::string& tag,
@@ -36,22 +34,22 @@ struct SCommandBufferTraceInfo
                 const cl_sync_point_khr* sync_point_wait_list,
                 cl_sync_point_khr* sync_point)
     {
-        SCommandBufferTraceId id =
+        SCommandBufferId id =
             sync_point == nullptr ?
             makeInternalId() :
             makeSyncPointId(*sync_point);
 
-        trace << "  " << (id.isInternal ? "internal" : "syncpoint") << id.id
+        dotstring << "  " << (id.isInternal ? "internal" : "syncpoint") << id.id
               << " [shape=oval, label=\"" << cmd;
         if( !tag.empty() )
         {
-            trace << "( " << tag << " )";
+            dotstring << "( " << tag << " )";
         }
-        trace << "\"]\n";
+        dotstring << "\"]\n";
 
         for( cl_uint s = 0; s < num_sync_points_in_wait_list; s++ )
         {
-            trace << "  syncpoint" << sync_point_wait_list[s]
+            dotstring << "  syncpoint" << sync_point_wait_list[s]
                   << " -> "
                   << (id.isInternal ? "internal" : "syncpoint") << id.id
                   << " // explicit dependency\n";
@@ -59,7 +57,7 @@ struct SCommandBufferTraceInfo
 
         for( const auto& dep : implicitDeps )
         {
-            trace << "  " << (dep.isInternal ? "internal" : "syncpoint") << dep.id
+            dotstring << "  " << (dep.isInternal ? "internal" : "syncpoint") << dep.id
                   << " -> "
                   << (id.isInternal ? "internal" : "syncpoint") << id.id
                   << " [style=dashed] // implicit dependency\n";
@@ -76,20 +74,20 @@ struct SCommandBufferTraceInfo
         }
     }
 
-    void    traceBarrier(
+    void    recordBarrier(
                 cl_command_queue queue,
                 const char* cmd,
                 cl_uint num_sync_points_in_wait_list,
                 const cl_sync_point_khr* sync_point_wait_list,
                 cl_sync_point_khr* sync_point)
     {
-        SCommandBufferTraceId id =
+        SCommandBufferId id =
             sync_point == nullptr ?
             makeInternalId() :
             makeSyncPointId(*sync_point);
 
-        trace << "  " << (id.isInternal ? "internal" : "syncpoint") << id.id
-              << " [shape=octagon, label=\"" << cmd << "\"]\n";
+        dotstring << "  " << (id.isInternal ? "internal" : "syncpoint") << id.id
+            << " [shape=octagon, label=\"" << cmd << "\"]\n";
 
         // If there is a sync point wait list, then the barrier depends on all
         // of the commands in the sync point wait list. Otherwise, the barrier
@@ -98,20 +96,20 @@ struct SCommandBufferTraceInfo
         {
             for( cl_uint s = 0; s < num_sync_points_in_wait_list; s++ )
             {
-                trace << "  syncpoint" << sync_point_wait_list[s]
-                      << " -> "
-                      << (id.isInternal ? "internal" : "syncpoint") << id.id
-                      << " // explicit dependency\n";
+                dotstring << "  syncpoint" << sync_point_wait_list[s]
+                    << " -> "
+                    << (id.isInternal ? "internal" : "syncpoint") << id.id
+                    << " // explicit dependency\n";
             }
         }
         else
         {
             for( const auto& dep : outstandingIds )
             {
-                trace << "  " << (dep.isInternal ? "internal" : "syncpoint") << dep.id
-                      << " -> "
-                      << (id.isInternal ? "internal" : "syncpoint") << id.id
-                      << " [style=dotted] // barrier dependency\n";
+                dotstring << "  " << (dep.isInternal ? "internal" : "syncpoint") << dep.id
+                    << " -> "
+                    << (id.isInternal ? "internal" : "syncpoint") << id.id
+                    << " [style=dotted] // barrier dependency\n";
             }
             outstandingIds.clear();
         }
@@ -119,10 +117,10 @@ struct SCommandBufferTraceInfo
         // Add the implicit dependencies.
         for( const auto& dep : implicitDeps )
         {
-            trace << "  " << (dep.isInternal ? "internal" : "syncpoint") << dep.id
-                  << " -> "
-                  << (id.isInternal ? "internal" : "syncpoint") << id.id
-                  << " [style=dashed] // implicit dependency\n";
+            dotstring << "  " << (dep.isInternal ? "internal" : "syncpoint") << dep.id
+                << " -> "
+                << (id.isInternal ? "internal" : "syncpoint") << id.id
+                << " [style=dashed] // implicit dependency\n";
         }
 
         // Now, the only implicit dependency that remains is this barrier.
@@ -130,37 +128,46 @@ struct SCommandBufferTraceInfo
         implicitDeps.push_back(id);
     }
 
-    void finalize()
+    void recordFinalize()
     {
-        trace << "}\n";
+        dotstring << "}\n";
     }
 
-private:
-    struct SCommandBufferTraceId
+    // Note: this cannot return a reference, because the underlying string is a
+    // temporary object.
+    const std::string getRecording() const
+    {
+        return dotstring.str();
+    }
+
+  private:
+    struct SCommandBufferId
     {
         bool        isInternal = false;
         uint32_t    id = 0;
     };
 
+    std::ostringstream dotstring;
+
     std::atomic<uint32_t> nextInternalId;
 
     bool    queueIsInOrder;
 
-    std::vector<SCommandBufferTraceId>  implicitDeps;
-    std::vector<SCommandBufferTraceId>  outstandingIds;
+    std::vector<SCommandBufferId>  implicitDeps;
+    std::vector<SCommandBufferId>  outstandingIds;
 
-    SCommandBufferTraceId makeInternalId()
+    SCommandBufferId makeInternalId()
     {
-        SCommandBufferTraceId id;
+        SCommandBufferId id;
         id.isInternal = true;
         id.id = nextInternalId.fetch_add(1, std::memory_order_relaxed);
         return id;
     }
 
-    SCommandBufferTraceId makeSyncPointId(
+    SCommandBufferId makeSyncPointId(
         cl_sync_point_khr sync_point)
     {
-        SCommandBufferTraceId id;
+        SCommandBufferId id;
         id.isInternal = false;
         id.id = sync_point;
         return id;
