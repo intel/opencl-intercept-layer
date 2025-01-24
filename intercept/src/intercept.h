@@ -3545,7 +3545,7 @@ inline void CLIntercept::flushChromeTraceBuffering()
     if( _errcode == CL_SUCCESS && _cmdbuf &&                                \
         pIntercept->config().DumpCommandBuffers ) {                         \
         pIntercept->dumpCommandBufferRecording( _cmdbuf );                  \
-    } 
+    }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
