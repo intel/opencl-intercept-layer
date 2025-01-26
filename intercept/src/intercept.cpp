@@ -6738,7 +6738,7 @@ void CLIntercept::recordCommandBufferCreate(
         queues,
         cmdbuf );
 
-    cl_command_queue_properties props = 0xA5A5A5A5;
+    cl_command_queue_properties props = 0;
     dispatch().clGetCommandQueueInfo(
         queue,
         CL_QUEUE_PROPERTIES,
