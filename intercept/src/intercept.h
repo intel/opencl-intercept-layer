@@ -419,15 +419,15 @@ public:
                 const size_t* lws,
                 std::string& hostTag,
                 std::string& deviceTag );
-    void    getTimingTagsCommandBufferKernel(
+    void    getRecordTagCommandBufferKernel(
                 const cl_command_buffer_khr cmdbuf,
                 const cl_kernel kernel,
                 const cl_uint workDim,
                 const size_t* gwo,
                 const size_t* gws,
                 const size_t* lws,
-                std::string& hostTag,
-                std::string& deviceTag );
+                const cl_mutable_command_khr* mutable_handle,
+                std::string& recordTag);
 
     void    updateHostTimingStats(
                 const char* functionName,
@@ -3203,19 +3203,19 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
             deviceTag );                                                    \
     }
 
-#define GET_TIMING_TAGS_COMMAND_BUFFER_KERNEL( _cmdbuf, _kernel, _dim, _gwo, _gws, _lws )\
-    std::string hostTag, deviceTag;                                         \
+#define GET_RECORD_TAG_COMMAND_BUFFER_KERNEL( _cmdbuf, _kernel, _dim, _gwo, _gws, _lws, _mh )\
+    std::string recordTag;                                                  \
     if( pIntercept->config().DumpCommandBuffers )                           \
     {                                                                       \
-        pIntercept->getTimingTagsCommandBufferKernel(                       \
+        pIntercept->getRecordTagCommandBufferKernel(                        \
             _cmdbuf,                                                        \
             _kernel,                                                        \
             _dim,                                                           \
             _gwo,                                                           \
             _gws,                                                           \
             _lws,                                                           \
-            hostTag,                                                        \
-            deviceTag );                                                    \
+            _mh,                                                            \
+            recordTag );                                                    \
     }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3518,7 +3518,7 @@ inline void CLIntercept::flushChromeTraceBuffering()
         pIntercept->recordCommandBufferCommand(                             \
             _cmdbuf,                                                        \
             __FUNCTION__,                                                   \
-            hostTag,                                                        \
+            recordTag,                                                      \
             _nspwl,                                                         \
             _spwl,                                                          \
             _sp);                                                           \

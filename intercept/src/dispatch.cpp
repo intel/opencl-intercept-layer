@@ -11425,13 +11425,14 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
                 command_queue,
                 kernel,
                 argsString.c_str() );
-            GET_TIMING_TAGS_COMMAND_BUFFER_KERNEL(
+            GET_RECORD_TAG_COMMAND_BUFFER_KERNEL(
                 command_buffer,
                 kernel,
                 work_dim,
                 global_work_offset,
                 global_work_size,
-                local_work_size );
+                local_work_size,
+                mutable_handle );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandNDRangeKernelKHR(

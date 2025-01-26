@@ -6005,30 +6005,93 @@ void CLIntercept::getTimingTagsKernel(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-void CLIntercept::getTimingTagsCommandBufferKernel(
+void CLIntercept::getRecordTagCommandBufferKernel(
     const cl_command_buffer_khr cmdbuf,
     const cl_kernel kernel,
     const cl_uint workDim,
     const size_t* gwo,
     const size_t* gws,
     const size_t* lws,
-    std::string& hostTag,
-    std::string& deviceTag )
+    const cl_mutable_command_khr* mutable_handle,
+    std::string& recordTag )
 {
-    cl_command_queue queue = getCommandBufferCommandQueue(
-        0,
-        nullptr,
-        cmdbuf );
+    std::lock_guard<std::mutex> lock(m_Mutex);
 
-    getTimingTagsKernel(
-        queue,
-        kernel,
-        workDim,
-        gwo,
-        gws,
-        lws,
-        hostTag,
-        deviceTag );
+    if( kernel )
+    {
+        std::ostringstream  ss;
+
+        recordTag += getShortKernelNameWithHash(kernel);
+
+        if( gwo )
+        {
+            ss << " GWO[ ";
+            if( workDim >= 1 )
+            {
+                ss << gwo[0];
+            }
+            if( workDim >= 2 )
+            {
+                ss << ", " << gwo[1];
+            }
+            if( workDim >= 3 )
+            {
+                ss << ", " << gwo[2];
+            }
+            ss << " ]";
+        }
+
+        ss << " GWS[ ";
+        if( gws )
+        {
+            if( workDim >= 1 )
+            {
+                ss << gws[0];
+            }
+            if( workDim >= 2 )
+            {
+                ss << " x " << gws[1];
+            }
+            if( workDim >= 3 )
+            {
+                ss << " x " << gws[2];
+            }
+        }
+        else
+        {
+            ss << "NULL";
+        }
+        ss << " ]";
+
+        ss << " LWS[ ";
+        if( lws )
+        {
+            if( workDim >= 1 )
+            {
+                ss << lws[0];
+            }
+            if( workDim >= 2 )
+            {
+                ss << " x " << lws[1];
+            }
+            if( workDim >= 3 )
+            {
+                ss << " x " << lws[2];
+            }
+        }
+        else
+        {
+            ss << "NULL";
+        }
+        ss << " ]";
+
+        if( mutable_handle )
+        {
+            ss << " [MUTABLE]";
+        }
+
+        recordTag += ss.str();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7171,6 +7234,7 @@ void CLIntercept::checkRemoveCommandBufferInfo(
             if( errorCode == CL_SUCCESS && refCount == 1 )
             {
                 m_CommandBufferInfoMap.erase( iter );
+                m_CommandBufferRecordMap.erase( cmdbuf );
 
                 CCommandBufferMutableCommandsMap::iterator cmditer =
                     m_CommandBufferMutableCommandsMap.find( cmdbuf );
