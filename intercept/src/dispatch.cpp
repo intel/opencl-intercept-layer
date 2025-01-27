@@ -8915,6 +8915,46 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_ext_buffer_device_address
+CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgDevicePointerEXT(
+    cl_kernel kernel,
+    cl_uint arg_index,
+    const cl_mem_device_address_ext* arg_value)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(kernel);
+        if( dispatchX.clSetKernelArgDevicePointerEXT )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER_KERNEL(
+                kernel,
+                "kernel = %p, index = %u, value = %" PRIu64,
+                kernel,
+                arg_index,
+                arg_value );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clSetKernelArgDevicePointerEXT(
+                kernel,
+                arg_index,
+                arg_value );
+
+            HOST_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_ext_image_requirements_info
 CL_API_ENTRY cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
     cl_context context,

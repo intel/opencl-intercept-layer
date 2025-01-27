@@ -487,6 +487,12 @@ struct CLdispatchX
         const size_t* global_work_size,
         size_t* suggested_local_work_size);
 
+    // cl_ext_buffer_device_address
+    cl_int  (CL_API_CALL *clSetKernelArgDevicePointerEXT) (
+        cl_kernel kernel,
+        cl_uint arg_index,
+        const cl_mem_device_address_ext* arg_value);
+
     // cl_ext_image_requirements_info
     cl_int  (CL_API_CALL *clGetImageRequirementsInfoEXT) (
         cl_context context,
