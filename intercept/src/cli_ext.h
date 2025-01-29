@@ -989,7 +989,7 @@ extern CL_API_ENTRY
 cl_int CL_API_CALL clSetKernelArgDevicePointerEXT(
     cl_kernel kernel,
     cl_uint arg_index,
-    const cl_mem_device_address_ext* arg_value);
+    cl_mem_device_address_ext arg_value);
 
 #define CL_MEM_DEVICE_PRIVATE_ADDRESS_EXT           0x5000
 #define CL_MEM_DEVICE_ADDRESS_EXT                   0x5001

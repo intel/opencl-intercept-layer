@@ -8919,7 +8919,7 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
 CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgDevicePointerEXT(
     cl_kernel kernel,
     cl_uint arg_index,
-    const cl_mem_device_address_ext* arg_value)
+    cl_mem_device_address_ext arg_value)
 {
     CLIntercept*    pIntercept = GetIntercept();
 
@@ -8931,7 +8931,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgDevicePointerEXT(
             GET_ENQUEUE_COUNTER();
             CALL_LOGGING_ENTER_KERNEL(
                 kernel,
-                "kernel = %p, index = %u, value = %" PRIu64,
+                "kernel = %p, index = %u, value = %" PRIx64,
                 kernel,
                 arg_index,
                 arg_value );
