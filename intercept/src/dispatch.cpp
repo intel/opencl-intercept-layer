@@ -10469,6 +10469,7 @@ CL_API_ENTRY cl_command_buffer_khr CL_API_CALL clCreateCommandBufferKHR(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION( retVal );
+            RECORD_COMMAND_BUFFER_CREATE( retVal, num_queues, queues );
             CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
 
             if( retVal != NULL )
@@ -10509,6 +10510,8 @@ CL_API_ENTRY cl_int CL_API_CALL clFinalizeCommandBufferKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_FINALIZE( retVal, command_buffer );
+            DUMP_COMMAND_BUFFER_RECORDING( retVal, command_buffer );
             CALL_LOGGING_EXIT( retVal );
 
             return retVal;
@@ -10715,6 +10718,12 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandBarrierWithWaitListKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_BARRIER(
+                retVal,
+                command_buffer,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point );
             CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
@@ -10779,6 +10788,12 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_COMMAND(
+                retVal,
+                command_buffer,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point );
             CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
@@ -10851,6 +10866,12 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferRectKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_COMMAND(
+                retVal,
+                command_buffer,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point );
             CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
@@ -10915,6 +10936,12 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyBufferToImageKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_COMMAND(
+                retVal,
+                command_buffer,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point );
             CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
@@ -10979,6 +11006,12 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_COMMAND(
+                retVal,
+                command_buffer,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point );
             CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
@@ -11045,6 +11078,12 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandCopyImageToBufferKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_COMMAND(
+                retVal,
+                command_buffer,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point );
             CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
@@ -11110,6 +11149,12 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillBufferKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_COMMAND(
+                retVal,
+                command_buffer,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point );
             CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
@@ -11173,6 +11218,12 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandFillImageKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_COMMAND(
+                retVal,
+                command_buffer,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point );
             CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
@@ -11236,6 +11287,12 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemcpyKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_COMMAND(
+                retVal,
+                command_buffer,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point );
             CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
@@ -11301,6 +11358,12 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandSVMMemFillKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_COMMAND(
+                retVal,
+                command_buffer,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point );
             CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND( mutable_handle, command_buffer );
 
@@ -11362,6 +11425,14 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
                 command_queue,
                 kernel,
                 argsString.c_str() );
+            GET_RECORD_TAG_COMMAND_BUFFER_KERNEL(
+                command_buffer,
+                kernel,
+                work_dim,
+                global_work_offset,
+                global_work_size,
+                local_work_size,
+                mutable_handle );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int  retVal = dispatchX.clCommandNDRangeKernelKHR(
@@ -11380,6 +11451,12 @@ CL_API_ENTRY cl_int CL_API_CALL clCommandNDRangeKernelKHR(
 
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
+            RECORD_COMMAND_BUFFER_COMMAND_WITH_TAG(
+                retVal,
+                command_buffer,
+                num_sync_points_in_wait_list,
+                sync_point_wait_list,
+                sync_point );
             CALL_LOGGING_EXIT_SYNC_POINT( retVal, sync_point );
             ADD_MUTABLE_COMMAND_NDRANGE( mutable_handle, command_buffer, work_dim );
 
