@@ -229,8 +229,8 @@ cl_int CL_API_CALL clEnqueueMemFillINTEL_EMU(
         return pIntercept->dispatch().clEnqueueSVMMemFill(
             queue,
             dst_ptr,
-            &pattern,
-            sizeof(pattern),
+            pattern,
+            pattern_size,
             size,
             num_events_in_wait_list,
             event_wait_list,

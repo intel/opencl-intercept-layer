@@ -155,6 +155,8 @@ CLIntercept::CLIntercept( void* pGlobalData )
     m_AubCaptureKernelEnqueueSkipCounter = 0;
     m_AubCaptureKernelEnqueueCaptureCounter = 0;
 
+    m_CommandBufferNumber = 0;
+
 #define CLI_CONTROL( _type, _name, _init, _desc )   m_Config . _name = _init;
 #include "controls.h"
 #undef CLI_CONTROL
@@ -2176,6 +2178,7 @@ void CLIntercept::getContextPropertiesString(
             case CL_CONTEXT_ADAPTER_D3D9EX_KHR:
             case CL_CONTEXT_ADAPTER_DXVA_KHR:
 #endif
+            case CL_PRINTF_CALLBACK_ARM:
                 {
                     const void** pp = (const void**)( properties + 1 );
                     const void*  value = pp[0];
@@ -2189,6 +2192,14 @@ void CLIntercept::getContextPropertiesString(
                     const cl_bool*  pb = (const cl_bool*)( properties + 1);
                     cl_bool value = pb[0];
                     str += enumName().name_bool( value );
+                }
+                break;
+            case CL_PRINTF_BUFFERSIZE_ARM:
+                {
+                    const size_t*   psz = (const size_t*)( properties + 1);
+                    size_t value = psz[0];
+                    CLI_SPRINTF( s, 256, "%zu", value );
+                    str += s;
                 }
                 break;
             case CL_CONTEXT_MEMORY_INITIALIZE_KHR:
@@ -6065,6 +6076,97 @@ void CLIntercept::getTimingTagsKernel(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getRecordTagCommandBufferKernel(
+    const cl_command_buffer_khr cmdbuf,
+    const cl_kernel kernel,
+    const cl_uint workDim,
+    const size_t* gwo,
+    const size_t* gws,
+    const size_t* lws,
+    const cl_mutable_command_khr* mutable_handle,
+    std::string& recordTag )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    if( kernel )
+    {
+        std::ostringstream  ss;
+
+        recordTag += getShortKernelNameWithHash(kernel);
+
+        if( gwo )
+        {
+            ss << " GWO[ ";
+            if( workDim >= 1 )
+            {
+                ss << gwo[0];
+            }
+            if( workDim >= 2 )
+            {
+                ss << ", " << gwo[1];
+            }
+            if( workDim >= 3 )
+            {
+                ss << ", " << gwo[2];
+            }
+            ss << " ]";
+        }
+
+        ss << " GWS[ ";
+        if( gws )
+        {
+            if( workDim >= 1 )
+            {
+                ss << gws[0];
+            }
+            if( workDim >= 2 )
+            {
+                ss << " x " << gws[1];
+            }
+            if( workDim >= 3 )
+            {
+                ss << " x " << gws[2];
+            }
+        }
+        else
+        {
+            ss << "NULL";
+        }
+        ss << " ]";
+
+        ss << " LWS[ ";
+        if( lws )
+        {
+            if( workDim >= 1 )
+            {
+                ss << lws[0];
+            }
+            if( workDim >= 2 )
+            {
+                ss << " x " << lws[1];
+            }
+            if( workDim >= 3 )
+            {
+                ss << " x " << lws[2];
+            }
+        }
+        else
+        {
+            ss << "NULL";
+        }
+        ss << " ]";
+
+        if( mutable_handle )
+        {
+            ss << " [MUTABLE]";
+        }
+
+        recordTag += ss.str();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::updateHostTimingStats(
     const char* functionName,
     const std::string& tag,
@@ -6637,7 +6739,7 @@ void CLIntercept::checkTimingEvents()
 //
 cl_command_queue CLIntercept::getCommandBufferCommandQueue(
     cl_uint numQueues,
-    cl_command_queue* queues,
+    const cl_command_queue* queues,
     cl_command_buffer_khr cmdbuf )
 {
     if( numQueues != 0 && queues != NULL )
@@ -6693,6 +6795,145 @@ cl_command_queue CLIntercept::getCommandBufferCommandQueue(
     }
 
     return queue;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::recordCommandBufferCreate(
+    cl_command_buffer_khr cmdbuf,
+    cl_uint num_queues,
+    const cl_command_queue* queues )
+{
+    cl_command_queue queue = getCommandBufferCommandQueue(
+        num_queues,
+        queues,
+        cmdbuf );
+
+    cl_command_queue_properties props = 0;
+    dispatch().clGetCommandQueueInfo(
+        queue,
+        CL_QUEUE_PROPERTIES,
+        sizeof(props),
+        &props,
+        NULL );
+
+    bool isInOrder = (props & CL_QUEUE_OUT_OF_ORDER_EXEC_MODE_ENABLE) == 0;
+
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    SCommandBufferRecord& recording = m_CommandBufferRecordMap[ cmdbuf ];
+    recording.recordCreate(cmdbuf, isInOrder);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::recordCommandBufferCommand(
+    cl_command_buffer_khr cmdbuf,
+    const char* functionName,
+    const std::string& tag,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    SCommandBufferRecord& recording = m_CommandBufferRecordMap[ cmdbuf ];
+    recording.recordCommand(
+        nullptr,
+        functionName,
+        tag.c_str(),
+        num_sync_points_in_wait_list,
+        sync_point_wait_list,
+        sync_point );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::recordCommandBufferBarrier(
+    cl_command_buffer_khr cmdbuf,
+    const char* functionName,
+    cl_uint num_sync_points_in_wait_list,
+    const cl_sync_point_khr* sync_point_wait_list,
+    cl_sync_point_khr* sync_point )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    SCommandBufferRecord& recording = m_CommandBufferRecordMap[ cmdbuf ];
+    recording.recordBarrier(
+        nullptr,
+        functionName,
+        num_sync_points_in_wait_list,
+        sync_point_wait_list,
+        sync_point );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::recordCommandBufferFinalize(
+    cl_command_buffer_khr cmdbuf )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    SCommandBufferRecord& recording = m_CommandBufferRecordMap[ cmdbuf ];
+    recording.recordFinalize();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::dumpCommandBufferRecording(
+    cl_command_buffer_khr cmdbuf )
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    SCommandBufferRecord& recording = m_CommandBufferRecordMap[ cmdbuf ];
+
+    const auto& str = recording.getRecording();
+    const char* ptr = str.c_str();
+    size_t size = str.size();
+
+    auto hash = computeHash( ptr, size );
+
+    std::string fileName;
+
+    // Get the dump directory name.
+    OS().GetDumpDirectoryName( sc_DumpDirectoryName, fileName );
+
+    // Make the file name.  It will have the form:
+    //   CLI_<program number>_<hash>_cmdbuf.dot
+    {
+        char    numberString[256] = "";
+
+        if( config().OmitCommandBufferNumber )
+        {
+            CLI_SPRINTF( numberString, 256, "%08X",
+                (unsigned int)hash );
+        }
+        else
+        {
+            CLI_SPRINTF( numberString, 256, "%04u_%08X",
+                m_CommandBufferNumber,
+                (unsigned int)hash );
+        }
+
+        fileName += "/CLI_";
+        fileName += numberString;
+        fileName += "_cmdbuf.dot";
+    }
+
+    // Now make directories as appropriate.
+    OS().MakeDumpDirectories( fileName );
+
+    log( "Dumping command buffer to file: " + fileName + "\n" );
+    dumpMemoryToFile(
+        fileName,
+        false,
+        ptr,
+        size );
+
+    m_CommandBufferNumber++;
+
+    // Now that we are done tracing, we can remove the trace info.
+    m_CommandBufferRecordMap.erase( cmdbuf );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7064,6 +7305,7 @@ void CLIntercept::checkRemoveCommandBufferInfo(
             if( errorCode == CL_SUCCESS && refCount == 1 )
             {
                 m_CommandBufferInfoMap.erase( iter );
+                m_CommandBufferRecordMap.erase( cmdbuf );
 
                 CCommandBufferMutableCommandsMap::iterator cmditer =
                     m_CommandBufferMutableCommandsMap.find( cmdbuf );

@@ -525,6 +525,16 @@ This is the list of options that is implicitly passed to CLANG to build a non-Op
 
 This is the list of options that is implicitly passed to CLANG to build an OpenCL 2.0 SPIR-V module.  Any application-provided build options will be appended to these build options.
 
+### Controls for Dumping Command Buffers
+
+##### `OmitCommandBufferNumber` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will omit the command buffer number from dumped file names and hash tracking.  This can produce deterministic results even if command buffers are creatd and finalized in a non-deterministic order (say, by multiple threads).
+
+##### `DumpCommandBuffers` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump the commands and dependencies in a command buffer to a file when the command buffer is successfully finalized.  The file name will have the form "CLI\_\<Command BufferNumber\>\_\<Uniqueue Command BufferHash Code\>\_cmdbuf.dot".   The command buffer is described using the DOT graph description language.
+
 ### Controls for Dumping and Injecting Buffers and Images
 
 ##### `DumpBufferHashes` (bool)

@@ -688,12 +688,12 @@ CEnumNameMap::CEnumNameMap()
 
     // cl_khr_command_buffer
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMMAND_BUFFER_CAPABILITIES_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMMAND_BUFFER_SUPPORTED_QUEUE_PROPERTIES_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_COMMAND_BUFFER_REQUIRED_QUEUE_PROPERTIES_KHR );
 
     ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_KERNEL_PRINTF_KHR );
     ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_DEVICE_SIDE_ENQUEUE_KHR );
     ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_SIMULTANEOUS_USE_KHR );
-    ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_OUT_OF_ORDER_KHR );
 
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_BUFFER_FLAGS_KHR );
 
