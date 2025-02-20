@@ -2446,6 +2446,14 @@ void CLIntercept::getMemPropertiesString(
                     properties += 2;
                 }
                 break;
+            case CL_MEM_DEVICE_PRIVATE_ADDRESS_EXT:
+                {
+                    auto pb = (const cl_bool*)( properties + 1 );
+                    cl_bool value = pb[0];
+                    str += enumName().name_bool( value );
+                    properties += 2;
+                }
+                break;
             default:
                 {
                     CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
@@ -13409,6 +13417,9 @@ void* CLIntercept::getExtensionFunctionAddress(
 
     // cl_khr_suggested_local_work_size
     CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeKHR );
+
+    // cl_ext_buffer_device_address
+    CHECK_RETURN_EXTENSION_FUNCTION( clSetKernelArgDevicePointerEXT );
 
     // cl_ext_image_requirements_info
     CHECK_RETURN_EXTENSION_FUNCTION( clGetImageRequirementsInfoEXT );
