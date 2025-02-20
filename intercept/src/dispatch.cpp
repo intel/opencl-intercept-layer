@@ -7659,7 +7659,9 @@ CL_API_ENTRY cl_int CL_API_CALL clGetGLContextInfoKHR(
     if( pIntercept && pIntercept->dispatch().clGetGLContextInfoKHR )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER();
+        CALL_LOGGING_ENTER( "param_name = %s (%08X)",
+            pIntercept->enumName().name( param_name ).c_str(),
+            param_name );
         HOST_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = pIntercept->dispatch().clGetGLContextInfoKHR(
