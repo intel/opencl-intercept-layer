@@ -882,6 +882,11 @@ CEnumNameMap::CEnumNameMap()
     // cl_ext_atomic_counters
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT );
 
+    // cl_ext_buffer_device_address
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_DEVICE_PRIVATE_ADDRESS_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_DEVICE_ADDRESS_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_DEVICE_PTRS_EXT );
+
     // cl_ext_cxx_for_opencl
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_CXX_FOR_OPENCL_NUMERIC_VERSION_EXT );
 
