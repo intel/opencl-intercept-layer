@@ -1028,6 +1028,11 @@ cl_int CL_API_CALL clSetKernelArgDevicePointerEXT(
 #define CL_PARTITION_BY_NAMES_LIST_END_EXT          -1
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_ext_immutable_memory_objects
+
+#define CL_MEM_IMMUTABLE_EXT                        (1 << 6)
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_ext_float_atomics
 
 typedef cl_bitfield         cl_device_fp_atomic_capabilities_ext;
