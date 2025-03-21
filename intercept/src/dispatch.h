@@ -521,6 +521,12 @@ struct CLdispatchX
         size_t size,
         cl_uint* suggested_svm_type_index);
 
+    // cl_ext_buffer_device_address
+    cl_int  (CL_API_CALL *clSetKernelArgDevicePointerEXT) (
+        cl_kernel kernel,
+        cl_uint arg_index,
+        cl_mem_device_address_ext arg_value);
+
     // cl_ext_image_requirements_info
     cl_int  (CL_API_CALL *clGetImageRequirementsInfoEXT) (
         cl_context context,

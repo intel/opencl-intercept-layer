@@ -1069,6 +1069,21 @@ cl_int CL_API_CALL clGetSVMSuggestedTypeIndexKHR(
 #define CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT           0x4032
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_ext_buffer_device_address
+
+typedef cl_ulong cl_mem_device_address_ext;
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clSetKernelArgDevicePointerEXT(
+    cl_kernel kernel,
+    cl_uint arg_index,
+    cl_mem_device_address_ext arg_value);
+
+#define CL_MEM_DEVICE_PRIVATE_ADDRESS_EXT           0x5000
+#define CL_MEM_DEVICE_ADDRESS_EXT                   0x5001
+#define CL_KERNEL_EXEC_INFO_DEVICE_PTRS_EXT         0x5002
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_ext_cxx_for_opencl
 
 #define CL_DEVICE_CXX_FOR_OPENCL_NUMERIC_VERSION_EXT 0x4230
@@ -1099,6 +1114,11 @@ cl_int CL_API_CALL clGetSVMSuggestedTypeIndexKHR(
 
 #define CL_PARTITION_BY_COUNTS_LIST_END_EXT         0x0
 #define CL_PARTITION_BY_NAMES_LIST_END_EXT          -1
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_ext_immutable_memory_objects
+
+#define CL_MEM_IMMUTABLE_EXT                        (1 << 6)
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_ext_float_atomics

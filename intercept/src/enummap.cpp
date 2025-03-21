@@ -304,7 +304,6 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_USE_HOST_PTR );
     ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_ALLOC_HOST_PTR );
     ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_COPY_HOST_PTR );
-    // reserved                                         (1 << 6)
     ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_HOST_WRITE_ONLY );
     ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_HOST_READ_ONLY );
     ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_HOST_NO_ACCESS );
@@ -901,6 +900,11 @@ CEnumNameMap::CEnumNameMap()
     // cl_ext_atomic_counters
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT );
 
+    // cl_ext_buffer_device_address
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_DEVICE_PRIVATE_ADDRESS_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_MEM_DEVICE_ADDRESS_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_DEVICE_PTRS_EXT );
+
     // cl_ext_cxx_for_opencl
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_CXX_FOR_OPENCL_NUMERIC_VERSION_EXT );
 
@@ -934,6 +938,9 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_IMAGE_REQUIREMENTS_MAX_HEIGHT_EXT );
     ADD_ENUM_NAME( m_cl_int, CL_IMAGE_REQUIREMENTS_MAX_DEPTH_EXT );
     ADD_ENUM_NAME( m_cl_int, CL_IMAGE_REQUIREMENTS_MAX_ARRAY_SIZE_EXT );
+
+    // cl_ext_immutable_memory_objects
+    ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_IMMUTABLE_EXT );
 
     // cl_altera_compiler_mode
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_COMPILER_MODE_ALTERA );

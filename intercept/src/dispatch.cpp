@@ -7655,7 +7655,9 @@ CL_API_ENTRY cl_int CL_API_CALL clGetGLContextInfoKHR(
     if( pIntercept && pIntercept->dispatch().clGetGLContextInfoKHR )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER();
+        CALL_LOGGING_ENTER( "param_name = %s (%08X)",
+            pIntercept->enumName().name( param_name ).c_str(),
+            param_name );
         HOST_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = pIntercept->dispatch().clGetGLContextInfoKHR(
@@ -8911,6 +8913,46 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_ext_buffer_device_address
+CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgDevicePointerEXT(
+    cl_kernel kernel,
+    cl_uint arg_index,
+    cl_mem_device_address_ext arg_value)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(kernel);
+        if( dispatchX.clSetKernelArgDevicePointerEXT )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER_KERNEL(
+                kernel,
+                "kernel = %p, index = %u, value = %" PRIx64,
+                kernel,
+                arg_index,
+                arg_value );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_int  retVal = dispatchX.clSetKernelArgDevicePointerEXT(
+                kernel,
+                arg_index,
+                arg_value );
+
+            HOST_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_KERNEL);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_khr_unified_svm
 CL_API_ENTRY void* CL_API_CALL clSVMAllocWithPropertiesKHR(
     cl_context context,
@@ -9066,7 +9108,19 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSVMSuggestedTypeIndexKHR(
         if( dispatchX.clGetSVMSuggestedTypeIndexKHR )
         {
             GET_ENQUEUE_COUNTER();
-            CALL_LOGGING_ENTER();
+            std::string propsStr;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getSVMAllocPropertiesString(
+                    properties,
+                    propsStr );
+            }
+            CALL_LOGGING_ENTER( "context = %p, required_capabilities = %llX, desired_capabilities = %llX, properties = [ %s ], size = %zu",
+                context,
+                required_capabilities,
+                desired_capabilities,
+                propsStr.c_str(),
+                size );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int retVal = dispatchX.clGetSVMSuggestedTypeIndexKHR(
