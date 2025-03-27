@@ -221,6 +221,7 @@ CLI_CONTROL( cl_uint,       DevicePreferredVectorWidthHalf,         UINT_MAX, "I
 CLI_CONTROL( cl_uint,       DevicePreferredVectorWidthFloat,        UINT_MAX, "If set to a non-negative value, the clGetDeviceInfo() query for CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT will return this value instead of the true device preferred vector width." )
 CLI_CONTROL( cl_uint,       DevicePreferredVectorWidthDouble,       UINT_MAX, "If set to a non-negative value, the clGetDeviceInfo() query for CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE will return this value instead of the true device preferred vector width." )
 CLI_CONTROL( std::string,   DriverVersion,                          "",    "If set to a non-empty string, the clGetDeviceInfo() query for CL_DRIVER_VERSION will return this value instead of the true driver version." )
+CLI_CONTROL( std::string,   PrependDeviceExtensions,                "",    "If set to a non-empty string, the clGetDeviceInfo() query for CL_DEVICE_EXTENSIONS will return this value followed by the true device extensions string." )
 
 CLI_CONTROL_SEPARATOR( Precompiled Kernel and Builtin Kernel Override Controls: )
 CLI_CONTROL( bool,          ForceByteBufferOverrides,               false, "If set to a nonzero value, each of the buffer functions that are overridden (via one or more of the keys below) will use a byte-wise operation to read/write/copy the buffer (default behavior is to try to copy multiple bytes at a time, if possible).  Note: Requires OpenCL 1.1 or the \"byte addressable store\" extension." )
