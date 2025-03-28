@@ -15,7 +15,12 @@ jobs:
   release:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
+        include:
+          - os: windows-latest
+            windows-arch: x64
+          - os: windows-latest
+            windows-arch: Win32
 
     runs-on: ${{matrix.os}}
 
@@ -42,7 +47,12 @@ jobs:
     - name: Run CMake
       shell: bash
       working-directory: ./build
-      run: cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE $GITHUB_WORKSPACE
+      run: |
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -A ${{ matrix.windows-arch }} $GITHUB_WORKSPACE
+        else
+          cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE                               $GITHUB_WORKSPACE
+        fi
 
     - name: Build
       working-directory: ./build
