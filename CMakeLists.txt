@@ -9,7 +9,7 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_CXX_STANDARD 11)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
-project(CLIntercept VERSION 3.0.5 LANGUAGES CXX)
+project(CLIntercept VERSION 3.0.6 LANGUAGES CXX)
 
 if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type selected, default to RelWithDebInfo")
