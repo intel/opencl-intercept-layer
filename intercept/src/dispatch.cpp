@@ -2564,7 +2564,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramInfo)(
     if( pIntercept && pIntercept->dispatch().clGetProgramInfo )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER( "param_name = %s (%08X)",
+        CALL_LOGGING_ENTER( "program = %p, param_name = %s (%08X)",
+            program,
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
         HOST_PERFORMANCE_TIMING_START();
@@ -2601,7 +2602,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramBuildInfo)(
     if( pIntercept && pIntercept->dispatch().clGetProgramBuildInfo )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER( "param_name = %s (%08X)",
+        CALL_LOGGING_ENTER( "program = %p, param_name = %s (%08X)",
+            program,
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
         HOST_PERFORMANCE_TIMING_START();
