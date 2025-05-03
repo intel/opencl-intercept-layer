@@ -931,6 +931,15 @@ CEnumNameMap::CEnumNameMap()
     // cl_altera_device_temperature
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_CORE_TEMPERATURE_ALTERA );
 
+    // cl_amd_command_queue_info
+    ADD_ENUM_NAME( m_cl_int, CL_QUEUE_THREAD_HANDLE_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_NEW_VCOP_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_PFPA_VCOP_AMD );
+
+    // cl_amd_copy_buffer_p2p
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NUM_P2P_DEVICES_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_P2P_DEVICES_AMD );
+
     // cl_amd_device_attribute_query
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_WORK_GROUP_SIZE_AMD );
@@ -940,6 +949,7 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TOPOLOGY_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_BOARD_NAME_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GLOBAL_FREE_MEMORY_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_REAL_TIME_COMPUTE_UNITS_GRANULARITY_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SIMD_PER_COMPUTE_UNIT_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SIMD_WIDTH_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SIMD_INSTRUCTION_WIDTH_AMD );
@@ -953,6 +963,16 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GFXIP_MAJOR_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_GFXIP_MINOR_AMD );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_AVAILABLE_ASYNC_QUEUES_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_REAL_TIME_COMPUTE_QUEUES_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_REAL_TIME_COMPUTE_UNITS_AMD );
+
+    // cl_amd_device_memory_flags
+    // enum conflict for CL_MEM_USE_PERSISTENT_MEM_AMD!
+
+    // cl_amd_object_metadata
+    // enum conflict for CL_INVALID_OBJECT_AMD!
+    ADD_ENUM_NAME( m_cl_int, CL_INVALID_KEY_AMD );
+    ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_MAX_KEYS_AMD );
 
     // cl_amd_offline_devices
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_OFFLINE_DEVICES_AMD );

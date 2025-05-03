@@ -1091,6 +1091,19 @@ cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
 #define CL_DEVICE_CORE_TEMPERATURE_ALTERA               0x40F3
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_amd_command_queue_info
+
+#define CL_QUEUE_THREAD_HANDLE_AMD                  0x403E
+#define CL_KERNEL_EXEC_INFO_NEW_VCOP_AMD            0x4120
+#define CL_KERNEL_EXEC_INFO_PFPA_VCOP_AMD           0x4121
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_amd_copy_buffer_p2p
+
+#define CL_DEVICE_NUM_P2P_DEVICES_AMD               0x4088
+#define CL_DEVICE_P2P_DEVICES_AMD                   0x4089
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_amd_device_attribute_query
 
 #define CL_DEVICE_PREFERRED_WORK_GROUP_SIZE_AMD     0x4030
@@ -1101,6 +1114,7 @@ cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
 #define CL_DEVICE_TOPOLOGY_AMD                      0x4037
 #define CL_DEVICE_BOARD_NAME_AMD                    0x4038
 #define CL_DEVICE_GLOBAL_FREE_MEMORY_AMD            0x4039
+#define CL_DEVICE_MAX_REAL_TIME_COMPUTE_UNITS_GRANULARITY_AMD 0x403A
 #define CL_DEVICE_SIMD_PER_COMPUTE_UNIT_AMD         0x4040
 #define CL_DEVICE_SIMD_WIDTH_AMD                    0x4041
 #define CL_DEVICE_SIMD_INSTRUCTION_WIDTH_AMD        0x4042
@@ -1114,6 +1128,22 @@ cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
 #define CL_DEVICE_GFXIP_MAJOR_AMD                   0x404A
 #define CL_DEVICE_GFXIP_MINOR_AMD                   0x404B
 #define CL_DEVICE_AVAILABLE_ASYNC_QUEUES_AMD        0x404C
+#define CL_DEVICE_MAX_REAL_TIME_COMPUTE_QUEUES_AMD  0x404D
+#define CL_DEVICE_MAX_REAL_TIME_COMPUTE_UNITS_AMD   0x404E
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_amd_device_memory_flags
+
+// note: enum conflict!
+#define CL_MEM_USE_PERSISTENT_MEM_AMD               (1 << 6)
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_amd_object_metadata
+
+// note: enum conflict!
+#define CL_INVALID_OBJECT_AMD                       0x403A
+#define CL_INVALID_KEY_AMD                          0x403B
+#define CL_PLATFORM_MAX_KEYS_AMD                    0x403C
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_amd_offline_devices
