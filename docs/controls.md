@@ -891,6 +891,10 @@ If set to a non-negative value, the clGetDeviceInfo() query for CL\_DEVICE\_PREF
 
 If set to a non-empty string, the clGetDeviceInfo() query for CL\_DRIVER\_VERSION will return this value instead of the true driver version.
 
+##### `PrependDeviceExtensions` (string)
+
+If set to a non-empty string, the clGetDeviceInfo() query for CL\_DEVICE\_EXTENSIONS will return this value followed by the true device extensions string.
+
 ### Precompiled Kernel and Builtin Kernel Override Controls
 
 ##### `ForceByteBufferOverrides` (bool)

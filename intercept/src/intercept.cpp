@@ -11222,7 +11222,7 @@ bool CLIntercept::overrideGetPlatformInfo(
     switch( param_name )
     {
     case CL_PLATFORM_NAME:
-        if( m_Config.PlatformName != "" )
+        if( !m_Config.PlatformName.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(
@@ -11234,7 +11234,7 @@ bool CLIntercept::overrideGetPlatformInfo(
         }
         break;
     case CL_PLATFORM_VENDOR:
-        if( m_Config.PlatformVendor != "" )
+        if( !m_Config.PlatformVendor.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(
@@ -11246,7 +11246,7 @@ bool CLIntercept::overrideGetPlatformInfo(
         }
         break;
     case CL_PLATFORM_PROFILE:
-        if( m_Config.PlatformProfile != "" )
+        if( !m_Config.PlatformProfile.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(
@@ -11258,7 +11258,7 @@ bool CLIntercept::overrideGetPlatformInfo(
         }
         break;
     case CL_PLATFORM_VERSION:
-        if( m_Config.PlatformVersion != "" )
+        if( !m_Config.PlatformVersion.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(
@@ -11380,7 +11380,7 @@ bool CLIntercept::overrideGetDeviceInfo(
         }
         break;
     case CL_DEVICE_NAME:
-        if( m_Config.DeviceName != "" )
+        if( !m_Config.DeviceName.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(
@@ -11392,7 +11392,7 @@ bool CLIntercept::overrideGetDeviceInfo(
         }
         break;
     case CL_DEVICE_EXTENSIONS:
-        if( m_Config.DeviceExtensions != "" )
+        if( !m_Config.DeviceExtensions.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(
@@ -11402,11 +11402,16 @@ bool CLIntercept::overrideGetDeviceInfo(
                 ptr );
             override = true;
         }
-        else if( m_Config.Emulate_cl_khr_extended_versioning ||
+        else if( !m_Config.PrependDeviceExtensions.empty() ||
+                 m_Config.Emulate_cl_khr_extended_versioning ||
                  m_Config.Emulate_cl_khr_semaphore ||
                  m_Config.Emulate_cl_intel_unified_shared_memory )
         {
-            std::string newExtensions;
+            std::string newExtensions(m_Config.PrependDeviceExtensions);
+            if( !newExtensions.empty() && newExtensions.back() != ' ' )
+            {
+                newExtensions.push_back(' ');
+            }
             if( m_Config.Emulate_cl_khr_extended_versioning &&
                 !checkDeviceForExtension( device, "cl_khr_extended_versioning") )
             {
@@ -11447,7 +11452,7 @@ bool CLIntercept::overrideGetDeviceInfo(
         }
         break;
     case CL_DEVICE_VENDOR:
-        if( m_Config.DeviceVendor != "" )
+        if( !m_Config.DeviceVendor.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(
@@ -11459,7 +11464,7 @@ bool CLIntercept::overrideGetDeviceInfo(
         }
         break;
     case CL_DEVICE_PROFILE:
-        if( m_Config.DeviceProfile != "" )
+        if( !m_Config.DeviceProfile.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(
@@ -11471,7 +11476,7 @@ bool CLIntercept::overrideGetDeviceInfo(
         }
         break;
     case CL_DEVICE_VERSION:
-        if( m_Config.DeviceVersion != "" )
+        if( !m_Config.DeviceVersion.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(
@@ -11483,7 +11488,7 @@ bool CLIntercept::overrideGetDeviceInfo(
         }
         break;
     case CL_DEVICE_OPENCL_C_VERSION:
-        if( m_Config.DeviceCVersion != "" )
+        if( !m_Config.DeviceCVersion.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(
@@ -11495,7 +11500,7 @@ bool CLIntercept::overrideGetDeviceInfo(
         }
         break;
     case CL_DEVICE_IL_VERSION:
-        if( m_Config.DeviceILVersion != "" )
+        if( !m_Config.DeviceILVersion.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(
@@ -11773,7 +11778,7 @@ bool CLIntercept::overrideGetDeviceInfo(
         }
         break;
     case CL_DRIVER_VERSION:
-        if( m_Config.DriverVersion != "" )
+        if( !m_Config.DriverVersion.empty() )
         {
             char*   ptr = (char*)param_value;
             errorCode = writeStringToMemory(

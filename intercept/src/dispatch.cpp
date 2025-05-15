@@ -625,9 +625,9 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
     {
         GET_ENQUEUE_COUNTER();
 
-        cl_uint ref_count =
-            pIntercept->config().CallLogging ?
-            pIntercept->getRefCount( context ) : 0;
+        // Note: we use the ref count to for device performance timing checks,
+        // so get it unconditionally.
+        cl_uint ref_count = pIntercept->getRefCount( context );
         CALL_LOGGING_ENTER( "[ ref count = %d ] context = %p",
             ref_count,
             context );
@@ -639,7 +639,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
         HOST_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         ADD_OBJECT_RELEASE( context );
-        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", --ref_count );
+        --ref_count;
+        CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
         DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( ref_count == 0 );
         FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( ref_count == 0 );
 
@@ -2563,7 +2564,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramInfo)(
     if( pIntercept && pIntercept->dispatch().clGetProgramInfo )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER( "param_name = %s (%08X)",
+        CALL_LOGGING_ENTER( "program = %p, param_name = %s (%08X)",
+            program,
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
         HOST_PERFORMANCE_TIMING_START();
@@ -2600,7 +2602,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetProgramBuildInfo)(
     if( pIntercept && pIntercept->dispatch().clGetProgramBuildInfo )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER( "param_name = %s (%08X)",
+        CALL_LOGGING_ENTER( "program = %p, param_name = %s (%08X)",
+            program,
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
         HOST_PERFORMANCE_TIMING_START();

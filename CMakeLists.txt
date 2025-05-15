@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: MIT
 
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.16 FATAL_ERROR)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
 set(CMAKE_CXX_STANDARD 11)
 #set(CMAKE_VERBOSE_MAKEFILE ON)
 
-project(CLIntercept VERSION 3.0.5 LANGUAGES CXX)
+project(CLIntercept VERSION 3.0.6 LANGUAGES CXX)
 
 if(NOT CMAKE_BUILD_TYPE)
     message(STATUS "No build type selected, default to RelWithDebInfo")
