@@ -54,13 +54,16 @@ If the buffers don't agree, it will show a message in the terminal.
   * Device only buffers, i.e. those with `CL_MEM_HOST_NO_ACCESS`.  When kernel capture is enabled, any device-only access flags are removed.
 * OpenCL Images
   * 2D, and 3D images are supported.
+* OpenCL SVM and USM
+  * Pointers to the base of an SVM or USM allocation are supported.
 * OpenCL Samplers
 * OpenCL Kernels from source or IL
 * OpenCL Kernels from device binary
 
 ## Limitations (incomplete)
 
-* Does not work with OpenCL SVM or USM.
+* Does not work with pointers to the middle of an OpenCL SVM or USM allocation.
+* Does not work with SVM or USM indirect access, where the SVM or USM allocation is not set as a kernel argument.
 * Does not work with OpenCL pipes.
 * Untested for out-of-order queues.
 * Sub-buffers are not dealt with explicitly, this may affect the results for both debugging and performance.

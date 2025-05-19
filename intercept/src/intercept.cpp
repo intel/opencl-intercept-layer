@@ -7706,6 +7706,16 @@ void CLIntercept::setKernelArgSVMPointer(
         CArgMemMap& argMemMap = m_KernelArgMemMap[ kernel ];
         argMemMap[ arg_index ] = startPtr;
     }
+
+    // Currently, only pointers to the start of an SVM allocation are supported for
+    // capture and replay.
+    if( arg == startPtr )
+    {
+        CArgDataMap& argDataMap = m_KernelArgDataMap[kernel];
+        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(arg);
+        argDataMap[ arg_index ] = std::vector<uint8_t>(
+            pRawArgData, pRawArgData + sizeof(void*) );
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7735,6 +7745,16 @@ void CLIntercept::setKernelArgUSMPointer(
     {
         CArgMemMap& argMemMap = m_KernelArgMemMap[ kernel ];
         argMemMap[ arg_index ] = startPtr;
+    }
+
+    // Currently, only pointers to the start of an SVM allocation are supported for
+    // capture and replay.
+    if( arg == startPtr )
+    {
+        CArgDataMap& argDataMap = m_KernelArgDataMap[kernel];
+        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(arg);
+        argDataMap[ arg_index ] = std::vector<uint8_t>(
+            pRawArgData, pRawArgData + sizeof(void*) );
     }
 }
 
