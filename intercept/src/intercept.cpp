@@ -7712,7 +7712,7 @@ void CLIntercept::setKernelArgSVMPointer(
     if( arg == startPtr )
     {
         CArgDataMap& argDataMap = m_KernelArgDataMap[kernel];
-        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(arg);
+        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(&arg);
         argDataMap[ arg_index ] = std::vector<uint8_t>(
             pRawArgData, pRawArgData + sizeof(void*) );
     }
@@ -7752,7 +7752,7 @@ void CLIntercept::setKernelArgUSMPointer(
     if( arg == startPtr )
     {
         CArgDataMap& argDataMap = m_KernelArgDataMap[kernel];
-        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(arg);
+        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(&arg);
         argDataMap[ arg_index ] = std::vector<uint8_t>(
             pRawArgData, pRawArgData + sizeof(void*) );
     }
