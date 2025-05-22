@@ -162,8 +162,10 @@ else:
         try:
             prg = cl.Program(ctx, [device], [binaries[idx]]).build(options)
             getattr(prg, kernel_name)
+            print(f"Successfully loaded kernel device binary file: {binary_files[idx]}")
             break
         except Exception as e:
+            print(f"Failed to load kernel device binary file: {binary_files[idx]}")
             pass
 
 kernel = getattr(prg, kernel_name)
