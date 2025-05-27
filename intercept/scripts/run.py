@@ -150,6 +150,11 @@ if os.path.isfile("kernel.cl"):
     with open("kernel.cl", 'r') as file:
         kernel = file.read()
     prg = cl.Program(ctx, kernel).build(options)
+elif os.path.isfile("kernel.spv"):
+    print("Using kernel IL")
+    with open("kernel.spv", 'r') as file:
+        kernel = np.fromfile(file, dtype='uint8').tobytes()
+    prg = cl.Program(ctx, kernel).build(options)
 else:
     print("Using kernel device binary")
     binary_files = gl.glob("./DeviceBinary*.bin")
