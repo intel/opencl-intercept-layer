@@ -99,73 +99,9 @@ if replay_location == None:
     print('Please check that the kernel name and replay number was set correctly.')
     exit()
 
-# Run extracted kernel to dump output buffers
 os.chdir(replay_location)
 python_exe = sys.executable
-print('\n\nReplaying kernel:')
-subprocess.run([str(python_exe), "run.py"])
+print('\n\nReplaying kernel and validating:')
+subprocess.run([str(python_exe), "run.py", "--validate"])
 
 print('Done!\n\n')
-print('Now starting validation...')
-
-# Read the enqueue number from the file
-with open('./enqueueNumber.txt') as file:
-    enqueue_number = file.read().splitlines()[0]
-
-# Pad the enqueue number to at least 4 digits
-padded_enqueue_num = str(enqueue_number).rjust(4, "0")
-
-# Compare the buffers for binary equality
-replayed_buffers = gl.glob("./Test/Enqueue_" + padded_enqueue_num + "_Kernel_*.bin")
-replayed_hashes = {}
-for replayed_buffer in replayed_buffers:
-    start = replayed_buffer.find("_Arg_")
-    idx = int(re.findall(r'\d+', replayed_buffer[start:])[0])
-    replayed_hashes[idx] = hashlib.md5(np.fromfile(replayed_buffer)).hexdigest()
-
-# Compare the images for binary equality
-replayed_images = gl.glob("./Test/Enqueue_" + padded_enqueue_num + "_Kernel_*.raw")
-for replayed_image in replayed_images:
-    start = replayed_image.find("_Arg_")
-    idx = int(re.findall(r'\d+', replayed_image[start:])[0])
-    replayed_hashes[idx] = hashlib.md5(np.fromfile(replayed_image)).hexdigest()
-
-try:
-    with open('./ArgumentDataTypes.txt') as file:
-        data_types = [line.rsplit() for line in file.readlines()]
-except:
-    print("Information about argument data types not available!")
-
-dumped_buffers = gl.glob("./Post/Enqueue_" + padded_enqueue_num + "_Kernel_*.bin")
-dumped_hashes = {}
-for dumped_buffer in dumped_buffers:
-    start = dumped_buffer.find("_Arg_")
-    idx = int(re.findall(r'\d+', dumped_buffer[start:])[0])
-    dumped_hashes[idx] = hashlib.md5(np.fromfile(dumped_buffer)).hexdigest()
-
-dumped_images = gl.glob("./Post/Enqueue_" + padded_enqueue_num + "_Kernel_*.raw")
-for dumped_image in dumped_images:
-    start = dumped_image.find("_Arg_")
-    idx = int(re.findall(r'\d+', dumped_image[start:])[0])
-    dumped_hashes[idx] = hashlib.md5(np.fromfile(dumped_image)).hexdigest()
-
-all_equal = True
-for pos in sorted(replayed_hashes.keys()):
-    if replayed_hashes[pos] == dumped_hashes[pos]:
-        print(f"Check: Argument {pos} is equal.")
-    else:
-        try:
-            print(f"Check: Argument {pos} is not equal, data type={data_types[pos]}!")
-        except:
-            print(f"Check: Argument {pos} is not equal!")
-        all_equal = False
-
-print()
-if all_equal:
-    print("Replayed standalone kernel produces correct results.")
-else:
-    print("Replayed standalone kernel differs from app's result, \n" 
-          "this may due a slightly different order of operations on floating point \n"
-          "numbers. Please check manually if the differences are significant. \n"
-          "If they are completely different, please open an issue on Github \n"
-          "so that we can look into it!")
