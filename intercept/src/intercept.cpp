@@ -8242,6 +8242,11 @@ void CLIntercept::dumpImagesForKernel(
     std::string captureReplayPrefix;
     std::string inspectionPrefix;
 
+    // Call clFinish on the command queue.
+    // This is needed to ensure that all previous commands have finished
+    // executing, especially for out-of-order queues.
+    dispatch().clFinish( command_queue );
+
     // Get the dump directory names and make directories.
 
     if( forCaptureReplay )
