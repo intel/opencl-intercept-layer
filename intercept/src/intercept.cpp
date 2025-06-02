@@ -7764,20 +7764,42 @@ void CLIntercept::dumpCaptureReplayKernelSource(
     const std::string& dumpDirectory,
     cl_kernel kernel )
 {
+    cl_int errorCode = CL_SUCCESS;
+
     cl_program program = nullptr;
     dispatch().clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(cl_program), &program, nullptr);
 
-    size_t size = 0;
-    dispatch().clGetProgramInfo(program, CL_PROGRAM_SOURCE, 0, nullptr, &size);
+    // First, try to get and dump the program source
 
-    std::string sourceCode(size, ' ');
-    int error = dispatch().clGetProgramInfo(program, CL_PROGRAM_SOURCE, size, &sourceCode[0], nullptr);
-    if( error == CL_SUCCESS && size > 1 )
+    size_t sourceSize = 0;
+    dispatch().clGetProgramInfo(program, CL_PROGRAM_SOURCE, 0, nullptr, &sourceSize);
+    if( sourceSize != 0 )
     {
-        std::ofstream output(dumpDirectory + "kernel.cl", std::ios::out | std::ios::binary);
-        output.write(sourceCode.c_str(), size);
+        std::vector<char> source(sourceSize, ' ');
+        errorCode = dispatch().clGetProgramInfo(program, CL_PROGRAM_SOURCE, sourceSize, source.data(), nullptr);
+        if( errorCode == CL_SUCCESS )
+        {
+            std::ofstream output(dumpDirectory + "kernel.cl", std::ios::out | std::ios::binary);
+            output.write(source.data(), sourceSize);
+        }
     }
-    else
+
+    // Next, try to get and dump the program IL (SPIR-V)
+
+    size_t ilSize = 0;
+    dispatch().clGetProgramInfo(program, CL_PROGRAM_IL, 0, nullptr, &ilSize);
+    if( ilSize != 0 )
+    {
+        std::vector<char> il(ilSize, ' ');
+        errorCode = dispatch().clGetProgramInfo(program, CL_PROGRAM_IL, ilSize, il.data(), nullptr);
+        if( errorCode == CL_SUCCESS )
+        {
+            std::ofstream output(dumpDirectory + "kernel.spv", std::ios::out | std::ios::binary);
+            output.write(il.data(), ilSize);
+        }
+    }
+
+    // In all cases,  get and dump program binaries
     {
         cl_uint num_devices = 0;
         dispatch().clGetProgramInfo(program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &num_devices, nullptr);
@@ -7798,8 +7820,8 @@ void CLIntercept::dumpCaptureReplayKernelSource(
             binariesData.emplace_back(binaries[device].data());
         }
 
-        error = dispatch().clGetProgramInfo(program, CL_PROGRAM_BINARIES, num_devices * sizeof(unsigned char*), binariesData.data(), nullptr);
-        if( error == CL_SUCCESS )
+        errorCode = dispatch().clGetProgramInfo(program, CL_PROGRAM_BINARIES, num_devices * sizeof(unsigned char*), binariesData.data(), nullptr);
+        if( errorCode == CL_SUCCESS )
         {
             for (size_t device = 0; device != num_devices; ++device)
             {
@@ -7971,6 +7993,11 @@ void CLIntercept::dumpBuffersForKernel(
     std::vector<char>   transferBuf;
     std::string captureReplayPrefix;
     std::string inspectionPrefix;
+
+    // Call clFinish on the command queue.
+    // This is needed to ensure that all previous commands have finished
+    // executing, especially for out-of-order queues.
+    dispatch().clFinish( command_queue );
 
     // Get the dump directory names and make directories.
 
@@ -8214,6 +8241,11 @@ void CLIntercept::dumpImagesForKernel(
     std::vector<char>   transferBuf;
     std::string captureReplayPrefix;
     std::string inspectionPrefix;
+
+    // Call clFinish on the command queue.
+    // This is needed to ensure that all previous commands have finished
+    // executing, especially for out-of-order queues.
+    dispatch().clFinish( command_queue );
 
     // Get the dump directory names and make directories.
 
