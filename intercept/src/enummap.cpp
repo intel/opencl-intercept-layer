@@ -863,6 +863,11 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIR_VERSIONS );
     ADD_ENUM_NAME( m_cl_int, CL_PROGRAM_BINARY_TYPE_INTERMEDIATE );
 
+    // cl_khr_spirv_queries
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_EXTENDED_INSTRUCTION_SETS_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_EXTENSIONS_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_CAPABILITIES_KHR );
+
     // cl_khr_subgroup_named_barrier
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_NAMED_BARRIER_COUNT_KHR );
 
