@@ -926,6 +926,13 @@ cl_int CL_API_CALL clReleaseSemaphoreKHR(
 #define CL_PROGRAM_BINARY_TYPE_INTERMEDIATE         0x40E1
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_khr_spirv_queries
+
+#define CL_DEVICE_SPIRV_EXTENDED_INSTRUCTION_SETS_KHR       0x12B9
+#define CL_DEVICE_SPIRV_EXTENSIONS_KHR                      0x12BA
+#define CL_DEVICE_SPIRV_CAPABILITIES_KHR                    0x12BB
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_khr_subgroup_named_barrier
 
 #define CL_DEVICE_MAX_NAMED_BARRIER_COUNT_KHR       0x2035
