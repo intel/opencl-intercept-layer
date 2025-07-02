@@ -2433,6 +2433,7 @@ void CLIntercept::getMemPropertiesString(
                     properties += 2;
                 }
                 break;
+            case CL_EXTERNAL_MEMORY_HANDLE_ANDROID_HARDWARE_BUFFER_KHR:
             case CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KHR:
             case CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KMT_KHR:
             case CL_EXTERNAL_MEMORY_HANDLE_D3D11_TEXTURE_KHR:
@@ -2440,8 +2441,8 @@ void CLIntercept::getMemPropertiesString(
             case CL_EXTERNAL_MEMORY_HANDLE_D3D12_HEAP_KHR:
             case CL_EXTERNAL_MEMORY_HANDLE_D3D12_RESOURCE_KHR:
                 {
-                    auto pfd = (const void**)( properties + 1);
-                    CLI_SPRINTF( s, 256, "%p", pfd[0] );
+                    auto pvp = (const void**)( properties + 1);
+                    CLI_SPRINTF( s, 256, "%p", pvp[0] );
                     str += s;
                     properties += 2;
                 }

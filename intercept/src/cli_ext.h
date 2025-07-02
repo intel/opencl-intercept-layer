@@ -656,8 +656,6 @@ typedef struct _cl_name_version_khr
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_external_memory
 
-// Note: This implements the provisional extension v0.9.3.
-
 typedef cl_uint             cl_external_memory_handle_type_khr;
 
 #define CL_PLATFORM_EXTERNAL_MEMORY_IMPORT_HANDLE_TYPES_KHR      0x2044
@@ -688,6 +686,9 @@ cl_int CL_API_CALL clEnqueueReleaseExternalMemObjectsKHR(
     cl_uint num_events_in_wait_list,
     const cl_event *event_wait_list,
     cl_event *event);
+
+// cl_khr_external_memory_android_hardware_buffer
+#define CL_EXTERNAL_MEMORY_HANDLE_ANDROID_HARDWARE_BUFFER_KHR 0x2070
 
 // cl_khr_external_memory_dma_buf
 #define CL_EXTERNAL_MEMORY_HANDLE_DMA_BUF_KHR           0x2067
