@@ -5893,21 +5893,28 @@ void CLIntercept::getTimingTagsKernel(
             deviceTag += ss.str();
         }
 
-        if( config().DevicePerformanceTimeGWSTracking && gws )
+        if( config().DevicePerformanceTimeGWSTracking )
         {
             std::ostringstream  ss;
             ss << " GWS[ ";
-            if( workDim >= 1 )
+            if( gws )
             {
-                ss << gws[0];
+                if( workDim >= 1 )
+                {
+                    ss << gws[0];
+                }
+                if( workDim >= 2 )
+                {
+                    ss << " x " << gws[1];
+                }
+                if( workDim >= 3 )
+                {
+                    ss << " x " << gws[2];
+                }
             }
-            if( workDim >= 2 )
+            else
             {
-                ss << " x " << gws[1];
-            }
-            if( workDim >= 3 )
-            {
-                ss << " x " << gws[2];
+                ss << "NULL";
             }
             ss << " ]";
             deviceTag += ss.str();
