@@ -780,6 +780,9 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_ACQUIRE_EXTERNAL_MEM_OBJECTS_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_EXTERNAL_MEM_OBJECTS_KHR );
 
+    // cl_khr_external_memory_android_hardware_buffer
+    ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_ANDROID_HARDWARE_BUFFER_KHR );
+
     // cl_khr_external_memory_dma_buf
     ADD_ENUM_NAME( m_cl_int, CL_EXTERNAL_MEMORY_HANDLE_DMA_BUF_KHR );
 
@@ -862,6 +865,11 @@ CEnumNameMap::CEnumNameMap()
     // cl_khr_spir
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIR_VERSIONS );
     ADD_ENUM_NAME( m_cl_int, CL_PROGRAM_BINARY_TYPE_INTERMEDIATE );
+
+    // cl_khr_spirv_queries
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_EXTENDED_INSTRUCTION_SETS_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_EXTENSIONS_KHR );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_CAPABILITIES_KHR );
 
     // cl_khr_subgroup_named_barrier
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_NAMED_BARRIER_COUNT_KHR );

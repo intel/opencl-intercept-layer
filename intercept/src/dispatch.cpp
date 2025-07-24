@@ -5528,9 +5528,14 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueWaitSemaphoresKHR(
                         sema_objects,
                         semaphoreString );
                 }
+                const std::string eventWaitListString = getFormattedEventWaitList(
+                    pIntercept,
+                    num_events_in_wait_list,
+                    event_wait_list);
                 CALL_LOGGING_ENTER( "queue = %p%s",
                     queue,
-                    semaphoreString.c_str() );
+                    semaphoreString.c_str(),
+                    eventWaitListString.c_str() );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 HOST_PERFORMANCE_TIMING_START();
@@ -5596,9 +5601,14 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSignalSemaphoresKHR(
                         sema_objects,
                         semaphoreString );
                 }
-                CALL_LOGGING_ENTER( "queue = %p%s",
+                const std::string eventWaitListString = getFormattedEventWaitList(
+                    pIntercept,
+                    num_events_in_wait_list,
+                    event_wait_list);
+                CALL_LOGGING_ENTER( "queue = %p%s%s",
                     queue,
-                    semaphoreString.c_str() );
+                    semaphoreString.c_str(),
+                    eventWaitListString.c_str() );
                 CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
                 DEVICE_PERFORMANCE_TIMING_START( event );
                 HOST_PERFORMANCE_TIMING_START();

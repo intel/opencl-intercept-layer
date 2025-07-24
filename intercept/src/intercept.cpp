@@ -2433,6 +2433,7 @@ void CLIntercept::getMemPropertiesString(
                     properties += 2;
                 }
                 break;
+            case CL_EXTERNAL_MEMORY_HANDLE_ANDROID_HARDWARE_BUFFER_KHR:
             case CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KHR:
             case CL_EXTERNAL_MEMORY_HANDLE_OPAQUE_WIN32_KMT_KHR:
             case CL_EXTERNAL_MEMORY_HANDLE_D3D11_TEXTURE_KHR:
@@ -2440,8 +2441,8 @@ void CLIntercept::getMemPropertiesString(
             case CL_EXTERNAL_MEMORY_HANDLE_D3D12_HEAP_KHR:
             case CL_EXTERNAL_MEMORY_HANDLE_D3D12_RESOURCE_KHR:
                 {
-                    auto pfd = (const void**)( properties + 1);
-                    CLI_SPRINTF( s, 256, "%p", pfd[0] );
+                    auto pvp = (const void**)( properties + 1);
+                    CLI_SPRINTF( s, 256, "%p", pvp[0] );
                     str += s;
                     properties += 2;
                 }
@@ -5964,21 +5965,28 @@ void CLIntercept::getTimingTagsKernel(
             deviceTag += ss.str();
         }
 
-        if( config().DevicePerformanceTimeGWSTracking && gws )
+        if( config().DevicePerformanceTimeGWSTracking )
         {
             std::ostringstream  ss;
             ss << " GWS[ ";
-            if( workDim >= 1 )
+            if( gws )
             {
-                ss << gws[0];
+                if( workDim >= 1 )
+                {
+                    ss << gws[0];
+                }
+                if( workDim >= 2 )
+                {
+                    ss << " x " << gws[1];
+                }
+                if( workDim >= 3 )
+                {
+                    ss << " x " << gws[2];
+                }
             }
-            if( workDim >= 2 )
+            else
             {
-                ss << " x " << gws[1];
-            }
-            if( workDim >= 3 )
-            {
-                ss << " x " << gws[2];
+                ss << "NULL";
             }
             ss << " ]";
             deviceTag += ss.str();
@@ -7777,6 +7785,16 @@ void CLIntercept::setKernelArgSVMPointer(
         CArgMemMap& argMemMap = m_KernelArgMemMap[ kernel ];
         argMemMap[ arg_index ] = startPtr;
     }
+
+    // Currently, only pointers to the start of an SVM allocation are supported for
+    // capture and replay.
+    if( arg == startPtr )
+    {
+        CArgDataMap& argDataMap = m_KernelArgDataMap[kernel];
+        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(&arg);
+        argDataMap[ arg_index ] = std::vector<uint8_t>(
+            pRawArgData, pRawArgData + sizeof(void*) );
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7807,6 +7825,16 @@ void CLIntercept::setKernelArgUSMPointer(
         CArgMemMap& argMemMap = m_KernelArgMemMap[ kernel ];
         argMemMap[ arg_index ] = startPtr;
     }
+
+    // Currently, only pointers to the start of an SVM allocation are supported for
+    // capture and replay.
+    if( arg == startPtr )
+    {
+        CArgDataMap& argDataMap = m_KernelArgDataMap[kernel];
+        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(&arg);
+        argDataMap[ arg_index ] = std::vector<uint8_t>(
+            pRawArgData, pRawArgData + sizeof(void*) );
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -7815,20 +7843,42 @@ void CLIntercept::dumpCaptureReplayKernelSource(
     const std::string& dumpDirectory,
     cl_kernel kernel )
 {
+    cl_int errorCode = CL_SUCCESS;
+
     cl_program program = nullptr;
     dispatch().clGetKernelInfo(kernel, CL_KERNEL_PROGRAM, sizeof(cl_program), &program, nullptr);
 
-    size_t size = 0;
-    dispatch().clGetProgramInfo(program, CL_PROGRAM_SOURCE, 0, nullptr, &size);
+    // First, try to get and dump the program source
 
-    std::string sourceCode(size, ' ');
-    int error = dispatch().clGetProgramInfo(program, CL_PROGRAM_SOURCE, size, &sourceCode[0], nullptr);
-    if( error == CL_SUCCESS && size > 1 )
+    size_t sourceSize = 0;
+    dispatch().clGetProgramInfo(program, CL_PROGRAM_SOURCE, 0, nullptr, &sourceSize);
+    if( sourceSize != 0 )
     {
-        std::ofstream output(dumpDirectory + "kernel.cl", std::ios::out | std::ios::binary);
-        output.write(sourceCode.c_str(), size);
+        std::vector<char> source(sourceSize, ' ');
+        errorCode = dispatch().clGetProgramInfo(program, CL_PROGRAM_SOURCE, sourceSize, source.data(), nullptr);
+        if( errorCode == CL_SUCCESS )
+        {
+            std::ofstream output(dumpDirectory + "kernel.cl", std::ios::out | std::ios::binary);
+            output.write(source.data(), sourceSize);
+        }
     }
-    else
+
+    // Next, try to get and dump the program IL (SPIR-V)
+
+    size_t ilSize = 0;
+    dispatch().clGetProgramInfo(program, CL_PROGRAM_IL, 0, nullptr, &ilSize);
+    if( ilSize != 0 )
+    {
+        std::vector<char> il(ilSize, ' ');
+        errorCode = dispatch().clGetProgramInfo(program, CL_PROGRAM_IL, ilSize, il.data(), nullptr);
+        if( errorCode == CL_SUCCESS )
+        {
+            std::ofstream output(dumpDirectory + "kernel.spv", std::ios::out | std::ios::binary);
+            output.write(il.data(), ilSize);
+        }
+    }
+
+    // In all cases,  get and dump program binaries
     {
         cl_uint num_devices = 0;
         dispatch().clGetProgramInfo(program, CL_PROGRAM_NUM_DEVICES, sizeof(cl_uint), &num_devices, nullptr);
@@ -7849,8 +7899,8 @@ void CLIntercept::dumpCaptureReplayKernelSource(
             binariesData.emplace_back(binaries[device].data());
         }
 
-        error = dispatch().clGetProgramInfo(program, CL_PROGRAM_BINARIES, num_devices * sizeof(unsigned char*), binariesData.data(), nullptr);
-        if( error == CL_SUCCESS )
+        errorCode = dispatch().clGetProgramInfo(program, CL_PROGRAM_BINARIES, num_devices * sizeof(unsigned char*), binariesData.data(), nullptr);
+        if( errorCode == CL_SUCCESS )
         {
             for (size_t device = 0; device != num_devices; ++device)
             {
@@ -8022,6 +8072,11 @@ void CLIntercept::dumpBuffersForKernel(
     std::vector<char>   transferBuf;
     std::string captureReplayPrefix;
     std::string inspectionPrefix;
+
+    // Call clFinish on the command queue.
+    // This is needed to ensure that all previous commands have finished
+    // executing, especially for out-of-order queues.
+    dispatch().clFinish( command_queue );
 
     // Get the dump directory names and make directories.
 
@@ -8265,6 +8320,11 @@ void CLIntercept::dumpImagesForKernel(
     std::vector<char>   transferBuf;
     std::string captureReplayPrefix;
     std::string inspectionPrefix;
+
+    // Call clFinish on the command queue.
+    // This is needed to ensure that all previous commands have finished
+    // executing, especially for out-of-order queues.
+    dispatch().clFinish( command_queue );
 
     // Get the dump directory names and make directories.
 

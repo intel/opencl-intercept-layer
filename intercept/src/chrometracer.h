@@ -366,9 +366,9 @@ public:
 
     std::ostream& flush()
     {
+        std::lock_guard<std::mutex> lock(m_Mutex);
         if( m_RecordBuffer.size() > 0 )
         {
-            std::lock_guard<std::mutex> lock(m_Mutex);
             flushRecords();
         }
         return m_TraceFile.flush();
