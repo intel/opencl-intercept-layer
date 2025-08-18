@@ -9079,7 +9079,11 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSVMPointerInfoKHR(
         if( dispatchX.clGetSVMPointerInfoKHR )
         {
             GET_ENQUEUE_COUNTER();
-            CALL_LOGGING_ENTER();
+            CALL_LOGGING_ENTER( "context = %p, ptr = %p, param_name = %s (%08X)",
+                context,
+                ptr,
+                pIntercept->enumName().name( param_name ).c_str(),
+                param_name );
             HOST_PERFORMANCE_TIMING_START();
 
             cl_int retVal = dispatchX.clGetSVMPointerInfoKHR(
