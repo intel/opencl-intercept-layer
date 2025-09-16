@@ -692,11 +692,8 @@ CEnumNameMap::CEnumNameMap()
 
     ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_KERNEL_PRINTF_KHR );
     ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_DEVICE_SIDE_ENQUEUE_KHR );
-    ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_SIMULTANEOUS_USE_KHR );
 
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_BUFFER_FLAGS_KHR );
-
-    ADD_ENUM_NAME( m_cl_command_buffer_flags_khr, CL_COMMAND_BUFFER_SIMULTANEOUS_USE_KHR )
 
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_COMMAND_BUFFER_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_SYNC_POINT_WAIT_LIST_KHR );
@@ -711,8 +708,6 @@ CEnumNameMap::CEnumNameMap()
 
     //CL_COMMAND_BUFFER_STATE_RECORDING_KHR               0
     //CL_COMMAND_BUFFER_STATE_EXECUTABLE_KHR              1
-    //CL_COMMAND_BUFFER_STATE_PENDING_KHR                 2
-    //CL_COMMAND_BUFFER_STATE_INVALID_KHR                 3
 
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_COMMAND_BUFFER_KHR );
 
@@ -731,7 +726,10 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_command_buffer_flags_khr, CL_COMMAND_BUFFER_DEVICE_SIDE_SYNC_KHR );
 
     // cl_khr_command_buffer_mutable_dispatch
+    ADD_ENUM_NAME( m_cl_command_buffer_flags_khr, CL_COMMAND_BUFFER_SIMULTANEOUS_USE_KHR )
     ADD_ENUM_NAME( m_cl_command_buffer_flags_khr, CL_COMMAND_BUFFER_MUTABLE_KHR );
+
+    ADD_ENUM_NAME( m_cl_device_command_buffer_capabilities_khr, CL_COMMAND_BUFFER_CAPABILITY_SIMULTANEOUS_USE_KHR );
 
     ADD_ENUM_NAME( m_cl_int, CL_INVALID_MUTABLE_COMMAND_KHR );
 
@@ -761,6 +759,8 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_MUTABLE_DISPATCH_ASSERTS_KHR );
 
     ADD_ENUM_NAME( m_cl_mutable_dispatch_asserts_khr, CL_MUTABLE_DISPATCH_ASSERT_NO_ADDITIONAL_WORK_GROUPS_KHR );
+
+    //CL_COMMAND_BUFFER_STATE_FINALIZED_KHR                 2
 
     // cl_khr_extended_versioning extension
     // Most enums for this extension were added to OpenCL 3.0.
