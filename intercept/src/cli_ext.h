@@ -13,7 +13,7 @@ extern "C" {
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_command_buffer
 
-// Note: This implements the provisional extension v0.9.6.
+// Note: This implements the provisional extension v0.9.8.
 
 typedef cl_bitfield         cl_device_command_buffer_capabilities_khr;
 typedef struct _cl_command_buffer_khr* cl_command_buffer_khr;
@@ -31,10 +31,8 @@ typedef struct _cl_mutable_command_khr* cl_mutable_command_khr;
 
 #define CL_COMMAND_BUFFER_CAPABILITY_KERNEL_PRINTF_KHR      (1 << 0)
 #define CL_COMMAND_BUFFER_CAPABILITY_DEVICE_SIDE_ENQUEUE_KHR (1 << 1)
-#define CL_COMMAND_BUFFER_CAPABILITY_SIMULTANEOUS_USE_KHR   (1 << 2)
 
 #define CL_COMMAND_BUFFER_FLAGS_KHR                         0x1293
-#define CL_COMMAND_BUFFER_SIMULTANEOUS_USE_KHR              (1 << 0)
 
 #define CL_INVALID_COMMAND_BUFFER_KHR                       -1138
 #define CL_INVALID_SYNC_POINT_WAIT_LIST_KHR                 -1139
@@ -49,8 +47,6 @@ typedef struct _cl_mutable_command_khr* cl_mutable_command_khr;
 
 #define CL_COMMAND_BUFFER_STATE_RECORDING_KHR               0
 #define CL_COMMAND_BUFFER_STATE_EXECUTABLE_KHR              1
-#define CL_COMMAND_BUFFER_STATE_PENDING_KHR                 2
-#define CL_COMMAND_BUFFER_STATE_INVALID_KHR                 3
 
 #define CL_COMMAND_COMMAND_BUFFER_KHR                       0x12A8
 
@@ -283,7 +279,7 @@ clRemapCommandBufferKHR(
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_command_buffer_mutable_dispatch
 
-// Note: This implements the provisional extension v0.9.3.
+// Note: This implements the provisional extension v0.9.5.
 
 typedef cl_uint             cl_command_buffer_update_type_khr;
 typedef cl_bitfield         cl_mutable_dispatch_fields_khr;
@@ -313,7 +309,10 @@ typedef struct _cl_mutable_dispatch_config_khr {
 } cl_mutable_dispatch_config_khr;
 typedef cl_bitfield         cl_mutable_dispatch_asserts_khr;
 
+#define CL_COMMAND_BUFFER_SIMULTANEOUS_USE_KHR              (1 << 0)
 #define CL_COMMAND_BUFFER_MUTABLE_KHR                       (1 << 1)
+
+#define CL_COMMAND_BUFFER_CAPABILITY_SIMULTANEOUS_USE_KHR   (1 << 2)
 
 #define CL_INVALID_MUTABLE_COMMAND_KHR                      -1141
 
@@ -343,6 +342,8 @@ typedef cl_bitfield         cl_mutable_dispatch_asserts_khr;
 #define CL_MUTABLE_DISPATCH_ASSERTS_KHR                     0x12B8
 
 #define CL_MUTABLE_DISPATCH_ASSERT_NO_ADDITIONAL_WORK_GROUPS_KHR (1 << 0)
+
+#define CL_COMMAND_BUFFER_STATE_FINALIZED_KHR               2
 
 extern CL_API_ENTRY cl_int CL_API_CALL
 clUpdateMutableCommandsKHR(
