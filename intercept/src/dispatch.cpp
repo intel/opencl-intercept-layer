@@ -2337,6 +2337,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
         BUILD_LOGGING( program, num_devices, device_list );
         CALL_LOGGING_EXIT( retVal );
 
+        DUMP_OUTPUT_PROGRAM_BINARIES( program );
         INCREMENT_PROGRAM_COMPILE_COUNT( program );
         PROGRAM_OPTIONS_CLEANUP( newOptions );
 
