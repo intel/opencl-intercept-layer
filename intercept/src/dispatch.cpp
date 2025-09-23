@@ -57,7 +57,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformIDs)(
 
     if( pIntercept && pIntercept->dispatch().clGetPlatformIDs )
     {
-        LOG_CLINFO();
+        CACHE_PLATFORM_INFO();
+        LOG_CL_INFO();
 
         GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
@@ -8984,15 +8985,21 @@ CL_API_ENTRY void* CL_API_CALL clSVMAllocWithPropertiesKHR(
             GET_ENQUEUE_COUNTER();
 
             std::string propsStr;
+            std::string typeStr;
             if( pIntercept->config().CallLogging )
             {
                 pIntercept->getSVMAllocPropertiesString(
                     properties,
                     propsStr );
+                pIntercept->getSVMTypeIndexCapabilitiesString(
+                    context,
+                    svm_type_index,
+                    typeStr );
             }
-            CALL_LOGGING_ENTER( "context = %p, properties = [ %s ], svm_type_index = %u, size = %zu",
+            CALL_LOGGING_ENTER( "context = %p, properties = [ %s ], svm_type_index = %s (%u), size = %zu",
                 context,
                 propsStr.c_str(),
+                typeStr.c_str(),
                 svm_type_index,
                 size );
             CHECK_ERROR_INIT( errcode_ret );
