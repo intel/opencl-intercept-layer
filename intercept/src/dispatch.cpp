@@ -6444,8 +6444,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMFree) (
 
             HOST_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
+            // TODO: REMOVE_SVM_ALLOCATIONS?
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+            ADD_POINTER_FREES( pfn_free_func, num_svm_pointers, svm_pointers );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
             ADD_EVENT( event ? event[0] : NULL );
         }

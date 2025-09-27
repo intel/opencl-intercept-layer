@@ -2075,6 +2075,16 @@ inline CObjectTracker& CLIntercept::objectTracker()
         pIntercept->objectTracker().AddPointerFree(_ptr);                   \
     }
 
+#define ADD_POINTER_FREES( free_callback, numSvmPointers, svmPointers )     \
+    if( pIntercept->config().LeakChecking &&                                \
+        ( free_callback == nullptr ) )                                      \
+    {                                                                       \
+        for( cl_uint i = 0; i < numSvmPointers; i++ )                       \
+        {                                                                   \
+            pIntercept->objectTracker().AddPointerFree(svmPointers[i]);     \
+        }                                                                   \
+    }
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 #define CACHE_PLATFORM_INFO()                                               \
