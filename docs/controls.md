@@ -323,6 +323,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will atte
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between transfer operations of different sizes for the purpose of device performance timing.
 
+##### `DevicePerformanceTimingKernelsOnly` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will collect device performance timing for kernel commands only
+
 ##### `DevicePerformanceTimingSkipUnmap` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will skip device performance timing for unmap operations.  This is a workaround for a bug in some OpenCL implementations, where querying events created from unmap operations results in driver crashes.
