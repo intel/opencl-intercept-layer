@@ -3382,6 +3382,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         ( pEvent != NULL ) )                                                \
     {                                                                       \
         if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) &&\
+            !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
             ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
               std::string(__FUNCTION__) != "clEnqueueUnmapMemObject" ) )    \
         {                                                                   \
@@ -3403,6 +3404,33 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     }
 
 #define DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( queue, pEvent )             \
+    if( ( pIntercept->config().DevicePerformanceTiming ||                   \
+          pIntercept->config().ITTPerformanceTiming ||                      \
+          pIntercept->config().ChromePerformanceTiming ||                   \
+          pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
+        ( pEvent != NULL ) )                                                \
+    {                                                                       \
+        if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) &&\
+            !pIntercept->config().DevicePerformanceTimingKernelsOnly )      \
+        {                                                                   \
+            /*TOOL_OVERHEAD_TIMING_START();*/                               \
+            pIntercept->addTimingEvent(                                     \
+                __FUNCTION__,                                               \
+                enqueueCounter,                                             \
+                queuedTime,                                                 \
+                deviceTag,                                                  \
+                queue,                                                      \
+                pEvent[0] );                                                \
+            /*TOOL_OVERHEAD_TIMING_END( "(timing event overhead)" );*/      \
+        }                                                                   \
+        if( isLocalEvent )                                                  \
+        {                                                                   \
+            pIntercept->dispatch().clReleaseEvent( pEvent[0] );             \
+            pEvent = NULL;                                                  \
+        }                                                                   \
+    }
+
+#define DEVICE_PERFORMANCE_TIMING_END_KERNEL( queue, pEvent )               \
     if( ( pIntercept->config().DevicePerformanceTiming ||                   \
           pIntercept->config().ITTPerformanceTiming ||                      \
           pIntercept->config().ChromePerformanceTiming ||                   \
