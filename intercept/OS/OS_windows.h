@@ -89,6 +89,9 @@ public:
     bool    CheckMDAPIPermissions(
                 std::string& str ) const;
 
+    bool    CheckConditionalEnable(
+                const char* name) const;
+
 private:
     HINSTANCE   m_hInstance;
 };
@@ -583,6 +586,24 @@ inline bool Services::CheckMDAPIPermissions(
     std::string& str ) const
 {
     return true;
+}
+
+inline bool Services::CheckConditionalEnable(
+    const char* name) const
+{
+    bool enabled = false;
+    char* envVal = NULL;
+    size_t  len = 0;
+    errno_t err = _dupenv_s( &envVal, &len, name );
+    if( !err && envVal )
+    {
+        if( strcmp(envVal, "0") != 0 )
+        {
+            enabled = true;
+        }
+        free( envVal );
+    }
+    return enabled;
 }
 
 }

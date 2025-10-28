@@ -445,13 +445,17 @@ public:
                 cl_device_id device,
                 const cl_queue_properties* properties,
                 cl_queue_properties*& pLocalQueueProperties ) const;
+    void    dummyCommandQueue(
+                cl_context context,
+                cl_device_id device );
+
+    bool    checkConditionalTiming() const;
+    bool    checkGetTimingTags(
+                uint64_t enqueueCounter ) const;
     bool    checkHostPerformanceTimingEnqueueLimits(
                 uint64_t enqueueCounter ) const;
     bool    checkDevicePerformanceTimingEnqueueLimits(
                 uint64_t enqueueCounter ) const;
-    void    dummyCommandQueue(
-                cl_context context,
-                cl_device_id device );
 
     void    addTimingEvent(
                 const char* functionName,
@@ -3058,16 +3062,41 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+
+inline bool CLIntercept::checkConditionalTiming() const
+{
+    return ( !config().PerformanceTimingConditional ||
+              OS().CheckConditionalEnable("CLI_ENABLE_PERFORMANCE_TIMING") );
+}
+
+inline bool CLIntercept::checkGetTimingTags(
+    uint64_t enqueueCounter ) const
+{
+    if( config().ChromeCallLogging )
+    {
+        return true;
+    }
+
+    if( ( config().HostPerformanceTiming &&
+          checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) ) ||
+        ( ( config().DevicePerformanceTiming ||
+            config().ITTPerformanceTiming ||
+            config().ChromePerformanceTiming ||
+            config().DevicePerfCounterEventBasedSampling ) &&
+          checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) ) )
+    {
+        if( checkConditionalTiming() )
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 #define GET_TIMING_TAGS_BLOCKING( _blocking, _sz )                          \
     std::string hostTag, deviceTag;                                         \
-    if( pIntercept->config().ChromeCallLogging ||                           \
-        ( pIntercept->config().HostPerformanceTiming &&                     \
-          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) ) ||\
-        ( ( pIntercept->config().DevicePerformanceTiming ||                   \
-            pIntercept->config().ITTPerformanceTiming ||                      \
-            pIntercept->config().ChromePerformanceTiming ||                   \
-            pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
-          pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) ) )\
+    if( pIntercept->checkGetTimingTags( enqueueCounter ) )                  \
     {                                                                       \
         pIntercept->getTimingTagBlocking(                                   \
             __FUNCTION__,                                                   \
@@ -3079,14 +3108,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 
 #define GET_TIMING_TAGS_MAP( _blocking_map, _map_flags, _sz )               \
     std::string hostTag, deviceTag;                                         \
-    if( pIntercept->config().ChromeCallLogging ||                           \
-        ( pIntercept->config().HostPerformanceTiming &&                     \
-          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) ) ||\
-        ( ( pIntercept->config().DevicePerformanceTiming ||                   \
-            pIntercept->config().ITTPerformanceTiming ||                      \
-            pIntercept->config().ChromePerformanceTiming ||                   \
-            pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
-          pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) ) )\
+    if( pIntercept->checkGetTimingTags( enqueueCounter ) )                  \
     {                                                                       \
         pIntercept->getTimingTagsMap(                                       \
             __FUNCTION__,                                                   \
@@ -3099,14 +3121,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 
 #define GET_TIMING_TAGS_UNMAP( _ptr )                                       \
     std::string hostTag, deviceTag;                                         \
-    if( pIntercept->config().ChromeCallLogging ||                           \
-        ( pIntercept->config().HostPerformanceTiming &&                     \
-          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) ) ||\
-        ( ( pIntercept->config().DevicePerformanceTiming ||                   \
-            pIntercept->config().ITTPerformanceTiming ||                      \
-            pIntercept->config().ChromePerformanceTiming ||                   \
-            pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
-          pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) ) )\
+    if( pIntercept->checkGetTimingTags( enqueueCounter ) )                  \
     {                                                                       \
         pIntercept->getTimingTagsUnmap(                                     \
             __FUNCTION__,                                                   \
@@ -3117,14 +3132,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 
 #define GET_TIMING_TAGS_MEMFILL( _queue, _dst_ptr, _sz )                    \
     std::string hostTag, deviceTag;                                         \
-    if( pIntercept->config().ChromeCallLogging ||                           \
-        ( pIntercept->config().HostPerformanceTiming &&                     \
-          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) ) ||\
-        ( ( pIntercept->config().DevicePerformanceTiming ||                   \
-            pIntercept->config().ITTPerformanceTiming ||                      \
-            pIntercept->config().ChromePerformanceTiming ||                   \
-            pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
-          pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) ) )\
+    if( pIntercept->checkGetTimingTags( enqueueCounter ) )                  \
     {                                                                       \
         pIntercept->getTimingTagsMemfill(                                   \
             __FUNCTION__,                                                   \
@@ -3137,14 +3145,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 
 #define GET_TIMING_TAGS_MEMCPY( _queue, _blocking, _dst_ptr, _src_ptr, _sz )\
     std::string hostTag, deviceTag;                                         \
-    if( pIntercept->config().ChromeCallLogging ||                           \
-        ( pIntercept->config().HostPerformanceTiming &&                     \
-          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) ) ||\
-        ( ( pIntercept->config().DevicePerformanceTiming ||                   \
-            pIntercept->config().ITTPerformanceTiming ||                      \
-            pIntercept->config().ChromePerformanceTiming ||                   \
-            pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
-          pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) ) )\
+    if( pIntercept->checkGetTimingTags( enqueueCounter ) )                  \
     {                                                                       \
         pIntercept->getTimingTagsMemcpy(                                    \
             __FUNCTION__,                                                   \
@@ -3159,14 +3160,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 
 #define GET_TIMING_TAGS_KERNEL( _queue, _kernel, _dim, _gwo, _gws, _lws )   \
     std::string hostTag, deviceTag;                                         \
-    if( pIntercept->config().ChromeCallLogging ||                           \
-        ( pIntercept->config().HostPerformanceTiming &&                     \
-          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) ) ||\
-        ( ( pIntercept->config().DevicePerformanceTiming ||                   \
-            pIntercept->config().ITTPerformanceTiming ||                      \
-            pIntercept->config().ChromePerformanceTiming ||                   \
-            pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
-          pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) ) )\
+    if( pIntercept->checkGetTimingTags( enqueueCounter ) )                  \
     {                                                                       \
         pIntercept->getTimingTagsKernel(                                    \
             _queue,                                                         \
@@ -3205,19 +3199,21 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
 
 #define HOST_PERFORMANCE_TIMING_START()                                     \
     CLIntercept::clock::time_point   cpuStart, cpuEnd;                      \
-    if( pIntercept->config().HostPerformanceTiming ||                       \
-        pIntercept->config().ChromeCallLogging )                            \
+    bool    doHostPerformanceTiming =                                       \
+        pIntercept->config().ChromeCallLogging ||                           \
+        ( pIntercept->config().HostPerformanceTiming &&                     \
+          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) &&\
+          pIntercept->checkConditionalTiming() );                           \
+    if( doHostPerformanceTiming )                                           \
     {                                                                       \
         cpuStart = CLIntercept::clock::now();                               \
     }
 
 #define HOST_PERFORMANCE_TIMING_END()                                       \
-    if( pIntercept->config().HostPerformanceTiming ||                       \
-        pIntercept->config().ChromeCallLogging )                            \
+    if( doHostPerformanceTiming )                                           \
     {                                                                       \
         cpuEnd = CLIntercept::clock::now();                                 \
-        if( pIntercept->config().HostPerformanceTiming &&                   \
-            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+        if( pIntercept->config().HostPerformanceTiming )                    \
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
                 __FUNCTION__,                                               \
@@ -3228,12 +3224,10 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
     }
 
 #define HOST_PERFORMANCE_TIMING_END_WITH_TAG()                              \
-    if( pIntercept->config().HostPerformanceTiming ||                       \
-        pIntercept->config().ChromeCallLogging )                            \
+    if( doHostPerformanceTiming )                                           \
     {                                                                       \
         cpuEnd = CLIntercept::clock::now();                                 \
-        if( pIntercept->config().HostPerformanceTiming &&                   \
-            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+        if( pIntercept->config().HostPerformanceTiming )                    \
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
                 __FUNCTION__,                                               \
@@ -3245,21 +3239,22 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
 
 #define TOOL_OVERHEAD_TIMING_START()                                        \
     CLIntercept::clock::time_point   toolStart, toolEnd;                    \
-    if( pIntercept->config().ToolOverheadTiming &&                          \
-        ( pIntercept->config().HostPerformanceTiming ||                     \
-          pIntercept->config().ChromeCallLogging ) )                        \
+    bool    doToolOverheadTiming =                                          \
+        pIntercept->config().ToolOverheadTiming &&                          \
+        ( pIntercept->config().ChromeCallLogging ||                         \
+          ( pIntercept->config().HostPerformanceTiming &&                   \
+            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) &&\
+            pIntercept->checkConditionalTiming() ) );                       \
+    if( doToolOverheadTiming )                                              \
     {                                                                       \
         toolStart = CLIntercept::clock::now();                              \
     }
 
 #define TOOL_OVERHEAD_TIMING_END( _tag )                                    \
-    if( pIntercept->config().ToolOverheadTiming &&                          \
-        ( pIntercept->config().HostPerformanceTiming ||                     \
-          pIntercept->config().ChromeCallLogging ) )                        \
+    if( doToolOverheadTiming )                                              \
     {                                                                       \
         toolEnd = CLIntercept::clock::now();                                \
-        if( pIntercept->config().HostPerformanceTiming &&                   \
-            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) )\
+        if( pIntercept->config().HostPerformanceTiming )                    \
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
                 _tag,                                                       \
@@ -3336,11 +3331,14 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     CLIntercept::clock::time_point   queuedTime;                            \
     cl_event    local_event = NULL;                                         \
     bool        isLocalEvent = false;                                       \
-    if( pIntercept->config().DevicePerformanceTiming ||                     \
-        pIntercept->config().ITTPerformanceTiming ||                        \
-        pIntercept->config().ChromePerformanceTiming ||                     \
-        pIntercept->config().DevicePerfCounterEventBasedSampling )          \
-        /* TODO: checkDevicePerformanceTimingEnqueueLimits? */              \
+    bool        doDevicePerformanceTiming =                                 \
+        ( pIntercept->config().DevicePerformanceTiming ||                   \
+          pIntercept->config().ITTPerformanceTiming ||                      \
+          pIntercept->config().ChromePerformanceTiming ||                   \
+          pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
+        pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) &&\
+        pIntercept->checkConditionalTiming();                               \
+    if( doDevicePerformanceTiming )                                         \
     {                                                                       \
         queuedTime = CLIntercept::clock::now();                             \
         if( pEvent == NULL )                                                \
@@ -3351,14 +3349,9 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     }
 
 #define DEVICE_PERFORMANCE_TIMING_END( queue, pEvent )                      \
-    if( ( pIntercept->config().DevicePerformanceTiming ||                   \
-          pIntercept->config().ITTPerformanceTiming ||                      \
-          pIntercept->config().ChromePerformanceTiming ||                   \
-          pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
-        ( pEvent != NULL ) )                                                \
+    if( doDevicePerformanceTiming && ( pEvent != NULL ) )                   \
     {                                                                       \
-        if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) &&\
-            !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
+        if( !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
             ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
               std::string(__FUNCTION__) != "clEnqueueUnmapMemObject" ) )    \
         {                                                                   \
@@ -3380,14 +3373,9 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     }
 
 #define DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( queue, pEvent )             \
-    if( ( pIntercept->config().DevicePerformanceTiming ||                   \
-          pIntercept->config().ITTPerformanceTiming ||                      \
-          pIntercept->config().ChromePerformanceTiming ||                   \
-          pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
-        ( pEvent != NULL ) )                                                \
+    if( doDevicePerformanceTiming && ( pEvent != NULL ) )                   \
     {                                                                       \
-        if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) &&\
-            !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
+        if( !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
             ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
               std::string(__FUNCTION__) != "clEnqueueUnmapMemObject" ) )    \
         {                                                                   \
@@ -3409,24 +3397,17 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     }
 
 #define DEVICE_PERFORMANCE_TIMING_END_KERNEL( queue, pEvent )               \
-    if( ( pIntercept->config().DevicePerformanceTiming ||                   \
-          pIntercept->config().ITTPerformanceTiming ||                      \
-          pIntercept->config().ChromePerformanceTiming ||                   \
-          pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
-        ( pEvent != NULL ) )                                                \
+    if( doDevicePerformanceTiming && ( pEvent != NULL ) )                   \
     {                                                                       \
-        if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) )\
-        {                                                                   \
-            /*TOOL_OVERHEAD_TIMING_START();*/                               \
-            pIntercept->addTimingEvent(                                     \
-                __FUNCTION__,                                               \
-                enqueueCounter,                                             \
-                queuedTime,                                                 \
-                deviceTag,                                                  \
-                queue,                                                      \
-                pEvent[0] );                                                \
-            /*TOOL_OVERHEAD_TIMING_END( "(timing event overhead)" );*/      \
-        }                                                                   \
+        /*TOOL_OVERHEAD_TIMING_START();*/                                   \
+        pIntercept->addTimingEvent(                                         \
+            __FUNCTION__,                                                   \
+            enqueueCounter,                                                 \
+            queuedTime,                                                     \
+            deviceTag,                                                      \
+            queue,                                                          \
+            pEvent[0] );                                                    \
+        /*TOOL_OVERHEAD_TIMING_END( "(timing event overhead)" );*/          \
         if( isLocalEvent )                                                  \
         {                                                                   \
             pIntercept->dispatch().clReleaseEvent( pEvent[0] );             \
