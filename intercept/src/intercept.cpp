@@ -346,12 +346,12 @@ bool CLIntercept::init()
     }
 
 #if defined(_WIN32)
-    OS::Services_Common::ENV_PREFIX = "CLI_";
-    OS::Services_Common::REGISTRY_KEY = "SOFTWARE\\INTEL\\IGFX\\CLINTERCEPT";
+    OS::Services::ENV_PREFIX = "CLI_";
+    OS::Services::REGISTRY_KEY = "SOFTWARE\\INTEL\\IGFX\\CLINTERCEPT";
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
-    OS::Services_Common::ENV_PREFIX = "CLI_";
-    OS::Services_Common::CONFIG_FILE = "clintercept.conf";
-    OS::Services_Common::SYSTEM_DIR = "/etc/OpenCL";
+    OS::Services::ENV_PREFIX = "CLI_";
+    OS::Services::CONFIG_FILE = "clintercept.conf";
+    OS::Services::SYSTEM_DIR = "/etc/OpenCL";
 #endif
 
     bool    breakOnLoad = false;
@@ -399,10 +399,10 @@ bool CLIntercept::init()
     if( !m_Config.DumpDir.empty() )
     {
         std::replace( m_Config.DumpDir.begin(), m_Config.DumpDir.end(), '\\', '/' );
-        OS::Services_Common::LOG_DIR = m_Config.DumpDir.c_str();
+        OS::Services::LOG_DIR = m_Config.DumpDir.c_str();
     }
 
-    OS::Services_Common::APPEND_PID = m_Config.AppendPid;
+    OS::Services::APPEND_PID = m_Config.AppendPid;
 #endif
 
     if( m_Config.LogToFile )
@@ -510,11 +510,11 @@ bool CLIntercept::init()
 #endif
     );
 #if defined(_WIN32)
-    log( "CLIntercept environment variable prefix: " + std::string( OS::Services_Common::ENV_PREFIX ) + "\n"  );
-    log( "CLIntercept registry key: " + std::string( OS::Services_Common::REGISTRY_KEY ) + "\n" );
+    log( "CLIntercept environment variable prefix: " + std::string( OS::Services::ENV_PREFIX ) + "\n"  );
+    log( "CLIntercept registry key: " + std::string( OS::Services::REGISTRY_KEY ) + "\n" );
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
-    log( "CLIntercept environment variable prefix: " + std::string( OS::Services_Common::ENV_PREFIX ) + "\n"  );
-    log( "CLIntercept config file: " + std::string( OS::Services_Common::CONFIG_FILE ) + "\n" );
+    log( "CLIntercept environment variable prefix: " + std::string( OS::Services::ENV_PREFIX ) + "\n"  );
+    log( "CLIntercept config file: " + std::string( OS::Services::CONFIG_FILE ) + "\n" );
 #endif
 
     // Windows and Linux load the real OpenCL library and retrieve

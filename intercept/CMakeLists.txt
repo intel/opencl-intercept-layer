@@ -22,8 +22,6 @@ if(WIN32)
     list(APPEND CLINTERCEPT_OS_FILES
         OS/OS_windows.cpp
         OS/OS_windows.h
-        OS/OS_windows_common.cpp
-        OS/OS_windows_common.h
     )
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
        ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD" OR
@@ -31,15 +29,11 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
     list(APPEND CLINTERCEPT_OS_FILES
         OS/OS_linux.cpp
         OS/OS_linux.h
-        OS/OS_linux_common.cpp
-        OS/OS_linux_common.h
     )
 elseif(APPLE)
     list(APPEND CLINTERCEPT_OS_FILES
         OS/OS_mac.cpp
         OS/OS_mac.h
-        OS/OS_mac_common.cpp
-        OS/OS_mac_common.h
     )
 endif()
 source_group(OS FILES
