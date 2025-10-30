@@ -61,8 +61,6 @@ public:
     Services( const Services& ) = delete;
     Services& operator=( const Services& ) = delete;
 
-    bool    Init();
-
     uint64_t    GetProcessID() const;
     uint64_t    GetThreadID() const;
 
@@ -128,11 +126,6 @@ private:
                 size_t size ) const;
 };
 
-inline bool Services::Init()
-{
-    return true;
-}
-
 inline uint64_t Services::GetProcessID() const
 {
     return getpid();
@@ -152,7 +145,7 @@ inline uint64_t Services::GetThreadID() const
 
 inline std::string Services::GetProcessName() const
 {
-    char    processName[ 1024 ];
+    char    processName[ 1024 ] = "";
     char*   pProcessName = processName;
 
 #if defined(__linux__)
@@ -446,7 +439,7 @@ inline bool Services::CheckMDAPIPermissions(
         int fd = open(path, 0);
         if( fd > 0 )
         {
-            char buf[32];
+            char buf[32] = "";
             int n = read(fd, buf, sizeof(buf) - 1);
             close(fd);
 

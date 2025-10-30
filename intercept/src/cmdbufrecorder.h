@@ -151,7 +151,7 @@ struct SCommandBufferRecord
 
     std::atomic<uint32_t> nextInternalId;
 
-    bool    queueIsInOrder;
+    bool    queueIsInOrder = false;
 
     std::vector<SCommandBufferId>  implicitDeps;
     std::vector<SCommandBufferId>  outstandingIds;

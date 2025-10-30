@@ -15,6 +15,8 @@ class CEnumNameMap
 {
 public:
     CEnumNameMap();
+    CEnumNameMap( const CEnumNameMap& ) = delete;
+    CEnumNameMap& operator=( const CEnumNameMap& ) = delete;
 
     #define GENERATE_MAP_AND_FUNC( _name, _type )                   \
         private:                                                    \
@@ -119,7 +121,4 @@ public:
 
     #undef GENERATE_MAP_AND_FUNC
     #undef GENERATE_MAP_AND_BITFIELD_FUNC
-
-private:
-    DISALLOW_COPY_AND_ASSIGN( CEnumNameMap );
 };
