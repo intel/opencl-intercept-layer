@@ -3387,7 +3387,9 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         ( pEvent != NULL ) )                                                \
     {                                                                       \
         if( pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) &&\
-            !pIntercept->config().DevicePerformanceTimingKernelsOnly )      \
+            !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
+            ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
+              std::string(__FUNCTION__) != "clEnqueueUnmapMemObject" ) )    \
         {                                                                   \
             /*TOOL_OVERHEAD_TIMING_START();*/                               \
             pIntercept->addTimingEvent(                                     \
