@@ -13,7 +13,9 @@
 class CObjectTracker
 {
 public:
-    CObjectTracker() {}
+    CObjectTracker() = default;
+    CObjectTracker( const CObjectTracker& ) = delete;
+    CObjectTracker& operator=( const CObjectTracker& ) = delete;
 
     void    writeReport( std::ostream& os );
 
@@ -116,6 +118,4 @@ private:
         const std::string& label,
         const CPointerTracker& tracker,
         std::ostream& os );
-
-    DISALLOW_COPY_AND_ASSIGN( CObjectTracker );
 };

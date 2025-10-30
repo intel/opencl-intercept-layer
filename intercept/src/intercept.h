@@ -1013,6 +1013,8 @@ private:
 
     CLIntercept( void* pGlobalData );
     ~CLIntercept();
+    CLIntercept( const CLIntercept& ) = delete;
+    CLIntercept& operator=( const CLIntercept& ) = delete;
 
     bool    init();
     void    log(const std::string& s);
@@ -1107,11 +1109,11 @@ private:
 
     struct SProgramInfo
     {
-        unsigned int    ProgramNumber;
-        unsigned int    CompileCount;
+        unsigned int    ProgramNumber = 0;
+        unsigned int    CompileCount = 0;
 
-        uint64_t        ProgramHash;
-        uint64_t        OptionsHash;
+        uint64_t        ProgramHash = 0;
+        uint64_t        OptionsHash = 0;
     };
 
     typedef std::map< cl_program, SProgramInfo >    CProgramInfoMap;
@@ -1119,16 +1121,10 @@ private:
 
     struct SHostTimingStats
     {
-        SHostTimingStats() :
-            NumberOfCalls(0),
-            MinNS(ULLONG_MAX),
-            MaxNS(0),
-            TotalNS(0) {}
-
-        uint64_t    NumberOfCalls;
-        uint64_t    MinNS;
-        uint64_t    MaxNS;
-        uint64_t    TotalNS;
+        uint64_t    NumberOfCalls = 0;
+        uint64_t    MinNS = ULLONG_MAX;
+        uint64_t    MaxNS = 0;
+        uint64_t    TotalNS = 0;
     };
 
     typedef std::unordered_map< std::string, SHostTimingStats > CHostTimingStatsMap;
@@ -1173,16 +1169,10 @@ private:
 
     struct SDeviceTimingStats
     {
-        SDeviceTimingStats() :
-            NumberOfCalls(0),
-            MinNS(CL_ULONG_MAX),
-            MaxNS(0),
-            TotalNS(0) {}
-
-        uint64_t    NumberOfCalls;
-        cl_ulong    MinNS;
-        cl_ulong    MaxNS;
-        cl_ulong    TotalNS;
+        uint64_t    NumberOfCalls = 0;
+        cl_ulong    MinNS = CL_ULONG_MAX;
+        cl_ulong    MaxNS = 0;
+        cl_ulong    TotalNS = 0;
     };
 
     typedef std::unordered_map< std::string, SDeviceTimingStats >   CDeviceTimingStatsMap;
@@ -1376,8 +1366,8 @@ private:
 
     struct SMutableCommandInfo
     {
-        cl_platform_id  Platform;
-        cl_uint         WorkDim;
+        cl_platform_id  Platform = NULL;
+        cl_uint         WorkDim = 0;
     };
 
     typedef std::map< cl_mutable_command_khr, SMutableCommandInfo >  CMutableCommandInfoMap;
@@ -1389,7 +1379,7 @@ private:
 
     struct SConfig
     {
-#define CLI_CONTROL( _type, _name, _init, _desc )   _type _name;
+#define CLI_CONTROL( _type, _name, _init, _desc )   _type _name{};
 #include "controls.h"
 #undef CLI_CONTROL
     } m_Config;
@@ -1427,19 +1417,12 @@ private:
     // USM Emulation:
     struct SUSMAllocInfo
     {
-        SUSMAllocInfo() :
-            Type( CL_MEM_TYPE_UNKNOWN_INTEL ),
-            Device( NULL ),
-            BaseAddress( NULL ),
-            Size( 0 ),
-            Alignment( 0 ) {}
+        cl_unified_shared_memory_type_intel Type = CL_MEM_TYPE_UNKNOWN_INTEL;
+        cl_device_id    Device = NULL;
 
-        cl_unified_shared_memory_type_intel Type;
-        cl_device_id    Device;
-
-        const void*     BaseAddress;
-        size_t          Size;
-        size_t          Alignment;
+        const void*     BaseAddress = NULL;
+        size_t          Size = 0;
+        size_t          Alignment = 0;
     };
 
     typedef std::map< const void*, SUSMAllocInfo >  CUSMAllocMap;
@@ -1461,14 +1444,9 @@ private:
 
     struct SUSMKernelInfo
     {
-        SUSMKernelInfo() :
-            IndirectHostAccess( false ),
-            IndirectDeviceAccess( false ),
-            IndirectSharedAccess( false ) {}
-
-        bool    IndirectHostAccess;
-        bool    IndirectDeviceAccess;
-        bool    IndirectSharedAccess;
+        bool    IndirectHostAccess = false;
+        bool    IndirectDeviceAccess = false;
+        bool    IndirectSharedAccess = false;
 
         std::vector<void*>  SVMPtrs;
         std::vector<void*>  USMPtrs;
@@ -1476,8 +1454,6 @@ private:
 
     typedef std::map< cl_kernel, SUSMKernelInfo >   CUSMKernelInfoMap;
     CUSMKernelInfoMap   m_USMKernelInfoMap;
-
-    DISALLOW_COPY_AND_ASSIGN( CLIntercept );
 };
 
 ///////////////////////////////////////////////////////////////////////////////

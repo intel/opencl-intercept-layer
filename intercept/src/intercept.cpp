@@ -124,7 +124,8 @@ void CLIntercept::Delete( CLIntercept*& pIntercept )
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLIntercept::CLIntercept( void* pGlobalData )
-    : m_OS( pGlobalData )
+    : m_OS( pGlobalData ),
+      m_StringBuffer("")
 {
     m_ProcessId = m_OS.GetProcessID();
 
@@ -336,14 +337,6 @@ static std::string GetNonDefaultString(
 bool CLIntercept::init()
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-
-    if( m_OS.Init() == false )
-    {
-#ifdef __ANDROID__
-         __android_log_print(ANDROID_LOG_INFO, "clIntercept", "OS.Init FAILED!\n" );
-#endif
-        return false;
-    }
 
 #if defined(_WIN32)
     OS::Services::ENV_PREFIX = "CLI_";
@@ -3331,11 +3324,8 @@ void CLIntercept::logError(
     const char* functionName,
     cl_int errorCode )
 {
-    std::ostringstream  ss;
-    ss << "ERROR! " << functionName << " returned " << enumName().name(errorCode) << " (" << errorCode << ")\n";
-
     std::lock_guard<std::mutex> lock(m_Mutex);
-    log( ss.str() );
+    logf( "ERROR! %s returned %s (%d)\n", functionName, enumName().name(errorCode).c_str(), errorCode );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3345,7 +3335,7 @@ void CLIntercept::logFlushOrFinishAfterEnqueueStart(
     const char* functionName )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-    log( "Calling " + std::string(flushOrFinish) + " after " + std::string(functionName) + "...\n" );
+    logf( "Calling %s after %s...\n", flushOrFinish, functionName );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3355,11 +3345,8 @@ void CLIntercept::logFlushOrFinishAfterEnqueueEnd(
     const char* functionName,
     cl_int errorCode )
 {
-    std::ostringstream  ss;
-    ss << "... " << flushOrFinish << " after " << functionName << " returned " << enumName().name( errorCode ) << " (" << errorCode << ")\n";
-
     std::lock_guard<std::mutex> lock(m_Mutex);
-    log( ss.str() );
+    logf( "...%s after %s returned %s (%d)\n", flushOrFinish, functionName, enumName().name( errorCode ).c_str(), errorCode );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4107,13 +4094,16 @@ void CLIntercept::combineProgramStrings(
             {
                 length = lengths[i];
             }
-            if( length )
+            if( length != 0 )
             {
-                CLI_MEMCPY(
-                    pDst,
-                    remaining,
-                    strings[i],
-                    length );
+                if( strings != NULL && strings[i] != NULL )
+                {
+                    CLI_MEMCPY(
+                        pDst,
+                        remaining,
+                        strings[i],
+                        length );
+                }
                 pDst += length;
                 remaining -= length;
             }
@@ -7517,7 +7507,7 @@ void CLIntercept::addImage(
 
         if( errorCode == CL_SUCCESS )
         {
-            SImageInfo  imageInfo;
+            SImageInfo& imageInfo = m_ImageInfoMap[ image ];
 
             imageInfo.Region[0] = width;
             if( height == 0 )
@@ -7564,7 +7554,6 @@ void CLIntercept::addImage(
             imageInfo.SlicePitch = slicePitch;
 
             m_MemAllocNumberMap[ image ] = m_MemAllocNumber;
-            m_ImageInfoMap[ image ] = imageInfo;
             m_MemAllocNumber++;
         }
     }

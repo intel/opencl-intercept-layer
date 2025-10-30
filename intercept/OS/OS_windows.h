@@ -27,8 +27,6 @@ public:
     Services( const Services& ) = delete;
     Services& operator=( const Services& ) = delete;
 
-    bool    Init();
-
     uint64_t    GetProcessID() const;
     uint64_t    GetThreadID() const;
 
@@ -95,16 +93,6 @@ private:
     HINSTANCE   m_hInstance;
 };
 
-inline bool Services::Init()
-{
-    if( m_hInstance == NULL )
-    {
-        return false;
-    }
-
-    return true;
-}
-
 inline uint64_t Services::GetProcessID() const
 {
     return GetCurrentProcessId();
@@ -117,7 +105,7 @@ inline uint64_t Services::GetThreadID() const
 
 inline std::string Services::GetProcessName() const
 {
-    char    processName[ MAX_PATH ];
+    char    processName[ MAX_PATH ] = "";
     char*   pProcessName = processName;
 
     if( GetModuleFileNameA( NULL, processName, MAX_PATH - 1 ) )
@@ -323,7 +311,7 @@ inline void Services::MakeDumpDirectories(
 inline bool Services::GetCLInterceptName(
     std::string& name ) const
 {
-    char    dllName[ MAX_PATH ];
+    char    dllName[ MAX_PATH ] = "";
 
     if( GetModuleFileNameA( m_hInstance, dllName, MAX_PATH - 1 ) )
     {

@@ -83,19 +83,3 @@
 #endif
 
 #define CLI_STRING_BUFFER_SIZE (16 * 1024)
-
-/*****************************************************************************\
-
-MACRO:
-    DISALLOW_COPY_AND_ASSIGN
-
-Description:
-    A macro to disallow the copy constructor and operator= functions
-    This should be used in the private: declarations for a class
-
-\*****************************************************************************/
-#if !defined(DISALLOW_COPY_AND_ASSIGN)
-#define DISALLOW_COPY_AND_ASSIGN( TypeName ) \
-    TypeName(const TypeName&); \
-    void operator=(const TypeName&)
-#endif
