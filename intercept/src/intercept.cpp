@@ -136,7 +136,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
 
     m_LoggedCLInfo = false;
 
-    m_EnqueueCounter.store(0, std::memory_order::memory_order_relaxed);
+    m_EnqueueCounter.store(0, std::memory_order_relaxed);
 
     m_EventsChromeTraced = 0;
     m_ProgramNumber = 0;
@@ -6680,25 +6680,13 @@ void CLIntercept::checkTimingEvents()
                         {
                             SDeviceTimingHistogram& histogram = m_DeviceTimingHistogramMap[node.Device];
 
-                            const uint32_t lz = Utils::CountLeadingZeroes( delta );
-                            const uint32_t check = lz == 64 ? 0 :
-                                lz <= ( 64 - cNumDeviceTimingBins ) ? cNumDeviceTimingBins - 1 :
-                                64 - lz;
+                            const uint32_t count = Utils::CountLeadingZeroes( delta );
+                            const uint32_t bin = count == 64 ? 0 :
+                                count <= ( 64 - cNumDeviceTimingBins ) ? cNumDeviceTimingBins - 1 :
+                                64 - count;
 
-                            for( uint32_t bin = 0; bin < cNumDeviceTimingBins; bin++ )
-                            {
-                                if( ( delta <= 1ULL << bin ) ||
-                                    ( bin == cNumDeviceTimingBins - 1 ) )
-                                {
-                                    if (bin != check ) {
-                                        logf("MISMATCH!  in %u vs %u for delta %" PRIu64 "\n", bin, check, delta);
-                                        CLI_ASSERT( 0 );
-                                    }
-                                    logf("Adding time %" PRIu64 " to bin %u (cutoff: %" PRIu64 ")\n", delta, bin, 1ULL << bin);
-                                    histogram.Bins[bin]++;
-                                    break;
-                                }
-                            }
+                            CLI_ASSERT( bin < cNumDeviceTimingBins );
+                            histogram.Bins[bin]++;
                         }
                     }
                 }

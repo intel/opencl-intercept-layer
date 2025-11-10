@@ -99,9 +99,8 @@ uint32_t CountLeadingZeroes(uint64_t value)
     if( value == 0 ) { return 64; }
 
     uint32_t count = 0;
-    uint64_t mask = uint64_t(1) << 63;
-
-    while ((value & mask) == 0)
+    uint64_t mask = 1ULL << 63;
+    while( (value & mask) == 0 )
     {
         count++;
         mask >>= 1;
