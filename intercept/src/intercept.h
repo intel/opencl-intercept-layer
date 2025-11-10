@@ -1179,6 +1179,18 @@ private:
     typedef std::map< cl_device_id, CDeviceTimingStatsMap > CDeviceDeviceTimingStatsMap;
     CDeviceDeviceTimingStatsMap m_DeviceTimingStatsMap;
 
+    // These structures define a mapping between a device ID and histogram
+    // bins for kernel execution on that device.
+
+    constexpr static uint32_t cNumDeviceTimingBins = 30;
+    struct SDeviceTimingHistogram
+    {
+        uint32_t    Bins[cNumDeviceTimingBins] = { 0 };
+    };
+
+    typedef std::map< cl_device_id, SDeviceTimingHistogram > CDeviceTimingHistogramMap;
+    CDeviceTimingHistogramMap   m_DeviceTimingHistogramMap;
+
     // This defines a mapping between the kernel handle and information
     // about the kernel.
 

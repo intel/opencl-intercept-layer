@@ -299,6 +299,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will incl
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will add event profiling to track the minimum, maximum, and average device time for each OpenCL command. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. When the process exits, this information will be included in the file "clIntercept\_report.txt".
 
+##### `DevicePerformanceTimingHistogram` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will report a histogram of device times in addition to the table of device times for each OpenCL command.
+
 ##### `DevicePerformanceTimeKernelInfoTracking` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between OpenCL NDRange kernels using information such as the kernel's Preferred Work Group Size Multiple (AKA SIMD size).
