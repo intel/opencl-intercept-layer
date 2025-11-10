@@ -90,11 +90,11 @@ uint32_t CountLeadingZeroes(uint64_t value)
 
     if( value < 1ULL << 32 )
     {
-        return 63 - __builtin_clz(static_cast<uint32_t>(value)));
+        return 32 + __builtin_clz(static_cast<uint32_t>(value));
     }
 
     value >>= 32;
-    return 31 - __builtin_clz(static_cast<uint32_t>(value)));
+    return __builtin_clz(static_cast<uint32_t>(value));
 #else
     if( value == 0 ) { return 64; }
 
