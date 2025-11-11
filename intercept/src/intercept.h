@@ -1182,10 +1182,10 @@ private:
     // These structures define a mapping between a device ID and histogram
     // bins for kernel execution on that device.
 
-    constexpr static uint32_t cNumDeviceTimingBins = 30;
     struct SDeviceTimingHistogram
     {
-        uint32_t    Bins[cNumDeviceTimingBins] = { 0 };
+        constexpr static uint32_t cNumBins = 30;
+        uint32_t    Bins[cNumBins] = { 0 };
     };
 
     typedef std::map< cl_device_id, SDeviceTimingHistogram > CDeviceTimingHistogramMap;

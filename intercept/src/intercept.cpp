@@ -970,16 +970,16 @@ void CLIntercept::writeReport(
             os << std::endl << "Device Performance Timing Histogram for " << deviceInfo.NameForReport << ":" << std::endl;
 
             uint32_t total = 0;
-            for( uint32_t bin = 0; bin < cNumDeviceTimingBins; bin++ )
+            for( uint32_t bin = 0; bin < SDeviceTimingHistogram::cNumBins; bin++ )
             {
                 total += histogram.Bins[bin];
             }
 
             os << std::endl << "Total Events: " << total << std::endl << std::endl;
 
-            for( uint32_t bin = 0; bin < cNumDeviceTimingBins; bin++ )
+            for( uint32_t bin = 0; bin < SDeviceTimingHistogram::cNumBins; bin++ )
             {
-                if( bin == cNumDeviceTimingBins - 1 )
+                if( bin == SDeviceTimingHistogram::cNumBins - 1 )
                 {
                     os << " >= ";
                 }
@@ -6680,12 +6680,13 @@ void CLIntercept::checkTimingEvents()
                         {
                             SDeviceTimingHistogram& histogram = m_DeviceTimingHistogramMap[node.Device];
 
+                            constexpr uint32_t cNumBins = SDeviceTimingHistogram::cNumBins;
                             const uint32_t count = Utils::CountLeadingZeroes( delta );
                             const uint32_t bin = count == 64 ? 0 :
-                                count <= ( 64 - cNumDeviceTimingBins ) ? cNumDeviceTimingBins - 1 :
+                                count <= ( 64 - cNumBins ) ? cNumBins - 1 :
                                 64 - count;
 
-                            CLI_ASSERT( bin < cNumDeviceTimingBins );
+                            CLI_ASSERT( bin < cNumBins );
                             histogram.Bins[bin]++;
                         }
                     }
