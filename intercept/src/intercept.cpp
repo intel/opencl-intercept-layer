@@ -136,7 +136,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
 
     m_LoggedCLInfo = false;
 
-    m_EnqueueCounter.store(0, std::memory_order::memory_order_relaxed);
+    m_EnqueueCounter.store(0, std::memory_order_relaxed);
 
     m_EventsChromeTraced = 0;
     m_ProgramNumber = 0;
@@ -951,6 +951,55 @@ void CLIntercept::writeReport(
                     << std::right << std::setw(13) << deviceTimingStats.TotalNS / deviceTimingStats.NumberOfCalls << ", "
                     << std::right << std::setw(13) << deviceTimingStats.MinNS << ", "
                     << std::right << std::setw(13) << deviceTimingStats.MaxNS << std::endl;
+            }
+
+            ++id;
+        }
+    }
+
+    if( config().DevicePerformanceTimingHistogram )
+    {
+        CDeviceTimingHistogramMap::const_iterator id = m_DeviceTimingHistogramMap.begin();
+        while( id != m_DeviceTimingHistogramMap.end() )
+        {
+            const cl_device_id  device = (*id).first;
+            const SDeviceTimingHistogram& histogram = (*id).second;
+
+            const SDeviceInfo&  deviceInfo = m_DeviceInfoMap[device];
+
+            os << std::endl << "Device Performance Timing Histogram for " << deviceInfo.NameForReport << ":" << std::endl;
+
+            uint32_t total = 0;
+            for( uint32_t bin = 0; bin < SDeviceTimingHistogram::cNumBins; bin++ )
+            {
+                total += histogram.Bins[bin];
+            }
+
+            os << std::endl << "Total Events: " << total << std::endl << std::endl;
+
+            for( uint32_t bin = 0; bin < SDeviceTimingHistogram::cNumBins; bin++ )
+            {
+                if( bin == SDeviceTimingHistogram::cNumBins - 1 )
+                {
+                    os << " >= ";
+                }
+                else
+                {
+                    os << "  < ";
+                }
+                const uint32_t count = histogram.Bins[bin];
+                os  << std::setw(9) << (1ULL << bin) << " ns: " << std::setw(9) << count << " : ";
+
+                uint32_t dots = static_cast<uint32_t>( 64.0f * count / total );
+                if( count != 0 && dots == 0 )
+                {
+                    dots++;
+                }
+                for( uint32_t d = 0; d < dots; d++ )
+                {
+                    os << "*";
+                }
+                os << std::endl;
             }
 
             ++id;
@@ -6625,6 +6674,20 @@ void CLIntercept::checkTimingEvents()
                                 commandSubmit,
                                 commandStart,
                                 commandEnd );
+                        }
+
+                        if( config().DevicePerformanceTimingHistogram )
+                        {
+                            SDeviceTimingHistogram& histogram = m_DeviceTimingHistogramMap[node.Device];
+
+                            constexpr uint32_t cNumBins = SDeviceTimingHistogram::cNumBins;
+                            const uint32_t count = Utils::CountLeadingZeroes( delta );
+                            const uint32_t bin = count == 64 ? 0 :
+                                count <= ( 64 - cNumBins ) ? cNumBins - 1 :
+                                64 - count;
+
+                            CLI_ASSERT( bin < cNumBins );
+                            histogram.Bins[bin]++;
                         }
                     }
                 }
