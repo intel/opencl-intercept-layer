@@ -441,6 +441,10 @@ static bool parseArguments(int argc, char *argv[])
         {
             checkSetEnv("CLI_DumpKernelISABinaries", "1");
         }
+        else if( !strcmp(argv[i], "-ct") || !strcmp(argv[i], "--conditional-timing") )
+        {
+            checkSetEnv("CLI_PerformanceTimingConditional", "1");
+        }
         else if( !strcmp(argv[i], "-d") || !strcmp(argv[i], "--device-timing") )
         {
             checkSetEnv("CLI_DevicePerformanceTiming", "1");
@@ -622,6 +626,7 @@ static bool parseArguments(int argc, char *argv[])
             "  --dump-spirv [-dspv]             Dump Input Program IL (SPIR-V)\n"
             "  --dump-output-binaries           Dump Output Program Binaries\n"
             "  --dump-kernel-isa-binaries       Dump Kernel ISA Binaries (Intel GPU Only)\n"
+            "  --conditional-timing [-ct]       Enable Conditional Timing Based on Environment Variables\n"
             "  --device-timing [-d]             Report Device Execution Time\n"
             "  --device-timing-verbose [-dv]    Report More Detailed Device Execution Time\n"
             "  --chrome-call-logging [-ccl]     Record Host API Calls to a JSON Trace File\n"

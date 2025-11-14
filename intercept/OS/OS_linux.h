@@ -118,6 +118,9 @@ public:
     bool    CheckMDAPIPermissions(
                 std::string& str ) const;
 
+    bool    CheckConditionalEnable(
+                const char* name) const;
+
 private:
     bool    GetControlFromFile(
                 const std::string& fileName,
@@ -470,6 +473,14 @@ inline bool Services::CheckMDAPIPermissions(
     }
 
     return str.empty();
+}
+
+inline bool Services::CheckConditionalEnable(
+    const char* name) const
+{
+    const char* envVal = getenv(name);
+    bool enabled = envVal && strcmp(envVal, "0") != 0;
+    return enabled;
 }
 
 }

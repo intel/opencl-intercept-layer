@@ -423,6 +423,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will orga
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will unconditionally estimate the queued time for Chrome Tracing rather than computing it using device and host timers and event profiling data.  The estimated time is less accurate than the computed time, but may be more reliable if the device and host timers or event profiling data is incorrect or imprecise.
 
+##### `PerformanceTimingConditional` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will only collect host performance timing, device performance timing, and chrome performance timing conditionally, when the "CLI\_ENABLE\_PERFORMANCE\_TIMING" environment variable is set to a non-zero value.
+
 ### Controls for Dumping and Injecting Programs and Build Options
 
 ##### `OmitProgramNumber` (bool)
