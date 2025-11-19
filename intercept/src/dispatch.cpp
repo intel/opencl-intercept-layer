@@ -947,7 +947,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetCommandQueueProperty)(
             command_queue,
             pIntercept->enumName().name_command_queue_properties( properties ).c_str(),
             properties,
-            enable ? "CL_TRUE" : "CL_FALSE",
+            pIntercept->enumName().name_bool( enable ).c_str(),
             old_properties );
         HOST_PERFORMANCE_TIMING_START();
 
