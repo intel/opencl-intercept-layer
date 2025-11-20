@@ -93,6 +93,7 @@ jobs:
         draft: true
         files: |
           ./build/clintercept-*.zip
+          ./build/clintercept-*.zip.sigstore.json
 
     - name: Release (Linux tgz)
       if: |
@@ -103,3 +104,4 @@ jobs:
         draft: true
         files: |
           ./build/clintercept-*.tar.gz
+          ./build/clintercept-*.tar.gz.sigstore.json
