@@ -26,6 +26,7 @@ jobs:
 
     permissions:
       contents: write
+      id-token: write
 
     steps:
     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -58,6 +59,30 @@ jobs:
       working-directory: ./build
       shell: bash
       run: cmake --build . --parallel --config $BUILD_TYPE --target package
+
+    - name: Update Python (Windows)
+      if: matrix.os == 'windows-latest'
+      uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
+      with:
+        python-version: '3.12'
+
+    - name: Sign (Windows zip)
+      if: |
+        startsWith(github.ref, 'refs/tags/') &&
+        matrix.os == 'windows-latest'
+      uses: sigstore/gh-action-sigstore-python@f832326173235dcb00dd5d92cd3f353de3188e6c #v3.1.0
+      with:
+        inputs: |
+          ./build/clintercept-*.zip
+
+    - name: Sign (Linux tgz)
+      if: |
+        startsWith(github.ref, 'refs/tags/') &&
+        matrix.os == 'ubuntu-latest'
+      uses: sigstore/gh-action-sigstore-python@f832326173235dcb00dd5d92cd3f353de3188e6c #v3.1.0
+      with:
+        inputs: |
+          ./build/clintercept-*.tar.gz
 
     - name: Release (Windows zip)
       if: |
