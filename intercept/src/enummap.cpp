@@ -947,6 +947,14 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_IMAGE_REQUIREMENTS_MAX_DEPTH_EXT );
     ADD_ENUM_NAME( m_cl_int, CL_IMAGE_REQUIREMENTS_MAX_ARRAY_SIZE_EXT );
 
+    // cl_ext_image_unsigned_10x6_12x4_14x2
+    ADD_ENUM_NAME( m_cl_int, CL_UNSIGNED_INT10X6_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_UNSIGNED_INT12X4_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_UNSIGNED_INT14X2_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_UNORM_INT10X6_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_UNORM_INT12X4_EXT );
+    ADD_ENUM_NAME( m_cl_int, CL_UNORM_INT14X2_EXT );
+
     // cl_ext_immutable_memory_objects
     ADD_ENUM_NAME( m_cl_mem_flags, CL_MEM_IMMUTABLE_EXT );
 

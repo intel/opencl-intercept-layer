@@ -1123,11 +1123,6 @@ cl_int CL_API_CALL clSetKernelArgDevicePointerEXT(
 #define CL_PARTITION_BY_NAMES_LIST_END_EXT          -1
 
 ///////////////////////////////////////////////////////////////////////////////
-// cl_ext_immutable_memory_objects
-
-#define CL_MEM_IMMUTABLE_EXT                        (1 << 6)
-
-///////////////////////////////////////////////////////////////////////////////
 // cl_ext_float_atomics
 
 typedef cl_bitfield         cl_device_fp_atomic_capabilities_ext;
@@ -1172,6 +1167,21 @@ cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
     size_t param_value_size,
     void* param_value,
     size_t* param_value_size_ret);
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_ext_image_unsigned_10x6_12x4_14x2
+
+#define CL_UNSIGNED_INT10X6_EXT                             0x10E6
+#define CL_UNSIGNED_INT12X4_EXT                             0x10E7
+#define CL_UNSIGNED_INT14X2_EXT                             0x10E8
+#define CL_UNORM_INT10X6_EXT                                0x10E1
+#define CL_UNORM_INT12X4_EXT                                0x10E9
+#define CL_UNORM_INT14X2_EXT                                0x10EA
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_ext_immutable_memory_objects
+
+#define CL_MEM_IMMUTABLE_EXT                        (1 << 6)
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_altera_compiler_mode
