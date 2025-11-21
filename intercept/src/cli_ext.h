@@ -987,7 +987,7 @@ cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
 ///////////////////////////////////////////////////////////////////////////////
 // cl_khr_unified_svm
 
-// Note: This implements the proposed extension version 0.2.0.
+// Note: This implements the proposed extension version 0.9.0.
 
 #define CL_PLATFORM_SVM_TYPE_CAPABILITIES_KHR               0x0909
 
@@ -1025,8 +1025,6 @@ typedef cl_uint             cl_svm_pointer_info_khr;
 #define CL_SVM_ALLOC_ACCESS_HOST_NOWRITE_KHR                (1 << 1)
 #define CL_SVM_ALLOC_ACCESS_DEVICE_NOREAD_KHR               (1 << 8)
 #define CL_SVM_ALLOC_ACCESS_DEVICE_NOWRITE_KHR              (1 << 9)
-
-#define CL_SVM_FREE_BLOCKING_KHR                            (1 << 0)
 
 #define CL_SVM_INFO_TYPE_INDEX_KHR                          0x2088
 #define CL_SVM_INFO_CAPABILITIES_KHR                        0x2089
