@@ -15,6 +15,8 @@ class CEnumNameMap
 {
 public:
     CEnumNameMap();
+    CEnumNameMap( const CEnumNameMap& ) = delete;
+    CEnumNameMap& operator=( const CEnumNameMap& ) = delete;
 
     #define GENERATE_MAP_AND_FUNC( _name, _type )                   \
         private:                                                    \
@@ -85,7 +87,7 @@ public:
     // CL enums that are allocated from the Khronos registry are unique and
     // can go into the main/default cl_int map.
     GENERATE_MAP_AND_FUNC(          name,                            cl_int                          );
-    GENERATE_MAP_AND_BITFIELD_FUNC( name_bool,                       cl_bool                         );
+    GENERATE_MAP_AND_FUNC(          name_bool,                       cl_bool                         );
     GENERATE_MAP_AND_FUNC(          name_build_status,               cl_build_status                 );
     GENERATE_MAP_AND_FUNC(          name_command_exec_status,        cl_command_exec_status          );
     GENERATE_MAP_AND_BITFIELD_FUNC( name_command_queue_properties,   cl_command_queue_properties     );
@@ -119,7 +121,4 @@ public:
 
     #undef GENERATE_MAP_AND_FUNC
     #undef GENERATE_MAP_AND_BITFIELD_FUNC
-
-private:
-    DISALLOW_COPY_AND_ASSIGN( CEnumNameMap );
 };

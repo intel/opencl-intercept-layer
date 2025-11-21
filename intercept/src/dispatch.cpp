@@ -948,7 +948,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetCommandQueueProperty)(
             command_queue,
             pIntercept->enumName().name_command_queue_properties( properties ).c_str(),
             properties,
-            enable ? "CL_TRUE" : "CL_FALSE",
+            pIntercept->enumName().name_bool( enable ).c_str(),
             old_properties );
         HOST_PERFORMANCE_TIMING_START();
 
@@ -2338,6 +2338,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCompileProgram)(
         BUILD_LOGGING( program, num_devices, device_list );
         CALL_LOGGING_EXIT( retVal );
 
+        DUMP_OUTPUT_PROGRAM_BINARIES( program );
         INCREMENT_PROGRAM_COMPILE_COUNT( program );
         PROGRAM_OPTIONS_CLEANUP( newOptions );
 
@@ -4965,7 +4966,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
             }
 
             HOST_PERFORMANCE_TIMING_END_WITH_TAG();
-            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, event );
+            DEVICE_PERFORMANCE_TIMING_END_KERNEL( command_queue, event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
@@ -5027,7 +5028,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
                 event );
 
             HOST_PERFORMANCE_TIMING_END_WITH_TAG();
-            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, event );
+            DEVICE_PERFORMANCE_TIMING_END_KERNEL( command_queue, event );
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );

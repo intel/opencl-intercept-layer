@@ -202,13 +202,13 @@ void CChromeTracer::writeDeviceTiming(
 }
 
 // Shared lookup tables:
-static const size_t cNumStates = 3;
-static const char* colours[cNumStates] = {
+static constexpr size_t cNumStates = 3;
+static constexpr const char* colours[cNumStates] = {
     "thread_state_runnable",
     "cq_build_running",
     "thread_state_iowait"
 };
-static const char* suffixes[cNumStates] = {
+static constexpr const char* suffixes[cNumStates] = {
     "(Queued)",
     "(Submitted)",
     "(Execution)"

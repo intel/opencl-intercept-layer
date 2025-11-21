@@ -6,20 +6,57 @@
 
 #pragma once
 
-#include "OS_windows_common.h"
+#include <Windows.h>
+#include <string>
+#include <stdint.h>
 
 #include "resource/clIntercept_resource.h"
 
 namespace OS
 {
 
-class Services : public Services_Common
+class Services
 {
 public:
-    Services( void* pGlobalData );
-    ~Services();
+    static const char* ENV_PREFIX;
+    static const char* REGISTRY_KEY;
+    static const char* LOG_DIR;
+    static bool        APPEND_PID;
 
-    bool    Init();
+    Services( void* pGlobalData );
+    Services( const Services& ) = delete;
+    Services& operator=( const Services& ) = delete;
+
+    uint64_t    GetProcessID() const;
+    uint64_t    GetThreadID() const;
+
+    std::string GetProcessName() const;
+
+    bool    GetControl(
+                const std::string& name,
+                void* pValue,
+                size_t size ) const;
+
+    void    OutputDebugString(
+                const std::string& str ) const;
+
+    void*   LoadLibrary(
+                const std::string& libraryName ) const;
+    void    UnloadLibrary(
+                void*& pLibrary ) const;
+
+    void*   GetFunctionPointer(
+                void* pLibrary,
+                const std::string& functionName ) const;
+
+    void    GetDumpDirectoryName(
+                const std::string& subDir,
+                std::string& directoryName ) const;
+    void    GetDumpDirectoryNameWithoutPid(
+                const std::string& subDir,
+                std::string& directoryName ) const;
+    void    MakeDumpDirectories(
+                const std::string& fileName ) const;
 
     bool    GetCLInterceptName(
                 std::string& name ) const;
@@ -52,26 +89,232 @@ public:
     bool    CheckMDAPIPermissions(
                 std::string& str ) const;
 
+    bool    CheckConditionalEnable(
+                const char* name) const;
+
 private:
     HINSTANCE   m_hInstance;
-
-    DISALLOW_COPY_AND_ASSIGN( Services );
 };
 
-inline bool Services::Init()
+inline uint64_t Services::GetProcessID() const
 {
-    if( m_hInstance == NULL )
-    {
-        return false;
-    }
-
-    return Services_Common::Init();
+    return GetCurrentProcessId();
 }
 
+inline uint64_t Services::GetThreadID() const
+{
+    return GetCurrentThreadId();
+}
+
+inline std::string Services::GetProcessName() const
+{
+    char    processName[ MAX_PATH ] = "";
+    char*   pProcessName = processName;
+
+    if( GetModuleFileNameA( NULL, processName, MAX_PATH - 1 ) )
+    {
+        pProcessName = strrchr( processName, '\\' );
+        pProcessName++;
+    }
+    else
+    {
+        strcpy_s( processName, MAX_PATH, "process.exe" );
+    }
+
+    return std::string(pProcessName);
+}
+
+inline bool Services::GetControl(
+    const std::string& name,
+    void* pValue,
+    size_t size ) const
+{
+    // Look at environment variables first:
+    {
+        std::string envName(ENV_PREFIX);
+        envName += name;
+
+        char* envVal = NULL;
+        size_t  len = 0;
+        errno_t err = _dupenv_s( &envVal, &len, envName.c_str() );
+        if( !err )
+        {
+            if( ( envVal != NULL ) && ( size == sizeof(unsigned int) ) )
+            {
+                unsigned int *puVal = (unsigned int *)pValue;
+                *puVal = atoi(envVal);
+                free( envVal );
+                return true;
+            }
+            else if( ( envVal != NULL ) && ( strlen(envVal) < size ) )
+            {
+                char* pStr = (char*)pValue;
+                strcpy_s( pStr, size, envVal );
+                free( envVal );
+                return true;
+            }
+            free( envVal );
+        }
+    }
+
+    LONG    success = ERROR_SUCCESS;
+    HKEY    cliKey;
+
+    // Try HKEY_CURRENT_USER first.
+
+    success = ::RegOpenKeyEx(
+        HKEY_CURRENT_USER,
+        REGISTRY_KEY,
+        0,
+        KEY_READ,
+        &cliKey );
+    if( ERROR_SUCCESS == success )
+    {
+        DWORD   dwSize = (DWORD)size;
+
+        success = ::RegQueryValueEx(
+            cliKey,
+            name.c_str(),
+            NULL,
+            NULL,
+            (LPBYTE)pValue,
+            &dwSize );
+
+        ::RegCloseKey( cliKey );
+    }
+
+    // Only try HKEY_LOCAL_MACHINE if we didn't find the
+    // control in HKEY_CURRENT_USER.  This way we maintain
+    // backwards compatibility with existing installations
+    // of CLIntercept, but controls in HKEY_CURRENT_USER
+    // "win".
+
+    if( ERROR_SUCCESS != success )
+    {
+        success = ::RegOpenKeyEx(
+            HKEY_LOCAL_MACHINE,
+            REGISTRY_KEY,
+            0,
+            KEY_READ,
+            &cliKey );
+        if( ERROR_SUCCESS == success )
+        {
+            DWORD   dwSize = (DWORD)size;
+
+            success = ::RegQueryValueEx(
+                cliKey,
+                name.c_str(),
+                NULL,
+                NULL,
+                (LPBYTE)pValue,
+                &dwSize );
+
+            ::RegCloseKey( cliKey );
+        }
+    }
+
+    return ( ERROR_SUCCESS == success );
+}
+
+inline void Services::OutputDebugString(
+    const std::string& str ) const
+{
+    ::OutputDebugString( str.c_str() );
+}
+
+inline void* Services::LoadLibrary(
+    const std::string& libraryName ) const
+{
+    HMODULE hModule = ::LoadLibraryA( libraryName.c_str() );
+    return hModule;
+}
+
+inline void Services::UnloadLibrary(
+    void*& pLibrary ) const
+{
+    HMODULE hModule = (HMODULE)pLibrary;
+    ::FreeLibrary( hModule );
+    pLibrary = NULL;
+}
+
+inline void* Services::GetFunctionPointer(
+    void* pLibrary,
+    const std::string& functionName ) const
+{
+    if( pLibrary )
+    {
+        HMODULE hModule = (HMODULE)pLibrary;
+        return ::GetProcAddress( hModule, functionName.c_str() );
+    }
+    else
+    {
+        return NULL;
+    }
+}
+
+inline void Services::GetDumpDirectoryNameWithoutPid(
+    const std::string& subDir,
+    std::string& directoryName ) const
+{
+    // Return log dir override if set in regkeys
+    if( LOG_DIR )
+    {
+        directoryName = LOG_DIR;
+        return;
+    }
+
+    // Get the system root and add our directory name.
+    {
+        char*   systemDrive = NULL;
+        size_t  length = 0;
+
+        _dupenv_s( &systemDrive, &length, "SystemDrive" );
+
+        directoryName = systemDrive ? systemDrive : "";
+        directoryName += "/Intel/";
+        directoryName += subDir;
+        directoryName += "/";
+
+        free( systemDrive );
+    }
+
+    // Add the process name to the directory name.
+    directoryName += GetProcessName();
+}
+
+inline void Services::GetDumpDirectoryName(
+    const std::string& subDir,
+    std::string& directoryName ) const
+{
+    GetDumpDirectoryNameWithoutPid(subDir, directoryName);
+    if( APPEND_PID )
+    {
+        directoryName += ".";
+        directoryName += std::to_string(GetProcessID());
+    }
+}
+
+inline void Services::MakeDumpDirectories(
+    const std::string& fileName ) const
+{
+    // The first directory name is the root.  We don't
+    // have to make a directory for it.
+    std::string::size_type  pos = fileName.find( "/" );
+
+    pos = fileName.find( "/", ++pos );
+    while( pos != std::string::npos )
+    {
+        CreateDirectoryA(
+            fileName.substr( 0, pos ).c_str(),
+            NULL );
+
+        pos = fileName.find( "/", ++pos );
+    }
+}
 inline bool Services::GetCLInterceptName(
     std::string& name ) const
 {
-    char    dllName[ MAX_PATH ];
+    char    dllName[ MAX_PATH ] = "";
 
     if( GetModuleFileNameA( m_hInstance, dllName, MAX_PATH - 1 ) )
     {
@@ -343,6 +586,24 @@ inline bool Services::CheckMDAPIPermissions(
     std::string& str ) const
 {
     return true;
+}
+
+inline bool Services::CheckConditionalEnable(
+    const char* name) const
+{
+    bool enabled = false;
+    char* envVal = NULL;
+    size_t  len = 0;
+    errno_t err = _dupenv_s( &envVal, &len, name );
+    if( !err && envVal )
+    {
+        if( strcmp(envVal, "0") != 0 )
+        {
+            enabled = true;
+        }
+        free( envVal );
+    }
+    return enabled;
 }
 
 }

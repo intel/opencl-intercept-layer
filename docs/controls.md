@@ -299,6 +299,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will incl
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will add event profiling to track the minimum, maximum, and average device time for each OpenCL command. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING\_ENABLED and may increment the reference count for application events. When the process exits, this information will be included in the file "clIntercept\_report.txt".
 
+##### `DevicePerformanceTimingHistogram` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will report a histogram of device times in addition to the table of device times for each OpenCL command.
+
 ##### `DevicePerformanceTimeKernelInfoTracking` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between OpenCL NDRange kernels using information such as the kernel's Preferred Work Group Size Multiple (AKA SIMD size).
@@ -322,6 +326,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will atte
 ##### `DevicePerformanceTimeTransferTracking` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between transfer operations of different sizes for the purpose of device performance timing.
+
+##### `DevicePerformanceTimingKernelsOnly` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will collect device performance timing for kernel commands only
 
 ##### `DevicePerformanceTimingSkipUnmap` (bool)
 
@@ -418,6 +426,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will orga
 ##### `ChromePerformanceTimingEstimateQueuedTime` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will unconditionally estimate the queued time for Chrome Tracing rather than computing it using device and host timers and event profiling data.  The estimated time is less accurate than the computed time, but may be more reliable if the device and host timers or event profiling data is incorrect or imprecise.
+
+##### `PerformanceTimingConditional` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will only collect host performance timing, device performance timing, and chrome performance timing conditionally, when the "CLI\_ENABLE\_PERFORMANCE\_TIMING" environment variable is set to a non-zero value.
 
 ### Controls for Dumping and Injecting Programs and Build Options
 

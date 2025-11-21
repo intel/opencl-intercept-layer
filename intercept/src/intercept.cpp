@@ -124,7 +124,8 @@ void CLIntercept::Delete( CLIntercept*& pIntercept )
 ///////////////////////////////////////////////////////////////////////////////
 //
 CLIntercept::CLIntercept( void* pGlobalData )
-    : m_OS( pGlobalData )
+    : m_OS( pGlobalData ),
+      m_StringBuffer("")
 {
     m_ProcessId = m_OS.GetProcessID();
 
@@ -135,7 +136,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
 
     m_LoggedCLInfo = false;
 
-    m_EnqueueCounter.store(0, std::memory_order::memory_order_relaxed);
+    m_EnqueueCounter.store(0, std::memory_order_relaxed);
 
     m_EventsChromeTraced = 0;
     m_ProgramNumber = 0;
@@ -337,21 +338,13 @@ bool CLIntercept::init()
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
 
-    if( m_OS.Init() == false )
-    {
-#ifdef __ANDROID__
-         __android_log_print(ANDROID_LOG_INFO, "clIntercept", "OS.Init FAILED!\n" );
-#endif
-        return false;
-    }
-
 #if defined(_WIN32)
-    OS::Services_Common::ENV_PREFIX = "CLI_";
-    OS::Services_Common::REGISTRY_KEY = "SOFTWARE\\INTEL\\IGFX\\CLINTERCEPT";
+    OS::Services::ENV_PREFIX = "CLI_";
+    OS::Services::REGISTRY_KEY = "SOFTWARE\\INTEL\\IGFX\\CLINTERCEPT";
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
-    OS::Services_Common::ENV_PREFIX = "CLI_";
-    OS::Services_Common::CONFIG_FILE = "clintercept.conf";
-    OS::Services_Common::SYSTEM_DIR = "/etc/OpenCL";
+    OS::Services::ENV_PREFIX = "CLI_";
+    OS::Services::CONFIG_FILE = "clintercept.conf";
+    OS::Services::SYSTEM_DIR = "/etc/OpenCL";
 #endif
 
     bool    breakOnLoad = false;
@@ -399,10 +392,10 @@ bool CLIntercept::init()
     if( !m_Config.DumpDir.empty() )
     {
         std::replace( m_Config.DumpDir.begin(), m_Config.DumpDir.end(), '\\', '/' );
-        OS::Services_Common::LOG_DIR = m_Config.DumpDir.c_str();
+        OS::Services::LOG_DIR = m_Config.DumpDir.c_str();
     }
 
-    OS::Services_Common::APPEND_PID = m_Config.AppendPid;
+    OS::Services::APPEND_PID = m_Config.AppendPid;
 #endif
 
     if( m_Config.LogToFile )
@@ -510,11 +503,11 @@ bool CLIntercept::init()
 #endif
     );
 #if defined(_WIN32)
-    log( "CLIntercept environment variable prefix: " + std::string( OS::Services_Common::ENV_PREFIX ) + "\n"  );
-    log( "CLIntercept registry key: " + std::string( OS::Services_Common::REGISTRY_KEY ) + "\n" );
+    log( "CLIntercept environment variable prefix: " + std::string( OS::Services::ENV_PREFIX ) + "\n"  );
+    log( "CLIntercept registry key: " + std::string( OS::Services::REGISTRY_KEY ) + "\n" );
 #elif defined(__linux__) || defined(__FreeBSD__) || defined(__APPLE__)
-    log( "CLIntercept environment variable prefix: " + std::string( OS::Services_Common::ENV_PREFIX ) + "\n"  );
-    log( "CLIntercept config file: " + std::string( OS::Services_Common::CONFIG_FILE ) + "\n" );
+    log( "CLIntercept environment variable prefix: " + std::string( OS::Services::ENV_PREFIX ) + "\n"  );
+    log( "CLIntercept config file: " + std::string( OS::Services::CONFIG_FILE ) + "\n" );
 #endif
 
     // Windows and Linux load the real OpenCL library and retrieve
@@ -958,6 +951,55 @@ void CLIntercept::writeReport(
                     << std::right << std::setw(13) << deviceTimingStats.TotalNS / deviceTimingStats.NumberOfCalls << ", "
                     << std::right << std::setw(13) << deviceTimingStats.MinNS << ", "
                     << std::right << std::setw(13) << deviceTimingStats.MaxNS << std::endl;
+            }
+
+            ++id;
+        }
+    }
+
+    if( config().DevicePerformanceTimingHistogram )
+    {
+        CDeviceTimingHistogramMap::const_iterator id = m_DeviceTimingHistogramMap.begin();
+        while( id != m_DeviceTimingHistogramMap.end() )
+        {
+            const cl_device_id  device = (*id).first;
+            const SDeviceTimingHistogram& histogram = (*id).second;
+
+            const SDeviceInfo&  deviceInfo = m_DeviceInfoMap[device];
+
+            os << std::endl << "Device Performance Timing Histogram for " << deviceInfo.NameForReport << ":" << std::endl;
+
+            uint32_t total = 0;
+            for( uint32_t bin = 0; bin < SDeviceTimingHistogram::cNumBins; bin++ )
+            {
+                total += histogram.Bins[bin];
+            }
+
+            os << std::endl << "Total Events: " << total << std::endl << std::endl;
+
+            for( uint32_t bin = 0; bin < SDeviceTimingHistogram::cNumBins; bin++ )
+            {
+                if( bin == SDeviceTimingHistogram::cNumBins - 1 )
+                {
+                    os << " >= ";
+                }
+                else
+                {
+                    os << "  < ";
+                }
+                const uint32_t count = histogram.Bins[bin];
+                os  << std::setw(9) << (1ULL << bin) << " ns: " << std::setw(9) << count << " : ";
+
+                uint32_t dots = static_cast<uint32_t>( 64.0f * count / total );
+                if( count != 0 && dots == 0 )
+                {
+                    dots++;
+                }
+                for( uint32_t d = 0; d < dots; d++ )
+                {
+                    os << "*";
+                }
+                os << std::endl;
             }
 
             ++id;
@@ -3493,11 +3535,8 @@ void CLIntercept::logError(
     const char* functionName,
     cl_int errorCode )
 {
-    std::ostringstream  ss;
-    ss << "ERROR! " << functionName << " returned " << enumName().name(errorCode) << " (" << errorCode << ")\n";
-
     std::lock_guard<std::mutex> lock(m_Mutex);
-    log( ss.str() );
+    logf( "ERROR! %s returned %s (%d)\n", functionName, enumName().name(errorCode).c_str(), errorCode );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3507,7 +3546,7 @@ void CLIntercept::logFlushOrFinishAfterEnqueueStart(
     const char* functionName )
 {
     std::lock_guard<std::mutex> lock(m_Mutex);
-    log( "Calling " + std::string(flushOrFinish) + " after " + std::string(functionName) + "...\n" );
+    logf( "Calling %s after %s...\n", flushOrFinish, functionName );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3517,11 +3556,8 @@ void CLIntercept::logFlushOrFinishAfterEnqueueEnd(
     const char* functionName,
     cl_int errorCode )
 {
-    std::ostringstream  ss;
-    ss << "... " << flushOrFinish << " after " << functionName << " returned " << enumName().name( errorCode ) << " (" << errorCode << ")\n";
-
     std::lock_guard<std::mutex> lock(m_Mutex);
-    log( ss.str() );
+    logf( "...%s after %s returned %s (%d)\n", flushOrFinish, functionName, enumName().name( errorCode ).c_str(), errorCode );
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -4269,13 +4305,16 @@ void CLIntercept::combineProgramStrings(
             {
                 length = lengths[i];
             }
-            if( length )
+            if( length != 0 )
             {
-                CLI_MEMCPY(
-                    pDst,
-                    remaining,
-                    strings[i],
-                    length );
+                if( strings != NULL && strings[i] != NULL )
+                {
+                    CLI_MEMCPY(
+                        pDst,
+                        remaining,
+                        strings[i],
+                        length );
+                }
                 pDst += length;
                 remaining -= length;
             }
@@ -6798,6 +6837,20 @@ void CLIntercept::checkTimingEvents()
                                 commandStart,
                                 commandEnd );
                         }
+
+                        if( config().DevicePerformanceTimingHistogram )
+                        {
+                            SDeviceTimingHistogram& histogram = m_DeviceTimingHistogramMap[node.Device];
+
+                            constexpr uint32_t cNumBins = SDeviceTimingHistogram::cNumBins;
+                            const uint32_t count = Utils::CountLeadingZeroes( delta );
+                            const uint32_t bin = count == 64 ? 0 :
+                                count <= ( 64 - cNumBins ) ? cNumBins - 1 :
+                                64 - count;
+
+                            CLI_ASSERT( bin < cNumBins );
+                            histogram.Bins[bin]++;
+                        }
                     }
                 }
 
@@ -7679,7 +7732,7 @@ void CLIntercept::addImage(
 
         if( errorCode == CL_SUCCESS )
         {
-            SImageInfo  imageInfo;
+            SImageInfo& imageInfo = m_ImageInfoMap[ image ];
 
             imageInfo.Region[0] = width;
             if( height == 0 )
@@ -7726,7 +7779,6 @@ void CLIntercept::addImage(
             imageInfo.SlicePitch = slicePitch;
 
             m_MemAllocNumberMap[ image ] = m_MemAllocNumber;
-            m_ImageInfoMap[ image ] = imageInfo;
             m_MemAllocNumber++;
         }
     }

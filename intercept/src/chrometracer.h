@@ -20,10 +20,9 @@
 class CChromeTracer
 {
 public:
-    CChromeTracer() :
-        m_AddFlowEvents(false),
-        m_ProcessId(0),
-        m_BufferSize(0) {}
+    CChromeTracer() = default;
+    CChromeTracer( const CChromeTracer& ) = delete;
+    CChromeTracer& operator=( const CChromeTracer& ) = delete;
 
     ~CChromeTracer()
     {
@@ -377,13 +376,13 @@ public:
 private:
     std::mutex  m_Mutex;
 
-    bool        m_AddFlowEvents;
+    bool        m_AddFlowEvents = false;
 
-    uint64_t    m_ProcessId;
-    uint32_t    m_BufferSize;
+    uint64_t    m_ProcessId = 0;
+    uint32_t    m_BufferSize = 0;
 
     std::ofstream   m_TraceFile;
-    mutable char    m_StringBuffer[CLI_STRING_BUFFER_SIZE];
+    mutable char    m_StringBuffer[CLI_STRING_BUFFER_SIZE] = "";
 
     enum class RecordType
     {
@@ -513,6 +512,4 @@ private:
     }
 
     void flushRecords();
-
-    DISALLOW_COPY_AND_ASSIGN( CChromeTracer );
 };
