@@ -1314,6 +1314,21 @@ cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
 #define CL_DEVICE_MEMORY_CAPABILITIES_IMG               0x40D8
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_img_safety_mechanisms
+
+#define CL_CONTEXT_SAFETY_PROPERTIES_IMG                0x40D9
+
+#define CL_DEVICE_WORKGROUP_PROTECTION_SVM_CAPABILITIES_IMG 0x40DA
+#define CL_DEVICE_WORKGROUP_PROTECTION_DEVICE_ENQUEUE_CAPABILITIES_IMG 0x40DB
+#define CL_DEVICE_SAFETY_MEM_SIZE_IMG                   0x40DC
+
+#define CL_ECC_RECOVERED_IMG                            0x40DD
+#define CL_PAGE_FAULT_IMG                               -1127
+#define CL_SAFETY_FAULT_IMG                             -1128
+#define CL_GENERAL_FAULT_IMG                            -1129
+#define CL_ECC_UNRECOVERED_IMG                          -1130
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_img_yuv_image
 
 #define CL_NV21_IMG                                     0x40D0

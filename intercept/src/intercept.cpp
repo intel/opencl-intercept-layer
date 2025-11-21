@@ -2289,9 +2289,14 @@ void CLIntercept::getContextPropertiesString(
                     str += s;
                 }
                 break;
-            case CL_CONTEXT_MEMORY_INITIALIZE_KHR:
-                // TODO: this is a cl_context_memory_initialize_khr bitfield.
-                // Fall through for now.
+            case CL_CONTEXT_MEMORY_INITIALIZE_KHR:  // cl_context_memory_initialize_khr
+            case CL_CONTEXT_SAFETY_PROPERTIES_IMG:  // cl_context_safety_properties_img
+                {
+                    const cl_ulong* pu = (const cl_ulong*)( properties + 1);
+                    CLI_SPRINTF( s, 256, "0x%" PRIx64, pu[0] );
+                    str += s;
+                }
+                break;
             default:
                 {
                     CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
