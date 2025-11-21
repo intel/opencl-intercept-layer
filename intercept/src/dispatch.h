@@ -487,6 +487,40 @@ struct CLdispatchX
         const size_t* global_work_size,
         size_t* suggested_local_work_size);
 
+    // cl_khr_unified_svm
+    void*   (CL_API_CALL *clSVMAllocWithPropertiesKHR) (
+        cl_context context,
+        const cl_svm_alloc_properties_khr* properties,
+        cl_uint svm_type_index,
+        size_t size,
+        cl_int* errcode_ret);
+
+    // cl_khr_unified_svm
+    cl_int  (CL_API_CALL *clSVMFreeWithPropertiesKHR) (
+        cl_context context,
+        const cl_svm_free_properties_khr* properties,
+        cl_svm_free_flags_khr flags,
+        void* ptr);
+
+    // cl_khr_unified_svm
+    cl_int  (CL_API_CALL *clGetSVMPointerInfoKHR) (
+        cl_context context,
+        cl_device_id device,
+        const void* ptr,
+        cl_svm_pointer_info_khr param_name,
+        size_t param_value_size,
+        void* param_value,
+        size_t* param_value_size_ret);
+
+    // cl_khr_unified_svm
+    cl_int  (CL_API_CALL *clGetSVMSuggestedTypeIndexKHR) (
+        cl_context context,
+        cl_svm_capabilities_khr required_capabilities,
+        cl_svm_capabilities_khr desired_capabilities,
+        const cl_svm_alloc_properties_khr* properties,
+        size_t size,
+        cl_uint* suggested_svm_type_index);
+
     // cl_ext_buffer_device_address
     cl_int  (CL_API_CALL *clSetKernelArgDevicePointerEXT) (
         cl_kernel kernel,

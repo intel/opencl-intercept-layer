@@ -985,6 +985,92 @@ cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
 #define CL_QUEUE_THROTTLE_LOW_KHR (1<<2)
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_khr_unified_svm
+
+// Note: This implements the proposed extension version 0.9.0.
+
+#define CL_PLATFORM_SVM_TYPE_CAPABILITIES_KHR               0x0909
+
+#define CL_DEVICE_SVM_TYPE_CAPABILITIES_KHR                 0x1077
+
+typedef cl_bitfield         cl_svm_capabilities_khr;
+
+#define CL_SVM_CAPABILITY_SINGLE_ADDRESS_SPACE_KHR          (1 << 0)
+#define CL_SVM_CAPABILITY_SYSTEM_ALLOCATED_KHR              (1 << 1)
+#define CL_SVM_CAPABILITY_DEVICE_OWNED_KHR                  (1 << 2)
+#define CL_SVM_CAPABILITY_DEVICE_UNASSOCIATED_KHR           (1 << 3)
+#define CL_SVM_CAPABILITY_CONTEXT_ACCESS_KHR                (1 << 4)
+#define CL_SVM_CAPABILITY_HOST_OWNED_KHR                    (1 << 5)
+#define CL_SVM_CAPABILITY_HOST_READ_KHR                     (1 << 6)
+#define CL_SVM_CAPABILITY_HOST_WRITE_KHR                    (1 << 7)
+#define CL_SVM_CAPABILITY_HOST_MAP_KHR                      (1 << 8)
+#define CL_SVM_CAPABILITY_DEVICE_READ_KHR                   (1 << 9)
+#define CL_SVM_CAPABILITY_DEVICE_WRITE_KHR                  (1 << 10)
+#define CL_SVM_CAPABILITY_DEVICE_ATOMIC_ACCESS_KHR          (1 << 11)
+#define CL_SVM_CAPABILITY_CONCURRENT_ACCESS_KHR             (1 << 12)
+#define CL_SVM_CAPABILITY_CONCURRENT_ATOMIC_ACCESS_KHR      (1 << 13)
+#define CL_SVM_CAPABILITY_INDIRECT_ACCESS_KHR               (1 << 14)
+
+typedef cl_properties       cl_svm_alloc_properties_khr;
+typedef cl_bitfield         cl_svm_alloc_access_flags_khr;
+typedef cl_properties       cl_svm_free_properties_khr;
+typedef cl_bitfield         cl_svm_free_flags_khr;
+typedef cl_uint             cl_svm_pointer_info_khr;
+
+#define CL_SVM_ALLOC_ASSOCIATED_DEVICE_HANDLE_KHR           0x2078
+#define CL_SVM_ALLOC_ACCESS_FLAGS_KHR                       0x2079
+#define CL_SVM_ALLOC_ALIGNMENT_KHR                          0x207A
+
+#define CL_SVM_ALLOC_ACCESS_HOST_NOREAD_KHR                 (1 << 0)
+#define CL_SVM_ALLOC_ACCESS_HOST_NOWRITE_KHR                (1 << 1)
+#define CL_SVM_ALLOC_ACCESS_DEVICE_NOREAD_KHR               (1 << 8)
+#define CL_SVM_ALLOC_ACCESS_DEVICE_NOWRITE_KHR              (1 << 9)
+
+#define CL_SVM_INFO_TYPE_INDEX_KHR                          0x2088
+#define CL_SVM_INFO_CAPABILITIES_KHR                        0x2089
+#define CL_SVM_INFO_PROPERTIES_KHR                          0x208A
+#define CL_SVM_INFO_ACCESS_FLAGS_KHR                        0x208B
+#define CL_SVM_INFO_BASE_PTR_KHR                            0x419B
+#define CL_SVM_INFO_SIZE_KHR                                0x419C
+#define CL_SVM_INFO_ASSOCIATED_DEVICE_HANDLE_KHR            0x419D
+
+#define CL_KERNEL_EXEC_INFO_SVM_INDIRECT_ACCESS_KHR         0x11BB
+
+extern CL_API_ENTRY
+void* CL_API_CALL clSVMAllocWithPropertiesKHR(
+    cl_context context,
+    const cl_svm_alloc_properties_khr* properties,
+    cl_uint svm_type_index,
+    size_t size,
+    cl_int* errcode_ret);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clSVMFreeWithPropertiesKHR(
+    cl_context context,
+    const cl_svm_free_properties_khr* properties,
+    cl_svm_free_flags_khr flags,
+    void* ptr);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clGetSVMPointerInfoKHR(
+    cl_context context,
+    cl_device_id device,
+    const void* ptr,
+    cl_svm_pointer_info_khr param_name,
+    size_t param_value_size,
+    void* param_value,
+    size_t* param_value_size_ret);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clGetSVMSuggestedTypeIndexKHR(
+    cl_context context,
+    cl_svm_capabilities_khr required_capabilities,
+    cl_svm_capabilities_khr desired_capabilities,
+    const cl_svm_alloc_properties_khr* properties,
+    size_t size,
+    cl_uint* suggested_svm_type_index);
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_ext_atomic_counters
 
 #define CL_DEVICE_MAX_ATOMIC_COUNTERS_EXT           0x4032

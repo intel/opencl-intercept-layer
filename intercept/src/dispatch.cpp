@@ -57,7 +57,8 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetPlatformIDs)(
 
     if( pIntercept && pIntercept->dispatch().clGetPlatformIDs )
     {
-        LOG_CLINFO();
+        CACHE_PLATFORM_INFO();
+        LOG_CL_INFO();
 
         GET_ENQUEUE_COUNTER();
         CALL_LOGGING_ENTER();
@@ -5382,10 +5383,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddress)(
 
         return retVal;
     }
-    else
-    {
-        return NULL;
-    }
+
+    return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -5438,10 +5437,8 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clGetExtensionFunctionAddressForPlatform)(
 
         return retVal;
     }
-    else
-    {
-        return NULL;
-    }
+
+    return NULL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6448,8 +6445,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMFree) (
 
             HOST_PERFORMANCE_TIMING_END();
             DEVICE_PERFORMANCE_TIMING_END( command_queue, event );
+            // TODO: REMOVE_SVM_ALLOCATIONS?
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION( event ? event[0] : NULL );
+            ADD_POINTER_FREES( pfn_free_func, num_svm_pointers, svm_pointers );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
             ADD_EVENT( event ? event[0] : NULL );
         }
@@ -8971,6 +8970,207 @@ CL_API_ENTRY cl_int CL_API_CALL clSetKernelArgDevicePointerEXT(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_unified_svm
+CL_API_ENTRY void* CL_API_CALL clSVMAllocWithPropertiesKHR(
+    cl_context context,
+    const cl_svm_alloc_properties_khr* properties,
+    cl_uint svm_type_index,
+    size_t size,
+    cl_int* errcode_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clSVMAllocWithPropertiesKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+
+            std::string propsStr;
+            std::string typeStr;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getSVMAllocPropertiesString(
+                    properties,
+                    propsStr );
+                pIntercept->getSVMTypeIndexCapabilitiesString(
+                    context,
+                    svm_type_index,
+                    typeStr );
+            }
+            CALL_LOGGING_ENTER( "context = %p, properties = [ %s ], svm_type_index = %s (%u), size = %zu",
+                context,
+                propsStr.c_str(),
+                typeStr.c_str(),
+                svm_type_index,
+                size );
+            CHECK_ERROR_INIT( errcode_ret );
+            HOST_PERFORMANCE_TIMING_START();
+
+            void*   retVal = dispatchX.clSVMAllocWithPropertiesKHR(
+                context,
+                properties,
+                svm_type_index,
+                size,
+                errcode_ret );
+
+            HOST_PERFORMANCE_TIMING_END();
+            ADD_SVM_ALLOCATION( retVal, size ); // TODO: Should this be SVM or USM?
+            CHECK_ERROR( errcode_ret[0] );
+            ADD_POINTER_ALLOCATION( retVal );
+            CALL_LOGGING_EXIT( errcode_ret[0], "returned %p", retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_unified_svm
+CL_API_ENTRY cl_int CL_API_CALL clSVMFreeWithPropertiesKHR(
+    cl_context context,
+    const cl_svm_free_properties_khr* properties,
+    cl_svm_free_flags_khr flags,
+    void* ptr)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clSVMFreeWithPropertiesKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER( "context = %p, ptr = %p",
+                context,
+                ptr );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_int retVal = dispatchX.clSVMFreeWithPropertiesKHR(
+                context,
+                properties,
+                flags,
+                ptr );
+
+            HOST_PERFORMANCE_TIMING_END();
+            REMOVE_SVM_ALLOCATION( ptr ); // TODO: Should this be SVM or USM?
+            CHECK_ERROR( retVal );
+            ADD_POINTER_FREE( ptr );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_unified_svm
+CL_API_ENTRY cl_int CL_API_CALL clGetSVMPointerInfoKHR(
+    cl_context context,
+    cl_device_id device,
+    const void* ptr,
+    cl_svm_pointer_info_khr param_name,
+    size_t param_value_size,
+    void* param_value,
+    size_t* param_value_size_ret)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clGetSVMPointerInfoKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+            CALL_LOGGING_ENTER( "context = %p, ptr = %p, param_name = %s (%08X)",
+                context,
+                ptr,
+                pIntercept->enumName().name( param_name ).c_str(),
+                param_name );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_int retVal = dispatchX.clGetSVMPointerInfoKHR(
+                context,
+                device,
+                ptr,
+                param_name,
+                param_value_size,
+                param_value,
+                param_value_size_ret );
+
+            HOST_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_unified_svm
+CL_API_ENTRY cl_int CL_API_CALL clGetSVMSuggestedTypeIndexKHR(
+    cl_context context,
+    cl_svm_capabilities_khr required_capabilities,
+    cl_svm_capabilities_khr desired_capabilities,
+    const cl_svm_alloc_properties_khr* properties,
+    size_t size,
+    cl_uint* suggested_svm_type_index)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(context);
+        if( dispatchX.clGetSVMSuggestedTypeIndexKHR )
+        {
+            GET_ENQUEUE_COUNTER();
+            std::string propsStr;
+            if( pIntercept->config().CallLogging )
+            {
+                pIntercept->getSVMAllocPropertiesString(
+                    properties,
+                    propsStr );
+            }
+            CALL_LOGGING_ENTER( "context = %p, required_capabilities = %llX, desired_capabilities = %llX, properties = [ %s ], size = %zu",
+                context,
+                required_capabilities,
+                desired_capabilities,
+                propsStr.c_str(),
+                size );
+            HOST_PERFORMANCE_TIMING_START();
+
+            cl_int retVal = dispatchX.clGetSVMSuggestedTypeIndexKHR(
+                context,
+                required_capabilities,
+                desired_capabilities,
+                properties,
+                size,
+                suggested_svm_type_index );
+
+            HOST_PERFORMANCE_TIMING_END();
+            CHECK_ERROR( retVal );
+            CALL_LOGGING_EXIT( retVal );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_ext_image_requirements_info
 CL_API_ENTRY cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
     cl_context context,
@@ -9806,7 +10006,7 @@ CL_API_ENTRY void* CL_API_CALL clHostMemAllocINTEL(
         }
     }
 
-    return NULL;
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -9883,7 +10083,7 @@ CL_API_ENTRY void* CL_API_CALL clDeviceMemAllocINTEL(
         }
     }
 
-    return NULL;
+    NULL_FUNCTION_POINTER_SET_ERROR_RETURN_NULL(errcode_ret, CL_INVALID_CONTEXT);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

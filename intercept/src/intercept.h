@@ -93,8 +93,10 @@ public:
                 const char* formatStr,
                 ... );
 
+    void    cachePlatformInfo();
     void    cacheDeviceInfo(
                 cl_device_id device );
+
     void    getDeviceIndexString(
                 cl_device_id device,
                 std::string& str );
@@ -167,6 +169,13 @@ public:
                 std::string& str ) const;
     void    getMemPropertiesString(
                 const cl_mem_properties* properties,
+                std::string& str ) const;
+    void    getSVMAllocPropertiesString(
+                const cl_svm_alloc_properties_khr* properties,
+                std::string& str ) const;
+    void    getSVMTypeIndexCapabilitiesString(
+                cl_context context,
+                cl_uint type_index,
                 std::string& str ) const;
     void    getSemaphorePropertiesString(
                 const cl_semaphore_properties_khr* properties,
@@ -1134,8 +1143,18 @@ private:
     typedef std::unordered_map< std::string, SHostTimingStats > CHostTimingStatsMap;
     CHostTimingStatsMap  m_HostTimingStatsMap;
 
-    // These structures define a mapping between a device ID handle and
-    // properties of a device, for easier querying.
+    // These structures define a mapping between a platform or device ID handle and
+    // properties of a platform or device, for easier querying.
+
+    struct SPlatformInfo
+    {
+        std::string Name;
+
+        std::vector<cl_svm_capabilities_khr> SVMCapabilities;
+    };
+
+    typedef std::map< cl_platform_id, SPlatformInfo > CPlatformInfoMap;
+    CPlatformInfoMap    m_PlatformInfoMap;
 
     struct SDeviceInfo
     {
@@ -2048,9 +2067,22 @@ inline CObjectTracker& CLIntercept::objectTracker()
         pIntercept->objectTracker().AddPointerFree(_ptr);                   \
     }
 
+#define ADD_POINTER_FREES( free_callback, numSvmPointers, svmPointers )     \
+    if( pIntercept->config().LeakChecking &&                                \
+        ( free_callback == nullptr ) )                                      \
+    {                                                                       \
+        for( cl_uint i = 0; i < numSvmPointers; i++ )                       \
+        {                                                                   \
+            pIntercept->objectTracker().AddPointerFree(svmPointers[i]);     \
+        }                                                                   \
+    }
+
 ///////////////////////////////////////////////////////////////////////////////
 //
-#define LOG_CLINFO()                                                        \
+#define CACHE_PLATFORM_INFO()                                               \
+    pIntercept->cachePlatformInfo();                                        \
+
+#define LOG_CL_INFO()                                                       \
     if( pIntercept->config().CLInfoLogging )                                \
     {                                                                       \
         pIntercept->logCLInfo();                                            \

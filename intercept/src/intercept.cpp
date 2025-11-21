@@ -1274,6 +1274,67 @@ void CLIntercept::callLoggingExit(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::cachePlatformInfo()
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    if( m_PlatformInfoMap.empty() )
+    {
+        cl_uint numPlatforms = 0;
+        dispatch().clGetPlatformIDs(
+            0,
+            NULL,
+            &numPlatforms );
+        if( numPlatforms )
+        {
+            std::vector<cl_platform_id>  platforms( numPlatforms );
+            dispatch().clGetPlatformIDs(
+                numPlatforms,
+                platforms.data(),
+                NULL );
+            for( cl_uint i = 0; i < numPlatforms; i++ )
+            {
+                cl_platform_id platform = platforms[i];
+                SPlatformInfo&  platformInfo = m_PlatformInfoMap[platform];
+
+                char*   platformName = NULL;
+
+                allocateAndGetPlatformInfoString(
+                    platform,
+                    CL_PLATFORM_NAME,
+                    platformName );
+                if( platformName )
+                {
+                    platformInfo.Name = platformName;
+                }
+
+                size_t  sz = 0;
+                dispatch().clGetPlatformInfo(
+                    platform,
+                    CL_PLATFORM_SVM_TYPE_CAPABILITIES_KHR,
+                    0,
+                    NULL,
+                    &sz );
+                if( sz )
+                {
+                    const size_t numPlatformCaps = sz / sizeof(cl_svm_capabilities_khr);
+                    platformInfo.SVMCapabilities.resize( numPlatformCaps );
+                    dispatch().clGetPlatformInfo(
+                        platform,
+                        CL_PLATFORM_SVM_TYPE_CAPABILITIES_KHR,
+                        sz,
+                        platformInfo.SVMCapabilities.data(),
+                        NULL );
+                }
+
+                delete [] platformName;
+            }
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::cacheDeviceInfo(
     cl_device_id device )
 {
@@ -1949,26 +2010,9 @@ void CLIntercept::getPlatformInfoString(
 {
     str = "";
 
-    cl_int  errorCode = CL_SUCCESS;
-
-    char*   platformName = NULL;
-
-    errorCode |= allocateAndGetPlatformInfoString(
-        platform,
-        CL_PLATFORM_NAME,
-        platformName );
-
-    if( errorCode != CL_SUCCESS )
+    if( platform && m_PlatformInfoMap.find(platform) != m_PlatformInfoMap.end() )
     {
-        CLI_ASSERT( 0 );
-        str += "ERROR";
-    }
-    else
-    {
-        if( platformName )
-        {
-            str += platformName;
-        }
+        str += m_PlatformInfoMap.at(platform).Name;
         {
             char    s[256];
             CLI_SPRINTF( s, 256, " (%p)",
@@ -1976,9 +2020,10 @@ void CLIntercept::getPlatformInfoString(
             str += s;
         }
     }
-
-    delete [] platformName;
-    platformName = NULL;
+    else
+    {
+        str += "ERROR";
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2518,6 +2563,123 @@ void CLIntercept::getMemPropertiesString(
     else
     {
         str = "NULL";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::getSVMAllocPropertiesString(
+    const cl_svm_alloc_properties_khr* properties,
+    std::string& str ) const
+{
+    str = "";
+
+    if( properties )
+    {
+        char    s[256];
+
+        while( properties[0] != 0 )
+        {
+            cl_int  property = (cl_int)properties[0];
+            str += enumName().name( property ) + " = ";
+
+            switch( property )
+            {
+            case CL_SVM_ALLOC_ASSOCIATED_DEVICE_HANDLE_KHR:
+                {
+                    auto pDevice = (const cl_device_id*)( properties + 1 );
+                    std::string deviceInfo;
+                    getDeviceInfoString(
+                        1,
+                        pDevice,
+                        deviceInfo );
+                    str += deviceInfo;
+                    properties += 2;
+                }
+                break;
+            case CL_SVM_ALLOC_ACCESS_FLAGS_KHR:
+                {
+                    auto pAccessFlags = (const cl_svm_alloc_access_flags_khr*)( properties + 1);
+                    CLI_SPRINTF( s, 256, "0x%" PRIx64, pAccessFlags[0] );
+                    str += s;
+                    properties += 2;
+                }
+                break;
+            case CL_SVM_ALLOC_ALIGNMENT_KHR:
+                {
+                    auto pAlignment = (const size_t*)( properties + 1);
+                    CLI_SPRINTF( s, 256, "%zu", pAlignment[0] );
+                    str += s;
+                    properties += 2;
+                }
+                break;
+            default:
+                {
+                    CLI_SPRINTF( s, 256, "<Unknown %08X!>", (cl_uint)property );
+                    str += s;
+                    // Advance by two properties.  This may not be correct,
+                    // but it's the best we can do when the property is
+                    // unknown.
+                    properties += 2;
+                }
+                break;
+            }
+
+            if( properties[0] != 0 )
+            {
+                str += ", ";
+            }
+        }
+    }
+    else
+    {
+        str = "NULL";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::getSVMTypeIndexCapabilitiesString(
+    cl_context context,
+    cl_uint typeIndex,
+    std::string& str ) const
+{
+    str = "";
+
+    cl_platform_id  platform = getPlatform(context);
+    if( platform && m_PlatformInfoMap.find(platform) != m_PlatformInfoMap.end() )
+    {
+        const SPlatformInfo&    platformInfo = m_PlatformInfoMap.at(platform);
+        if( typeIndex >= platformInfo.SVMCapabilities.size() )
+        {
+            str += "out of range!";
+        }
+        else
+        {
+            cl_svm_capabilities_khr caps = platformInfo.SVMCapabilities[typeIndex];
+
+            auto appendToStr = [&str](const char* text)
+            {
+                if( !str.empty() ) str += "|";
+                str += text;
+            };
+
+            if( caps & CL_SVM_CAPABILITY_SINGLE_ADDRESS_SPACE_KHR       ) appendToStr("SAS");
+            if( caps & CL_SVM_CAPABILITY_SYSTEM_ALLOCATED_KHR           ) appendToStr("SA");
+            if( caps & CL_SVM_CAPABILITY_DEVICE_OWNED_KHR               ) appendToStr("DO");
+            if( caps & CL_SVM_CAPABILITY_DEVICE_UNASSOCIATED_KHR        ) appendToStr("DU");
+            if( caps & CL_SVM_CAPABILITY_CONTEXT_ACCESS_KHR             ) appendToStr("CTX");
+            if( caps & CL_SVM_CAPABILITY_HOST_OWNED_KHR                 ) appendToStr("HO");
+            if( caps & CL_SVM_CAPABILITY_HOST_READ_KHR                  ) appendToStr("HR");
+            if( caps & CL_SVM_CAPABILITY_HOST_WRITE_KHR                 ) appendToStr("HW");
+            if( caps & CL_SVM_CAPABILITY_HOST_MAP_KHR                   ) appendToStr("HM");
+            if( caps & CL_SVM_CAPABILITY_DEVICE_READ_KHR                ) appendToStr("DR");
+            if( caps & CL_SVM_CAPABILITY_DEVICE_WRITE_KHR               ) appendToStr("DW");
+            if( caps & CL_SVM_CAPABILITY_DEVICE_ATOMIC_ACCESS_KHR       ) appendToStr("DAA");
+            if( caps & CL_SVM_CAPABILITY_CONCURRENT_ACCESS_KHR          ) appendToStr("CA");
+            if( caps & CL_SVM_CAPABILITY_CONCURRENT_ATOMIC_ACCESS_KHR   ) appendToStr("CAA");
+            if( caps & CL_SVM_CAPABILITY_INDIRECT_ACCESS_KHR            ) appendToStr("IA");
+        }
     }
 }
 
@@ -13534,6 +13696,12 @@ void* CLIntercept::getExtensionFunctionAddress(
 
     // cl_khr_suggested_local_work_size
     CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeKHR );
+
+    // cl_khr_unified_svm
+    CHECK_RETURN_EXTENSION_FUNCTION( clSVMAllocWithPropertiesKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clSVMFreeWithPropertiesKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSVMPointerInfoKHR );
+    CHECK_RETURN_EXTENSION_FUNCTION( clGetSVMSuggestedTypeIndexKHR );
 
     // cl_ext_buffer_device_address
     CHECK_RETURN_EXTENSION_FUNCTION( clSetKernelArgDevicePointerEXT );
