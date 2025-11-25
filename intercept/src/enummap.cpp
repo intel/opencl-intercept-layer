@@ -1056,6 +1056,10 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_GENERAL_FAULT_IMG );
     ADD_ENUM_NAME( m_cl_int, CL_ECC_UNRECOVERED_IMG );
 
+    // cl_img_unified_svm_external_memory_dma_buf
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_ALLOC_EXTERNAL_MEMORY_DMA_BUF_VIRTUAL_ADDRESS_IMG );
+    ADD_ENUM_NAME( m_cl_int, CL_SVM_ALLOC_EXTERNAL_MEMORY_DMA_BUF_IMG );
+
     // cl_img_yuv_image
     ADD_ENUM_NAME( m_cl_int, CL_NV21_IMG );
     ADD_ENUM_NAME( m_cl_int, CL_YV12_IMG );
@@ -1299,6 +1303,12 @@ CEnumNameMap::CEnumNameMap()
 
     // cl_qcom_ion_host_ptr extension
     ADD_ENUM_NAME( m_cl_int, CL_MEM_ION_HOST_PTR_QCOM );
+
+    // cl_qcom_perf_hint
+    ADD_ENUM_NAME( m_cl_int, CL_PERF_HINT_HIGH_QCOM );
+    ADD_ENUM_NAME( m_cl_int, CL_PERF_HINT_NORMAL_QCOM );
+    ADD_ENUM_NAME( m_cl_int, CL_PERF_HINT_LOW_QCOM );
+    ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_PERF_HINT_QCOM );
 
     // Unofficial MDAPI extension:
     ADD_ENUM_NAME( m_cl_int, CL_QUEUE_MDAPI_PROPERTIES_INTEL );

@@ -1329,6 +1329,12 @@ cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
 #define CL_ECC_UNRECOVERED_IMG                          -1130
 
 ///////////////////////////////////////////////////////////////////////////////
+// cl_img_unified_svm_external_memory_dma_buf
+
+#define CL_SVM_ALLOC_EXTERNAL_MEMORY_DMA_BUF_VIRTUAL_ADDRESS_IMG 0x4220
+#define CL_SVM_ALLOC_EXTERNAL_MEMORY_DMA_BUF_IMG        0x4221
+
+///////////////////////////////////////////////////////////////////////////////
 // cl_img_yuv_image
 
 #define CL_NV21_IMG                                     0x40D0
@@ -1969,6 +1975,21 @@ cl_mem CL_API_CALL clCreateBufferNV(
 // cl_qcom_ion_host_ptr
 
 #define CL_MEM_ION_HOST_PTR_QCOM                    0x40A8
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_qcom_perf_hint
+
+#define CL_PERF_HINT_HIGH_QCOM                      0x40C3
+#define CL_PERF_HINT_NORMAL_QCOM                    0x40C4
+#define CL_PERF_HINT_LOW_QCOM                       0x40C5
+#define CL_CONTEXT_PERF_HINT_QCOM                   0x40C2
+
+typedef cl_uint             cl_perf_hint_qcom;
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clSetPerfHintQCOM(
+    cl_context context,
+    cl_perf_hint_qcom perf_hint) ;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Unofficial MDAPI extension:

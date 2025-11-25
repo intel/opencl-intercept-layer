@@ -539,6 +539,11 @@ struct CLdispatchX
         void* param_value,
         size_t* param_value_size_ret);
 
+    // cl_qcom_perf_hint
+    cl_int  (CL_API_CALL *clSetPerfHintQCOM) (
+        cl_context context,
+        cl_perf_hint_qcom perf_hint);
+
     // Unofficial MDAPI extension:
     cl_command_queue    (CL_API_CALL *clCreatePerfCountersCommandQueueINTEL) (
         cl_context context,
