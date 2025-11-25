@@ -8797,7 +8797,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetPerfHintQCOM(
 
             CALL_LOGGING_ENTER( "context = %p, perf_hint = %s (%llX)",
                 context,
-                pIntercept->enumName().name( perf_hint ),
+                pIntercept->enumName().name( perf_hint ).c_str(),
                 perf_hint );
             HOST_PERFORMANCE_TIMING_START();
 
