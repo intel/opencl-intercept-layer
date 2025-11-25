@@ -8784,7 +8784,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
 // cl_qcom_perf_hint
 CL_API_ENTRY cl_int CL_API_CALL clSetPerfHintQCOM(
     cl_context context,
-    cl_perf_hint_qcom perf_hint) 
+    cl_perf_hint_qcom perf_hint)
 {
     CLIntercept*    pIntercept = GetIntercept();
 
