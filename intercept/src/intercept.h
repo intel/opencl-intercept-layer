@@ -2918,14 +2918,17 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 // Note: This does not currently combine program binaries before computing
 // the hash.  This will work fine for single-device binaries, but may be
 // incomplete or incorrect for multi-device binaries.
-// Note: This checks for more than just dumping input program binaries and
-// program binaries so we have a hash when we dump program options, also.
 #define COMPUTE_BINARY_HASH( _num, _lengths, _binaries, _hash )             \
     if( _lengths && _binaries &&                                            \
-        ( pIntercept->config().DumpProgramSource ||                         \
+        ( pIntercept->config().BuildLogging ||                              \
+          pIntercept->config().KernelNameHashTracking ||                    \
           pIntercept->config().DumpInputProgramBinaries ||                  \
           pIntercept->config().DumpProgramBinaries ||                       \
-          pIntercept->config().DumpProgramSPIRV ) )                         \
+          pIntercept->config().DumpProgramBuildLogs ||                      \
+          pIntercept->config().DumpKernelISABinaries ||                     \
+          pIntercept->config().InjectProgramBinaries ||                     \
+          pIntercept->config().AubCaptureUniqueKernels ||                   \
+          pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         _hash = pIntercept->computeHash(                                    \
             _binaries[0],                                                   \
@@ -2948,7 +2951,15 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
 // Called from clCreateProgramWithIL:
 
 #define COMPUTE_SPIRV_HASH( _length, _il, _hash )                           \
-    if( _length && _il && pIntercept->config().DumpProgramSPIRV )           \
+    if( _length && _il &&                                                   \
+        ( pIntercept->config().BuildLogging ||                              \
+          pIntercept->config().KernelNameHashTracking ||                    \
+          pIntercept->config().DumpProgramSPIRV ||                          \
+          pIntercept->config().DumpProgramBuildLogs ||                      \
+          pIntercept->config().DumpKernelISABinaries ||                     \
+          pIntercept->config().InjectProgramBinaries ||                     \
+          pIntercept->config().AubCaptureUniqueKernels ||                   \
+          pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
         _hash = pIntercept->computeHash(                                    \
             _il,                                                            \
