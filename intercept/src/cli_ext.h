@@ -1123,11 +1123,6 @@ cl_int CL_API_CALL clSetKernelArgDevicePointerEXT(
 #define CL_PARTITION_BY_NAMES_LIST_END_EXT          -1
 
 ///////////////////////////////////////////////////////////////////////////////
-// cl_ext_immutable_memory_objects
-
-#define CL_MEM_IMMUTABLE_EXT                        (1 << 6)
-
-///////////////////////////////////////////////////////////////////////////////
 // cl_ext_float_atomics
 
 typedef cl_bitfield         cl_device_fp_atomic_capabilities_ext;
@@ -1172,6 +1167,21 @@ cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
     size_t param_value_size,
     void* param_value,
     size_t* param_value_size_ret);
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_ext_image_unsigned_10x6_12x4_14x2
+
+#define CL_UNSIGNED_INT10X6_EXT                             0x10E6
+#define CL_UNSIGNED_INT12X4_EXT                             0x10E7
+#define CL_UNSIGNED_INT14X2_EXT                             0x10E8
+#define CL_UNORM_INT10X6_EXT                                0x10E1
+#define CL_UNORM_INT12X4_EXT                                0x10E9
+#define CL_UNORM_INT14X2_EXT                                0x10EA
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_ext_immutable_memory_objects
+
+#define CL_MEM_IMMUTABLE_EXT                        (1 << 6)
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_altera_compiler_mode
@@ -1302,6 +1312,27 @@ cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
 #define CL_MEM_ALLOC_FLAGS_IMG                          0x40D7
 
 #define CL_DEVICE_MEMORY_CAPABILITIES_IMG               0x40D8
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_img_safety_mechanisms
+
+#define CL_CONTEXT_SAFETY_PROPERTIES_IMG                0x40D9
+
+#define CL_DEVICE_WORKGROUP_PROTECTION_SVM_CAPABILITIES_IMG 0x40DA
+#define CL_DEVICE_WORKGROUP_PROTECTION_DEVICE_ENQUEUE_CAPABILITIES_IMG 0x40DB
+#define CL_DEVICE_SAFETY_MEM_SIZE_IMG                   0x40DC
+
+#define CL_ECC_RECOVERED_IMG                            0x40DD
+#define CL_PAGE_FAULT_IMG                               -1127
+#define CL_SAFETY_FAULT_IMG                             -1128
+#define CL_GENERAL_FAULT_IMG                            -1129
+#define CL_ECC_UNRECOVERED_IMG                          -1130
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_img_unified_svm_external_memory_dma_buf
+
+#define CL_SVM_ALLOC_EXTERNAL_MEMORY_DMA_BUF_VIRTUAL_ADDRESS_IMG 0x4220
+#define CL_SVM_ALLOC_EXTERNAL_MEMORY_DMA_BUF_IMG        0x4221
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_img_yuv_image
@@ -1944,6 +1975,21 @@ cl_mem CL_API_CALL clCreateBufferNV(
 // cl_qcom_ion_host_ptr
 
 #define CL_MEM_ION_HOST_PTR_QCOM                    0x40A8
+
+///////////////////////////////////////////////////////////////////////////////
+// cl_qcom_perf_hint
+
+#define CL_PERF_HINT_HIGH_QCOM                      0x40C3
+#define CL_PERF_HINT_NORMAL_QCOM                    0x40C4
+#define CL_PERF_HINT_LOW_QCOM                       0x40C5
+#define CL_CONTEXT_PERF_HINT_QCOM                   0x40C2
+
+typedef cl_uint             cl_perf_hint_qcom;
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clSetPerfHintQCOM(
+    cl_context context,
+    cl_perf_hint_qcom perf_hint) ;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Unofficial MDAPI extension:
