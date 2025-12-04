@@ -2978,6 +2978,10 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
             _devs,                                                          \
             _lengths,                                                       \
             _binaries );                                                    \
+    }                                                                       \
+    else                                                                    \
+    {                                                                       \
+        pIntercept->saveProgramNumber( _program );                          \
     }
 
 // Called from clCreateProgramWithIL:
