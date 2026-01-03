@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 #
-# Copyright (c) 2018-2025 Intel Corporation
+# Copyright (c) 2018-2026 Intel Corporation
 #
 # SPDX-License-Identifier: MIT
 #
