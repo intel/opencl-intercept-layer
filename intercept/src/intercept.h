@@ -100,10 +100,6 @@ public:
     void    getDeviceIndexString(
                 cl_device_id device,
                 std::string& str );
-    cl_int  getDeviceMajorMinorVersion(
-                cl_device_id device,
-                size_t& majorVersion,
-                size_t& minorVersion ) const;
     bool    getMajorMinorVersionFromString(
                 const char* prefix,
                 const char* str,
@@ -117,18 +113,18 @@ public:
                 cl_device_id device,
                 const char* extensionName ) const;
 
-    cl_int  allocateAndGetPlatformInfoString(
+    cl_int  getPlatformInfoString(
                 cl_platform_id platform,
                 cl_platform_info param_name,
-                char*& param_value ) const;
-    cl_int  allocateAndGetDeviceInfoString(
+                std::string& str ) const;
+    cl_int  getDeviceInfoString(
                 cl_device_id device,
                 cl_device_info param_name,
-                char*& param_value ) const;
-    cl_int  allocateAndGetKernelInfoString(
+                std::string& str ) const;
+    cl_int  getKernelInfoString(
                 cl_kernel kernel,
                 cl_kernel_info param_name,
-                char*& param_value ) const;
+                std::string& str ) const;
     cl_int  allocateAndGetProgramDeviceList(
                 cl_program program,
                 cl_uint& numDevices,
