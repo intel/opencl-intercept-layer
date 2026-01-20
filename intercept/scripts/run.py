@@ -45,7 +45,7 @@ def sampler_from_string(ctx, sampler_descr):
                   cl.filter_mode.NEAREST
     return cl.Sampler(ctx, False, addressing_mode, filter_mode)
 
-def replay(repetitions, use_svm = False):
+def replay(repetitions = 1, use_svm = False):
     # Read the enqueue number from the file
     with open('./enqueueNumber.txt') as file:
         enqueue_number = file.read().splitlines()[0]
