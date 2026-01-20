@@ -7900,7 +7900,8 @@ void CLIntercept::setKernelArg(
             if( m_MemAllocNumberMap.find(mem) != m_MemAllocNumberMap.end() )
             {
                 CArgMemMap& argMemMap = m_KernelArgMemMap[ kernel ];
-                argMemMap[ arg_index ] = mem;
+                SMemInfo& memInfo = argMemMap[ arg_index ];
+                memInfo.Value = mem;
             }
         }
 
@@ -7954,15 +7955,13 @@ void CLIntercept::setKernelArgSVMPointer(
     if( arg >= startPtr && arg < endPtr )
     {
         CArgMemMap& argMemMap = m_KernelArgMemMap[ kernel ];
-        argMemMap[ arg_index ] = startPtr;
-    }
+        SMemInfo& memInfo = argMemMap[ arg_index ];
+        memInfo.Value = startPtr;
+        memInfo.Offset = (const char*)arg - (const char*)startPtr;
 
-    // Currently, only pointers to the start of an SVM allocation are supported for
-    // capture and replay.
-    if( arg == startPtr )
-    {
+        // Save the base of the SVM allocation for capture and replay.
         CArgDataMap& argDataMap = m_KernelArgDataMap[kernel];
-        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(&arg);
+        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(&startPtr);
         argDataMap[ arg_index ] = std::vector<uint8_t>(
             pRawArgData, pRawArgData + sizeof(void*) );
     }
@@ -7994,15 +7993,13 @@ void CLIntercept::setKernelArgUSMPointer(
     if( arg >= startPtr && arg < endPtr )
     {
         CArgMemMap& argMemMap = m_KernelArgMemMap[ kernel ];
-        argMemMap[ arg_index ] = startPtr;
-    }
+        SMemInfo& memInfo = argMemMap[ arg_index ];
+        memInfo.Value = startPtr;
+        memInfo.Offset = (const char*)arg - (const char*)startPtr;
 
-    // Currently, only pointers to the start of an SVM allocation are supported for
-    // capture and replay.
-    if( arg == startPtr )
-    {
+        // Save the base of the USM allocation for capture and replay.
         CArgDataMap& argDataMap = m_KernelArgDataMap[kernel];
-        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(&arg);
+        const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(&startPtr);
         argDataMap[ arg_index ] = std::vector<uint8_t>(
             pRawArgData, pRawArgData + sizeof(void*) );
     }
@@ -8197,7 +8194,8 @@ void CLIntercept::dumpCaptureReplayKernelArguments(
     for( const auto& arg : argMemMap )
     {
         const auto index = arg.first;
-        const auto value = (cl_mem)arg.second;
+        const auto value = (cl_mem)arg.second.Value;
+        const auto offset = arg.second.Offset;
         if( m_ImageInfoMap.find( value ) != m_ImageInfoMap.end() )
         {
             const SImageInfo&   info = m_ImageInfoMap[ value ];
@@ -8212,6 +8210,12 @@ void CLIntercept::dumpCaptureReplayKernelArguments(
                 << info.Format.image_channel_data_type << '\n'
                 << info.Format.image_channel_order << '\n'
                 << static_cast<int>(info.ImageType);
+        }
+        else
+        {
+            std::string fileName{dumpDirectory + "SVM_Arg_Offset_" + std::to_string(index) + ".txt"};
+            std::ofstream out{fileName};
+            out << offset << '\n';
         }
     }
 
@@ -8282,7 +8286,7 @@ void CLIntercept::dumpBuffersForKernel(
         CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
 
         cl_uint arg_index = (*i).first;
-        void*   allocation = (void*)(*i).second;
+        const void* allocation = (*i).second.Value;
         cl_mem  memobj = (cl_mem)allocation;
 
         ++i;
@@ -8392,7 +8396,7 @@ void CLIntercept::dumpBuffersForKernel(
                     command_queue,
                     CL_TRUE,
                     CL_MAP_READ,
-                    allocation,
+                    (void*)allocation,
                     size,
                     0,
                     NULL,
@@ -8420,7 +8424,7 @@ void CLIntercept::dumpBuffersForKernel(
 
                     dispatch().clEnqueueSVMUnmap(
                         command_queue,
-                        allocation,
+                        (void*)allocation,
                         0,
                         NULL,
                         NULL );
@@ -8530,7 +8534,7 @@ void CLIntercept::dumpImagesForKernel(
         CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
 
         cl_uint arg_index = (*i).first;
-        cl_mem  memobj = (cl_mem)(*i).second;
+        cl_mem  memobj = (cl_mem)(*i).second.Value;
 
         ++i;
 
@@ -8666,7 +8670,7 @@ void CLIntercept::injectBuffersForKernel(
         CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
 
         cl_uint arg_index = (*i).first;
-        void*   allocation = (void*)(*i).second;
+        void* allocation = (void*)(*i).second.Value;
         cl_mem  memobj = (cl_mem)allocation;
 
         ++i;
@@ -8861,7 +8865,7 @@ void CLIntercept::injectImagesForKernel(
         CLI_C_ASSERT( sizeof(void*) == sizeof(cl_mem) );
 
         cl_uint arg_index = (*i).first;
-        cl_mem  memobj = (cl_mem)(*i).second;
+        cl_mem  memobj = (cl_mem)(*i).second.Value;
 
         ++i;
 

@@ -1314,7 +1314,14 @@ private:
     typedef std::map< cl_mem, SImageInfo >  CImageInfoMap;
     CImageInfoMap   m_ImageInfoMap;
 
-    typedef std::map< cl_uint, const void* >    CArgMemMap;
+    struct SMemInfo
+    {
+        // Note: "Value" is either a cl_mem or the base of an SVM/USM allocation.
+        const void* Value = NULL;
+        size_t  Offset = 0;
+    };
+
+    typedef std::map< cl_uint, SMemInfo >   CArgMemMap;
     typedef std::map< cl_kernel, CArgMemMap >   CKernelArgMemMap;
     CKernelArgMemMap    m_KernelArgMemMap;
 

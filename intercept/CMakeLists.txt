@@ -45,6 +45,7 @@ set(CLINTERCEPT_RESOURCE_FILES
     kernels/precompiled_kernels.cl
     resource/clIntercept.rc
     resource/clIntercept_resource.h
+    scripts/run.py
     "${CMAKE_CURRENT_BINARY_DIR}/git_version.rc2"
 )
 source_group(Resources FILES
