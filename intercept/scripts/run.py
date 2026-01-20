@@ -14,13 +14,6 @@ import os
 import argparse
 from collections import defaultdict
 
-def get_svm_arg_offset(idx: Int):
-    fileName = f"./SVM_Arg_Offset_{idx}.txt"
-    with open(fileName) as offsetFile:
-        offset = int(offsetFile.read())
-        return offset
-    return 0
-
 def get_image_metadata(idx: int):
     fileName = f"./Image_MetaData_{idx}.txt"
     with open(fileName) as metadata:
@@ -60,50 +53,54 @@ def replay(repetitions, use_svm = False):
     padded_enqueue_num = str(enqueue_number).rjust(4, "0")
 
     arguments = {}
-    argument_files = gl.glob("./Argument*.bin")
-    for argument in argument_files:
-        idx = int(re.findall(r'\d+', argument)[0])
-        arguments[idx] = np.fromfile(argument, dtype='uint8').tobytes()
+    for fileName in gl.glob("./Argument*.bin"):
+        idx = int(re.findall(r'\d+', fileName)[0])
+        arguments[idx] = np.fromfile(fileName, dtype='uint8').tobytes()
+
+    svm_arg_offsets = {}
+    for fileName in gl.glob("./SVM_Arg_Offset*.txt"):
+        idx = int(re.findall(r'\d+', fileName)[0])
+        with open(fileName) as file:
+            svm_arg_offsets[idx] = int(file.read())
+            if use_svm is False and svm_arg_offsets[idx] != 0:
+                print("Non-zero SVM arg offset found, forcing SVM replay.")
+                use_svm = True
 
     buffer_idx = []
     input_buffers = {}
     output_buffers = {}
-    buffer_files = gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.bin")
     input_buffer_ptrs = defaultdict(list)
-    for buffer in buffer_files:
-        start = buffer.find("_Arg_")
-        idx = int(re.findall(r'\d+', buffer[start:])[0])
+    for fileName in gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.bin"):
+        start = fileName.find("_Arg_")
+        idx = int(re.findall(r'\d+', fileName[start:])[0])
         buffer_idx.append(idx)
-        input_buffers[idx] = np.fromfile(buffer, dtype='uint8')
+        input_buffers[idx] = np.fromfile(fileName, dtype='uint8')
         input_buffer_ptrs[arguments[idx]].append(idx)
         output_buffers[idx] = np.empty_like(input_buffers[idx])
 
     image_idx = []
     input_images = {}
     output_images = {}
-    image_files = gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.raw")
     input_images_ptrs = defaultdict(list)
-    for image in image_files:
-        start = image.find("_Arg_")
-        idx = int(re.findall(r'\d+', image[start:])[0])
+    for fileName in gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.raw"):
+        start = fileName.find("_Arg_")
+        idx = int(re.findall(r'\d+', fileName[start:])[0])
         image_idx.append(idx)
-        input_images[idx] = np.fromfile(image, dtype='uint8')
+        input_images[idx] = np.fromfile(fileName, dtype='uint8')
         input_images_ptrs[arguments[idx]].append(idx)
         output_images[idx] = np.empty_like(input_images[idx])
 
     local_sizes = {}
-    local_files = gl.glob("./Local*.txt")
-    for local in local_files:
-        with open(local) as file:
+    for fileName in gl.glob("./Local*.txt"):
+        idx = int(re.findall(r'\d+', fileName)[0])
+        with open(fileName) as file:
             size = int(file.read())
-        local_sizes[int(re.findall(r'\d+', local)[0])] = size
+        local_sizes[idx] = size
 
     # Check if we have pointer aliasing for the buffers
     tmp_args = []
     for idx in buffer_idx:
         tmp_args.append(arguments[idx])
-
-    # Check if all input pointer addresses are unique
     if len(tmp_args) != len(set(tmp_args)):
         print("Some of the buffers are aliasing, we will replicate this behavior.")
 
@@ -192,7 +189,7 @@ def replay(repetitions, use_svm = False):
             
     for pos, svm in gpu_svm.items():
         for idx in pos:
-            offset = get_svm_arg_offset(idx)
+            offset = svm_arg_offsets[idx]
             kernel.set_arg(idx, cl.SVM(svm.mem[offset:]))
 
     for pos, image in gpu_images.items():

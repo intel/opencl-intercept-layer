@@ -7959,7 +7959,6 @@ void CLIntercept::setKernelArgSVMPointer(
         memInfo.Value = startPtr;
         memInfo.Offset = (const char*)arg - (const char*)startPtr;
 
-        // Save the base of the SVM allocation for capture and replay.
         CArgDataMap& argDataMap = m_KernelArgDataMap[kernel];
         const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(&startPtr);
         argDataMap[ arg_index ] = std::vector<uint8_t>(
@@ -7997,7 +7996,6 @@ void CLIntercept::setKernelArgUSMPointer(
         memInfo.Value = startPtr;
         memInfo.Offset = (const char*)arg - (const char*)startPtr;
 
-        // Save the base of the USM allocation for capture and replay.
         CArgDataMap& argDataMap = m_KernelArgDataMap[kernel];
         const uint8_t* pRawArgData = reinterpret_cast<const uint8_t*>(&startPtr);
         argDataMap[ arg_index ] = std::vector<uint8_t>(
@@ -8195,7 +8193,6 @@ void CLIntercept::dumpCaptureReplayKernelArguments(
     {
         const auto index = arg.first;
         const auto value = (cl_mem)arg.second.Value;
-        const auto offset = arg.second.Offset;
         if( m_ImageInfoMap.find( value ) != m_ImageInfoMap.end() )
         {
             const SImageInfo&   info = m_ImageInfoMap[ value ];
@@ -8215,7 +8212,7 @@ void CLIntercept::dumpCaptureReplayKernelArguments(
         {
             std::string fileName{dumpDirectory + "SVM_Arg_Offset_" + std::to_string(index) + ".txt"};
             std::ofstream out{fileName};
-            out << offset << '\n';
+            out << arg.second.Offset << '\n';
         }
     }
 
