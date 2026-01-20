@@ -899,9 +899,11 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_CAPABILITIES_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_PROPERTIES_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_ACCESS_FLAGS_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_BASE_PTR_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_SIZE_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_ASSOCIATED_DEVICE_HANDLE_KHR );
+    // These enums alias with cl_intel_unified_shared_memory.
+    // TODO: switch to the KHR versions with cl_khr_unified_svm is final.
+    //ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_BASE_PTR_KHR );
+    //ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_SIZE_KHR );
+    //ADD_ENUM_NAME( m_cl_int, CL_SVM_INFO_ASSOCIATED_DEVICE_HANDLE_KHR );
 
     ADD_ENUM_NAME( m_cl_int, CL_KERNEL_EXEC_INFO_SVM_INDIRECT_ACCESS_KHR );
 
