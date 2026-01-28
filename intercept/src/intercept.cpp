@@ -1642,6 +1642,7 @@ cl_int CLIntercept::getPlatformInfoString(
             size,
             &str[0],
             nullptr );
+        str.pop_back(); // remove the NUL terminator
     }
 
     if( errorCode != CL_SUCCESS )
@@ -1678,6 +1679,7 @@ cl_int CLIntercept::getDeviceInfoString(
             size,
             &str[0],
             NULL );
+        str.pop_back(); // remove the NUL terminator
     }
 
     if( errorCode != CL_SUCCESS )
@@ -1714,6 +1716,7 @@ cl_int CLIntercept::getKernelInfoString(
             size,
             &str[0],
             nullptr );
+        str.pop_back(); // remove the NUL terminator
     }
 
     if( errorCode != CL_SUCCESS )
