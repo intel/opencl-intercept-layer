@@ -45,7 +45,7 @@ def sampler_from_string(ctx, sampler_descr):
                   cl.filter_mode.NEAREST
     return cl.Sampler(ctx, False, addressing_mode, filter_mode)
 
-def replay(repetitions):
+def replay(repetitions = 1, use_svm = False):
     # Read the enqueue number from the file
     with open('./enqueueNumber.txt') as file:
         enqueue_number = file.read().splitlines()[0]
@@ -53,50 +53,54 @@ def replay(repetitions):
     padded_enqueue_num = str(enqueue_number).rjust(4, "0")
 
     arguments = {}
-    argument_files = gl.glob("./Argument*.bin")
-    for argument in argument_files:
-        idx = int(re.findall(r'\d+', argument)[0])
-        arguments[idx] = np.fromfile(argument, dtype='uint8').tobytes()
+    for fileName in gl.glob("./Argument*.bin"):
+        idx = int(re.findall(r'\d+', fileName)[0])
+        arguments[idx] = np.fromfile(fileName, dtype='uint8').tobytes()
+
+    svm_arg_offsets = {}
+    for fileName in gl.glob("./SVM_Arg_Offset*.txt"):
+        idx = int(re.findall(r'\d+', fileName)[0])
+        with open(fileName) as file:
+            svm_arg_offsets[idx] = int(file.read())
+            if use_svm is False and svm_arg_offsets[idx] != 0:
+                print("Non-zero SVM arg offset found, forcing SVM replay.")
+                use_svm = True
 
     buffer_idx = []
     input_buffers = {}
     output_buffers = {}
-    buffer_files = gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.bin")
     input_buffer_ptrs = defaultdict(list)
-    for buffer in buffer_files:
-        start = buffer.find("_Arg_")
-        idx = int(re.findall(r'\d+', buffer[start:])[0])
+    for fileName in gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.bin"):
+        start = fileName.find("_Arg_")
+        idx = int(re.findall(r'\d+', fileName[start:])[0])
         buffer_idx.append(idx)
-        input_buffers[idx] = np.fromfile(buffer, dtype='uint8').tobytes()
+        input_buffers[idx] = np.fromfile(fileName, dtype='uint8')
         input_buffer_ptrs[arguments[idx]].append(idx)
         output_buffers[idx] = np.empty_like(input_buffers[idx])
 
     image_idx = []
     input_images = {}
     output_images = {}
-    image_files = gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.raw")
     input_images_ptrs = defaultdict(list)
-    for image in image_files:
-        start = image.find("_Arg_")
-        idx = int(re.findall(r'\d+', image[start:])[0])
+    for fileName in gl.glob("./Pre/Enqueue_" + padded_enqueue_num + "*.raw"):
+        start = fileName.find("_Arg_")
+        idx = int(re.findall(r'\d+', fileName[start:])[0])
         image_idx.append(idx)
-        input_images[idx] = np.fromfile(image, dtype='uint8').tobytes()
+        input_images[idx] = np.fromfile(fileName, dtype='uint8')
         input_images_ptrs[arguments[idx]].append(idx)
         output_images[idx] = np.empty_like(input_images[idx])
 
     local_sizes = {}
-    local_files = gl.glob("./Local*.txt")
-    for local in local_files:
-        with open(local) as file:
+    for fileName in gl.glob("./Local*.txt"):
+        idx = int(re.findall(r'\d+', fileName)[0])
+        with open(fileName) as file:
             size = int(file.read())
-        local_sizes[int(re.findall(r'\d+', local)[0])] = size
+        local_sizes[idx] = size
 
     # Check if we have pointer aliasing for the buffers
     tmp_args = []
     for idx in buffer_idx:
         tmp_args.append(arguments[idx])
-
-    # Check if all input pointer addresses are unique
     if len(tmp_args) != len(set(tmp_args)):
         print("Some of the buffers are aliasing, we will replicate this behavior.")
 
@@ -123,16 +127,22 @@ def replay(repetitions):
     for idx in list(samplers):
         del arguments[idx]
 
-    mf = cl.mem_flags
-
     gpu_buffers = {}
+    gpu_svm = {}
     for idxs in input_buffer_ptrs.values():
-        gpu_buffers[tuple(idxs)] = cl.Buffer(ctx, mf.COPY_HOST_PTR, hostbuf=input_buffers[idxs[0]])
+        if use_svm:
+            svm = cl.SVM(cl.csvm_empty_like(ctx, input_buffers[idxs[0]]))
+            cl.enqueue_copy(queue, svm, input_buffers[idxs[0]])
+            gpu_svm[tuple(idxs)] = svm
+        else:
+            buf = cl.Buffer(ctx, cl.mem_flags.COPY_HOST_PTR, hostbuf=input_buffers[idxs[0]].tobytes())
+            gpu_buffers[tuple(idxs)] = buf
 
     gpu_images = {}
     for idx in image_idx:
         format, shape = get_image_metadata(idx)
-        gpu_images[idx] = cl.Image(ctx, mf.COPY_HOST_PTR, format, shape, hostbuf=input_images[idx])
+        img = cl.Image(ctx, cl.mem_flags.COPY_HOST_PTR, format, shape, hostbuf=input_images[idx].tobytes())
+        gpu_images[idx] = img
 
     with open("buildOptions.txt", 'r') as file:
         options = [line.rstrip() for line in file]
@@ -176,6 +186,11 @@ def replay(repetitions):
     for pos, buffer in gpu_buffers.items():
         for idx in pos:
             kernel.set_arg(idx, buffer)
+            
+    for pos, svm in gpu_svm.items():
+        for idx in pos:
+            offset = svm_arg_offsets[idx]
+            kernel.set_arg(idx, cl.SVM(svm.mem[offset:]))
 
     for pos, image in gpu_images.items():
         kernel.set_arg(pos, image)
@@ -208,11 +223,12 @@ def replay(repetitions):
         cl.enqueue_nd_range_kernel(queue, kernel, gws, lws, gwo)
 
     for pos in gpu_buffers.keys():
-        if len(pos) == 1:
-            cl.enqueue_copy(queue, output_buffers[pos[0]], gpu_buffers[pos])
-        else:
-            for idx in range(len(pos)):
-                cl.enqueue_copy(queue, output_buffers[pos[idx]], gpu_buffers[pos])
+        for idx in range(len(pos)):
+            cl.enqueue_copy(queue, output_buffers[pos[idx]], gpu_buffers[pos])
+
+    for pos in gpu_svm.keys():
+        for idx in range(len(pos)):
+            cl.enqueue_copy(queue, output_buffers[pos[idx]], gpu_svm[pos])
 
     for pos in gpu_images.keys():
         cl.enqueue_copy(queue, output_images[pos], gpu_images[pos], region=shape, origin=(0,0,0))
@@ -296,6 +312,8 @@ def validate():
 parser = argparse.ArgumentParser(description='Script to replay and validate captured kernels')
 parser.add_argument('-r', '--repetitions', type=int, dest='repetitions', default=1,
                     help='How often the kernel should be enqueued')
+parser.add_argument('-m', '--svm', action='store_true', dest='svm', default=False,
+                    help='Use SVM when replaying the captured kernel')
 parser.add_argument('-s', '--skipreplay', action='store_true', dest='skip', default=False,
                     help='Skip replaying the captured kernel and do not dump data')
 parser.add_argument('-v', '--validate', action='store_true', dest='validate', default=False,
@@ -305,7 +323,7 @@ args = parser.parse_args()
 if args.skip:
     print("Skipping replay of the captured kernel.")
 else:
-    replay(args.repetitions)
+    replay(args.repetitions, args.svm)
 
 if args.validate:
     validate()
