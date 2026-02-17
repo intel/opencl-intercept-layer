@@ -129,6 +129,12 @@ The old name may still be used for backwards compatibility, but switching to the
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will break into the debugger when it is loaded.
 
+### Tracing Controls
+
+##### `BetaExtensionTracing` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will trace extensions that are beta extensions and subject to change. If an application uses beta extensions and does not function correctly with the Intercept Layer for OpenCL Applications, setting this control to zero may allow the application to function correctly, albeit without tracing the beta extensions.
+
 ### Logging Controls
 
 ##### `SuppressLogging` (bool)
