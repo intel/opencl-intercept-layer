@@ -1678,7 +1678,7 @@ cl_int CLIntercept::getDeviceInfoString(
             param_name,
             size,
             &str[0],
-            NULL );
+            nullptr );
         str.pop_back(); // remove the NUL terminator
     }
 
