@@ -1297,16 +1297,10 @@ void CLIntercept::cachePlatformInfo()
                 cl_platform_id platform = platforms[i];
                 SPlatformInfo&  platformInfo = m_PlatformInfoMap[platform];
 
-                char*   platformName = NULL;
-
-                allocateAndGetPlatformInfoString(
+                getPlatformInfoString(
                     platform,
                     CL_PLATFORM_NAME,
-                    platformName );
-                if( platformName )
-                {
-                    platformInfo.Name = platformName;
-                }
+                    platformInfo.Name );
 
                 size_t  sz = 0;
                 dispatch().clGetPlatformInfo(
@@ -1326,8 +1320,6 @@ void CLIntercept::cachePlatformInfo()
                         platformInfo.SVMCapabilities.data(),
                         NULL );
                 }
-
-                delete [] platformName;
             }
         }
     }
@@ -1358,14 +1350,13 @@ void CLIntercept::cacheDeviceInfo(
                 deviceInfo.DeviceIndex );
         }
 
-        char*   deviceName = NULL;
         cl_uint deviceComputeUnits = 0;
         cl_uint deviceMaxClockFrequency = 0;
 
-        allocateAndGetDeviceInfoString(
+        getDeviceInfoString(
             device,
             CL_DEVICE_NAME,
-            deviceName );
+            deviceInfo.Name );
         dispatch().clGetDeviceInfo(
             device,
             CL_DEVICE_MAX_COMPUTE_UNITS,
@@ -1384,25 +1375,30 @@ void CLIntercept::cacheDeviceInfo(
             sizeof(deviceInfo.Type),
             &deviceInfo.Type,
             NULL );
-        if( deviceName )
-        {
-            std::ostringstream  ss;
-            ss << deviceName << " ("
-                << deviceComputeUnits << "CUs, "
-                << deviceMaxClockFrequency << "MHz)";
 
-            deviceInfo.Name = deviceName;
-            deviceInfo.NameForReport = ss.str();
-        }
+        std::ostringstream  ss;
+        ss << deviceInfo.Name << " ("
+            << deviceComputeUnits << "CUs, "
+            << deviceMaxClockFrequency << "MHz)";
+        deviceInfo.NameForReport = ss.str();
 
-        size_t majorVersion = 0;
-        size_t minorVersion = 0;
-        getDeviceMajorMinorVersion(
+        std::string deviceVersion;
+        getDeviceInfoString(
             device,
-            majorVersion,
-            minorVersion );
+            CL_DEVICE_VERSION,
+            deviceVersion );
+
+        // According to the spec, the device version string should have the form:
+        //   OpenCL <Major>.<Minor> <Vendor Specific Info>
+        size_t  major = 0;
+        size_t  minor = 0;
+        getMajorMinorVersionFromString(
+            "OpenCL ",
+            deviceVersion.c_str(),
+            major,
+            minor );
         deviceInfo.NumericVersion =
-            CL_MAKE_VERSION_KHR( majorVersion, minorVersion, 0 );
+            CL_MAKE_VERSION_KHR( major, minor, 0 );
 
         deviceInfo.NumComputeUnits = deviceComputeUnits;
         deviceInfo.MaxClockFrequency = deviceMaxClockFrequency;
@@ -1434,8 +1430,6 @@ void CLIntercept::cacheDeviceInfo(
             checkDeviceForExtension( device, "cl_khr_create_command_queue" );
         deviceInfo.Supports_cl_khr_subgroups =
             checkDeviceForExtension( device, "cl_khr_subgroups" );
-
-        delete [] deviceName;
     }
 }
 
@@ -1456,36 +1450,6 @@ void CLIntercept::getDeviceIndexString(
     }
 
     str = std::to_string(m_DeviceInfoMap[device].PlatformIndex) + '.' + str;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-cl_int CLIntercept::getDeviceMajorMinorVersion(
-    cl_device_id device,
-    size_t& majorVersion,
-    size_t& minorVersion ) const
-{
-    char*   deviceVersion = NULL;
-
-    cl_int  errorCode = allocateAndGetDeviceInfoString(
-        device,
-        CL_DEVICE_VERSION,
-        deviceVersion );
-    if( errorCode == CL_SUCCESS && deviceVersion )
-    {
-        // According to the spec, the device version string should have the form:
-        //   OpenCL <Major>.<Minor> <Vendor Specific Info>
-        getMajorMinorVersionFromString(
-            "OpenCL ",
-            deviceVersion,
-            majorVersion,
-            minorVersion );
-    }
-
-    delete [] deviceVersion;
-    deviceVersion = NULL;
-
-    return errorCode;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1620,15 +1584,14 @@ bool CLIntercept::checkDeviceForExtension(
     }
     else
     {
-        char*   deviceExtensions = NULL;
-
-        cl_int  errorCode = allocateAndGetDeviceInfoString(
+        std::string deviceExtensions;
+        cl_int  errorCode = getDeviceInfoString(
             device,
             CL_DEVICE_EXTENSIONS,
             deviceExtensions );
-        if( errorCode == CL_SUCCESS && deviceExtensions )
+        if( errorCode == CL_SUCCESS )
         {
-            const char* start = deviceExtensions;
+            const char* start = deviceExtensions.c_str();
             while( true )
             {
                 const char* where = strstr( start, extensionName );
@@ -1648,8 +1611,6 @@ bool CLIntercept::checkDeviceForExtension(
                 start = terminator;
             }
         }
-
-        delete [] deviceExtensions;
     }
 
     return supported;
@@ -1657,60 +1618,36 @@ bool CLIntercept::checkDeviceForExtension(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-cl_int CLIntercept::allocateAndGetPlatformInfoString(
+cl_int CLIntercept::getPlatformInfoString(
     cl_platform_id platform,
     cl_platform_info param_name,
-    char*& param_value ) const
+    std::string& str ) const
 {
     cl_int  errorCode = CL_SUCCESS;
     size_t  size = 0;
 
-    if( errorCode == CL_SUCCESS )
-    {
-        if( param_value != NULL )
-        {
-            CLI_ASSERT( 0 );
-            delete [] param_value;
-            param_value = NULL;
-        }
-    }
+    errorCode = dispatch().clGetPlatformInfo(
+        platform,
+        param_name,
+        0,
+        nullptr,
+        &size );
 
     if( errorCode == CL_SUCCESS )
     {
-        errorCode = dispatch().clGetPlatformInfo(
-            platform,
-            param_name,
-            0,
-            NULL,
-            &size );
-    }
-
-    if( errorCode == CL_SUCCESS )
-    {
-        if( size != 0 )
-        {
-            param_value = new char[ size ];
-            if( param_value == NULL )
-            {
-                errorCode = CL_OUT_OF_HOST_MEMORY;
-            }
-        }
-    }
-
-    if( errorCode == CL_SUCCESS )
-    {
+        str.assign( size, ' ' );
         errorCode = dispatch().clGetPlatformInfo(
             platform,
             param_name,
             size,
-            param_value,
-            NULL );
+            &str[0],
+            nullptr );
+        str.pop_back(); // remove the NUL terminator
     }
 
     if( errorCode != CL_SUCCESS )
     {
-        delete [] param_value;
-        param_value = NULL;
+        str.clear();
     }
 
     return errorCode;
@@ -1718,60 +1655,36 @@ cl_int CLIntercept::allocateAndGetPlatformInfoString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-cl_int CLIntercept::allocateAndGetDeviceInfoString(
+cl_int CLIntercept::getDeviceInfoString(
     cl_device_id device,
     cl_device_info param_name,
-    char*& param_value ) const
+    std::string& str ) const
 {
     cl_int  errorCode = CL_SUCCESS;
     size_t  size = 0;
 
-    if( errorCode == CL_SUCCESS )
-    {
-        if( param_value != NULL )
-        {
-            CLI_ASSERT( 0 );
-            delete [] param_value;
-            param_value = NULL;
-        }
-    }
+    errorCode = dispatch().clGetDeviceInfo(
+        device,
+        param_name,
+        0,
+        nullptr,
+        &size );
 
     if( errorCode == CL_SUCCESS )
     {
-        errorCode = dispatch().clGetDeviceInfo(
-            device,
-            param_name,
-            0,
-            NULL,
-            &size );
-    }
-
-    if( errorCode == CL_SUCCESS )
-    {
-        if( size != 0 )
-        {
-            param_value = new char[ size ];
-            if( param_value == NULL )
-            {
-                errorCode = CL_OUT_OF_HOST_MEMORY;
-            }
-        }
-    }
-
-    if( errorCode == CL_SUCCESS )
-    {
+        str.assign( size, ' ' );
         errorCode = dispatch().clGetDeviceInfo(
             device,
             param_name,
             size,
-            param_value,
-            NULL );
+            &str[0],
+            nullptr );
+        str.pop_back(); // remove the NUL terminator
     }
 
     if( errorCode != CL_SUCCESS )
     {
-        delete [] param_value;
-        param_value = NULL;
+        str.clear();
     }
 
     return errorCode;
@@ -1779,60 +1692,36 @@ cl_int CLIntercept::allocateAndGetDeviceInfoString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-cl_int CLIntercept::allocateAndGetKernelInfoString(
+cl_int CLIntercept::getKernelInfoString(
     cl_kernel kernel,
     cl_kernel_info param_name,
-    char*& param_value ) const
+    std::string& str ) const
 {
     cl_int  errorCode = CL_SUCCESS;
     size_t  size = 0;
 
-    if( errorCode == CL_SUCCESS )
-    {
-        if( param_value != NULL )
-        {
-            CLI_ASSERT( 0 );
-            delete [] param_value;
-            param_value = NULL;
-        }
-    }
+    errorCode = dispatch().clGetKernelInfo(
+        kernel,
+        param_name,
+        0,
+        nullptr,
+        &size );
 
     if( errorCode == CL_SUCCESS )
     {
-        errorCode = dispatch().clGetKernelInfo(
-            kernel,
-            param_name,
-            0,
-            NULL,
-            &size );
-    }
-
-    if( errorCode == CL_SUCCESS )
-    {
-        if( size != 0 )
-        {
-            param_value = new char[ size ];
-            if( param_value == NULL )
-            {
-                errorCode = CL_OUT_OF_HOST_MEMORY;
-            }
-        }
-    }
-
-    if( errorCode == CL_SUCCESS )
-    {
+        str.assign( size, ' ' );
         errorCode = dispatch().clGetKernelInfo(
             kernel,
             param_name,
             size,
-            param_value,
-            NULL );
+            &str[0],
+            nullptr );
+        str.pop_back(); // remove the NUL terminator
     }
 
     if( errorCode != CL_SUCCESS )
     {
-        delete [] param_value;
-        param_value = NULL;
+        str.clear();
     }
 
     return errorCode;
@@ -2040,7 +1929,7 @@ void CLIntercept::getDeviceInfoString(
         cl_int  errorCode = CL_SUCCESS;
 
         cl_device_type  deviceType = CL_DEVICE_TYPE_DEFAULT;
-        char*           deviceName = NULL;
+        std::string deviceName;
 
         errorCode |= dispatch().clGetDeviceInfo(
             devices[i],
@@ -2048,7 +1937,7 @@ void CLIntercept::getDeviceInfoString(
             sizeof( deviceType ),
             &deviceType,
             NULL );
-        errorCode |= allocateAndGetDeviceInfoString(
+        errorCode |= getDeviceInfoString(
             devices[i],
             CL_DEVICE_NAME,
             deviceName );
@@ -2065,10 +1954,8 @@ void CLIntercept::getDeviceInfoString(
                 str += ", ";
             }
 
-            if( deviceName )
-            {
-                str += deviceName;
-            }
+            str += deviceName;
+
             {
                 char    s[256];
                 CLI_SPRINTF( s, 256, " (%s) (%p)",
@@ -2077,9 +1964,6 @@ void CLIntercept::getDeviceInfoString(
                 str += s;
             }
         }
-
-        delete [] deviceName;
-        deviceName = NULL;
     }
 }
 
@@ -3462,13 +3346,13 @@ void CLIntercept::logBuild(
 
                 if( errorCode == CL_SUCCESS )
                 {
-                    char*   deviceName = NULL;
-                    char*   deviceOpenCLCVersion = NULL;
-                    errorCode = allocateAndGetDeviceInfoString(
+                    std::string deviceName;
+                    std::string deviceOpenCLCVersion;
+                    errorCode = getDeviceInfoString(
                         deviceList[i],
                         CL_DEVICE_NAME,
                         deviceName );
-                    errorCode |= allocateAndGetDeviceInfoString(
+                    errorCode |= getDeviceInfoString(
                         deviceList[i],
                         CL_DEVICE_OPENCL_C_VERSION,
                         deviceOpenCLCVersion );
@@ -3491,12 +3375,6 @@ void CLIntercept::logBuild(
                     message += "\n";
 
                     log( message );
-
-                    delete [] deviceName;
-                    deviceName = NULL;
-
-                    delete [] deviceOpenCLCVersion;
-                    deviceOpenCLCVersion = NULL;
                 }
             }
 
@@ -3638,8 +3516,8 @@ void CLIntercept::logKernelInfo(
 
             for( cl_uint i = 0; i < numDevices; i++ )
             {
-                char*   deviceName = NULL;
-                errorCode = allocateAndGetDeviceInfoString(
+                std::string deviceName;
+                errorCode = getDeviceInfoString(
                     deviceList[i],
                     CL_DEVICE_NAME,
                     deviceName );
@@ -3710,8 +3588,7 @@ void CLIntercept::logKernelInfo(
                     NULL );
                 if( errorCode == CL_SUCCESS )
                 {
-                    logf( "    For device: %s\n",
-                        deviceName );
+                    logf( "    For device: %s\n", deviceName.c_str() );
                     if( config().KernelInfoLogging )
                     {
                         logf( "        Num Args: %u\n", args);
@@ -3741,16 +3618,14 @@ void CLIntercept::logKernelInfo(
                         }
                     }
                 }
-                else if( deviceName )
+                else if( !deviceName.empty() )
                 {
-                    logf( "Error querying kernel info for device %s!\n", deviceName );
+                    logf( "Error querying kernel info for device %s!\n", deviceName.c_str() );
                 }
                 else
                 {
                     logf( "Error querying kernel info!\n" );
                 }
-
-                delete [] deviceName;
             }
         }
 
@@ -3770,8 +3645,8 @@ void CLIntercept::logQueueInfo(
 
     logf( "Queue Info for %p:\n", queue );
 
-    char*   deviceName = NULL;
-    errorCode |= allocateAndGetDeviceInfoString(
+    std::string deviceName;
+    errorCode |= getDeviceInfoString(
         device,
         CL_DEVICE_NAME,
         deviceName );
@@ -3784,7 +3659,7 @@ void CLIntercept::logQueueInfo(
         NULL );
     if( errorCode == CL_SUCCESS )
     {
-        logf( "    For device: %s\n", deviceName );
+        logf( "    For device: %s\n", deviceName.c_str() );
         logf( "    Queue properties: %s\n",
             props == 0 ?
             "(None)" :
@@ -3811,8 +3686,6 @@ void CLIntercept::logQueueInfo(
         logf( "    Queue family: %u\n", queueFamily );
         logf( "    Queue index: %u\n", queueIndex );
     }
-
-    delete [] deviceName;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3858,6 +3731,7 @@ cl_int CLIntercept::autoPartitionGetDeviceIDs(
 
         if( subDevices.empty() )
         {
+            // Note: This call occurs under a mutex!!!
             std::string deviceInfo;
             getDeviceInfoString(
                 1,
@@ -9322,10 +9196,11 @@ void CLIntercept::checkKernelArgUSMPointer(
                 &associatedDevice,
                 NULL );
 
-            char* deviceName = NULL;
+            // TODO: Can this lookup the cached device name instead?
+            std::string deviceName;
             if( associatedDevice )
             {
-                allocateAndGetDeviceInfoString(
+                getDeviceInfoString(
                     associatedDevice,
                     CL_DEVICE_NAME,
                     deviceName );
@@ -9333,11 +9208,11 @@ void CLIntercept::checkKernelArgUSMPointer(
 
             if( memType == CL_MEM_TYPE_DEVICE_INTEL )
             {
-                if( deviceName )
+                if( !deviceName.empty() )
                 {
                     logf( "mem pointer %p is a DEVICE pointer associated with device %s\n",
                         arg,
-                        deviceName );
+                        deviceName.c_str() );
                 }
                 else if( associatedDevice )
                 {
@@ -9359,11 +9234,11 @@ void CLIntercept::checkKernelArgUSMPointer(
             }
             else if( memType == CL_MEM_TYPE_SHARED_INTEL )
             {
-                if( deviceName )
+                if( !deviceName.empty() )
                 {
                     logf( "mem pointer %p is a SHARED pointer associated with device %s\n",
                         arg,
-                        deviceName );
+                        deviceName.c_str() );
                 }
                 else if( associatedDevice )
                 {
@@ -9448,8 +9323,6 @@ void CLIntercept::checkKernelArgUSMPointer(
                     arg,
                     memType );
             }
-
-            delete [] deviceName;
         }
         else
         {
@@ -10785,10 +10658,10 @@ void CLIntercept::dumpKernelISABinaries(
 
             // Get the kernel name.  We can't use the kernel name map yet, so
             // use a kernel query instead.
-            char* kernelName = NULL;
+            std::string kernelName;
             if( errorCode == CL_SUCCESS )
             {
-                errorCode = allocateAndGetKernelInfoString(
+                errorCode = getKernelInfoString(
                     kernel,
                     CL_KERNEL_FUNCTION_NAME,
                     kernelName );
@@ -10855,9 +10728,6 @@ void CLIntercept::dumpKernelISABinaries(
                 delete [] kernelISABinary;
                 kernelISABinary = NULL;
             }
-
-            delete [] kernelName;
-            kernelName = NULL;
         }
     }
 
@@ -11504,13 +11374,12 @@ bool CLIntercept::overrideGetPlatformInfo(
     case CL_PLATFORM_NUMERIC_VERSION_KHR:
         if( m_Config.Emulate_cl_khr_extended_versioning )
         {
-            char*   platformVersion = NULL;
-
-            errorCode = allocateAndGetPlatformInfoString(
+            std::string platformVersion;
+            errorCode = getPlatformInfoString(
                 platform,
                 CL_PLATFORM_VERSION,
                 platformVersion );
-            if( errorCode == CL_SUCCESS && platformVersion )
+            if( errorCode == CL_SUCCESS )
             {
                 // According to the spec, the device version string should have the form:
                 //   OpenCL <Major>.<Minor> <Vendor Specific Info>
@@ -11518,7 +11387,7 @@ bool CLIntercept::overrideGetPlatformInfo(
                 size_t  minor = 0;
                 if( getMajorMinorVersionFromString(
                         "OpenCL ",
-                        platformVersion,
+                        platformVersion.c_str(),
                         major,
                         minor ) )
                 {
@@ -11532,17 +11401,13 @@ bool CLIntercept::overrideGetPlatformInfo(
                     override = true;
                 }
             }
-
-            delete [] platformVersion;
-            platformVersion = NULL;
         }
         break;
     case CL_PLATFORM_EXTENSIONS_WITH_VERSION_KHR:
         if( m_Config.Emulate_cl_khr_extended_versioning )
         {
-            char*   platformExtensions = NULL;
-
-            allocateAndGetPlatformInfoString(
+            std::string platformExtensions;
+            errorCode = getPlatformInfoString(
                 platform,
                 CL_PLATFORM_EXTENSIONS,
                 platformExtensions );
@@ -11551,14 +11416,11 @@ bool CLIntercept::overrideGetPlatformInfo(
             // In this case we will simply return that zero extensions are supported.
             cl_name_version_khr*    ptr = (cl_name_version_khr*)param_value;
             errorCode = parseExtensionString(
-                platformExtensions,
+                platformExtensions.c_str(),
                 ptr,
                 param_value_size,
                 param_value_size_ret );
             override = true;
-
-            delete [] platformExtensions;
-            platformExtensions = NULL;
         }
         break;
     case CL_PLATFORM_SEMAPHORE_TYPES_KHR:
@@ -11662,12 +11524,12 @@ bool CLIntercept::overrideGetDeviceInfo(
 
             if( !newExtensions.empty() )
             {
-                char*   deviceExtensions = NULL;
-                cl_int  errorCode = allocateAndGetDeviceInfoString(
+                std::string deviceExtensions;
+                cl_int  errorCode = getDeviceInfoString(
                     device,
                     CL_DEVICE_EXTENSIONS,
                     deviceExtensions );
-                if( errorCode == CL_SUCCESS && deviceExtensions )
+                if( errorCode == CL_SUCCESS )
                 {
                     newExtensions += deviceExtensions;
 
@@ -11679,7 +11541,6 @@ bool CLIntercept::overrideGetDeviceInfo(
                         ptr );
                     override = true;
                 }
-                delete [] deviceExtensions;
             }
         }
         break;
@@ -11854,13 +11715,12 @@ bool CLIntercept::overrideGetDeviceInfo(
     case CL_DEVICE_NUMERIC_VERSION_KHR:
         if( m_Config.Emulate_cl_khr_extended_versioning )
         {
-            char*   deviceVersion = NULL;
-
-            errorCode = allocateAndGetDeviceInfoString(
+            std::string deviceVersion;
+            errorCode = getDeviceInfoString(
                 device,
                 CL_DEVICE_VERSION,
                 deviceVersion );
-            if( errorCode == CL_SUCCESS && deviceVersion )
+            if( errorCode == CL_SUCCESS )
             {
                 // According to the spec, the device version string should have the form:
                 //   OpenCL <Major>.<Minor> <Vendor Specific Info>
@@ -11868,7 +11728,7 @@ bool CLIntercept::overrideGetDeviceInfo(
                 size_t  minor = 0;
                 if( getMajorMinorVersionFromString(
                         "OpenCL ",
-                        deviceVersion,
+                        deviceVersion.c_str(),
                         major,
                         minor ) )
                 {
@@ -11882,21 +11742,17 @@ bool CLIntercept::overrideGetDeviceInfo(
                     override = true;
                 }
             }
-
-            delete [] deviceVersion;
-            deviceVersion = NULL;
         }
         break;
     case CL_DEVICE_OPENCL_C_NUMERIC_VERSION_KHR:
         if( m_Config.Emulate_cl_khr_extended_versioning )
         {
-            char*   deviceOpenCLCVersion = NULL;
-
-            errorCode = allocateAndGetDeviceInfoString(
+            std::string deviceOpenCLCVersion;
+            errorCode = getDeviceInfoString(
                 device,
                 CL_DEVICE_OPENCL_C_VERSION,
                 deviceOpenCLCVersion );
-            if( errorCode == CL_SUCCESS && deviceOpenCLCVersion )
+            if( errorCode == CL_SUCCESS )
             {
                 // According to the spec, the OpenCL C version string should have the form:
                 //   OpenCL C <Major>.<Minor> <Vendor Specific Info>
@@ -11904,7 +11760,7 @@ bool CLIntercept::overrideGetDeviceInfo(
                 size_t  minor = 0;
                 if( getMajorMinorVersionFromString(
                         "OpenCL C ",
-                        deviceOpenCLCVersion,
+                        deviceOpenCLCVersion.c_str(),
                         major,
                         minor ) )
                 {
@@ -11918,9 +11774,6 @@ bool CLIntercept::overrideGetDeviceInfo(
                     override = true;
                 }
             }
-
-            delete [] deviceOpenCLCVersion;
-            deviceOpenCLCVersion = NULL;
         }
         break;
     case CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR:
@@ -11938,12 +11791,12 @@ bool CLIntercept::overrideGetDeviceInfo(
                 deviceExtensions += "cl_intel_unified_shared_memory ";
             }
 
-            char*   tempDeviceExtensions = NULL;
-
-            allocateAndGetDeviceInfoString(
+            std::string tempDeviceExtensions;
+            getDeviceInfoString(
                 device,
                 CL_DEVICE_EXTENSIONS,
                 tempDeviceExtensions );
+
             deviceExtensions += tempDeviceExtensions;
 
             // Parse the extension string even if the query returned an error.
@@ -11955,17 +11808,13 @@ bool CLIntercept::overrideGetDeviceInfo(
                 param_value_size,
                 param_value_size_ret );
             override = true;
-
-            delete [] tempDeviceExtensions;
-            tempDeviceExtensions = NULL;
         }
         break;
     case CL_DEVICE_ILS_WITH_VERSION_KHR:
         if( m_Config.Emulate_cl_khr_extended_versioning )
         {
-            char*   deviceILs = NULL;
-
-            allocateAndGetDeviceInfoString(
+            std::string deviceILs;
+            getDeviceInfoString(
                 device,
                 CL_DEVICE_IL_VERSION,
                 deviceILs );
@@ -11974,22 +11823,18 @@ bool CLIntercept::overrideGetDeviceInfo(
             // In this case we will simply return that zero ILs are supported.
             cl_name_version_khr*    ptr = (cl_name_version_khr*)param_value;
             errorCode = parseILString(
-                deviceILs,
+                deviceILs.c_str(),
                 ptr,
                 param_value_size,
                 param_value_size_ret );
             override = true;
-
-            delete [] deviceILs;
-            deviceILs = NULL;
         }
         break;
     case CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR:
         if( m_Config.Emulate_cl_khr_extended_versioning )
         {
-            char*   deviceBuiltInKernels = NULL;
-
-            allocateAndGetDeviceInfoString(
+            std::string deviceBuiltInKernels;
+            getDeviceInfoString(
                 device,
                 CL_DEVICE_BUILT_IN_KERNELS,
                 deviceBuiltInKernels );
@@ -11999,14 +11844,11 @@ bool CLIntercept::overrideGetDeviceInfo(
             // built-in kernels are supported.
             cl_name_version_khr*    ptr = (cl_name_version_khr*)param_value;
             errorCode = parseBuiltInKernelsString(
-                deviceBuiltInKernels,
+                deviceBuiltInKernels.c_str(),
                 ptr,
                 param_value_size,
                 param_value_size_ret );
             override = true;
-
-            delete [] deviceBuiltInKernels;
-            deviceBuiltInKernels = NULL;
         }
         break;
     case CL_DRIVER_VERSION:
@@ -13870,53 +13712,49 @@ void CLIntercept::logPlatformInfo( cl_platform_id platform )
 {
     cl_int  errorCode = CL_SUCCESS;
 
-    char*   platformName = NULL;
-    char*   platformVendor = NULL;
-    char*   platformVersion = NULL;
-    char*   platformProfile = NULL;
-    char*   platformExtensions = NULL;
+    std::string platformName;
+    std::string platformVendor;
+    std::string platformVersion;
+    std::string platformProfile;
+    std::string platformExtensions;
 
-    errorCode |= allocateAndGetPlatformInfoString(
+    errorCode |= getPlatformInfoString(
         platform,
         CL_PLATFORM_NAME,
         platformName );
-    errorCode |= allocateAndGetPlatformInfoString(
+    errorCode |= getPlatformInfoString(
         platform,
         CL_PLATFORM_VENDOR,
         platformVendor );
-    errorCode |= allocateAndGetPlatformInfoString(
+    errorCode |= getPlatformInfoString(
         platform,
         CL_PLATFORM_VERSION,
         platformVersion );
-    errorCode |= allocateAndGetPlatformInfoString(
+    errorCode |= getPlatformInfoString(
         platform,
         CL_PLATFORM_PROFILE,
         platformProfile );
-    errorCode |= allocateAndGetPlatformInfoString(
+    errorCode |= getPlatformInfoString(
         platform,
         CL_PLATFORM_EXTENSIONS,
         platformExtensions );
 
     if( errorCode == CL_SUCCESS )
     {
-        logf( "\tName:           %s\n", platformName );
-        logf( "\tVendor:         %s\n", platformVendor );
-        logf( "\tDriver Version: %s\n", platformVersion );
-        logf( "\tProfile:        %s\n", platformProfile );
+        logf( "\tName:           %s\n", platformName.c_str() );
+        logf( "\tVendor:         %s\n", platformVendor.c_str() );
+        logf( "\tDriver Version: %s\n", platformVersion.c_str() );
+        logf( "\tProfile:        %s\n", platformProfile.c_str() );
 
         int     numberOfExtensions = 0;
         logf( "\tExtensions:\n" );
-        if( platformExtensions )
+
+        std::istringstream iss(platformExtensions);
+        std::string extension;
+        while( iss >> extension )
         {
-            char*   extension = NULL;
-            char*   nextExtension = NULL;
-            extension = CLI_STRTOK( platformExtensions, " ", &nextExtension );
-            while( extension != NULL )
-            {
-                numberOfExtensions++;
-                logf( "\t\t%s\n", extension );
-                extension = CLI_STRTOK( NULL, " ", &nextExtension );
-            }
+            numberOfExtensions++;
+            logf( "\t\t%s\n", extension.c_str() );
         }
         logf( "\t\t%d Platform Extensions Found\n", numberOfExtensions );
     }
@@ -13924,12 +13762,6 @@ void CLIntercept::logPlatformInfo( cl_platform_id platform )
     {
         log( "\tError getting platform info!\n" );
     }
-
-    delete [] platformName;
-    delete [] platformVendor;
-    delete [] platformVersion;
-    delete [] platformProfile;
-    delete [] platformExtensions;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -13939,11 +13771,11 @@ void CLIntercept::logDeviceInfo( cl_device_id device )
     cl_int  errorCode = CL_SUCCESS;
 
     cl_device_type  deviceType;
-    char*   deviceName = NULL;
-    char*   deviceVendor = NULL;
-    char*   deviceVersion = NULL;
-    char*   driverVersion = NULL;
-    char*   deviceExtensions = NULL;
+    std::string deviceName;
+    std::string deviceVendor;
+    std::string deviceVersion;
+    std::string driverVersion;
+    std::string deviceExtensions;
 
     errorCode |= dispatch().clGetDeviceInfo(
         device,
@@ -13951,48 +13783,44 @@ void CLIntercept::logDeviceInfo( cl_device_id device )
         sizeof( deviceType ),
         &deviceType,
         NULL );
-    errorCode |= allocateAndGetDeviceInfoString(
+    errorCode |= getDeviceInfoString(
         device,
         CL_DEVICE_NAME,
         deviceName );
-    errorCode |= allocateAndGetDeviceInfoString(
+    errorCode |= getDeviceInfoString(
         device,
         CL_DEVICE_VENDOR,
         deviceVendor );
-    errorCode |= allocateAndGetDeviceInfoString(
+    errorCode |= getDeviceInfoString(
         device,
         CL_DEVICE_VERSION,
         deviceVersion );
-    errorCode |= allocateAndGetDeviceInfoString(
+    errorCode |= getDeviceInfoString(
         device,
         CL_DRIVER_VERSION,
         driverVersion );
-    errorCode |= allocateAndGetDeviceInfoString(
+    errorCode |= getDeviceInfoString(
         device,
         CL_DEVICE_EXTENSIONS,
         deviceExtensions );
 
     if( errorCode == CL_SUCCESS )
     {
-        logf( "\tName:           %s\n", deviceName );
-        logf( "\tVendor:         %s\n", deviceVendor );
-        logf( "\tVersion:        %s\n", deviceVersion );
-        logf( "\tDriver Version: %s\n", driverVersion );
+        logf( "\tName:           %s\n", deviceName.c_str() );
+        logf( "\tVendor:         %s\n", deviceVendor.c_str() );
+        logf( "\tVersion:        %s\n", deviceVersion.c_str() );
+        logf( "\tDriver Version: %s\n", driverVersion.c_str() );
         logf( "\tType:           %s\n", enumName().name_device_type( deviceType ).c_str() );
 
         int     numberOfExtensions = 0;
         logf( "\tExtensions:\n" );
-        if( deviceExtensions )
+
+        std::istringstream iss(deviceExtensions);
+        std::string extension;
+        while( iss >> extension )
         {
-            char*   extension = NULL;
-            char*   nextExtension = NULL;
-            extension = CLI_STRTOK( deviceExtensions, " ", &nextExtension );
-            while( extension != NULL )
-            {
-                numberOfExtensions++;
-                logf( "\t\t%s\n", extension );
-                extension = CLI_STRTOK( NULL, " ", &nextExtension );
-            }
+            numberOfExtensions++;
+            logf( "\t\t%s\n", extension.c_str() );
         }
         logf( "\t\t%d Device Extensions Found\n", numberOfExtensions );
     }
@@ -14000,12 +13828,6 @@ void CLIntercept::logDeviceInfo( cl_device_id device )
     {
         log( "Error getting device info!\n" );
     }
-
-    delete [] deviceName;
-    delete [] deviceVendor;
-    delete [] deviceVersion;
-    delete [] driverVersion;
-    delete [] deviceExtensions;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
