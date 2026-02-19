@@ -131,9 +131,9 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will brea
 
 ### Tracing Controls
 
-##### `BetaExtensionTracing` (bool)
+##### `BetaExtensionIntercepting` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will trace extensions that are beta extensions and subject to change. If an application uses beta extensions and does not function correctly with the Intercept Layer for OpenCL Applications, setting this control to zero may allow the application to function correctly, albeit without tracing the beta extensions.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will intercept extension APIs for beta extensions that are subject to change. If an application uses beta extensions and does not function correctly with the Intercept Layer for OpenCL Applications, setting this control to zero may allow the application to function correctly, albeit without tracing the beta extension APIs.
 
 ### Logging Controls
 

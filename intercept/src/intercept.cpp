@@ -13659,7 +13659,7 @@ void* CLIntercept::getExtensionFunctionAddress(
 #endif
 
     // cl_khr_command_buffer (beta)
-    if( config().BetaExtensionTracing )
+    if( config().BetaExtensionIntercepting )
     {
         CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandBufferKHR );
         CHECK_RETURN_EXTENSION_FUNCTION( clFinalizeCommandBufferKHR );
@@ -13681,13 +13681,13 @@ void* CLIntercept::getExtensionFunctionAddress(
     }
 
     // cl_khr_command_buffer_multi_device (beta)
-    if( config().BetaExtensionTracing )
+    if( config().BetaExtensionIntercepting )
     {
         CHECK_RETURN_EXTENSION_FUNCTION( clRemapCommandBufferKHR );
     }
 
     // cl_khr_command_buffer_mutable_dispatch (beta)
-    if( config().BetaExtensionTracing )
+    if( config().BetaExtensionIntercepting )
     {
         CHECK_RETURN_EXTENSION_FUNCTION( clUpdateMutableCommandsKHR );
         CHECK_RETURN_EXTENSION_FUNCTION( clGetMutableCommandInfoKHR );
@@ -13736,7 +13736,7 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeKHR );
 
     // cl_khr_unified_svm (beta)
-    if( config().BetaExtensionTracing )
+    if( config().BetaExtensionIntercepting )
     {
         CHECK_RETURN_EXTENSION_FUNCTION( clSVMAllocWithPropertiesKHR );
         CHECK_RETURN_EXTENSION_FUNCTION( clSVMFreeWithPropertiesKHR );

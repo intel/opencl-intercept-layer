@@ -13,7 +13,7 @@
 #endif
 
 CLI_CONTROL_SEPARATOR( Tracing Controls: )
-CLI_CONTROL( bool,          BetaExtensionTracing,                   true,  "If set to a nonzero value, the Intercept Layer for OpenCL Applications will trace extensions that are beta extensions and subject to change. If an application uses beta extensions and does not function correctly with the Intercept Layer for OpenCL Applications, setting this control to zero may allow the application to function correctly, albeit without tracing the beta extensions." )
+CLI_CONTROL( bool,          BetaExtensionIntercepting,              true,  "If set to a nonzero value, the Intercept Layer for OpenCL Applications will intercept extension APIs for beta extensions that are subject to change. If an application uses beta extensions and does not function correctly with the Intercept Layer for OpenCL Applications, setting this control to zero may allow the application to function correctly, albeit without tracing the beta extension APIs." )
 
 CLI_CONTROL_SEPARATOR( Logging Controls: )
 CLI_CONTROL( bool,          SuppressLogging,                        false, "If set to a nonzero value, suppresses all logging output from the Intercept Layer for OpenCL Applications.  This is particularly useful for tools that only want report data." )
