@@ -1392,11 +1392,11 @@ void CLIntercept::cacheDeviceInfo(
         //   OpenCL <Major>.<Minor> <Vendor Specific Info>
         size_t  major = 0;
         size_t  minor = 0;
-        if( getMajorMinorVersionFromString(
-                "OpenCL ",
-                deviceVersion.c_str(),
-                major,
-                minor ) )
+        getMajorMinorVersionFromString(
+            "OpenCL ",
+            deviceVersion.c_str(),
+            major,
+            minor );
         deviceInfo.NumericVersion =
             CL_MAKE_VERSION_KHR( major, minor, 0 );
 
