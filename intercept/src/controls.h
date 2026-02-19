@@ -12,6 +12,9 @@
 #define CLI_CONTROL_SEPARATOR( _name )
 #endif
 
+CLI_CONTROL_SEPARATOR( Tracing Controls: )
+CLI_CONTROL( bool,          BetaExtensionIntercepting,              true,  "If set to a nonzero value, the Intercept Layer for OpenCL Applications will intercept extension APIs for beta extensions that are subject to change. If an application uses beta extensions and does not function correctly with the Intercept Layer for OpenCL Applications, setting this control to zero may allow the application to function correctly, albeit without the ability to debug and analyze the beta extension APIs." )
+
 CLI_CONTROL_SEPARATOR( Logging Controls: )
 CLI_CONTROL( bool,          SuppressLogging,                        false, "If set to a nonzero value, suppresses all logging output from the Intercept Layer for OpenCL Applications.  This is particularly useful for tools that only want report data." )
 CLI_CONTROL( bool,          AppendFiles,                            false, "By default, the Intercept Layer for OpenCL Applications log files will be created from scratch when the intercept DLL is loaded, and any Intercept Layer for OpenCL Applications report files will be created from scratch when the intercept DLL is unloaded. If AppendFiles is set to a nonzero value, the Intercept Layer for OpenCL Applications will append to an existing file instead of recreating it. This can be useful if an application loads and unloads the intercept DLL multiple times, or to simply preserve log or report data from run-to-run." )

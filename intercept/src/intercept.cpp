@@ -13500,31 +13500,40 @@ void* CLIntercept::getExtensionFunctionAddress(
     CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueReleaseDX9MediaSurfacesKHR );
 #endif
 
-    // cl_khr_command_buffer
-    CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandBufferKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clFinalizeCommandBufferKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clRetainCommandBufferKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clReleaseCommandBufferKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueCommandBufferKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCommandBarrierWithWaitListKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferRectKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferToImageKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyImageKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyImageToBufferKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillBufferKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillImageKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCommandSVMMemcpyKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCommandSVMMemFillKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clCommandNDRangeKernelKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetCommandBufferInfoKHR );
+    // cl_khr_command_buffer (beta)
+    if( config().BetaExtensionIntercepting )
+    {
+        CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clFinalizeCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clRetainCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clReleaseCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueCommandBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandBarrierWithWaitListKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferRectKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyBufferToImageKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyImageKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandCopyImageToBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillBufferKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandFillImageKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandSVMMemcpyKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandSVMMemFillKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clCommandNDRangeKernelKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clGetCommandBufferInfoKHR );
+    }
 
-    // cl_khr_command_buffer_multi_device
-    CHECK_RETURN_EXTENSION_FUNCTION( clRemapCommandBufferKHR );
+    // cl_khr_command_buffer_multi_device (beta)
+    if( config().BetaExtensionIntercepting )
+    {
+        CHECK_RETURN_EXTENSION_FUNCTION( clRemapCommandBufferKHR );
+    }
 
-    // cl_khr_command_buffer_mutable_dispatch
-    CHECK_RETURN_EXTENSION_FUNCTION( clUpdateMutableCommandsKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetMutableCommandInfoKHR );
+    // cl_khr_command_buffer_mutable_dispatch (beta)
+    if( config().BetaExtensionIntercepting )
+    {
+        CHECK_RETURN_EXTENSION_FUNCTION( clUpdateMutableCommandsKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clGetMutableCommandInfoKHR );
+    }
 
     // cl_khr_create_command_queue
     CHECK_RETURN_EXTENSION_FUNCTION( clCreateCommandQueueWithPropertiesKHR );
@@ -13568,11 +13577,14 @@ void* CLIntercept::getExtensionFunctionAddress(
     // cl_khr_suggested_local_work_size
     CHECK_RETURN_EXTENSION_FUNCTION( clGetKernelSuggestedLocalWorkSizeKHR );
 
-    // cl_khr_unified_svm
-    CHECK_RETURN_EXTENSION_FUNCTION( clSVMAllocWithPropertiesKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clSVMFreeWithPropertiesKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetSVMPointerInfoKHR );
-    CHECK_RETURN_EXTENSION_FUNCTION( clGetSVMSuggestedTypeIndexKHR );
+    // cl_khr_unified_svm (beta)
+    if( config().BetaExtensionIntercepting )
+    {
+        CHECK_RETURN_EXTENSION_FUNCTION( clSVMAllocWithPropertiesKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clSVMFreeWithPropertiesKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clGetSVMPointerInfoKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clGetSVMSuggestedTypeIndexKHR );
+    }
 
     // cl_ext_buffer_device_address
     CHECK_RETURN_EXTENSION_FUNCTION( clSetKernelArgDevicePointerEXT );
