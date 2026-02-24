@@ -2046,6 +2046,13 @@ inline CObjectTracker& CLIntercept::objectTracker()
         pIntercept->objectTracker().AddAllocation(_obj);                    \
     }
 
+#define ADD_OBJECT_ALLOCATION_EVENT( _errorCode, _pEvent )                  \
+    if( pIntercept->config().LeakChecking &&                                \
+        ( _errorCode == CL_SUCCESS ) && _pEvent )                           \
+    {                                                                       \
+        pIntercept->objectTracker().AddAllocation(_pEvent[0]);              \
+    }
+
 #define ADD_OBJECT_RETAIN( _obj )                                           \
     if( pIntercept->config().LeakChecking )                                 \
     {                                                                       \

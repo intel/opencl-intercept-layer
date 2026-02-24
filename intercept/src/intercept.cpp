@@ -1207,15 +1207,18 @@ void CLIntercept::callLoggingExit(
 
     str += functionName;
 
-    if( event )
+    if( errorCode == CL_SUCCESS )
     {
-        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " created event = %p", *event );
-        str += m_StringBuffer;
-    }
-    if( syncPoint )
-    {
-        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " is sync point = %u", *syncPoint );
-        str += m_StringBuffer;
+        if( event )
+        {
+            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " created event = %p", *event );
+            str += m_StringBuffer;
+        }
+        if( syncPoint )
+        {
+            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " is sync point = %u", *syncPoint );
+            str += m_StringBuffer;
+        }
     }
 
     str += " -> ";
@@ -1242,15 +1245,18 @@ void CLIntercept::callLoggingExit(
 
     str += functionName;
 
-    if( event )
+    if( errorCode == CL_SUCCESS )
     {
-        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " created event = %p", *event );
-        str += m_StringBuffer;
-    }
-    if( syncPoint )
-    {
-        CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " is sync point = %u", *syncPoint );
-        str += m_StringBuffer;
+        if( event )
+        {
+            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " created event = %p", *event );
+            str += m_StringBuffer;
+        }
+        if( syncPoint )
+        {
+            CLI_SPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, " is sync point = %u", *syncPoint );
+            str += m_StringBuffer;
+        }
     }
 
     int size = CLI_VSPRINTF( m_StringBuffer, CLI_STRING_BUFFER_SIZE, formatStr, args );
