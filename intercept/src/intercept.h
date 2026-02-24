@@ -3410,8 +3410,9 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         }                                                                   \
     }
 
-#define DEVICE_PERFORMANCE_TIMING_END( queue, pEvent )                      \
-    if( doDevicePerformanceTiming && ( pEvent != NULL ) )                   \
+#define DEVICE_PERFORMANCE_TIMING_END( queue, errorCode, pEvent )           \
+    if( doDevicePerformanceTiming &&                                        \
+        ( errorCode == CL_SUCCESS ) && ( pEvent != NULL ) )                 \
     {                                                                       \
         if( !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
             ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
@@ -3434,8 +3435,9 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         }                                                                   \
     }
 
-#define DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( queue, pEvent )             \
-    if( doDevicePerformanceTiming && ( pEvent != NULL ) )                   \
+#define DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( queue, errorCode, pEvent )  \
+    if( doDevicePerformanceTiming &&                                        \
+        ( errorCode == CL_SUCCESS ) && ( pEvent != NULL ) )                 \
     {                                                                       \
         if( !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
             ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
@@ -3458,8 +3460,9 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         }                                                                   \
     }
 
-#define DEVICE_PERFORMANCE_TIMING_END_KERNEL( queue, pEvent )               \
-    if( doDevicePerformanceTiming && ( pEvent != NULL ) )                   \
+#define DEVICE_PERFORMANCE_TIMING_END_KERNEL( queue, errorCode, pEvent )    \
+    if( doDevicePerformanceTiming &&                                        \
+        ( errorCode == CL_SUCCESS ) && ( pEvent != NULL ) )                 \
     {                                                                       \
         /*TOOL_OVERHEAD_TIMING_START();*/                                   \
         pIntercept->addTimingEvent(                                         \
