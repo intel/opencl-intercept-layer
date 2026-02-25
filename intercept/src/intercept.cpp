@@ -4045,6 +4045,7 @@ void CLIntercept::eventCallbackCaller(
         pIntercept->enumName().name_command_exec_status( status ).c_str(),
         status );
 
+    const bool doHostPerformanceTiming = true;
     clock::time_point   cpuStart = clock::now();
 
     pIntercept->eventCallback(

@@ -2144,7 +2144,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
-    if( pIntercept->config().ChromeCallLogging )                            \
+    if( pIntercept->config().ChromeCallLogging && doHostPerformanceTiming ) \
     {                                                                       \
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
@@ -2166,7 +2166,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
-    if( pIntercept->config().ChromeCallLogging )                            \
+    if( pIntercept->config().ChromeCallLogging && doHostPerformanceTiming ) \
     {                                                                       \
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
@@ -2188,7 +2188,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
-    if( pIntercept->config().ChromeCallLogging )                            \
+    if( pIntercept->config().ChromeCallLogging && doHostPerformanceTiming ) \
     {                                                                       \
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
@@ -2210,7 +2210,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             sync_point,                                                     \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
-    if( pIntercept->config().ChromeCallLogging )                            \
+    if( pIntercept->config().ChromeCallLogging && doHostPerformanceTiming ) \
     {                                                                       \
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
