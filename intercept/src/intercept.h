@@ -3487,7 +3487,14 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         }                                                                   \
     }
 
-#define DEVICE_PERFORMANCE_TIMING_CHECK()                                   \
+///////////////////////////////////////////////////////////////////////////////
+//
+inline void CLIntercept::flushChromeTraceBuffering()
+{
+    m_ChromeTrace.flush();
+}
+
+#define PROCESS_DATA_AND_FLUSH()                                            \
     if( pIntercept->config().DevicePerformanceTiming ||                     \
         pIntercept->config().ITTPerformanceTiming ||                        \
         pIntercept->config().ChromePerformanceTiming ||                     \
@@ -3497,29 +3504,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         TOOL_OVERHEAD_TIMING_START();                                       \
         pIntercept->checkTimingEvents();                                    \
         TOOL_OVERHEAD_TIMING_END( "(device timing overhead)" );             \
-    }
-
-#define DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( _condition )           \
-    if( ( _condition ) &&                                                   \
-        ( pIntercept->config().DevicePerformanceTiming ||                   \
-          pIntercept->config().ITTPerformanceTiming ||                      \
-          pIntercept->config().ChromePerformanceTiming ||                   \
-          pIntercept->config().DevicePerfCounterEventBasedSampling ||       \
-          pIntercept->config().DevicePerfCounterTimeBasedSampling ) )       \
-    {                                                                       \
-        TOOL_OVERHEAD_TIMING_START();                                       \
-        pIntercept->checkTimingEvents();                                    \
-        TOOL_OVERHEAD_TIMING_END( "(device timing overhead)" );             \
-    }
-
-///////////////////////////////////////////////////////////////////////////////
-//
-inline void CLIntercept::flushChromeTraceBuffering()
-{
-    m_ChromeTrace.flush();
-}
-
-#define FLUSH_CHROME_TRACE_BUFFERING()                                      \
+    }                                                                       \
     if( pIntercept->config().ChromeTraceBufferSize &&                       \
         pIntercept->config().ChromeTraceBufferingBlockingCallFlush &&       \
         ( pIntercept->config().ChromeCallLogging ||                         \
@@ -3530,16 +3515,10 @@ inline void CLIntercept::flushChromeTraceBuffering()
         TOOL_OVERHEAD_TIMING_END( "(chrome trace flush overhead)" );        \
     }
 
-#define FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( _condition )              \
-    if( ( _condition ) &&                                                   \
-        pIntercept->config().ChromeTraceBufferSize &&                       \
-        pIntercept->config().ChromeTraceBufferingBlockingCallFlush &&       \
-        ( pIntercept->config().ChromeCallLogging ||                         \
-          pIntercept->config().ChromePerformanceTiming ) )                  \
+#define PROCESS_DATA_AND_FLUSH_CONDITIONAL( _condition )                    \
+    if( _condition )                                                        \
     {                                                                       \
-        TOOL_OVERHEAD_TIMING_START();                                       \
-        pIntercept->flushChromeTraceBuffering();                            \
-        TOOL_OVERHEAD_TIMING_END( "(chrome trace flush overhead)" );        \
+        PROCESS_DATA_AND_FLUSH();                                           \
     }
 
 ///////////////////////////////////////////////////////////////////////////////
