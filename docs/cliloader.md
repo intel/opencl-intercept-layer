@@ -1,4 +1,4 @@
-# cliloader: A Intercept Layer for OpenCL Applications Loader
+# cliloader: An Intercept Layer for OpenCL Applications Loader
 
 `cliloader` is a loader utility to simplify common usage of the Intercept Layer for OpenCL Applications.
 
