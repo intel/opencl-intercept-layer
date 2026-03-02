@@ -2151,7 +2151,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
-    if( pIntercept->config().ChromeCallLogging )                            \
+    if( pIntercept->config().ChromeCallLogging && doHostPerformanceTiming ) \
     {                                                                       \
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
@@ -2173,7 +2173,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
-    if( pIntercept->config().ChromeCallLogging )                            \
+    if( pIntercept->config().ChromeCallLogging && doHostPerformanceTiming ) \
     {                                                                       \
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
@@ -2195,7 +2195,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             NULL,                                                           \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
-    if( pIntercept->config().ChromeCallLogging )                            \
+    if( pIntercept->config().ChromeCallLogging && doHostPerformanceTiming ) \
     {                                                                       \
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
@@ -2217,7 +2217,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
             sync_point,                                                     \
             ##__VA_ARGS__ );                                                \
     }                                                                       \
-    if( pIntercept->config().ChromeCallLogging )                            \
+    if( pIntercept->config().ChromeCallLogging && doHostPerformanceTiming ) \
     {                                                                       \
         pIntercept->chromeCallLoggingExit(                                  \
             __FUNCTION__,                                                   \
@@ -3269,10 +3269,10 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
 #define HOST_PERFORMANCE_TIMING_START()                                     \
     CLIntercept::clock::time_point   cpuStart, cpuEnd;                      \
     bool    doHostPerformanceTiming =                                       \
-        pIntercept->config().ChromeCallLogging ||                           \
-        ( pIntercept->config().HostPerformanceTiming &&                     \
-          pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) &&\
-          pIntercept->checkConditionalTiming() );                           \
+        ( pIntercept->config().ChromeCallLogging ||                         \
+          pIntercept->config().HostPerformanceTiming ) &&                   \
+        pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) &&\
+        pIntercept->checkConditionalTiming();                               \
     if( doHostPerformanceTiming )                                           \
     {                                                                       \
         cpuStart = CLIntercept::clock::now();                               \
@@ -3311,9 +3311,9 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
     bool    doToolOverheadTiming =                                          \
         pIntercept->config().ToolOverheadTiming &&                          \
         ( pIntercept->config().ChromeCallLogging ||                         \
-          ( pIntercept->config().HostPerformanceTiming &&                   \
-            pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) &&\
-            pIntercept->checkConditionalTiming() ) );                       \
+          pIntercept->config().HostPerformanceTiming ) &&                   \
+        pIntercept->checkHostPerformanceTimingEnqueueLimits( enqueueCounter ) &&\
+        pIntercept->checkConditionalTiming();                               \
     if( doToolOverheadTiming )                                              \
     {                                                                       \
         toolStart = CLIntercept::clock::now();                              \

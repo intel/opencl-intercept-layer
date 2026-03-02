@@ -203,7 +203,7 @@ If set to a nonzero value, flushes buffered JSON records for Chrome Tracing afte
 
 ##### `ChromeCallLogging` (bool)
 
-If set to a nonzero value, logs function entry and exit information for every OpenCL call to a JSON file that may be used for Chrome Tracing.
+If set to a nonzero value, logs function entry and exit information and host performance timing for every OpenCL call to a JSON file that may be used for Chrome Tracing.
 
 ##### `ChromeFlowEvents` (bool)
 

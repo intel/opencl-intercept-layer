@@ -4050,8 +4050,7 @@ void CLIntercept::eventCallbackCaller(
         event,
         pIntercept->enumName().name_command_exec_status( status ).c_str(),
         status );
-
-    clock::time_point   cpuStart = clock::now();
+    HOST_PERFORMANCE_TIMING_START();
 
     pIntercept->eventCallback(
         event,
@@ -4064,8 +4063,7 @@ void CLIntercept::eventCallbackCaller(
             pEventCallbackInfo->pUserData );
     }
 
-    clock::time_point   cpuEnd = clock::now();
-
+    HOST_PERFORMANCE_TIMING_END();
     CALL_LOGGING_EXIT( CL_SUCCESS );
 
     delete pEventCallbackInfo;
