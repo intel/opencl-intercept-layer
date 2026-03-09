@@ -64,6 +64,12 @@ public:
         return m_EventList.end();
     }
 
+    size_t size()
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        return m_EventList.size();
+    }
+
 private:
     std::mutex  m_Mutex;
 

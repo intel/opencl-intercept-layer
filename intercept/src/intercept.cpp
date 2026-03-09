@@ -183,7 +183,7 @@ CLIntercept::~CLIntercept()
     {
         {
             std::lock_guard<std::mutex> lock(m_Mutex);
-            log( "Waiting for processing thread...\n" );
+            logf( "CLIntercept is waiting for the processing thread to complete (%zu elements)...\n", m_EventList.size() );
         }
         {
             std::lock_guard<std::mutex> lock(m_ProcessingMutex);
