@@ -182,6 +182,14 @@ CLIntercept::~CLIntercept()
     stopAubCapture( NULL );
     report();
 
+    if( m_Config.MultiThreadedProcessing )
+    {
+        fprintf(stderr, "Shutting down processing thread...\n");
+        m_ProcessingDone = true;
+        m_ProcessingCondition.notify_all();
+        m_ProcessingThread.join();
+    }
+
     std::lock_guard<std::mutex> lock(m_Mutex);
 
     log( "CLIntercept is shutting down...\n" );
@@ -648,9 +656,72 @@ bool CLIntercept::init()
         m_ChromeTrace.addStartTimeMetadata( usStartTime );
     }
 
+    if( m_Config.MultiThreadedProcessing )
+    {
+        fprintf(stderr, "Starting processing thread...\n");
+        m_ProcessingDone = false;
+        m_ProcessingThread = std::thread( CLIntercept::processingThreadFunc, this );
+    }
+
     log( "... loading complete.\n" );
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::processingThreadFunc( CLIntercept* pIntercept )
+{
+    while( !pIntercept->m_ProcessingDone )
+    {
+        std::unique_lock<std::mutex> lock( pIntercept->m_ProcessingMutex );
+        pIntercept->m_ProcessingCondition.wait( lock );
+
+        //fprintf(stderr, "Processing thread woke up...\n" );
+
+        pIntercept->processData();
+
+        //fprintf(stderr, "Processing done.\n" );
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::notifyProcessingThread()
+{
+    std::lock_guard<std::mutex> processingLock(m_ProcessingMutex);
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
+    m_ProcessingCondition.notify_one();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::processData()
+{
+    CLIntercept* pIntercept = this;
+
+    GET_ENQUEUE_COUNTER();
+
+    if( pIntercept->config().DevicePerformanceTiming ||
+        pIntercept->config().ITTPerformanceTiming ||
+        pIntercept->config().ChromePerformanceTiming ||
+        pIntercept->config().DevicePerfCounterEventBasedSampling ||
+        pIntercept->config().DevicePerfCounterTimeBasedSampling )
+    {
+        TOOL_OVERHEAD_TIMING_START();
+        pIntercept->checkTimingEvents();
+        TOOL_OVERHEAD_TIMING_END( "(device timing overhead)" );
+    }
+    if( pIntercept->config().ChromeTraceBufferSize &&
+        pIntercept->config().ChromeTraceBufferingBlockingCallFlush &&
+        ( pIntercept->config().ChromeCallLogging ||
+          pIntercept->config().ChromePerformanceTiming ) )
+    {
+        TOOL_OVERHEAD_TIMING_START();
+        pIntercept->flushChromeTraceBuffering();
+        TOOL_OVERHEAD_TIMING_END( "(chrome trace flush overhead)" );
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1336,6 +1407,7 @@ void CLIntercept::cachePlatformInfo()
 void CLIntercept::cacheDeviceInfo(
     cl_device_id device )
 {
+    // TODO: Can we be smarter here and return the found device info?
     if( device && m_DeviceInfoMap.find(device) == m_DeviceInfoMap.end() )
     {
         SDeviceInfo&    deviceInfo = m_DeviceInfoMap[device];
@@ -6517,8 +6589,6 @@ void CLIntercept::addTimingEvent(
     const cl_command_queue queue,
     cl_event event )
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
     if( event == NULL )
     {
         logf( "Unexpectedly got a NULL timing event for %s, check for OpenCL errors!\n",
@@ -6526,9 +6596,7 @@ void CLIntercept::addTimingEvent(
         return;
     }
 
-    m_EventList.emplace_back();
-
-    SEventListNode& node = m_EventList.back();
+    CEventList::Node    node;
 
     cl_device_id device = NULL;
     dispatch().clGetCommandQueueInfo(
@@ -6537,10 +6605,6 @@ void CLIntercept::addTimingEvent(
         sizeof(device),
         &device,
         NULL );
-
-    // Cache the device info if it's not cached already, since we'll print
-    // the device name and other device properties as part of the report.
-    cacheDeviceInfo( device );
 
     dispatch().clRetainEvent( event );
 
@@ -6555,6 +6619,12 @@ void CLIntercept::addTimingEvent(
 
     if( device )
     {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        // Cache the device info if it's not cached already, since we'll print
+        // the device name and other device properties as part of the report.
+        cacheDeviceInfo( device );
+
         const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
 
         // Note: Even though ideally the intercept timer and the host timer should advance
@@ -6600,16 +6670,16 @@ void CLIntercept::addTimingEvent(
             //    hostTimeNS );
         }
     }
+
+    m_EventList.addNode(std::move(node));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::checkTimingEvents()
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
-    CEventList::iterator    current = m_EventList.begin();
-    CEventList::iterator    next;
+    CEventList::const_iterator  current = m_EventList.begin();
+    CEventList::const_iterator  next;
 
     while( current != m_EventList.end() )
     {
@@ -6619,7 +6689,7 @@ void CLIntercept::checkTimingEvents()
         next = current;
         ++next;
 
-        const SEventListNode& node = *current;
+        const CEventList::Node& node = *current;
 
         errorCode = dispatch().clGetEventInfo(
             node.Event,
@@ -6668,6 +6738,8 @@ void CLIntercept::checkTimingEvents()
                         NULL );
                     if( errorCode == CL_SUCCESS )
                     {
+                        std::lock_guard<std::mutex> lock(m_Mutex);
+
                         cl_ulong delta = commandEnd - commandStart;
 
                         SDeviceTimingStats& deviceTimingStats = m_DeviceTimingStatsMap[node.Device][node.Name];
@@ -6776,6 +6848,8 @@ void CLIntercept::checkTimingEvents()
             break;
         case CL_INVALID_EVENT:
             {
+                std::lock_guard<std::mutex> lock(m_Mutex);
+
                 // This is unexpected.  We retained the event when we
                 // added it to the list.  Remove the event from the
                 // list.

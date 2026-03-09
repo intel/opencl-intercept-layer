@@ -8,6 +8,7 @@
 #include <atomic>
 #include <chrono>
 #include <cinttypes>
+#include <condition_variable>
 #include <fstream>
 #include <list>
 #include <vector>
@@ -16,6 +17,7 @@
 #include <queue>
 #include <set>
 #include <sstream>
+#include <thread>
 #include <unordered_map>
 
 #include <stdint.h>
@@ -25,6 +27,7 @@
 #include "chrometracer.h"
 #include "cmdbufrecorder.h"
 #include "enummap.h"
+#include "eventlist.h"
 #include "dispatch.h"
 #include "objtracker.h"
 
@@ -60,6 +63,9 @@ public:
 
     static bool Create( void* pGlobalData, CLIntercept*& pIntercept );
     static void Delete( CLIntercept*& pIntercept );
+
+    void    notifyProcessingThread();
+    void    processData();
 
     void    report();
 
@@ -1082,6 +1088,7 @@ private:
 
     std::ofstream   m_InterceptLog;
     CChromeTracer   m_ChromeTrace;
+    CEventList      m_EventList;
 
     mutable char    m_StringBuffer[CLI_STRING_BUFFER_SIZE];
 
@@ -1100,6 +1107,15 @@ private:
     unsigned int    m_EventsChromeTraced;
 
     unsigned int    m_ProgramNumber;
+
+    // Multi-threaded processing and flushing:
+
+    std::thread     m_ProcessingThread;
+    std::mutex      m_ProcessingMutex;
+    std::condition_variable m_ProcessingCondition;
+    std::atomic<bool>   m_ProcessingDone;
+
+    static void processingThreadFunc( CLIntercept* pIntercept );
 
     // This defines a mapping between a sub-device handle and information
     // about the sub-device.
@@ -1250,9 +1266,6 @@ private:
         int64_t             ProfilingDeltaNS;
         cl_event            Event;
     };
-
-    typedef std::list< SEventListNode > CEventList;
-    CEventList  m_EventList;
 
 #if defined(USE_MDAPI)
     MetricsDiscovery::MDHelper* m_pMDHelper;
@@ -3495,24 +3508,13 @@ inline void CLIntercept::flushChromeTraceBuffering()
 }
 
 #define PROCESS_DATA_AND_FLUSH()                                            \
-    if( pIntercept->config().DevicePerformanceTiming ||                     \
-        pIntercept->config().ITTPerformanceTiming ||                        \
-        pIntercept->config().ChromePerformanceTiming ||                     \
-        pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
-        pIntercept->config().DevicePerfCounterTimeBasedSampling )           \
+    if( pIntercept->config().MultiThreadedProcessing )                      \
     {                                                                       \
-        TOOL_OVERHEAD_TIMING_START();                                       \
-        pIntercept->checkTimingEvents();                                    \
-        TOOL_OVERHEAD_TIMING_END( "(device timing overhead)" );             \
+        pIntercept->notifyProcessingThread();                               \
     }                                                                       \
-    if( pIntercept->config().ChromeTraceBufferSize &&                       \
-        pIntercept->config().ChromeTraceBufferingBlockingCallFlush &&       \
-        ( pIntercept->config().ChromeCallLogging ||                         \
-          pIntercept->config().ChromePerformanceTiming ) )                  \
+    else                                                                    \
     {                                                                       \
-        TOOL_OVERHEAD_TIMING_START();                                       \
-        pIntercept->flushChromeTraceBuffering();                            \
-        TOOL_OVERHEAD_TIMING_END( "(chrome trace flush overhead)" );        \
+        pIntercept->processData();                                          \
     }
 
 #define PROCESS_DATA_AND_FLUSH_CONDITIONAL( _condition )                    \

@@ -424,68 +424,65 @@ void CLIntercept::getMDAPICountersFromEvent(
     {
         const size_t reportSize = m_pMDHelper->GetQueryReportSize();
 
-        char*   pReport = new char[ reportSize ];
-        if( pReport )
+        std::vector<char>   report(reportSize);
+
+        size_t  outputSize = 0;
+        cl_int  errorCode = dispatch().clGetEventProfilingInfo(
+            event,
+            CL_PROFILING_COMMAND_PERFCOUNTERS_INTEL,
+            reportSize,
+            report.data(),
+            &outputSize );
+
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        if( errorCode == CL_SUCCESS )
         {
-            size_t  outputSize = 0;
-            cl_int  errorCode = dispatch().clGetEventProfilingInfo(
-                event,
-                CL_PROFILING_COMMAND_PERFCOUNTERS_INTEL,
-                reportSize,
-                pReport,
-                &outputSize );
+            // Check: The size of the queried report should be the expected size.
+            CLI_ASSERT( outputSize == reportSize );
 
-            if( errorCode == CL_SUCCESS )
+            std::vector<MetricsDiscovery::TTypedValue_1_0> results;
+            std::vector<MetricsDiscovery::TTypedValue_1_0> maxValues;
+            std::vector<MetricsDiscovery::TTypedValue_1_0> ioInfoValues; // unused
+
+            uint32_t numResults = m_pMDHelper->GetMetricsFromReports(
+                1,
+                report.data(),
+                results,
+                maxValues );
+
+            if( numResults )
             {
-                // Check: The size of the queried report should be the expected size.
-                CLI_ASSERT( outputSize == reportSize );
-
-                std::vector<MetricsDiscovery::TTypedValue_1_0> results;
-                std::vector<MetricsDiscovery::TTypedValue_1_0> maxValues;
-                std::vector<MetricsDiscovery::TTypedValue_1_0> ioInfoValues; // unused
-
-                uint32_t numResults = m_pMDHelper->GetMetricsFromReports(
-                    1,
-                    pReport,
+                m_pMDHelper->PrintMetricValues(
+                    m_MetricDump,
+                    name,
+                    numResults,
                     results,
-                    maxValues );
-
-                if( numResults )
-                {
-                    m_pMDHelper->PrintMetricValues(
-                        m_MetricDump,
-                        name,
-                        numResults,
-                        results,
-                        maxValues,
-                        ioInfoValues );
-                    m_pMDHelper->AggregateMetrics(
-                        m_MetricAggregations,
-                        name,
-                        results );
-                }
+                    maxValues,
+                    ioInfoValues );
+                m_pMDHelper->AggregateMetrics(
+                    m_MetricAggregations,
+                    name,
+                    results );
             }
-            else
+        }
+        else
+        {
+            // Currently, MDAPI data is only included for kernels, so only
+            // report an errors for kernel events.
+            cl_command_type type = 0;
+            dispatch().clGetEventInfo(
+                event,
+                CL_EVENT_COMMAND_TYPE,
+                sizeof(type),
+                &type,
+                NULL );
+            if( type == CL_COMMAND_NDRANGE_KERNEL )
             {
-                // Currently, MDAPI data is only included for kernels, so only
-                // report an errors for kernel events.
-                cl_command_type type = 0;
-                dispatch().clGetEventInfo(
-                    event,
-                    CL_EVENT_COMMAND_TYPE,
-                    sizeof(type),
-                    &type,
-                    NULL );
-                if( type == CL_COMMAND_NDRANGE_KERNEL )
-                {
-                    logf("Couldn't get MDAPI data for kernel!  clGetEventProfilingInfo returned '%s' (%08X)!\n",
-                        enumName().name(errorCode).c_str(),
-                        errorCode );
-                }
+                logf("Couldn't get MDAPI data for kernel!  clGetEventProfilingInfo returned '%s' (%08X)!\n",
+                    enumName().name(errorCode).c_str(),
+                    errorCode );
             }
-
-            delete [] pReport;
-            pReport = NULL;
         }
     }
 }
