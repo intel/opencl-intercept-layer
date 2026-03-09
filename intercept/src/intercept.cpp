@@ -179,16 +179,22 @@ CLIntercept::CLIntercept( void* pGlobalData )
 //
 CLIntercept::~CLIntercept()
 {
-    stopAubCapture( NULL );
-    report();
-
     if( m_Config.MultiThreadedProcessing )
     {
-        fprintf(stderr, "Shutting down processing thread...\n");
-        m_ProcessingDone = true;
+        {
+            std::lock_guard<std::mutex> lock(m_Mutex);
+            log( "Waiting for processing thread...\n" );
+        }
+        {
+            std::lock_guard<std::mutex> lock(m_ProcessingMutex);
+            m_ProcessingDone = true;
+        }
         m_ProcessingCondition.notify_all();
         m_ProcessingThread.join();
     }
+
+    stopAubCapture( NULL );
+    report();
 
     std::lock_guard<std::mutex> lock(m_Mutex);
 
@@ -658,9 +664,9 @@ bool CLIntercept::init()
 
     if( m_Config.MultiThreadedProcessing )
     {
-        fprintf(stderr, "Starting processing thread...\n");
         m_ProcessingDone = false;
         m_ProcessingThread = std::thread( CLIntercept::processingThreadFunc, this );
+        log( "Processing Thread Started!\n" );
     }
 
     log( "... loading complete.\n" );
@@ -689,9 +695,6 @@ void CLIntercept::processingThreadFunc( CLIntercept* pIntercept )
 //
 void CLIntercept::notifyProcessingThread()
 {
-    std::lock_guard<std::mutex> processingLock(m_ProcessingMutex);
-    std::lock_guard<std::mutex> lock(m_Mutex);
-
     m_ProcessingCondition.notify_one();
 }
 
