@@ -517,6 +517,24 @@ static bool parseArguments(int argc, char *argv[])
         {
             checkSetEnv("CLI_HostPerformanceTiming", "1");
         }
+        else if( !strcmp(argv[i], "-min") || !strcmp(argv[i], "--min-enqueue") )
+        {
+            ++i;
+            if( i < argc )
+            {
+                checkSetEnv("CLI_HostPerformanceTimingMinEnqueue", argv[i]);
+                checkSetEnv("CLI_DevicePerformanceTimingMinEnqueue", argv[i]);
+            }
+        }
+        else if( !strcmp(argv[i], "-max") || !strcmp(argv[i], "--max-enqueue") )
+        {
+            ++i;
+            if( i < argc )
+            {
+                checkSetEnv("CLI_HostPerformanceTimingMaxEnqueue", argv[i]);
+                checkSetEnv("CLI_DevicePerformanceTimingMaxEnqueue", argv[i]);
+            }
+        }
         else if( !strcmp(argv[i], "-l") || !strcmp(argv[i], "--leak-checking") )
         {
             checkSetEnv("CLI_LeakChecking", "1");
@@ -639,6 +657,8 @@ static bool parseArguments(int argc, char *argv[])
             "  --mdapi-group <NAME>             Choose MDAPI Metrics to Collect (Intel GPU Only)\n"
             "  --mdapi-device <INDEX>           Choose MDAPI Device for Metrics (Intel GPU Only)\n"
             "  --host-timing [-h]               Report Host API Execution Time\n"
+            "  --min-enqueue [-min] <NUMBER>    Minimum Enqueue for Timing and Chrome Tracing\n"
+            "  --max-enqueue [-max] <NUMBER>    Maximum Enqueue for Timing and Chrome Tracing\n"
             "  --capture-enqueue <NUMBER>       Capture the Specified Kernel Enqueue\n"
             "  --capture-kernel <NAME>          Capture the Specified Kernel Name\n"
             "  --leak-checking [-l]             Track and Report OpenCL Leaks\n"
