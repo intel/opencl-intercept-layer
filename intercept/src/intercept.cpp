@@ -179,16 +179,16 @@ CLIntercept::CLIntercept( void* pGlobalData )
 //
 CLIntercept::~CLIntercept()
 {
+    if( m_EventList.size() > 0 )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        logf( "CLIntercept is shutting down, but %zu events are unprocessed!\n",
+            m_EventList.size() );
+    }
     if( m_Config.MultiThreadedProcessing )
     {
-        {
-            std::lock_guard<std::mutex> lock(m_Mutex);
-            logf( "CLIntercept is waiting for the processing thread to complete (%zu elements)...\n", m_EventList.size() );
-        }
-        {
-            std::lock_guard<std::mutex> lock(m_ProcessingMutex);
-            m_ProcessingDone = true;
-        }
+        m_ProcessingDone.store(true);
         m_ProcessingCondition.notify_all();
         m_ProcessingThread.join();
     }
@@ -201,7 +201,7 @@ CLIntercept::~CLIntercept()
     log( "CLIntercept is shutting down...\n" );
 
     // Set the dispatch to the dummy dispatch.  The destructor is called
-    // as the process is terminating.  We don't know when each DLL gets
+    // as the process is terminating.  We don't know when drivers have been
     // unloaded, so it's not safe to call into any OpenCL functions in
     // our destructor.  Setting to the dummy dispatch ensures that no
     // OpenCL functions get called.  Note that this means we do potentially
@@ -664,7 +664,7 @@ bool CLIntercept::init()
 
     if( m_Config.MultiThreadedProcessing )
     {
-        m_ProcessingDone = false;
+        m_ProcessingDone.store(false);
         m_ProcessingThread = std::thread( CLIntercept::processingThreadFunc, this );
         log( "Processing Thread Started!\n" );
     }
@@ -678,7 +678,7 @@ bool CLIntercept::init()
 //
 void CLIntercept::processingThreadFunc( CLIntercept* pIntercept )
 {
-    while( !pIntercept->m_ProcessingDone )
+    while( pIntercept->m_ProcessingDone.load() == false )
     {
         std::unique_lock<std::mutex> lock( pIntercept->m_ProcessingMutex );
         pIntercept->m_ProcessingCondition.wait( lock );
@@ -6686,6 +6686,15 @@ void CLIntercept::checkTimingEvents()
 
     while( current != m_EventList.end() )
     {
+        if( config().MultiThreadedProcessing &&
+            m_ProcessingDone.load() == true )
+        {
+            // If we are shutting down, drivers may have been unloaded, so it is
+            // no longer safe to make calls to check events and process data.
+            // There is not much else we can do, so just stop processing.
+            break;
+        }
+
         cl_int  errorCode = CL_SUCCESS;
         cl_int  eventStatus = 0;
 
