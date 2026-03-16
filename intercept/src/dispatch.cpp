@@ -2901,7 +2901,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelInfo)(
     if( pIntercept && pIntercept->dispatch().clGetKernelInfo )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%X)",
+        CALL_LOGGING_ENTER_KERNEL(
+            kernel,
+            "kernel = %p, param_name = %s (%X)",
+            kernel,
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
         HOST_PERFORMANCE_TIMING_START();
@@ -2939,7 +2942,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelArgInfo)(
     if( pIntercept && pIntercept->dispatch().clGetKernelArgInfo )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%X)",
+        CALL_LOGGING_ENTER_KERNEL(
+            kernel,
+            "kernel = %p, param_name = %s (%X)",
+            kernel,
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
         HOST_PERFORMANCE_TIMING_START();
@@ -2986,7 +2992,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelWorkGroupInfo)(
                 &device,
                 deviceInfo );
         }
-        CALL_LOGGING_ENTER_KERNEL( kernel, "device = %s, param_name = %s (%X)",
+        CALL_LOGGING_ENTER_KERNEL(
+            kernel,
+            "kernel = %p, device = %s, param_name = %s (%X)",
+            kernel,
             deviceInfo.c_str(),
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -6783,7 +6792,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetKernelExecInfo) (
     if( pIntercept && pIntercept->dispatch().clSetKernelExecInfo )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER_KERNEL( kernel, "param_name = %s (%08X)",
+        CALL_LOGGING_ENTER_KERNEL(
+            kernel,
+            "kernel = %p, param_name = %s (%08X)",
+            kernel,
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
         HOST_PERFORMANCE_TIMING_START();
@@ -7338,7 +7350,8 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCloneKernel) (
     if( pIntercept && pIntercept->dispatch().clCloneKernel )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER();
+        CALL_LOGGING_ENTER( "source_kernel = %p",
+            source_kernel );
         CHECK_ERROR_INIT( errcode_ret );
         HOST_PERFORMANCE_TIMING_START();
 
@@ -7389,7 +7402,10 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clGetKernelSubGroupInfo) (
                 &device,
                 deviceInfo );
         }
-        CALL_LOGGING_ENTER_KERNEL( kernel, "device = %s, param_name = %s (%08X)",
+        CALL_LOGGING_ENTER_KERNEL(
+            kernel,
+            "kernel = %p, device = %s, param_name = %s (%08X)",
+            kernel,
             deviceInfo.c_str(),
             pIntercept->enumName().name( param_name ).c_str(),
             param_name );
@@ -7446,7 +7462,10 @@ CL_API_ENTRY cl_int CL_API_CALL clGetKernelSubGroupInfoKHR(
                     &device,
                     deviceInfo );
             }
-            CALL_LOGGING_ENTER_KERNEL( kernel, "device = %s, param_name = %s (%08X)",
+            CALL_LOGGING_ENTER_KERNEL(
+                kernel,
+                "kernel = %p, device = %s, param_name = %s (%08X)",
+                kernel,
                 deviceInfo.c_str(),
                 pIntercept->enumName().name( param_name ).c_str(),
                 param_name );
