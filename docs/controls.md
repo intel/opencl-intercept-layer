@@ -129,11 +129,15 @@ The old name may still be used for backwards compatibility, but switching to the
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will break into the debugger when it is loaded.
 
-### Tracing Controls
+### Basic Controls
 
 ##### `BetaExtensionIntercepting` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will intercept extension APIs for beta extensions that are subject to change. If an application uses beta extensions and does not function correctly with the Intercept Layer for OpenCL Applications, setting this control to zero may allow the application to function correctly, albeit without the ability to debug and analyze the beta extension APIs.
+
+##### `MultiThreadedProcessing` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will process device performance timing and flush chrome tracing buffers on a separate thread to reduce overhead. Setting this control to zero will process device performance timing and flush chrome tracing buffers on the main application thread instead.
 
 ### Logging Controls
 
