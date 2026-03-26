@@ -188,8 +188,16 @@ CLIntercept::~CLIntercept()
     }
     if( m_Config.MultiThreadedProcessing )
     {
-        m_ProcessingDone.store(true);
-        m_ProcessingCondition.notify_all();
+        // Note: We need to hold the processing condition lock while setting the
+        // done flag. This avoids a deadlock if this thread sets the done flag
+        // and notifies the processing thread between the time the processing
+        // thread checked the done flag and before it is waiting for
+        // notification.
+        {
+            std::lock_guard<std::mutex> lock(m_ProcessingConditionMutex);
+            m_ProcessingDone.store(true);
+        }
+        m_ProcessingConditionVariable.notify_all();
         m_ProcessingThread.join();
     }
 
@@ -678,16 +686,24 @@ bool CLIntercept::init()
 //
 void CLIntercept::processingThreadFunc( CLIntercept* pIntercept )
 {
-    while( pIntercept->m_ProcessingDone.load() == false )
+    while( true )
     {
-        std::unique_lock<std::mutex> lock( pIntercept->m_ProcessingMutex );
-        pIntercept->m_ProcessingCondition.wait( lock );
-
-        //fprintf(stderr, "Processing thread woke up...\n" );
+        // Note: We need to check whether processing is done while holding the
+        // processing condition lock.  This avoids a deadlock in the case where
+        // this processing thread checks the done flag and gets interrupted,
+        // then the main thread sets the done flag and notifies this processing
+        // thread, then this processing thread waits on the notification that
+        // will never come.
+        {
+            std::unique_lock<std::mutex> lock( pIntercept->m_ProcessingConditionMutex );
+            if (pIntercept->m_ProcessingDone.load())
+            {
+                break;
+            }
+            pIntercept->m_ProcessingConditionVariable.wait( lock );
+        }
 
         pIntercept->processData();
-
-        //fprintf(stderr, "Processing done.\n" );
     }
 }
 
@@ -695,7 +711,7 @@ void CLIntercept::processingThreadFunc( CLIntercept* pIntercept )
 //
 void CLIntercept::notifyProcessingThread()
 {
-    m_ProcessingCondition.notify_one();
+    m_ProcessingConditionVariable.notify_one();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -6681,6 +6697,8 @@ void CLIntercept::addTimingEvent(
 //
 void CLIntercept::checkTimingEvents()
 {
+    std::lock_guard<std::mutex> lock(m_EventList.CheckMutex);
+
     CEventList::const_iterator  current = m_EventList.begin();
     CEventList::const_iterator  next;
 

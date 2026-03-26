@@ -6,7 +6,6 @@
 
 #pragma once
 
-#include <chrono>
 #include <list>
 #include <mutex>
 #include <string>
@@ -16,12 +15,7 @@
 class CEventList
 {
 public:
-// !!! TODO: figure out what to do here!
-#if defined(CLINTERCEPT_HIGH_RESOLUTON_CLOCK)
-    using clock = std::chrono::high_resolution_clock;
-#else
-    using clock = std::chrono::steady_clock;
-#endif
+    std::mutex  CheckMutex;
 
     struct Node
     {
