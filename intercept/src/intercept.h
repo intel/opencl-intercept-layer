@@ -901,7 +901,7 @@ public:
                 const size_t* gws,
                 const size_t* lws);
 
-    unsigned int    getThreadNumber( uint64_t threadId );
+    uint32_t    getThreadNumber( const char* threadName, uint64_t threadId );
 
     void    saveProgramNumber( const cl_program program );
     unsigned int    getProgramNumber() const;
@@ -1091,7 +1091,7 @@ private:
 
     clock::time_point   m_StartTime;
 
-    typedef std::map< uint64_t, unsigned int>   CThreadNumberMap;
+    typedef std::map< uint64_t, uint32_t >  CThreadNumberMap;
     CThreadNumberMap    m_ThreadNumberMap;
 
     typedef std::map< cl_device_id, std::vector<cl_device_id> > CSubDeviceCacheMap;
@@ -3671,10 +3671,12 @@ inline std::string CLIntercept::getShortKernelNameWithHash(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-inline unsigned int CLIntercept::getThreadNumber( uint64_t threadId )
+inline uint32_t CLIntercept::getThreadNumber(
+    const char* threadName,
+    uint64_t threadId )
 {
     CThreadNumberMap::const_iterator iter = m_ThreadNumberMap.find( threadId );
-    unsigned int    threadNumber = 0;
+    uint32_t    threadNumber = 0;
 
     if( iter != m_ThreadNumberMap.end() )
     {
@@ -3682,12 +3684,12 @@ inline unsigned int CLIntercept::getThreadNumber( uint64_t threadId )
     }
     else
     {
-        threadNumber = (unsigned int)m_ThreadNumberMap.size();
+        threadNumber = static_cast<uint32_t>(m_ThreadNumberMap.size());
         m_ThreadNumberMap[ threadId ] = threadNumber;
 
         if( m_Config.ChromeCallLogging )
         {
-            m_ChromeTrace.addThreadMetadata( threadId, threadNumber );
+            m_ChromeTrace.addThreadMetadata( threadName, threadId, threadNumber );
         }
     }
 

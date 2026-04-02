@@ -686,13 +686,17 @@ bool CLIntercept::init()
 //
 void CLIntercept::processingThreadFunc( CLIntercept* pIntercept )
 {
+    // This names the processing thread.
+    uint64_t    threadId = pIntercept->OS().GetThreadID();
+    pIntercept->getThreadNumber( "Host Processing Thread", threadId );
+
     while( true )
     {
         // Note: We need to check whether processing is done while holding the
         // processing condition lock.  This avoids a deadlock in the case where
-        // this processing thread checks the done flag and gets interrupted,
-        // then the main thread sets the done flag and notifies this processing
-        // thread, then this processing thread waits on the notification that
+        // the processing thread checks the done flag and gets interrupted, then
+        // the main thread sets the done flag and notifies this processing
+        // thread, then the processing thread waits on the notification that
         // will never come.
         {
             std::unique_lock<std::mutex> lock( pIntercept->m_ProcessingConditionMutex );
@@ -1157,7 +1161,7 @@ void CLIntercept::getCallLoggingPrefix(
         }
         if( m_Config.CallLoggingThreadNumber )
         {
-            unsigned int    threadNumber = getThreadNumber( threadId );
+            uint32_t    threadNumber = getThreadNumber( "Host Thread", threadId );
             ss << "TNum = ";
             ss << threadNumber;
             ss << " ";
@@ -14616,7 +14620,7 @@ void CLIntercept::chromeCallLoggingExit(
     uint64_t    threadId = OS().GetThreadID();
 
     // This will name the thread if it is not named already.
-    getThreadNumber( threadId );
+    getThreadNumber( "Host Thread", threadId );
 
     using ns = std::chrono::nanoseconds;
     uint64_t    nsStart =
