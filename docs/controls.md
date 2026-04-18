@@ -443,6 +443,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will only
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will omit the program number from dumped file names and hash tracking.  This can produce deterministic results even if programs are built in a non-deterministic order (say, by multiple threads).
 
+##### `OmitCompileCount` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will omit the compile count from dumped file names and hash tracking.  This can reduce the number of files that are dumped if the same program is compiled multiple times.
+
 ##### `SimpleDumpProgramSource` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump the last string(s) passed to clCreateProgramWithSource() to the file kernel.cl, and the last program options passed to clBuildProgram() to the file kernel.txt.  These files will be dumped to the application's working directory.  If an application fails to compile a program and exits the program immediately after detecting a compile failure SimpleDumpProgram may be all that is needed to identify the program and program options that are failing to compile.

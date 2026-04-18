@@ -1128,6 +1128,9 @@ private:
     typedef std::map< cl_program, SProgramInfo >    CProgramInfoMap;
     CProgramInfoMap m_ProgramInfoMap;
 
+    std::string getProgramInfoHashString(
+                    const SProgramInfo& kernelInfo) const;
+
     struct SHostTimingStats
     {
         uint64_t    NumberOfCalls = 0;
@@ -1226,6 +1229,9 @@ private:
 
     typedef std::map< cl_kernel, SKernelInfo >  CKernelInfoMap;
     CKernelInfoMap  m_KernelInfoMap;
+
+    std::string getKernelInfoHashString(
+                    const SKernelInfo& kernelInfo) const;
 
     // This defines a mapping between the "real" kernel name and a kernel
     // name ID.  Only kernels with names larger than a control variable
@@ -3671,23 +3677,7 @@ inline std::string CLIntercept::getShortKernelNameWithHash(
     if( config().KernelNameHashTracking )
     {
         const SKernelInfo& kernelInfo = m_KernelInfoMap[ kernel ];
-
-        char    hashString[256] = "";
-        if( config().OmitProgramNumber )
-        {
-            CLI_SPRINTF( hashString, 256, "$%08X_%04u_%08X",
-                (unsigned int)kernelInfo.ProgramHash,
-                kernelInfo.CompileCount,
-                (unsigned int)kernelInfo.OptionsHash );
-        }
-        else
-        {
-            CLI_SPRINTF( hashString, 256, "$%04u_%08X_%04u_%08X",
-                kernelInfo.ProgramNumber,
-                (unsigned int)kernelInfo.ProgramHash,
-                kernelInfo.CompileCount,
-                (unsigned int)kernelInfo.OptionsHash );
-        }
+        std::string hashString = getKernelInfoHashString( kernelInfo );
 
         name += hashString;
     }
@@ -4020,6 +4010,80 @@ inline void CLIntercept::logCL_GLTextureDetails( cl_mem image, cl_GLenum target,
         }
     }
 #endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+inline std::string CLIntercept::getProgramInfoHashString(
+    const SProgramInfo& programInfo) const
+{
+    char    hashString[256] = "";
+    if( config().OmitProgramNumber && config().OmitCompileCount )
+    {
+        CLI_SPRINTF( hashString, 256, "%08X_%08X",
+            (unsigned int)programInfo.ProgramHash,
+            (unsigned int)programInfo.OptionsHash );
+    }
+    else if( config().OmitProgramNumber )
+    {
+        CLI_SPRINTF( hashString, 256, "%08X_%04u_%08X",
+            (unsigned int)programInfo.ProgramHash,
+            programInfo.CompileCount,
+            (unsigned int)programInfo.OptionsHash );
+    }
+    else if( config().OmitCompileCount )
+    {
+        CLI_SPRINTF( hashString, 256, "%04u_%08X_%08X",
+            programInfo.ProgramNumber,
+            (unsigned int)programInfo.ProgramHash,
+            (unsigned int)programInfo.OptionsHash );
+    }
+    else
+    {
+        CLI_SPRINTF( hashString, 256, "%04u_%08X_%04u_%08X",
+            programInfo.ProgramNumber,
+            (unsigned int)programInfo.ProgramHash,
+            programInfo.CompileCount,
+            (unsigned int)programInfo.OptionsHash );
+    }
+
+    return hashString;
+}
+
+inline std::string CLIntercept::getKernelInfoHashString(
+    const SKernelInfo& kernelInfo) const
+{
+    char    hashString[256] = "";
+    if( config().OmitProgramNumber && config().OmitCompileCount )
+    {
+        CLI_SPRINTF( hashString, 256, "%08X_%08X",
+            (unsigned int)kernelInfo.ProgramHash,
+            (unsigned int)kernelInfo.OptionsHash );
+    }
+    else if( config().OmitProgramNumber )
+    {
+        CLI_SPRINTF( hashString, 256, "%08X_%04u_%08X",
+            (unsigned int)kernelInfo.ProgramHash,
+            kernelInfo.CompileCount,
+            (unsigned int)kernelInfo.OptionsHash );
+    }
+    else if( config().OmitCompileCount )
+    {
+        CLI_SPRINTF( hashString, 256, "%04u_%08X_%08X",
+            kernelInfo.ProgramNumber,
+            (unsigned int)kernelInfo.ProgramHash,
+            (unsigned int)kernelInfo.OptionsHash );
+    }
+    else
+    {
+        CLI_SPRINTF( hashString, 256, "%04u_%08X_%04u_%08X",
+            kernelInfo.ProgramNumber,
+            (unsigned int)kernelInfo.ProgramHash,
+            kernelInfo.CompileCount,
+            (unsigned int)kernelInfo.OptionsHash );
+    }
+
+    return hashString;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

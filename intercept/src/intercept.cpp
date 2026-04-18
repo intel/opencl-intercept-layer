@@ -3308,27 +3308,11 @@ void CLIntercept::logBuild(
         errorCode == CL_SUCCESS )
     {
         const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
-
-        char    numberString[256] = "";
-        if( config().OmitProgramNumber )
-        {
-            CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X",
-                (unsigned int)programInfo.ProgramHash,
-                programInfo.CompileCount,
-                (unsigned int)programInfo.OptionsHash );
-        }
-        else
-        {
-            CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X",
-                programInfo.ProgramNumber,
-                (unsigned int)programInfo.ProgramHash,
-                programInfo.CompileCount,
-                (unsigned int)programInfo.OptionsHash );
-        }
+        std::string hashString = getProgramInfoHashString( programInfo );
 
         logf( "Build Info for program %p (%s) for %u device(s):\n",
             program,
-            numberString,
+            hashString.c_str(),
             numDevices );
 
         float   buildTimeMS = buildDuration.count();
@@ -5364,26 +5348,10 @@ void CLIntercept::dumpProgramOptions(
         //   CLI_<program number>_<program hash>_<compile count>_<options hash>
         // Leave off the extension for now.
         {
-            char    numberString[256] = "";
-
-            if( config().OmitProgramNumber )
-            {
-                CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X",
-                    (unsigned int)programInfo.ProgramHash,
-                    programInfo.CompileCount,
-                    (unsigned int)programInfo.OptionsHash );
-            }
-            else
-            {
-                CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X",
-                    programInfo.ProgramNumber,
-                    (unsigned int)programInfo.ProgramHash,
-                    programInfo.CompileCount,
-                    (unsigned int)programInfo.OptionsHash );
-            }
+            std::string hashString = getProgramInfoHashString( programInfo );
 
             fileName += "/CLI_";
-            fileName += numberString;
+            fileName += hashString;
         }
 
         // Now make directories as appropriate.
@@ -5433,26 +5401,10 @@ void CLIntercept::dumpProgramBuildLog(
     //   CLI_<program number>_<program hash>_<compile count>_<options hash>
     // Leave off the extension for now.
     {
-        char    numberString[256] = "";
-
-        if( config().OmitProgramNumber )
-        {
-            CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X",
-                (unsigned int)programInfo.ProgramHash,
-                programInfo.CompileCount,
-                (unsigned int)programInfo.OptionsHash );
-        }
-        else
-        {
-            CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X",
-                programInfo.ProgramNumber,
-                (unsigned int)programInfo.ProgramHash,
-                programInfo.CompileCount,
-                (unsigned int)programInfo.OptionsHash );
-        }
+        std::string hashString = getProgramInfoHashString( programInfo );
 
         fileName += "/CLI_";
-        fileName += numberString;
+        fileName += hashString;
     }
     // Now make directories as appropriate.
     {
@@ -10390,26 +10342,10 @@ void CLIntercept::dumpProgramBinary(
     //   CLI_<program number>_<program hash>_<compile count>_<options hash>
     // Leave off the extension for now.
     {
-        char    numberString[256] = "";
-
-        if( config().OmitProgramNumber )
-        {
-            CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X",
-                (unsigned int)programInfo.ProgramHash,
-                programInfo.CompileCount,
-                (unsigned int)programInfo.OptionsHash );
-        }
-        else
-        {
-            CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X",
-                programInfo.ProgramNumber,
-                (unsigned int)programInfo.ProgramHash,
-                programInfo.CompileCount,
-                (unsigned int)programInfo.OptionsHash );
-        }
+        std::string hashString = getProgramInfoHashString( programInfo );
 
         fileName += "/CLI_";
-        fileName += numberString;
+        fileName += hashString;
     }
     // Now make directories as appropriate.
     {
@@ -10630,26 +10566,10 @@ void CLIntercept::dumpKernelISABinaries(
         //   CLI_<program number>_<program hash>_<compile count>_<options hash>_<device type>_<kernel name>.isabin
         // We'll fill in the device type and kernel name later.
         {
-            char    numberString[256] = "";
-
-            if( config().OmitProgramNumber )
-            {
-                CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X_",
-                    (unsigned int)programInfo.ProgramHash,
-                    programInfo.CompileCount,
-                    (unsigned int)programInfo.OptionsHash );
-            }
-            else
-            {
-                CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X_",
-                    programInfo.ProgramNumber,
-                    (unsigned int)programInfo.ProgramHash,
-                    programInfo.CompileCount,
-                    (unsigned int)programInfo.OptionsHash );
-            }
+            std::string hashString = getProgramInfoHashString( programInfo );
 
             fileNamePrefix += "/CLI_";
-            fileNamePrefix += numberString;
+            fileNamePrefix += hashString;
         }
         // Now make directories as appropriate.
         {
@@ -10924,27 +10844,11 @@ void CLIntercept::autoCreateSPIRV(
     // Make the output file name.  It will have the form:
     //   CLI_<program number>_<program hash>_<compile count>_<options hash>.spv
     {
-        char    numberString[256] = "";
-
-        if( config().OmitProgramNumber )
-        {
-            CLI_SPRINTF( numberString, 256, "%08X_%04u_%08X",
-                (unsigned int)programInfo.ProgramHash,
-                programInfo.CompileCount,
-                (unsigned int)programInfo.OptionsHash );
-        }
-        else
-        {
-            CLI_SPRINTF( numberString, 256, "%04u_%08X_%04u_%08X",
-                programInfo.ProgramNumber,
-                (unsigned int)programInfo.ProgramHash,
-                programInfo.CompileCount,
-                (unsigned int)programInfo.OptionsHash );
-        }
+        std::string hashString = getProgramInfoHashString( programInfo );
 
         outputFileName = dumpDirectoryName;
         outputFileName += "/CLI_";
-        outputFileName += numberString;
+        outputFileName += hashString;
         outputFileName += ".spv";
     }
 
@@ -14769,30 +14673,11 @@ bool CLIntercept::checkCaptureReplayKernelSkips( const cl_kernel kernel )
         m_Config.CaptureReplayUniqueKernels )
     {
         const SKernelInfo& kernelInfo = m_KernelInfoMap[ kernel ];
+        std::string hashString = getKernelInfoHashString( kernelInfo );
 
         // Note: This currently uses the long kernel name.
         // Should it be the short kernel name instead?
-        std::string key = kernelInfo.KernelName;
-
-        {
-            char    hashString[256] = "";
-            if( config().OmitProgramNumber )
-            {
-                CLI_SPRINTF( hashString, 256, "(%08X_%04u_%08X)",
-                    (unsigned int)kernelInfo.ProgramHash,
-                    kernelInfo.CompileCount,
-                    (unsigned int)kernelInfo.OptionsHash );
-            }
-            else
-            {
-                CLI_SPRINTF( hashString, 256, "(%04u_%08X_%04u_%08X)",
-                    kernelInfo.ProgramNumber,
-                    (unsigned int)kernelInfo.ProgramHash,
-                    kernelInfo.CompileCount,
-                    (unsigned int)kernelInfo.OptionsHash );
-            }
-            key += hashString;
-        }
+        std::string key = kernelInfo.KernelName + "(" + hashString + ")";
 
         if( m_CaptureReplaySet.find( key ) == m_CaptureReplaySet.end() )
         {
@@ -14912,30 +14797,11 @@ bool CLIntercept::checkAubCaptureKernelSignature(
         m_Config.AubCaptureUniqueKernels )
     {
         const SKernelInfo& kernelInfo = m_KernelInfoMap[ kernel ];
+        std::string hashString = getKernelInfoHashString( kernelInfo );
 
         // Note: This currently uses the long kernel name.
         // Should it be the short kernel name instead?
-        std::string key = kernelInfo.KernelName;
-
-        {
-            char    hashString[256] = "";
-            if( config().OmitProgramNumber )
-            {
-                CLI_SPRINTF( hashString, 256, "(%08X_%04u_%08X)",
-                    (unsigned int)kernelInfo.ProgramHash,
-                    kernelInfo.CompileCount,
-                    (unsigned int)kernelInfo.OptionsHash );
-            }
-            else
-            {
-                CLI_SPRINTF( hashString, 256, "(%04u_%08X_%04u_%08X)",
-                    kernelInfo.ProgramNumber,
-                    (unsigned int)kernelInfo.ProgramHash,
-                    kernelInfo.CompileCount,
-                    (unsigned int)kernelInfo.OptionsHash );
-            }
-            key += hashString;
-        }
+        std::string key = kernelInfo.KernelName + "(" + hashString + ")";
 
         if( gws )
         {
