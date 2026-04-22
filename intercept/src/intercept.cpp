@@ -4301,63 +4301,46 @@ bool CLIntercept::injectProgramSource(
 
     bool    injected = false;
 
-    std::string fileName;
+    std::string dir;
 
     // Get the dump directory name.
     {
-        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, fileName );
-        fileName += "/Inject";
+        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, dir );
+        dir += "/Inject";
     }
 
     // Make two candidate file names.  They will have the form:
     //   CLI_<program number>_<hash>_source.cl, or
     //   CLI_<hash>_source.cl
     {
-        char    numberString1[256] = "";
-        CLI_SPRINTF( numberString1, 256, "%04u_%08X",
+        char    numberString1[64] = "";
+        CLI_SPRINTF( numberString1, 64, "%04u_%08X",
             m_ProgramNumber,
             (unsigned int)hash );
 
-        char    numberString2[256] = "";
-        CLI_SPRINTF( numberString2, 256, "%08X",
+        char    numberString2[64] = "";
+        CLI_SPRINTF( numberString2, 64, "%08X",
             (unsigned int)hash );
 
-        std::string fileName1;
-        fileName1 = fileName;
-        fileName1 += "/CLI_";
-        fileName1 += numberString1;
-        fileName1 += "_source.cl";
+        std::vector<std::string> candidates;
 
-        std::string fileName2;
-        fileName2 = fileName;
-        fileName2 += "/CLI_";
-        fileName2 += numberString2;
-        fileName2 += "_source.cl";
+        candidates.push_back(dir + "/CLI_" + numberString1 + "_source.cl");
+        candidates.push_back(dir + "/CLI_" + numberString2 + "_source.cl");
 
         std::ifstream is;
 
-        is.open(
-            fileName1.c_str(),
-            std::ios::in | std::ios::binary );
-        if( is.good() )
+        for( const auto& fileName : candidates )
         {
-            log( "Injecting source file: " + fileName1 + "\n" );
-        }
-        else
-        {
-            log( "Injection source file doesn't exist: " + fileName1 + "\n" );
-
             is.clear();
-            is.open(
-                fileName2.c_str(),
-                std::ios::in | std::ios::binary );
+            is.open(fileName, std::ios::in | std::ios::binary );
             if( is.good() )
             {
-                log( "Injecting source file: " + fileName2 + "\n" );
+                log( "Injecting source file: " + fileName + "\n" );
+                break;
             }
             else
             {
-                log( "Injection source file doesn't exist: " + fileName2 + "\n" );
+                log( "Injection source file doesn't exist: " + fileName + "\n" );
             }
         }
 
@@ -4411,12 +4394,12 @@ bool CLIntercept::prependProgramSource(
 
     bool    injected = false;
 
-    std::string fileName;
+    std::string dir;
 
     // Get the dump directory name.
     {
-        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, fileName );
-        fileName += "/Inject";
+        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, dir );
+        dir += "/Inject";
     }
 
     // Make three candidate file names.  They will have the form:
@@ -4424,68 +4407,35 @@ bool CLIntercept::prependProgramSource(
     //   CLI_<hash>_prepend.cl, or
     //   CLI_prepend.cl
     {
-        char    numberString1[256] = "";
-        CLI_SPRINTF( numberString1, 256, "%04u_%08X",
+        char    numberString1[64] = "";
+        CLI_SPRINTF( numberString1, 64, "%04u_%08X",
             m_ProgramNumber,
             (unsigned int)hash );
 
-        char    numberString2[256] = "";
-        CLI_SPRINTF( numberString2, 256, "%08X",
+        char    numberString2[64] = "";
+        CLI_SPRINTF( numberString2, 64, "%08X",
             (unsigned int)hash );
 
-        std::string fileName1;
-        fileName1 = fileName;
-        fileName1 += "/CLI_";
-        fileName1 += numberString1;
-        fileName1 += "_prepend.cl";
+        std::vector<std::string> candidates;
 
-        std::string fileName2;
-        fileName2 = fileName;
-        fileName2 += "/CLI_";
-        fileName2 += numberString2;
-        fileName2 += "_prepend.cl";
-
-        std::string fileName3;
-        fileName3 = fileName;
-        fileName3 += "/CLI_prepend.cl";
+        candidates.push_back(dir + "/CLI_" + numberString1 + "_prepend.cl");
+        candidates.push_back(dir + "/CLI_" + numberString2 + "_prepend.cl");
+        candidates.push_back(dir + "/CLI_prepend.cl");
 
         std::ifstream is;
 
-        is.open(
-            fileName1.c_str(),
-            std::ios::in | std::ios::binary );
-        if( is.good() )
+        for( const auto& fileName : candidates )
         {
-            log( "Prepending source file: " + fileName1 + "\n" );
-        }
-        else
-        {
-            log( "Prepend source file doesn't exist: " + fileName1 + "\n" );
-
             is.clear();
-            is.open(
-                fileName2.c_str(),
-                std::ios::in | std::ios::binary );
+            is.open(fileName, std::ios::in | std::ios::binary );
             if( is.good() )
             {
-                log( "Prepending source file: " + fileName2 + "\n" );
+                log( "Prepending source file: " + fileName + "\n" );
+                break;
             }
             else
             {
-                log( "Prepend source file doesn't exist: " + fileName2 + "\n" );
-
-                is.clear();
-                is.open(
-                    fileName3.c_str(),
-                    std::ios::in | std::ios::binary );
-                if( is.good() )
-                {
-                    log( "Prepending source file: " + fileName3 + "\n" );
-                }
-                else
-                {
-                    log( "Prepend source file doesn't exist: " + fileName3 + "\n" );
-                }
+                log( "Prepending source file doesn't exist: " + fileName + "\n" );
             }
         }
 
@@ -4541,63 +4491,46 @@ bool CLIntercept::injectProgramSPIRV(
 
     bool    injected = false;
 
-    std::string fileName;
+    std::string dir;
 
     // Get the dump directory name.
     {
-        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, fileName );
-        fileName += "/Inject";
+        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, dir );
+        dir += "/Inject";
     }
 
     // Make two candidate file names.  They will have the form:
     //   CLI_<program number>_<hash>_0000.spv, or
     //   CLI_<hash>_0000.spv
     {
-        char    numberString1[256] = "";
-        CLI_SPRINTF( numberString1, 256, "%04u_%08X_0000",
+        char    numberString1[64] = "";
+        CLI_SPRINTF( numberString1, 64, "%04u_%08X_0000",
             m_ProgramNumber,
             (unsigned int)hash );
 
-        char    numberString2[256] = "";
-        CLI_SPRINTF( numberString2, 256, "%08X_0000",
+        char    numberString2[64] = "";
+        CLI_SPRINTF( numberString2, 64, "%08X_0000",
             (unsigned int)hash );
 
-        std::string fileName1;
-        fileName1 = fileName;
-        fileName1 += "/CLI_";
-        fileName1 += numberString1;
-        fileName1 += ".spv";
+        std::vector<std::string> candidates;
 
-        std::string fileName2;
-        fileName2 = fileName;
-        fileName2 += "/CLI_";
-        fileName2 += numberString2;
-        fileName2 += ".spv";
+        candidates.push_back(dir + "/CLI_" + numberString1 + ".spv");
+        candidates.push_back(dir + "/CLI_" + numberString2 + ".spv");
 
         std::ifstream is;
 
-        is.open(
-            fileName1.c_str(),
-            std::ios::in | std::ios::binary );
-        if( is.good() )
+        for( const auto& fileName : candidates )
         {
-            log( "Injecting SPIR-V file: " + fileName1 + "\n" );
-        }
-        else
-        {
-            log( "Injection SPIR-V file doesn't exist: " + fileName1 + "\n" );
-
             is.clear();
-            is.open(
-                fileName2.c_str(),
-                std::ios::in | std::ios::binary );
+            is.open(fileName, std::ios::in | std::ios::binary );
             if( is.good() )
             {
-                log( "Injecting SPIR-V file: " + fileName2 + "\n" );
+                log( "Injecting SPIR-V file: " + fileName + "\n" );
+                break;
             }
             else
             {
-                log( "Injection SPIR-V file doesn't exist: " + fileName2 + "\n" );
+                log( "Injection SPIR-V file doesn't exist: " + fileName + "\n" );
             }
         }
 
@@ -4644,34 +4577,41 @@ bool CLIntercept::injectProgramOptions(
 
     const SProgramInfo& programInfo = m_ProgramInfoMap[ program ];
 
-    std::string fileName;
+    std::string dir;
 
     // Get the dump directory name.
     {
-        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, fileName );
-        fileName += "/Inject";
+        OS().GetDumpDirectoryNameWithoutPid( sc_DumpDirectoryName, dir );
+        dir += "/Inject";
     }
-    // Make four candidate file names.  They will have the form:
+
+    // Make five candidate file names.  They will have the form:
     //   CLI_<program number>_<program hash>_<compile count>_<options hash>_options.txt, or
     //   CLI_<program hash>_<compile count>_<options hash>_options.txt, or
+    //   CLI_<program hash>_<options hash>_options.txt, or
     //   CLI_<program hash>_options.txt, or
     //   CLI_options.txt
     {
-        char    numberString1[256] = "";
-        CLI_SPRINTF( numberString1, 256, "%04u_%08X_%04u_%08X",
+        char    numberString1[64] = "";
+        CLI_SPRINTF( numberString1, 64, "%04u_%08X_%04u_%08X",
             programInfo.ProgramNumber,
             (unsigned int)programInfo.ProgramHash,
             programInfo.CompileCount,
             (unsigned int)programInfo.OptionsHash );
 
-        char    numberString2[256] = "";
-        CLI_SPRINTF( numberString2, 256, "%08X_%04u_%08X",
+        char    numberString2[64] = "";
+        CLI_SPRINTF( numberString2, 64, "%08X_%04u_%08X",
             (unsigned int)programInfo.ProgramHash,
             programInfo.CompileCount,
             (unsigned int)programInfo.OptionsHash );
 
-        char    numberString3[256] = "";
-        CLI_SPRINTF( numberString3, 256, "%08X",
+        char    numberString3[64] = "";
+        CLI_SPRINTF( numberString3, 64, "%08X_%08X",
+            (unsigned int)programInfo.ProgramHash,
+            (unsigned int)programInfo.OptionsHash );
+
+        char    numberString4[64] = "";
+        CLI_SPRINTF( numberString4, 64, "%08X",
             (unsigned int)programInfo.ProgramHash );
 
         const std::string suffix =
@@ -4679,78 +4619,28 @@ bool CLIntercept::injectProgramOptions(
             isLink ? "_link_options.txt" :
             "_options.txt";
 
-        std::string fileName1;
-        fileName1 = fileName;
-        fileName1 += "/CLI_";
-        fileName1 += numberString1;
-        fileName1 += suffix;
+        std::vector<std::string> candidates;
 
-        std::string fileName2;
-        fileName2 = fileName;
-        fileName2 += "/CLI_";
-        fileName2 += numberString2;
-        fileName2 += suffix;
-
-        std::string fileName3;
-        fileName3 = fileName;
-        fileName3 += "/CLI_";
-        fileName3 += numberString3;
-        fileName3 += suffix;
-
-        std::string fileName4;
-        fileName4 = fileName;
-        fileName4 += suffix;
+        candidates.push_back(dir + "/CLI_" + numberString1 + suffix);
+        candidates.push_back(dir + "/CLI_" + numberString2 + suffix);
+        candidates.push_back(dir + "/CLI_" + numberString3 + suffix);
+        candidates.push_back(dir + "/CLI_" + numberString4 + suffix);
+        candidates.push_back(dir + "/CLI" + suffix);
 
         std::ifstream is;
 
-        is.open(
-            fileName1.c_str(),
-            std::ios::in | std::ios::binary );
-        if( is.good() )
+        for( const auto& fileName : candidates )
         {
-            log( "Injecting options file: " + fileName1 + "\n" );
-        }
-        else
-        {
-            log( "Injection options file doesn't exist: " + fileName1 + "\n" );
-
             is.clear();
-            is.open(
-                fileName2.c_str(),
-                std::ios::in | std::ios::binary );
+            is.open(fileName, std::ios::in | std::ios::binary );
             if( is.good() )
             {
-                log( "Injecting options file: " + fileName2 + "\n" );
+                log( "Injecting options file: " + fileName + "\n" );
+                break;
             }
             else
             {
-                log( "Injection options file doesn't exist: " + fileName2 + "\n" );
-
-                is.clear();
-                is.open(
-                    fileName3.c_str(),
-                    std::ios::in | std::ios::binary );
-                if( is.good() )
-                {
-                    log( "Injecting options file: " + fileName3 + "\n" );
-                }
-                else
-                {
-                    log( "Injection options file doesn't exist: " + fileName3 + "\n" );
-
-                    is.clear();
-                    is.open(
-                        fileName4.c_str(),
-                        std::ios::in | std::ios::binary );
-                    if( is.good() )
-                    {
-                        log( "Injecting options file: " + fileName4 + "\n" );
-                    }
-                    else
-                    {
-                        log( "Injection options file doesn't exist: " + fileName4 + "\n" );
-                    }
-                }
+                log( "Injection options file doesn't exist: " + fileName + "\n" );
             }
         }
 
@@ -10116,13 +10006,13 @@ cl_program CLIntercept::createProgramWithInjectionBinaries(
         //   CLI_<hash>_0000
         // Leave off the extension for now.
         {
-            char    numberString1[256] = "";
-            CLI_SPRINTF( numberString1, 256, "%04u_%08X_0000",
+            char    numberString1[64] = "";
+            CLI_SPRINTF( numberString1, 64, "%04u_%08X_0000",
                 m_ProgramNumber,
                 (unsigned int)hash );
 
-            char    numberString2[256] = "";
-            CLI_SPRINTF( numberString2, 256, "%08X_0000",
+            char    numberString2[64] = "";
+            CLI_SPRINTF( numberString2, 64, "%08X_0000",
                 (unsigned int)hash );
 
             fileName1 = fileName;
@@ -10690,67 +10580,50 @@ cl_program CLIntercept::createProgramWithInjectionSPIRV(
     // the entry point to create a program with IL.
     if( dispatch().clCreateProgramWithIL == NULL )
     {
-        log( "Aborting InjectProgramSPIRV because clCreateProgramWithIL is NULL!\n" );
+        log( "Skipping InjectProgramSPIRV because clCreateProgramWithIL is NULL!\n" );
     }
     else
     {
-        std::string fileName;
+        std::string dir;
 
         // Get the dump directory name.
         {
-            OS().GetDumpDirectoryNameWithoutPid(sc_DumpDirectoryName, fileName);
-            fileName += "/Inject";
+            OS().GetDumpDirectoryNameWithoutPid(sc_DumpDirectoryName, dir);
+            dir += "/Inject";
         }
 
-        // Make three candidate file names.  They will have the form:
+        // Make two candidate file names.  They will have the form:
         //   CLI_<program number>_<hash>_0000.spv, or
         //   CLI_<hash>_0000.spv
         {
-            char    numberString1[256] = "";
-            CLI_SPRINTF(numberString1, 256, "%04u_%08X_0000",
+            char    numberString1[64] = "";
+            CLI_SPRINTF(numberString1, 64, "%04u_%08X_0000",
                 m_ProgramNumber,
                 (unsigned int)hash);
 
-            char    numberString2[256] = "";
-            CLI_SPRINTF(numberString2, 256, "%08X_0000",
+            char    numberString2[64] = "";
+            CLI_SPRINTF(numberString2, 64, "%08X_0000",
                 (unsigned int)hash);
 
-            std::string fileName1;
-            fileName1 = fileName;
-            fileName1 += "/CLI_";
-            fileName1 += numberString1;
-            fileName1 += ".spv";
+            std::vector<std::string> candidates;
 
-            std::string fileName2;
-            fileName2 = fileName;
-            fileName2 += "/CLI_";
-            fileName2 += numberString2;
-            fileName2 += ".spv";
+            candidates.push_back(dir + "/CLI_" + numberString1 + ".spv");
+            candidates.push_back(dir + "/CLI_" + numberString2 + ".spv");
 
             std::ifstream is;
 
-            is.open(
-                fileName1.c_str(),
-                std::ios::in | std::ios::binary);
-            if( is.good() )
+            for( const auto& fileName : candidates )
             {
-                log("Injecting SPIR-V file: " + fileName1 + "\n");
-            }
-            else
-            {
-                log("Injection SPIR-V file doesn't exist: " + fileName1 + "\n");
-
                 is.clear();
-                is.open(
-                    fileName2.c_str(),
-                    std::ios::in | std::ios::binary);
+                is.open(fileName, std::ios::in | std::ios::binary );
                 if( is.good() )
                 {
-                    log("Injecting SPIR-V file: " + fileName2 + "\n");
+                    log( "Injecting SPIR-V file: " + fileName + "\n" );
+                    break;
                 }
                 else
                 {
-                    log("Injection SPIR-V file doesn't exist: " + fileName2 + "\n");
+                    log( "Injection SPIR-V file doesn't exist: " + fileName + "\n" );
                 }
             }
 
@@ -10763,31 +10636,24 @@ cl_program CLIntercept::createProgramWithInjectionSPIRV(
                 filesize = (size_t)is.tellg();
                 is.seekg( 0, std::ios::beg );
 
-                char*   newILBinary = new char[ filesize ];
-                if( newILBinary == NULL )
-                {
-                    CLI_ASSERT( 0 );
-                }
-                else
-                {
-                    is.read(newILBinary, filesize);
+                std::vector<char> newILBinary;
+                newILBinary.resize(filesize);
 
-                    // Right now, this can still die in the ICD loader if the ICD loader
-                    // exports this entry point but the vendor didn't implement it.  It
-                    // would be nice to enhance the ICD loader so it called into a safe
-                    // stub function if the vendor didn't implement an entry point...
-                    program = dispatch().clCreateProgramWithIL(
-                        context,
-                        newILBinary,
-                        filesize,
-                        errcode_ret );
-                    if( program )
-                    {
-                        logf("Injection successful: clCreateProgramWithIL() returned %p\n",
-                            program );
-                    }
+                is.read(newILBinary.data(), filesize);
 
-                    delete[] newILBinary;
+                // Right now, this can still die in the ICD loader if the ICD loader
+                // exports this entry point but the vendor didn't implement it.  It
+                // would be nice to enhance the ICD loader so it called into a safe
+                // stub function if the vendor didn't implement an entry point...
+                program = dispatch().clCreateProgramWithIL(
+                    context,
+                    newILBinary.data(),
+                    filesize,
+                    errcode_ret );
+                if( program )
+                {
+                    logf("Injection successful: clCreateProgramWithIL() returned %p\n",
+                        program );
                 }
 
                 is.close();
