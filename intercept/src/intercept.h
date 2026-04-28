@@ -3679,6 +3679,7 @@ inline std::string CLIntercept::getShortKernelNameWithHash(
         const SKernelInfo& kernelInfo = m_KernelInfoMap[ kernel ];
         std::string hashString = getKernelInfoHashString( kernelInfo );
 
+        name += '$';
         name += hashString;
     }
 
