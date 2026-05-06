@@ -5876,13 +5876,30 @@ void CLIntercept::getTimingTagsKernel(
             size_t  suggestedLWS[3] = { 0, 0, 0 };
             size_t  emptyGWO[3] = { 0, 0, 0 };
 
-            if( lws == NULL &&
+            if( config().DevicePerformanceTimeSuggestedLWSTracking &&
+                lws == NULL &&
                 workDim <= 3 &&
-                config().DevicePerformanceTimeSuggestedLWSTracking )
+                device )
             {
+                // Try the OpenCL 3.1 core API first.
+                const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
+                if( useSuggestedLWS == false &&
+                    deviceInfo.NumericVersion >= CL_MAKE_VERSION_KHR(3, 1, 0) &&
+                    dispatch().clGetKernelSuggestedLocalWorkSize )
+                {
+                    cl_int testErrorCode = dispatch().clGetKernelSuggestedLocalWorkSize(
+                        queue,
+                        kernel,
+                        workDim,
+                        gwo,
+                        gws,
+                        suggestedLWS );
+                    useSuggestedLWS = ( testErrorCode == CL_SUCCESS );
+                }
+
                 cl_platform_id  platform = getPlatform(device);
 
-                // Try the cl_khr_suggested_local_work_size version first.
+                // Try the cl_khr_suggested_local_work_size version next.
                 if( useSuggestedLWS == false )
                 {
                     if( dispatchX(platform).clGetKernelSuggestedLocalWorkSizeKHR == NULL )
