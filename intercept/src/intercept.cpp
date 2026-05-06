@@ -13795,6 +13795,9 @@ bool CLIntercept::initDispatch( const std::string& libName )
         INIT_EXPORTED_FUNC(clCreateImageWithProperties);
         INIT_EXPORTED_FUNC(clSetContextDestructorCallback);
 
+        // OpenCL 3.1 Entry Points (optional)
+        INIT_EXPORTED_FUNC(clGetKernelSuggestedLocalWorkSize);
+
         success = savedSuccess;
     }
 

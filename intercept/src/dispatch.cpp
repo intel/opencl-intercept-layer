@@ -7559,6 +7559,47 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// OpenCL 3.1
+CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSize(
+    cl_command_queue commandQueue,
+    cl_kernel kernel,
+    cl_uint workDim,
+    const size_t *globalWorkOffset,
+    const size_t *globalWorkSize,
+    size_t *suggestedLocalWorkSize)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept && pIntercept->dispatch().clGetKernelSuggestedLocalWorkSize )
+    {
+        GET_ENQUEUE_COUNTER();
+        CALL_LOGGING_ENTER_KERNEL(
+            kernel,
+            "queue = %p, kernel = %p",
+            commandQueue,
+            kernel );
+        HOST_PERFORMANCE_TIMING_START();
+
+        cl_int retVal = pIntercept->dispatch().clGetKernelSuggestedLocalWorkSize(
+            commandQueue,
+            kernel,
+            workDim,
+            globalWorkOffset,
+            globalWorkSize,
+            suggestedLocalWorkSize );
+
+        HOST_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
+
+        return retVal;
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_khr_external_memory
 CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireExternalMemObjectsKHR(
     cl_command_queue command_queue,
