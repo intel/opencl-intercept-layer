@@ -2975,6 +2975,7 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
           pIntercept->config().DumpProgramBuildLogs ||                      \
           pIntercept->config().DumpKernelISABinaries ||                     \
           pIntercept->config().InjectProgramBinaries ||                     \
+          pIntercept->config().InjectProgramBinariesForBinary ||             \
           pIntercept->config().AubCaptureUniqueKernels ||                   \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \
