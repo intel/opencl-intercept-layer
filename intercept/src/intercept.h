@@ -2820,7 +2820,6 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
         pIntercept->config().DumpProgramSPIRV ||                            \
         pIntercept->config().DumpProgramBuildLogs ||                        \
         pIntercept->config().DumpKernelISABinaries ||                       \
-        pIntercept->config().InjectProgramSource ||                         \
         pIntercept->config().AutoCreateSPIRV ||                             \
         pIntercept->config().AubCaptureUniqueKernels )                      \
     {                                                                       \
@@ -2975,7 +2974,6 @@ inline bool CLIntercept::checkAubCaptureEnqueueLimits(
           pIntercept->config().DumpProgramBuildLogs ||                      \
           pIntercept->config().DumpKernelISABinaries ||                     \
           pIntercept->config().InjectProgramBinaries ||                     \
-          pIntercept->config().InjectProgramBinariesForBinary ||             \
           pIntercept->config().AubCaptureUniqueKernels ||                   \
           pIntercept->config().CaptureReplay ) )                            \
     {                                                                       \

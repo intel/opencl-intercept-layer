@@ -2049,12 +2049,16 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBinary)(
                 errcode_ret[0] = CL_INVALID_BINARY;
             }
         }
-        else if( pIntercept->config().InjectProgramBinariesForBinary )
+        else
         {
-            retVal = pIntercept->createProgramWithInjectionBinaries(
-                hash,
-                context,
-                errcode_ret );
+            if( pIntercept->config().InjectProgramBinaries )
+            {
+                retVal = pIntercept->createProgramWithInjectionBinaries(
+                    hash,
+                    context,
+                    errcode_ret );
+            }
+
             if( retVal == NULL )
             {
                 retVal = pIntercept->dispatch().clCreateProgramWithBinary(
@@ -2066,17 +2070,6 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBinary)(
                     binary_status,
                     errcode_ret );
             }
-        }
-        else
-        {
-            retVal = pIntercept->dispatch().clCreateProgramWithBinary(
-                context,
-                num_devices,
-                device_list,
-                lengths,
-                binaries,
-                binary_status,
-                errcode_ret );
         }
 
         HOST_PERFORMANCE_TIMING_END();
