@@ -99,6 +99,9 @@ target_link_libraries(OpenCL ${CMAKE_DL_LIBS})
 #   git_version.cpp - version information for CLIntercept log
 #   git_version.rc2 - DLL version information (Windows only)
 target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_CMAKE)
+if (ENABLE_OPENCL_NATIVE_LAYER)
+    target_compile_definitions(OpenCL PRIVATE OPENCL_NATIVE_LAYER)
+endif ()
 configure_file(src/git_version.cpp.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.cpp" @ONLY)
 configure_file(src/git_version.rc.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.rc2" @ONLY)
 
