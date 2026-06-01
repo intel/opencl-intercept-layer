@@ -9,1167 +9,233 @@
 #endif
 
 #ifndef CLI_CONTROL_SEPARATOR
-#define CLI_CONTROL_SEPARATOR(_name)
+#define CLI_CONTROL_SEPARATOR( _name )
 #endif
 
-CLI_CONTROL_SEPARATOR(Tracing Controls:)
-CLI_CONTROL(
-    bool, BetaExtensionIntercepting, true,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will intercept extension APIs for beta extensions that are subject to "
-    "change. If an application uses beta extensions and does not function "
-    "correctly with the Intercept Layer for OpenCL Applications, setting this "
-    "control to zero may allow the application to function correctly, albeit "
-    "without the ability to debug and analyze the beta extension APIs.")
+CLI_CONTROL_SEPARATOR( Tracing Controls: )
+CLI_CONTROL( bool,          BetaExtensionIntercepting,              true,  "If set to a nonzero value, the Intercept Layer for OpenCL Applications will intercept extension APIs for beta extensions that are subject to change. If an application uses beta extensions and does not function correctly with the Intercept Layer for OpenCL Applications, setting this control to zero may allow the application to function correctly, albeit without the ability to debug and analyze the beta extension APIs." )
 
-CLI_CONTROL_SEPARATOR(Logging Controls:)
-CLI_CONTROL(bool, SuppressLogging, false,
-            "If set to a nonzero value, suppresses all logging output from the "
-            "Intercept Layer for OpenCL Applications.  This is particularly "
-            "useful for tools that only want report data.")
-CLI_CONTROL(
-    bool, AppendFiles, false,
-    "By default, the Intercept Layer for OpenCL Applications log files will be "
-    "created from scratch when the intercept DLL is loaded, and any Intercept "
-    "Layer for OpenCL Applications report files will be created from scratch "
-    "when the intercept DLL is unloaded. If AppendFiles is set to a nonzero "
-    "value, the Intercept Layer for OpenCL Applications will append to an "
-    "existing file instead of recreating it. This can be useful if an "
-    "application loads and unloads the intercept DLL multiple times, or to "
-    "simply preserve log or report data from run-to-run.")
-CLI_CONTROL(bool, LogToFile, false,
-            "If set to a nonzero value, sends log information to the file "
-            "\"clintercept_log.txt\" instead of to stderr.")
-CLI_CONTROL(
-    bool, LogToDebugger, false,
-    "If set to a nonzero value, sends log information to the debugger instead "
-    "of to stderr.  If both LogToFile and LogToDebugger are nonzero then log "
-    "information will be sent both to a file and to the debugger.")
-CLI_CONTROL(int, LogIndent, 0, "Indents each log entry by this many spaces.")
-CLI_CONTROL(
-    bool, BuildLogging, false,
-    "If set to a nonzero value, logs the program build log after each call to "
-    "clBuildProgram().  This will likely only function correctly for "
-    "synchronous builds.  Note that the build log is logged regardless of "
-    "whether the program built successfully, which allows compiler warnings to "
-    "be logged for successful compiles.")
-CLI_CONTROL(
-    bool, PreferredWorkGroupSizeMultipleLogging, false,
-    "If set to a nonzero value, logs the preferred work group size multiple "
-    "for each kernel after each call to clCreateKernel().  On some devices "
-    "this is the equivalent of the SIMD size for this kernel.")
-CLI_CONTROL(bool, KernelInfoLogging, false,
-            "If set to a nonzero value, logs information about the kernel "
-            "after each call to clCreateKernel().")
-CLI_CONTROL(
-    bool, CallLogging, false,
-    "If set to a nonzero value, logs function entry and exit information for "
-    "every OpenCL call.  This can be used to easily determine which OpenCL "
-    "call is causing an application to crash or fail or if a crash occurs "
-    "outside of an OpenCL call.  This setting is best used with LogToFile or "
-    "LogToDebugger as it can generate a lot of log data.")
-CLI_CONTROL(
-    bool, CallLoggingEnqueueCounter, false,
-    "If set to a nonzero value, logs the enqueue counter in addition to "
-    "function entry and exit information for every OpenCL call.  This can be "
-    "used to determine appropriate limits for DumpBuffersMinEnqueue, "
-    "DumpBuffersMaxEnqueue, DumpImagesMinEnqueue, or DumpBuffersMaxEnqueue.  "
-    "If CallLogging is disabled then this control will have no effect.")
-CLI_CONTROL(bool, CallLoggingThreadId, false,
-            "If set to a nonzero value, logs the ID of the calling thread in "
-            "addition to function entry and exit information for every OpenCL "
-            "call.  This can be helpful when debugging multi-threading issues.")
-CLI_CONTROL(
-    bool, CallLoggingThreadNumber, false,
-    "If set to a nonzero value, logs the symbolic number of the calling thread "
-    "in addition to function entry and exit information for every OpenCL call. "
-    " This can be helpful when debugging multi-threading issues.")
-CLI_CONTROL(bool, CallLoggingElapsedTime, false,
-            "If set to a nonzero value, logs the elapsed time in microseconds "
-            "in addition to function entry and exit information for every "
-            "OpenCL call, starting from the time the intercept DLL is loaded.")
-CLI_CONTROL(
-    bool, ITTCallLogging, false,
-    "If set to a nonzero value, logs function entry and exit information for "
-    "every OpenCL call using the ITT APIs.  This feature will only function if "
-    "the Intercept Layer for OpenCL Applications is built with ITT support.")
-CLI_CONTROL(cl_uint, ChromeTraceBufferSize, 16384,
-            "If set to a nonzero value, buffers JSON records for Chrome "
-            "Tracing in memory before writing to a file.  The buffer will be "
-            "flushed when it fills, upon application termination, and "
-            "optionally on blocking OpenCL calls.")
-CLI_CONTROL(bool, ChromeTraceBufferingBlockingCallFlush, true,
-            "If set to a nonzero value, flushes buffered JSON records for "
-            "Chrome Tracing after blocking OpenCL calls.")
-CLI_CONTROL(bool, ChromeCallLogging, false,
-            "If set to a nonzero value, logs function entry and exit "
-            "information and host performance timing for every OpenCL call to "
-            "a JSON file that may be used for Chrome Tracing.")
-CLI_CONTROL(
-    bool, ChromeFlowEvents, false,
-    "If set to a nonzero value, adds flow events between OpenCL calls and "
-    "OpenCL commands in a JSON file that may be used for Chrome Tracing.  "
-    "Requires both ChromeCallLogging and ChromePerformanceTiming.")
-CLI_CONTROL(bool, ErrorLogging, false,
-            "If set to a nonzero value, logs all OpenCL errors and the "
-            "function name that caused the error.")
-CLI_CONTROL(bool, ErrorAssert, false,
-            "If set to a nonzero value, breaks into the debugger when an "
-            "OpenCL error occurs.")
-CLI_CONTROL(bool, ContextCallbackLogging, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will install a callback for every context and log "
-            "any calls to the context callback.  The application's context "
-            "callback, if any, will be invoked after the Intercept Layer for "
-            "OpenCL Applications' context callback.")
-CLI_CONTROL(
-    cl_uint, ContextHintLevel, 0,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will attempt to create contexts with the "
-    "CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL property set to the specified value.  "
-    "If this property is specified by the application, the Intercept Layer for "
-    "OpenCL Applications will overwrite it with the specified value, otherwise "
-    "the property and the specified value will be added to the list of context "
-    "creation properties.  This functionality is only available for OpenCL "
-    "implementations that support the cl_intel_driver_diagnostics extension.  "
-    "If this functionality is not available in the underlying OpenCL "
-    "implementation, the unmodified list of context properties will be used to "
-    "create the context instead. More information about this feature, "
-    "including valid values and their meaning, can be found in the "
-    "cl_intel_driver_diagnostics extension specification.")
-CLI_CONTROL(
-    bool, EventCallbackLogging, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will install its own callback for every event callback and log the call "
-    "to the event callback.  The application's event callback will be invoked "
-    "after the Intercept Layer for OpenCL Applications' event callback.")
-CLI_CONTROL(bool, QueueInfoLogging, false,
-            "If set to a nonzero value, logs information about a queue when it "
-            "is created.")
-CLI_CONTROL(bool, EventChecking, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will check and log any events in an event wait list "
-            "that are invalid or in an error state.  This can help to debug "
-            "complex event dependency issues.")
-CLI_CONTROL(bool, LeakChecking, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will check for leaks of various OpenCL objects, such "
-            "as memory objects and events.")
-CLI_CONTROL(
-    bool, USMChecking, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will check for incorrect usage of Unified Shared Memory (USM) pointers.")
-CLI_CONTROL(
-    bool, CLInfoLogging, false,
-    "If set to a nonzero value, logs information about the platforms and "
-    "devices in the system on the first call to clGetPlatformIDs().")
-CLI_CONTROL(bool, FlushFiles, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will flush files after ever write.  This slows down "
-            "performance but can help to avoid truncated files if the "
-            "Intercept Layer for OpenCL Applications does not exit cleanly.")
-CLI_CONTROL(std::string, DumpDir, "",
-            "If set, the Intercept Layer for OpenCL Applications will emit "
-            "logs and dumps to this directory instead of the default "
-            "directory.  The default log and dump directory is "
-            "\"%SYSTEMDRIVE%\\Intel\\CLIntercept_Dump\\<Process Name>\" on "
-            "Windows and \"~/CLIntercept_Dump/<Process Name>\" on other "
-            "operating systems.  The log and dump directory must be writeable, "
-            "otherwise the Intercept Layer for OpenCL Applications will not be "
-            "able to create or modify log or dump files.")
-CLI_CONTROL(bool, AppendPid, false,
-            "If set, the Intercept Layer for OpenCL Applications will append "
-            "process ID to the log directory name.")
-CLI_CONTROL(bool, UniqueFiles, false,
-            "If set, the Intercept Layer for OpenCL Applications will find a "
-            "unique file name for logs and reports by appending a number to "
-            "the file names, if needed.")
-CLI_CONTROL(bool, KernelNameHashTracking, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will append the program and build option hashes to "
-            "the kernel name in logs and reports.")
-CLI_CONTROL(
-    cl_uint, LongKernelNameCutoff, UINT_MAX,
-    "If an OpenCL application uses kernels with very long names, the Intercept "
-    "Layer for OpenCL Applications can substitute a \"short\" kernel "
-    "identifier for a \"long\" kernel name in logs and reports.  This control "
-    "defines how long a kernel name must be (in characters) before it is "
-    "replaced by a \"short\" kernel identifier.")
-CLI_CONTROL(bool, DemangleKernelNames, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will track kernel names that are demangled according "
-            "to C++ ABI rules.  This setting requires compiler support for "
-            "demangling and may not be available in all configurations.")
+CLI_CONTROL_SEPARATOR( Logging Controls: )
+CLI_CONTROL( bool,          SuppressLogging,                        false, "If set to a nonzero value, suppresses all logging output from the Intercept Layer for OpenCL Applications.  This is particularly useful for tools that only want report data." )
+CLI_CONTROL( bool,          AppendFiles,                            false, "By default, the Intercept Layer for OpenCL Applications log files will be created from scratch when the intercept DLL is loaded, and any Intercept Layer for OpenCL Applications report files will be created from scratch when the intercept DLL is unloaded. If AppendFiles is set to a nonzero value, the Intercept Layer for OpenCL Applications will append to an existing file instead of recreating it. This can be useful if an application loads and unloads the intercept DLL multiple times, or to simply preserve log or report data from run-to-run." )
+CLI_CONTROL( bool,          LogToFile,                              false, "If set to a nonzero value, sends log information to the file \"clintercept_log.txt\" instead of to stderr." )
+CLI_CONTROL( bool,          LogToDebugger,                          false, "If set to a nonzero value, sends log information to the debugger instead of to stderr.  If both LogToFile and LogToDebugger are nonzero then log information will be sent both to a file and to the debugger." )
+CLI_CONTROL( int,           LogIndent,                              0,     "Indents each log entry by this many spaces." )
+CLI_CONTROL( bool,          BuildLogging,                           false, "If set to a nonzero value, logs the program build log after each call to clBuildProgram().  This will likely only function correctly for synchronous builds.  Note that the build log is logged regardless of whether the program built successfully, which allows compiler warnings to be logged for successful compiles." )
+CLI_CONTROL( bool,          PreferredWorkGroupSizeMultipleLogging,  false, "If set to a nonzero value, logs the preferred work group size multiple for each kernel after each call to clCreateKernel().  On some devices this is the equivalent of the SIMD size for this kernel." )
+CLI_CONTROL( bool,          KernelInfoLogging,                      false, "If set to a nonzero value, logs information about the kernel after each call to clCreateKernel()." )
+CLI_CONTROL( bool,          CallLogging,                            false, "If set to a nonzero value, logs function entry and exit information for every OpenCL call.  This can be used to easily determine which OpenCL call is causing an application to crash or fail or if a crash occurs outside of an OpenCL call.  This setting is best used with LogToFile or LogToDebugger as it can generate a lot of log data." )
+CLI_CONTROL( bool,          CallLoggingEnqueueCounter,              false, "If set to a nonzero value, logs the enqueue counter in addition to function entry and exit information for every OpenCL call.  This can be used to determine appropriate limits for DumpBuffersMinEnqueue, DumpBuffersMaxEnqueue, DumpImagesMinEnqueue, or DumpBuffersMaxEnqueue.  If CallLogging is disabled then this control will have no effect." )
+CLI_CONTROL( bool,          CallLoggingThreadId,                    false, "If set to a nonzero value, logs the ID of the calling thread in addition to function entry and exit information for every OpenCL call.  This can be helpful when debugging multi-threading issues." )
+CLI_CONTROL( bool,          CallLoggingThreadNumber,                false, "If set to a nonzero value, logs the symbolic number of the calling thread in addition to function entry and exit information for every OpenCL call.  This can be helpful when debugging multi-threading issues." )
+CLI_CONTROL( bool,          CallLoggingElapsedTime,                 false, "If set to a nonzero value, logs the elapsed time in microseconds in addition to function entry and exit information for every OpenCL call, starting from the time the intercept DLL is loaded." )
+CLI_CONTROL( bool,          ITTCallLogging,                         false, "If set to a nonzero value, logs function entry and exit information for every OpenCL call using the ITT APIs.  This feature will only function if the Intercept Layer for OpenCL Applications is built with ITT support." )
+CLI_CONTROL( cl_uint,       ChromeTraceBufferSize,                  16384, "If set to a nonzero value, buffers JSON records for Chrome Tracing in memory before writing to a file.  The buffer will be flushed when it fills, upon application termination, and optionally on blocking OpenCL calls.")
+CLI_CONTROL( bool,          ChromeTraceBufferingBlockingCallFlush,  true,  "If set to a nonzero value, flushes buffered JSON records for Chrome Tracing after blocking OpenCL calls.")
+CLI_CONTROL( bool,          ChromeCallLogging,                      false, "If set to a nonzero value, logs function entry and exit information and host performance timing for every OpenCL call to a JSON file that may be used for Chrome Tracing." )
+CLI_CONTROL( bool,          ChromeFlowEvents,                       false, "If set to a nonzero value, adds flow events between OpenCL calls and OpenCL commands in a JSON file that may be used for Chrome Tracing.  Requires both ChromeCallLogging and ChromePerformanceTiming." )
+CLI_CONTROL( bool,          ErrorLogging,                           false, "If set to a nonzero value, logs all OpenCL errors and the function name that caused the error." )
+CLI_CONTROL( bool,          ErrorAssert,                            false, "If set to a nonzero value, breaks into the debugger when an OpenCL error occurs." )
+CLI_CONTROL( bool,          ContextCallbackLogging,                 false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will install a callback for every context and log any calls to the context callback.  The application's context callback, if any, will be invoked after the Intercept Layer for OpenCL Applications' context callback." )
+CLI_CONTROL( cl_uint,       ContextHintLevel,                       0,     "If set to a nonzero value, the Intercept Layer for OpenCL Applications will attempt to create contexts with the CL_CONTEXT_SHOW_DIAGNOSTICS_INTEL property set to the specified value.  If this property is specified by the application, the Intercept Layer for OpenCL Applications will overwrite it with the specified value, otherwise the property and the specified value will be added to the list of context creation properties.  This functionality is only available for OpenCL implementations that support the cl_intel_driver_diagnostics extension.  If this functionality is not available in the underlying OpenCL implementation, the unmodified list of context properties will be used to create the context instead. More information about this feature, including valid values and their meaning, can be found in the cl_intel_driver_diagnostics extension specification." )
+CLI_CONTROL( bool,          EventCallbackLogging,                   false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will install its own callback for every event callback and log the call to the event callback.  The application's event callback will be invoked after the Intercept Layer for OpenCL Applications' event callback." )
+CLI_CONTROL( bool,          QueueInfoLogging,                       false, "If set to a nonzero value, logs information about a queue when it is created." )
+CLI_CONTROL( bool,          EventChecking,                          false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will check and log any events in an event wait list that are invalid or in an error state.  This can help to debug complex event dependency issues." )
+CLI_CONTROL( bool,          LeakChecking,                           false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will check for leaks of various OpenCL objects, such as memory objects and events." )
+CLI_CONTROL( bool,          USMChecking,                            false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will check for incorrect usage of Unified Shared Memory (USM) pointers." )
+CLI_CONTROL( bool,          CLInfoLogging,                          false, "If set to a nonzero value, logs information about the platforms and devices in the system on the first call to clGetPlatformIDs()." )
+CLI_CONTROL( bool,          FlushFiles,                             false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will flush files after ever write.  This slows down performance but can help to avoid truncated files if the Intercept Layer for OpenCL Applications does not exit cleanly." )
+CLI_CONTROL( std::string,   DumpDir,                                "",    "If set, the Intercept Layer for OpenCL Applications will emit logs and dumps to this directory instead of the default directory.  The default log and dump directory is \"%SYSTEMDRIVE%\\Intel\\CLIntercept_Dump\\<Process Name>\" on Windows and \"~/CLIntercept_Dump/<Process Name>\" on other operating systems.  The log and dump directory must be writeable, otherwise the Intercept Layer for OpenCL Applications will not be able to create or modify log or dump files." )
+CLI_CONTROL( bool,          AppendPid,                              false, "If set, the Intercept Layer for OpenCL Applications will append process ID to the log directory name." )
+CLI_CONTROL( bool,          UniqueFiles,                            false, "If set, the Intercept Layer for OpenCL Applications will find a unique file name for logs and reports by appending a number to the file names, if needed." )
+CLI_CONTROL( bool,          KernelNameHashTracking,                 false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will append the program and build option hashes to the kernel name in logs and reports." )
+CLI_CONTROL( cl_uint,       LongKernelNameCutoff,                   UINT_MAX, "If an OpenCL application uses kernels with very long names, the Intercept Layer for OpenCL Applications can substitute a \"short\" kernel identifier for a \"long\" kernel name in logs and reports.  This control defines how long a kernel name must be (in characters) before it is replaced by a \"short\" kernel identifier." )
+CLI_CONTROL( bool,          DemangleKernelNames,                    false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will track kernel names that are demangled according to C++ ABI rules.  This setting requires compiler support for demangling and may not be available in all configurations." )
 
-CLI_CONTROL_SEPARATOR(Reporting Controls:)
-CLI_CONTROL(bool, ReportToStderr, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will emit reports to stderr.")
-CLI_CONTROL(
-    bool, ReportToFile, true,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will write results to the file \"clintercept_report.txt\".")
-CLI_CONTROL(cl_uint, ReportInterval, 0,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will generate a report at regular intervals (based "
-            "on the enqueue counter).  This can be useful to generate report "
-            "data while a long-running application is executing, or if an "
-            "application does not exit cleanly.")
+CLI_CONTROL_SEPARATOR( Reporting Controls: )
+CLI_CONTROL( bool,          ReportToStderr,                         false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emit reports to stderr." )
+CLI_CONTROL( bool,          ReportToFile,                           true,  "If set to a nonzero value, the Intercept Layer for OpenCL Applications will write results to the file \"clintercept_report.txt\"." )
+CLI_CONTROL( cl_uint,       ReportInterval,                         0,     "If set to a nonzero value, the Intercept Layer for OpenCL Applications will generate a report at regular intervals (based on the enqueue counter).  This can be useful to generate report data while a long-running application is executing, or if an application does not exit cleanly." )
 
-CLI_CONTROL_SEPARATOR(Performance Timing Controls:)
-CLI_CONTROL(
-    bool, HostPerformanceTiming, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will track the minimum, maximum, and average host CPU time for each "
-    "OpenCL entry point.  When the process exits, this information will be "
-    "included in the file \"clIntercept_report.txt\".")
-CLI_CONTROL(bool, ToolOverheadTiming, true,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will include some types of tool overhead in timing "
-            "reports and some types of logging.")
-CLI_CONTROL(
-    bool, DevicePerformanceTiming, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will add event profiling to track the minimum, maximum, and average "
-    "device time for each OpenCL command. This operation may be fairly "
-    "intrusive and may have side effects; in particular it forces all command "
-    "queues to be created with PROFILING_ENABLED and may increment the "
-    "reference count for application events. When the process exits, this "
-    "information will be included in the file \"clIntercept_report.txt\".")
-CLI_CONTROL(bool, DevicePerformanceTimingHistogram, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will report a histogram of device times in addition "
-            "to the table of device times for each OpenCL command.")
-CLI_CONTROL(
-    bool, DevicePerformanceTimeKernelInfoTracking, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will distinguish between OpenCL NDRange kernels using information such as "
-    "the kernel's Preferred Work Group Size Multiple (AKA SIMD size).")
-CLI_CONTROL(
-    bool, DevicePerformanceTimeGWOTracking, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will distinguish between OpenCL NDRange kernels with different global "
-    "work offsets for the purpose of device performance timing.")
-CLI_CONTROL(
-    bool, DevicePerformanceTimeGWSTracking, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will distinguish between OpenCL NDRange kernels with different global "
-    "work sizes for the purpose of device performance timing.")
-CLI_CONTROL(
-    bool, DevicePerformanceTimeLWSTracking, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will distinguish between OpenCL NDRange kernels with different local work "
-    "sizes for the purpose of device performance timing.")
-CLI_CONTROL(bool, DevicePerformanceTimeSuggestedLWSTracking, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will attempt to query and track the suggested local "
-            "work size when the passed-in local work size is NULL.")
-CLI_CONTROL(bool, DevicePerformanceTimeTransferTracking, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will distinguish between transfer operations of "
-            "different sizes for the purpose of device performance timing.")
-CLI_CONTROL(
-    bool, DevicePerformanceTimingKernelsOnly, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will collect device performance timing for kernel commands only")
-CLI_CONTROL(
-    bool, DevicePerformanceTimingSkipUnmap, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will skip device performance timing for unmap operations.  This is a "
-    "workaround for a bug in some OpenCL implementations, where querying "
-    "events created from unmap operations results in driver crashes.")
-CLI_CONTROL(cl_uint, HostPerformanceTimingMinEnqueue, 0,
-            "The Intercept Layer for OpenCL Applications will only collect "
-            "host performance timing metrics when the enqueue counter is "
-            "greater than this value, inclusive.")
-CLI_CONTROL(cl_uint, HostPerformanceTimingMaxEnqueue, UINT_MAX,
-            "The Intercept Layer for OpenCL Applications will only collect "
-            "host performance timing metrics when the enqueue counter is less "
-            "than this value, inclusive.")
-CLI_CONTROL(cl_uint, DevicePerformanceTimingMinEnqueue, 0,
-            "The Intercept Layer for OpenCL Applications will only collect "
-            "device performance timing metrics when the enqueue counter is "
-            "greater than this value, inclusive.")
-CLI_CONTROL(cl_uint, DevicePerformanceTimingMaxEnqueue, UINT_MAX,
-            "The Intercept Layer for OpenCL Applications will only collect "
-            "device performance timing metrics when the enqueue counter is "
-            "less than this value, inclusive.")
-CLI_CONTROL(bool, HostPerformanceTimeLogging, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will log the host elapsed time for each OpenCL entry "
-            "point.  This can be useful to identify OpenCL entry points that "
-            "execute significantly slower or faster than average on the host.")
-CLI_CONTROL(bool, DevicePerformanceTimeLogging, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will log the device execution time deltas for each "
-            "OpenCL command.  This can be useful to identify specific OpenCL "
-            "commands that execute significantly slower or faster than average "
-            "on the device.  If DevicePerformanceTiming is disabled then this "
-            "control will have no effect.")
-CLI_CONTROL(
-    bool, DevicePerformanceTimelineLogging, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will log the device execution times for each OpenCL command.  This can be "
-    "useful to visualize the execution timeline of OpenCL commands that "
-    "execute on the device.  If DevicePerformanceTiming is disabled then this "
-    "control will have no effect.")
-CLI_CONTROL(std::string, DevicePerfCounterLibName, "",
-            "Full path to MDAPI shared library. If not set, the default MDAPI "
-            "library will be used.")
-CLI_CONTROL(
-    bool, DevicePerfCounterEventBasedSampling, false,
-    "If set to a nonzero value and DevicePerfCounterCustom is set, the "
-    "Intercept Layer for OpenCL Applications will enable Intel GPU Performance "
-    "Counters to track the minimum, maximum, and average performance counter "
-    "deltas for each OpenCL command. This operation may be fairly intrusive "
-    "and may have side effects; in particular it forces all command queues to "
-    "be created with PROFILING_ENABLED and may increment the reference count "
-    "for application events. This feature will only function if the Intercept "
-    "Layer for OpenCL Applications is built with MDAPI support.")
-CLI_CONTROL(
-    bool, DevicePerfCounterTimeBasedSampling, false,
-    "If set to a nonzero value and DevicePerfCounterCustom is set, the "
-    "Intercept Layer for OpenCL Applications will enable Intel GPU Performance "
-    "Counters to track performance counter deltas at regular time intervals. "
-    "This operation may be fairly intrusive and may have side effects. This "
-    "feature will only function if the Intercept Layer for OpenCL Applications "
-    "is built with MDAPI support.")
-CLI_CONTROL(uint32_t, DevicePerfCounterAdapterIndex, 0,
-            "Select which MDAPI device to report performance counters.")
-CLI_CONTROL(std::string, DevicePerfCounterCustom, "",
-            "If set, the Intercept Layer for OpenCL Applications will collect "
-            "MDAPI metrics for the Metric Set corresponding to this value for "
-            "each OpenCL command.  Frequently used Metric Sets include: "
-            "ComputeBasic, ComputeExtended, L3_1, Sampler. The output file has "
-            "the potential to be very big depending on the work load. This "
-            "operation may be fairly intrusive and may have side effects; in "
-            "particular it forces all command queues to be created with "
-            "PROFILING_ENABLED and may increment the reference count for "
-            "application events. When the process exits, this information will "
-            "be included in the file \"clintercept_perfcounter_dump_<Set "
-            "Name>.txt\".  This feature will only function if the Intercept "
-            "Layer for OpenCL Applications is built with MDAPI support.")
-CLI_CONTROL(std::string, DevicePerfCounterFile, "",
-            "Full path to a custom MDAPI file.  This can be used to add custom "
-            "Metric Sets.")
-CLI_CONTROL(
-    bool, DevicePerfCounterTiming, false,
-    "If set to a nonzero value and DevicePerfCounterEventBasedSampling is set, "
-    "the Intercept Layer for OpenCL Applications will report the average Intel "
-    "GPU Performance Counters for each OpenCL command. When the process exits, "
-    "this information will be included in the file \"clIntercept_report.txt\". "
-    " This feature will only function if the Intercept Layer for OpenCL "
-    "Applications is built with MDAPI support.")
-CLI_CONTROL(bool, DevicePerfCounterReportMax, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will collect also max values of target platform to "
-            ".csv with MDAPI counters as a column next to each metric.")
-CLI_CONTROL(
-    uint32_t, DevicePerfCounterTimeBasedSamplingPeriod, 1000,
-    "The sampling period for Intel GPU Performance Counter Time-based "
-    "Sampling, in microseconds.  A smaller sampling period increases overhead "
-    "and the likelihood dropped samples but can be more precise.  Note that "
-    "some devices do not support very small sampling periods.")
-CLI_CONTROL(uint32_t, DevicePerfCounterTimeBasedBufferSize, 0,
-            "The buffer size for Intel GPU Performance Counter Time-based "
-            "Sampling, in bytes.  When set to zero, automatically chooses the "
-            "device maximum buffer size.  A larger buffer size will decrease "
-            "the likelihood of dropped samples.")
-CLI_CONTROL(
-    bool, ITTPerformanceTiming, false,
-    "[Note: This control makes ITT calls, but they appear to do nothing!]  If "
-    "set to a nonzero value, the Intercept Layer for OpenCL Applications will "
-    "generate ITT-compatible performance timing data.  Similar to "
-    "DevicePerformanceTiming, this operation may be fairly intrusive and may "
-    "have side effects; in particular it forces all command queues to be "
-    "created with PROFILING_ENABLED and may increment the reference count for "
-    "application events.  ITTPerformanceTiming will also silently create "
-    "OpenCL command queues that support advanced performance counters if this "
-    "functionality is available.  This feature will only function if the "
-    "Intercept Layer for OpenCL Applications is built with ITT support.")
-CLI_CONTROL(
-    bool, ITTShowOnlyExecutingEvents, false,
-    "[Note: This control makes ITT calls, but they appear to do nothing!]  By "
-    "default, when ITTPerformanceTiming is enabled, the Intercept Layer for "
-    "OpenCL Applications will generate ITT-compatible information for all "
-    "states of an OpenCL event: when the command was queued, when it was "
-    "submitted, when it started executing, and when it finished executing.  If "
-    "ITTShowOnlyExecutingEvents is set to a nonzero value, the Intercept Layer "
-    "for OpenCL Applications will only generate ITT-compatible instrumentation "
-    "when an event begins executing and when an event ends executing. Since no "
-    "information will be displayed about when a command is queued or "
-    "submitted, this can sometimes make it easier to identify times when the "
-    "device is idle.  This feature will only function if the Intercept Layer "
-    "for OpenCL Applications is built with ITT support.")
-CLI_CONTROL(bool, ChromePerformanceTiming, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will generate device performance timing information "
-            "in a JSON file that may be used for Chrome Tracing.")
-CLI_CONTROL(bool, ChromePerformanceTimingInStages, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will separate the performance information placed in "
-            "the JSON file into Queued, Submitted, and Execution stages. It "
-            "will also reorder the threads/queues by starting runtime. This "
-            "flag is only functional when ChromePerformanceTiming is also set.")
-CLI_CONTROL(
-    bool, ChromePerformanceTimingPerKernel, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will organize the performance information placed in the JSON file on a "
-    "per kernel name basis. It is only functional when ChromePerformanceTiming "
-    "is also set. When ChromePerformanceTimingInStages is also set, "
-    "information about event stages will be retained.")
-CLI_CONTROL(
-    bool, ChromePerformanceTimingEstimateQueuedTime, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will unconditionally estimate the queued time for Chrome Tracing rather "
-    "than computing it using device and host timers and event profiling data.  "
-    "The estimated time is less accurate than the computed time, but may be "
-    "more reliable if the device and host timers or event profiling data is "
-    "incorrect or imprecise.")
-CLI_CONTROL(bool, PerformanceTimingConditional, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will only collect host performance timing, device "
-            "performance timing, and chrome performance timing conditionally, "
-            "when the \"CLI_ENABLE_PERFORMANCE_TIMING\" environment variable "
-            "is set to a non-zero value.")
+CLI_CONTROL_SEPARATOR( Performance Timing Controls: )
+CLI_CONTROL( bool,          HostPerformanceTiming,                  false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will track the minimum, maximum, and average host CPU time for each OpenCL entry point.  When the process exits, this information will be included in the file \"clIntercept_report.txt\"." )
+CLI_CONTROL( bool,          ToolOverheadTiming,                     true,  "If set to a nonzero value, the Intercept Layer for OpenCL Applications will include some types of tool overhead in timing reports and some types of logging." )
+CLI_CONTROL( bool,          DevicePerformanceTiming,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will add event profiling to track the minimum, maximum, and average device time for each OpenCL command. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING_ENABLED and may increment the reference count for application events. When the process exits, this information will be included in the file \"clIntercept_report.txt\"." )
+CLI_CONTROL( bool,          DevicePerformanceTimingHistogram,       false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will report a histogram of device times in addition to the table of device times for each OpenCL command." )
+CLI_CONTROL( bool,          DevicePerformanceTimeKernelInfoTracking,false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between OpenCL NDRange kernels using information such as the kernel's Preferred Work Group Size Multiple (AKA SIMD size)." )
+CLI_CONTROL( bool,          DevicePerformanceTimeGWOTracking,       false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between OpenCL NDRange kernels with different global work offsets for the purpose of device performance timing." )
+CLI_CONTROL( bool,          DevicePerformanceTimeGWSTracking,       false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between OpenCL NDRange kernels with different global work sizes for the purpose of device performance timing." )
+CLI_CONTROL( bool,          DevicePerformanceTimeLWSTracking,       false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between OpenCL NDRange kernels with different local work sizes for the purpose of device performance timing." )
+CLI_CONTROL( bool,          DevicePerformanceTimeSuggestedLWSTracking, false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will attempt to query and track the suggested local work size when the passed-in local work size is NULL." )
+CLI_CONTROL( bool,          DevicePerformanceTimeTransferTracking,  false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will distinguish between transfer operations of different sizes for the purpose of device performance timing." )
+CLI_CONTROL( bool,          DevicePerformanceTimingKernelsOnly,     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will collect device performance timing for kernel commands only" )
+CLI_CONTROL( bool,          DevicePerformanceTimingSkipUnmap,       false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will skip device performance timing for unmap operations.  This is a workaround for a bug in some OpenCL implementations, where querying events created from unmap operations results in driver crashes." )
+CLI_CONTROL( cl_uint,       HostPerformanceTimingMinEnqueue,        0,     "The Intercept Layer for OpenCL Applications will only collect host performance timing metrics when the enqueue counter is greater than this value, inclusive." )
+CLI_CONTROL( cl_uint,       HostPerformanceTimingMaxEnqueue,        UINT_MAX, "The Intercept Layer for OpenCL Applications will only collect host performance timing metrics when the enqueue counter is less than this value, inclusive." )
+CLI_CONTROL( cl_uint,       DevicePerformanceTimingMinEnqueue,      0,     "The Intercept Layer for OpenCL Applications will only collect device performance timing metrics when the enqueue counter is greater than this value, inclusive." )
+CLI_CONTROL( cl_uint,       DevicePerformanceTimingMaxEnqueue,      UINT_MAX, "The Intercept Layer for OpenCL Applications will only collect device performance timing metrics when the enqueue counter is less than this value, inclusive." )
+CLI_CONTROL( bool,          HostPerformanceTimeLogging,             false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will log the host elapsed time for each OpenCL entry point.  This can be useful to identify OpenCL entry points that execute significantly slower or faster than average on the host." )
+CLI_CONTROL( bool,          DevicePerformanceTimeLogging,           false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will log the device execution time deltas for each OpenCL command.  This can be useful to identify specific OpenCL commands that execute significantly slower or faster than average on the device.  If DevicePerformanceTiming is disabled then this control will have no effect." )
+CLI_CONTROL( bool,          DevicePerformanceTimelineLogging,       false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will log the device execution times for each OpenCL command.  This can be useful to visualize the execution timeline of OpenCL commands that execute on the device.  If DevicePerformanceTiming is disabled then this control will have no effect." )
+CLI_CONTROL( std::string,   DevicePerfCounterLibName,               "",    "Full path to MDAPI shared library. If not set, the default MDAPI library will be used.")
+CLI_CONTROL( bool,          DevicePerfCounterEventBasedSampling,    false, "If set to a nonzero value and DevicePerfCounterCustom is set, the Intercept Layer for OpenCL Applications will enable Intel GPU Performance Counters to track the minimum, maximum, and average performance counter deltas for each OpenCL command. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING_ENABLED and may increment the reference count for application events. This feature will only function if the Intercept Layer for OpenCL Applications is built with MDAPI support." )
+CLI_CONTROL( bool,          DevicePerfCounterTimeBasedSampling,     false, "If set to a nonzero value and DevicePerfCounterCustom is set, the Intercept Layer for OpenCL Applications will enable Intel GPU Performance Counters to track performance counter deltas at regular time intervals. This operation may be fairly intrusive and may have side effects. This feature will only function if the Intercept Layer for OpenCL Applications is built with MDAPI support." )
+CLI_CONTROL( uint32_t,      DevicePerfCounterAdapterIndex,          0,     "Select which MDAPI device to report performance counters." )
+CLI_CONTROL( std::string,   DevicePerfCounterCustom,                "",    "If set, the Intercept Layer for OpenCL Applications will collect MDAPI metrics for the Metric Set corresponding to this value for each OpenCL command.  Frequently used Metric Sets include: ComputeBasic, ComputeExtended, L3_1, Sampler. The output file has the potential to be very big depending on the work load. This operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING_ENABLED and may increment the reference count for application events. When the process exits, this information will be included in the file \"clintercept_perfcounter_dump_<Set Name>.txt\".  This feature will only function if the Intercept Layer for OpenCL Applications is built with MDAPI support." )
+CLI_CONTROL( std::string,   DevicePerfCounterFile,                  "",    "Full path to a custom MDAPI file.  This can be used to add custom Metric Sets." )
+CLI_CONTROL( bool,          DevicePerfCounterTiming,                false, "If set to a nonzero value and DevicePerfCounterEventBasedSampling is set, the Intercept Layer for OpenCL Applications will report the average Intel GPU Performance Counters for each OpenCL command. When the process exits, this information will be included in the file \"clIntercept_report.txt\".  This feature will only function if the Intercept Layer for OpenCL Applications is built with MDAPI support." )
+CLI_CONTROL( bool,          DevicePerfCounterReportMax,             false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will collect also max values of target platform to .csv with MDAPI counters as a column next to each metric." )
+CLI_CONTROL( uint32_t,      DevicePerfCounterTimeBasedSamplingPeriod, 1000, "The sampling period for Intel GPU Performance Counter Time-based Sampling, in microseconds.  A smaller sampling period increases overhead and the likelihood dropped samples but can be more precise.  Note that some devices do not support very small sampling periods." )
+CLI_CONTROL( uint32_t,      DevicePerfCounterTimeBasedBufferSize,   0,     "The buffer size for Intel GPU Performance Counter Time-based Sampling, in bytes.  When set to zero, automatically chooses the device maximum buffer size.  A larger buffer size will decrease the likelihood of dropped samples." )
+CLI_CONTROL( bool,          ITTPerformanceTiming,                   false, "[Note: This control makes ITT calls, but they appear to do nothing!]  If set to a nonzero value, the Intercept Layer for OpenCL Applications will generate ITT-compatible performance timing data.  Similar to DevicePerformanceTiming, this operation may be fairly intrusive and may have side effects; in particular it forces all command queues to be created with PROFILING_ENABLED and may increment the reference count for application events.  ITTPerformanceTiming will also silently create OpenCL command queues that support advanced performance counters if this functionality is available.  This feature will only function if the Intercept Layer for OpenCL Applications is built with ITT support." )
+CLI_CONTROL( bool,          ITTShowOnlyExecutingEvents,             false, "[Note: This control makes ITT calls, but they appear to do nothing!]  By default, when ITTPerformanceTiming is enabled, the Intercept Layer for OpenCL Applications will generate ITT-compatible information for all states of an OpenCL event: when the command was queued, when it was submitted, when it started executing, and when it finished executing.  If ITTShowOnlyExecutingEvents is set to a nonzero value, the Intercept Layer for OpenCL Applications will only generate ITT-compatible instrumentation when an event begins executing and when an event ends executing. Since no information will be displayed about when a command is queued or submitted, this can sometimes make it easier to identify times when the device is idle.  This feature will only function if the Intercept Layer for OpenCL Applications is built with ITT support." )
+CLI_CONTROL( bool,          ChromePerformanceTiming,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will generate device performance timing information in a JSON file that may be used for Chrome Tracing." )
+CLI_CONTROL( bool,          ChromePerformanceTimingInStages,        false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will separate the performance information placed in the JSON file into Queued, Submitted, and Execution stages. It will also reorder the threads/queues by starting runtime. This flag is only functional when ChromePerformanceTiming is also set." )
+CLI_CONTROL( bool,          ChromePerformanceTimingPerKernel,       false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will organize the performance information placed in the JSON file on a per kernel name basis. It is only functional when ChromePerformanceTiming is also set. When ChromePerformanceTimingInStages is also set, information about event stages will be retained." )
+CLI_CONTROL( bool,          ChromePerformanceTimingEstimateQueuedTime, false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will unconditionally estimate the queued time for Chrome Tracing rather than computing it using device and host timers and event profiling data.  The estimated time is less accurate than the computed time, but may be more reliable if the device and host timers or event profiling data is incorrect or imprecise." )
+CLI_CONTROL( bool,          PerformanceTimingConditional,           false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will only collect host performance timing, device performance timing, and chrome performance timing conditionally, when the \"CLI_ENABLE_PERFORMANCE_TIMING\" environment variable is set to a non-zero value." )
 
 CLI_CONTROL_SEPARATOR( Controls for Dumping and Injecting Programs and Build Options: )
-CLI_CONTROL(
-    bool, OmitProgramNumber, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will omit the program number from dumped file names and hash tracking.  "
-    "This can produce deterministic results even if programs are built in a "
-    "non-deterministic order (say, by multiple threads).")
-CLI_CONTROL(bool, OmitCompileCount, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will omit the compile count from dumped file names "
-            "and hash tracking.  This can reduce the number of files that are "
-            "dumped if the same program is compiled multiple times.")
-CLI_CONTROL(
-    bool, SimpleDumpProgramSource, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump the last string(s) passed to clCreateProgramWithSource() to the "
-    "file kernel.cl, and the last program options passed to clBuildProgram() "
-    "to the file kernel.txt.  These files will be dumped to the application's "
-    "working directory.  If an application fails to compile a program and "
-    "exits the program immediately after detecting a compile failure "
-    "SimpleDumpProgram may be all that is needed to identify the program and "
-    "program options that are failing to compile.")
-CLI_CONTROL(
-    bool, DumpProgramSourceScript, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump every string passed to clCreateProgramWithSource() to its own "
-    "file.  The directory names and file names for the dumped files match the "
-    "directory names and file names expected by a modified OpenCL conformance "
-    "test script to capture kernels.  This setting overrides "
-    "SimpleDumpProgramSource, and if it is set to a nonzero value then the "
-    "value of SimpleDumpProgramSource is ignored.")
-CLI_CONTROL(
-    bool, DumpProgramSource, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump every string passed to clCreateProgramWithSource() to its own "
-    "file.  The file name will have the form \"CLI_<Program Number>_<Unique "
-    "Program Hash Code>_source.cl\".  Program options will be dumped to the "
-    "same directory with the file name \"CLI_<Program Number>_<Unique Program "
-    "Hash Code>_<Compile Count>_<Unique Build Options Hash "
-    "Code>_<API>_options.txt\", where API is an empty string for "
-    "clBuildProgram(), \"compile\" for clCompileProgram(), and \"link\" for "
-    "clLinkProgram().  This setting can be used for information purposes to "
-    "see all kernels that are used by an application or to dump programs for "
-    "program injection.  This setting overrides DumpProgramSourceScript and "
-    "SimpleDumpProgramSource, and if it is set to a nozero value then the "
-    "values of DumpProgramSourceScript and SimpleDumpProgramSource will be "
-    "ignored.")
-CLI_CONTROL(
-    bool, DumpInputProgramBinaries, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump every program binary that is passed to "
-    "clCreateProgramWithBinary() to its own file.  The file name will have the "
-    "form \"CLI_<Program Number>_<Unique Program Hash Code>_<Device "
-    "Type>.bin\".  This is the input program binary provided by the "
-    "application, and not a device binary queried from the OpenCL "
-    "implementation.  In particular, note that it may be a SPIR 1.2 binary.")
-CLI_CONTROL(
-    bool, DumpProgramBinaries, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump every program binary that was successfully built with "
-    "clBuildProgram() to its own file.  The file name will have the form "
-    "\"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique "
-    "Build Options Hash Code>_<Device Type>.bin\".  Program options will be "
-    "dumped to the same directory with the file name \"CLI_<Program "
-    "Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options "
-    "Hash Code>_<API>_options.txt\", where API is an empty string for "
-    "clBuildProgram(), \"compile\" for clCompileProgram(), and \"link\" for "
-    "clLinkProgram().  This setting can be used to examine compiled program "
-    "binaries or to dump program binaries for program binary injection.  Note "
-    "that this option dumps the output binary, which is a device binary, after "
-    "calling clBuildProgram() or clLinkProgram().")
-CLI_CONTROL(
-    bool, DumpProgramSPIRV, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump every program IL binary passed to clCreateProgramWithIL() to "
-    "its own file.  The file name will have the form \"CLI_<Program "
-    "Number>_<Unique Program Hash Code>_0000.spv\" - for now at least!.  "
-    "Program options will be dumped to the same directory with the file name "
-    "\"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique "
-    "Build Options Hash Code>_<API>_options.txt\", where <API> is an empty "
-    "string for clBuildProgram(), \"compile\" for clCompileProgram(), and "
-    "\"link\" for clLinkProgram().  This setting can be used for information "
-    "purposes to see all kernels that are used by an application or to dump "
-    "SPIRV programs for SPIRV injection.")
-CLI_CONTROL(bool, InjectProgramSource, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will look to inject potentially modified kernel "
-            "source to clCreateProgramWithSource() and/or potentially modified "
-            "options to clCompileProgram() or clBuildProgram().  Note that "
-            "program options currently cannot be injected for clLinkProgram().")
-CLI_CONTROL(
-    bool, InjectProgramBinaries, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will look to inject potentially modified kernel binaries via "
-    "clCreateProgramWithBinary() in place of program text for each call to "
-    "clCreateProgramWithSource(). This is typically done to reduce program "
-    "compilation time or to use known good program binaries.")
-CLI_CONTROL(
-    bool, RejectProgramBinaries, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will reject kernel binaries passed via clCreateProgramWithBinary() and "
-    "return CL_INVALID_BINARY.  This can be used to force an application to "
-    "re-compile program binaries from source.")
-CLI_CONTROL(bool, InjectProgramSPIRV, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will look to inject potentially modified kernel "
-            "SPIR-V binaries via clCreateProgramWithIL() in place of program "
-            "text for each call to clCreateProgramWithSource().")
-CLI_CONTROL(
-    bool, PrependProgramSource, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will look to prepend kernel code from a file to the application provided "
-    "kernel source passed to clCreateProgramWithSource().  The Intercept Layer "
-    "for OpenCL Applications will look for kernel source to prepend in the "
-    "dump and log directory.  The files that are searched for are (in order) "
-    "\"CLI_<Program Number>_<Unique Program Hash Code>_prepend.cl\", "
-    "\"CLI_<Unique Program Hash Code>_prepend.cl\", and \"CLI_prepend.cl\".")
-CLI_CONTROL(
-    std::string, AppendBuildOptions, "",
-    "If set, the Intercept Layer for OpenCL Applications will add these build "
-    "options to the end of any application provided or injected build options "
-    "for each call to clCompileProgram or clBuildProgram().")
-CLI_CONTROL(std::string, AppendLinkOptions, "",
-            "If set, the Intercept Layer for OpenCL Applications will add "
-            "these build options to the end of any application provided or "
-            "injected build options for each call to clLinkProgram().")
-CLI_CONTROL(
-    bool, DumpProgramBuildLogs, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump build logs for every device a program is built for to a "
-    "separate file.  The file name will have the form \"CLI_<Program "
-    "Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options "
-    "Hash Code>_<Device Type>_build_log.txt\".")
-CLI_CONTROL(
-    bool, DumpKernelISABinaries, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump kernel ISA binaries for every kernel, if supported.  Currently, "
-    "kernel ISA binaries are only supported for Intel GPU devices.  Kernel ISA "
-    "binaries can be decoded into ISA text with a disassembler.  The file name "
-    "will have the form \"CLI_<Program Number>_<Unique Program Hash "
-    "Code>_<Compile Count>_<Unique Build Options Hash Code>_<Device "
-    "Type>_<Kernel Name>.isabin\".")
+CLI_CONTROL( bool,          OmitProgramNumber,                      false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will omit the program number from dumped file names and hash tracking.  This can produce deterministic results even if programs are built in a non-deterministic order (say, by multiple threads)." )
+CLI_CONTROL( bool,          OmitCompileCount,                       false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will omit the compile count from dumped file names and hash tracking.  This can reduce the number of files that are dumped if the same program is compiled multiple times." )
+CLI_CONTROL( bool,          SimpleDumpProgramSource,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump the last string(s) passed to clCreateProgramWithSource() to the file kernel.cl, and the last program options passed to clBuildProgram() to the file kernel.txt.  These files will be dumped to the application's working directory.  If an application fails to compile a program and exits the program immediately after detecting a compile failure SimpleDumpProgram may be all that is needed to identify the program and program options that are failing to compile." )
+CLI_CONTROL( bool,          DumpProgramSourceScript,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every string passed to clCreateProgramWithSource() to its own file.  The directory names and file names for the dumped files match the directory names and file names expected by a modified OpenCL conformance test script to capture kernels.  This setting overrides SimpleDumpProgramSource, and if it is set to a nonzero value then the value of SimpleDumpProgramSource is ignored." )
+CLI_CONTROL( bool,          DumpProgramSource,                      false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every string passed to clCreateProgramWithSource() to its own file.  The file name will have the form \"CLI_<Program Number>_<Unique Program Hash Code>_source.cl\".  Program options will be dumped to the same directory with the file name \"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options Hash Code>_<API>_options.txt\", where API is an empty string for clBuildProgram(), \"compile\" for clCompileProgram(), and \"link\" for clLinkProgram().  This setting can be used for information purposes to see all kernels that are used by an application or to dump programs for program injection.  This setting overrides DumpProgramSourceScript and SimpleDumpProgramSource, and if it is set to a nozero value then the values of DumpProgramSourceScript and SimpleDumpProgramSource will be ignored." )
+CLI_CONTROL( bool,          DumpInputProgramBinaries,               false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program binary that is passed to clCreateProgramWithBinary() to its own file.  The file name will have the form \"CLI_<Program Number>_<Unique Program Hash Code>_<Device Type>.bin\".  This is the input program binary provided by the application, and not a device binary queried from the OpenCL implementation.  In particular, note that it may be a SPIR 1.2 binary." )
+CLI_CONTROL( bool,          DumpProgramBinaries,                    false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program binary that was successfully built with clBuildProgram() to its own file.  The file name will have the form \"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options Hash Code>_<Device Type>.bin\".  Program options will be dumped to the same directory with the file name \"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options Hash Code>_<API>_options.txt\", where API is an empty string for clBuildProgram(), \"compile\" for clCompileProgram(), and \"link\" for clLinkProgram().  This setting can be used to examine compiled program binaries or to dump program binaries for program binary injection.  Note that this option dumps the output binary, which is a device binary, after calling clBuildProgram() or clLinkProgram()." )
+CLI_CONTROL( bool,          DumpProgramSPIRV,                       false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump every program IL binary passed to clCreateProgramWithIL() to its own file.  The file name will have the form \"CLI_<Program Number>_<Unique Program Hash Code>_0000.spv\" - for now at least!.  Program options will be dumped to the same directory with the file name \"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options Hash Code>_<API>_options.txt\", where <API> is an empty string for clBuildProgram(), \"compile\" for clCompileProgram(), and \"link\" for clLinkProgram().  This setting can be used for information purposes to see all kernels that are used by an application or to dump SPIRV programs for SPIRV injection." )
+CLI_CONTROL( bool,          InjectProgramSource,                    false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified kernel source to clCreateProgramWithSource() and/or potentially modified options to clCompileProgram() or clBuildProgram().  Note that program options currently cannot be injected for clLinkProgram()." )
+CLI_CONTROL( bool,          InjectProgramBinaries,                  false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified kernel binaries via clCreateProgramWithBinary() for each call to clCreateProgramWithSource() or clCreateProgramWithBinary(). This can be used to reduce program compilation time, use known good program binaries, or replace application-provided binaries with modified program binaries." )
+CLI_CONTROL( bool,          RejectProgramBinaries,                  false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will reject kernel binaries passed via clCreateProgramWithBinary() and return CL_INVALID_BINARY.  This can be used to force an application to re-compile program binaries from source." )
+CLI_CONTROL( bool,          InjectProgramSPIRV,                     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified kernel SPIR-V binaries via clCreateProgramWithIL() in place of program text for each call to clCreateProgramWithSource()." )
+CLI_CONTROL( bool,          PrependProgramSource,                   false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to prepend kernel code from a file to the application provided kernel source passed to clCreateProgramWithSource().  The Intercept Layer for OpenCL Applications will look for kernel source to prepend in the dump and log directory.  The files that are searched for are (in order) \"CLI_<Program Number>_<Unique Program Hash Code>_prepend.cl\", \"CLI_<Unique Program Hash Code>_prepend.cl\", and \"CLI_prepend.cl\"." )
+CLI_CONTROL( std::string,   AppendBuildOptions,                     "",    "If set, the Intercept Layer for OpenCL Applications will add these build options to the end of any application provided or injected build options for each call to clCompileProgram or clBuildProgram()." )
+CLI_CONTROL( std::string,   AppendLinkOptions,                      "",    "If set, the Intercept Layer for OpenCL Applications will add these build options to the end of any application provided or injected build options for each call to clLinkProgram()." )
+CLI_CONTROL( bool,          DumpProgramBuildLogs,                   false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump build logs for every device a program is built for to a separate file.  The file name will have the form \"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options Hash Code>_<Device Type>_build_log.txt\"." )
+CLI_CONTROL( bool,          DumpKernelISABinaries,                  false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump kernel ISA binaries for every kernel, if supported.  Currently, kernel ISA binaries are only supported for Intel GPU devices.  Kernel ISA binaries can be decoded into ISA text with a disassembler.  The file name will have the form \"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options Hash Code>_<Device Type>_<Kernel Name>.isabin\"." )
 
 CLI_CONTROL_SEPARATOR( Controls for Emulating Features: )
-CLI_CONTROL(
-    bool, Emulate_cl_khr_extended_versioning, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will emulate support for the cl_khr_extended_versioning extension.")
-CLI_CONTROL(
-    bool, Emulate_cl_khr_semaphore, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will emulate support for the cl_khr_semaphore extension.")
-CLI_CONTROL(
-    bool, Emulate_cl_intel_unified_shared_memory, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will emulate support for the cl_intel_unified_shared_memory extension USM "
-    "APIs using SVM APIs.  This can be useful to test USM applications on an "
-    "implementation that supports SVM, but not USM.")
+CLI_CONTROL( bool,          Emulate_cl_khr_extended_versioning,     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl_khr_extended_versioning extension." )
+CLI_CONTROL( bool,          Emulate_cl_khr_semaphore,               false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl_khr_semaphore extension." )
+CLI_CONTROL( bool,          Emulate_cl_intel_unified_shared_memory, false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will emulate support for the cl_intel_unified_shared_memory extension USM APIs using SVM APIs.  This can be useful to test USM applications on an implementation that supports SVM, but not USM." )
 
 CLI_CONTROL_SEPARATOR( Controls for Automatically Creating SPIR-V Modules: )
-CLI_CONTROL(
-    bool, AutoCreateSPIRV, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will automatically create SPIR-V modules by invoking CLANG each time a "
-    "program is built.  The file name will have the form \"CLI_<Program "
-    "Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options "
-    "Hash Code>.spv\".  Because invoking CLANG requires a file containing the "
-    "OpenCL C source, setting this option implicitly sets DumpProgramSource as "
-    "well.  Additionally, this feature is not available for injected program "
-    "source.")
-CLI_CONTROL(std::string, SPIRVClang, "clang",
-            "The clang executable used to compile an OpenCL C program to a "
-            "SPIR-V module.  This can be an executable in the system path, a "
-            "relative path, or a full absolute path.")
-CLI_CONTROL(
-    std::string, SPIRVCLHeader, "opencl.h",
-    "The OpenCL header file used to compile an OpenCL C program to a SPIR-V "
-    "module.  This must be a relative path or a full absolute path.")
-CLI_CONTROL(
-    std::string, SPIRVDis, "spirv-dis",
-    "The spirv-dis executable used to optionally disassemble the compiled "
-    "SPIR-V module to a SPIR-V text representation.  This can be an executable "
-    "in the system path, a relative path, or a full absolute path.")
-CLI_CONTROL(std::string, DefaultOptions,
-            "-cc1 -x cl -cl-std=CL1.2 -D__OPENCL_C_VERSION__=120 "
-            "-D__OPENCL_VERSION__=120 -emit-spirv -triple=spir",
-            "This is the list of options that is implicitly passed to CLANG to "
-            "build a non-OpenCL 2.0 SPIR-V module.  Any application-provided "
-            "build options will be appended to these build options.")
-CLI_CONTROL(std::string, OpenCL2Options,
-            "-cc1 -x cl -cl-std=CL2.0 -D__OPENCL_C_VERSION__=200 "
-            "-D__OPENCL_VERSION__=200 -emit-spirv -triple=spir",
-            "This is the list of options that is implicitly passed to CLANG to "
-            "build an OpenCL 2.0 SPIR-V module.  Any application-provided "
-            "build options will be appended to these build options.")
+CLI_CONTROL( bool,          AutoCreateSPIRV,                        false,       "If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically create SPIR-V modules by invoking CLANG each time a program is built.  The file name will have the form \"CLI_<Program Number>_<Unique Program Hash Code>_<Compile Count>_<Unique Build Options Hash Code>.spv\".  Because invoking CLANG requires a file containing the OpenCL C source, setting this option implicitly sets DumpProgramSource as well.  Additionally, this feature is not available for injected program source." )
+CLI_CONTROL( std::string,   SPIRVClang,                             "clang",     "The clang executable used to compile an OpenCL C program to a SPIR-V module.  This can be an executable in the system path, a relative path, or a full absolute path." )
+CLI_CONTROL( std::string,   SPIRVCLHeader,                          "opencl.h",  "The OpenCL header file used to compile an OpenCL C program to a SPIR-V module.  This must be a relative path or a full absolute path." )
+CLI_CONTROL( std::string,   SPIRVDis,                               "spirv-dis", "The spirv-dis executable used to optionally disassemble the compiled SPIR-V module to a SPIR-V text representation.  This can be an executable in the system path, a relative path, or a full absolute path." )
+CLI_CONTROL( std::string,   DefaultOptions,                         "-cc1 -x cl -cl-std=CL1.2 -D__OPENCL_C_VERSION__=120 -D__OPENCL_VERSION__=120 -emit-spirv -triple=spir", "This is the list of options that is implicitly passed to CLANG to build a non-OpenCL 2.0 SPIR-V module.  Any application-provided build options will be appended to these build options." )
+CLI_CONTROL( std::string,   OpenCL2Options,                         "-cc1 -x cl -cl-std=CL2.0 -D__OPENCL_C_VERSION__=200 -D__OPENCL_VERSION__=200 -emit-spirv -triple=spir", "This is the list of options that is implicitly passed to CLANG to build an OpenCL 2.0 SPIR-V module.  Any application-provided build options will be appended to these build options." )
 
 CLI_CONTROL_SEPARATOR( Controls for Dumping Command Buffers: )
-CLI_CONTROL(bool, OmitCommandBufferNumber, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will omit the command buffer number from dumped file "
-            "names and hash tracking.  This can produce deterministic results "
-            "even if command buffers are creatd and finalized in a "
-            "non-deterministic order (say, by multiple threads).")
-CLI_CONTROL(
-    bool, DumpCommandBuffers, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump the commands and dependencies in a command buffer to a file "
-    "when the command buffer is successfully finalized.  The file name will "
-    "have the form \"CLI_<Command BufferNumber>_<Uniqueue Command BufferHash "
-    "Code>_cmdbuf.dot\".   The command buffer is described using the DOT graph "
-    "description language.")
+CLI_CONTROL( bool,          OmitCommandBufferNumber,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will omit the command buffer number from dumped file names and hash tracking.  This can produce deterministic results even if command buffers are creatd and finalized in a non-deterministic order (say, by multiple threads)." )
+CLI_CONTROL( bool,          DumpCommandBuffers,                     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump the commands and dependencies in a command buffer to a file when the command buffer is successfully finalized.  The file name will have the form \"CLI_<Command BufferNumber>_<Uniqueue Command BufferHash Code>_cmdbuf.dot\".   The command buffer is described using the DOT graph description language." )
 
 CLI_CONTROL_SEPARATOR( Controls for Dumping and Injecting Buffers and Images: )
-CLI_CONTROL(bool, DumpBufferHashes, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will dump hashes of a buffer, SVM, or USM allocation "
-            "rather than the full contents of the buffer.  This can be useful "
-            "to identify which kernel enqueues generate different results "
-            "without requiring a large amount of disk space.")
-CLI_CONTROL(
-    bool, DumpImageHashes, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump hashes of an image rather than the full contents of the image.  "
-    "This can be useful to identify which kernel enqueues generate different "
-    "results without requiring a large amount of disk space.")
-CLI_CONTROL(bool, DumpArgumentsOnSet, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will dump the argument value on calls to "
-            "clSetKernelArg(). Arguments are dumped as raw binary data.  The "
-            "file names will have the form \"SetKernelArg_<Enqueue "
-            "Number>_Kernel_<Kernel Name>_Arg_<Argument Number>.bin\".")
-CLI_CONTROL(
-    bool, DumpBuffersAfterCreate, false,
-    "If set, the Intercept Layer for OpenCL Applications will dump buffers to "
-    "a file after creation.  This control still honors the enqueue counter "
-    "limits, even though no enqueues are involved during buffer creation.  "
-    "Currently only works for cl_mem buffers created from host pointers.")
-CLI_CONTROL(
-    bool, DumpBuffersAfterMap, false,
-    "If set, the Intercept Layer for OpenCL Applications will dump the "
-    "contents of a buffer to a file after the buffer is mapped.  Only valid if "
-    "the buffer is NOT mapped with CL_MAP_WRITE_INVALIDATE_REGION.  If the "
-    "buffer was mapped non-blocking, this may insert a clFinish() into the "
-    "command queue, which may have functional or performance implications.")
-CLI_CONTROL(
-    bool, DumpBuffersBeforeUnmap, false,
-    "If set, the Intercept Layer for OpenCL Applications will dump the "
-    "contents of a buffer to a file immediately before the buffer is unmapped. "
-    " This is done by inserting a blocking clEnqueueMapBuffer() (and matching "
-    "clEnqueueUnmapMemObject()) into the command queue, which may have "
-    "functional or performance implications.")
-CLI_CONTROL(
-    bool, DumpBuffersBeforeEnqueue, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump buffer, SVM, and USM kernel arguments before calls to "
-    "clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the "
-    "kernel being enqueued are dumped.  Buffers are dumped as raw binary data "
-    "to a \"memDumpPreEnqueue\" subdirectory of the dump directory.  The file "
-    "names will have the form \"Enqueue_<Enqueue Number>_Kernel_<Kernel "
-    "Name>_Arg_<Argument Number>_Buffer_<Unique Memory Object Number>.bin\".")
-CLI_CONTROL(
-    bool, DumpBuffersAfterEnqueue, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump buffer, SVM, and USM kernel arguments after calls to "
-    "clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the "
-    "kernel being enqueued are dumped.  Buffers are dumped as raw binary data "
-    "to a \"memDumpPostEnqueue\" subdirectory of the dump directory.  The file "
-    "names will have the form \"Enqueue_<Enqueue Number>_Kernel_<Kernel "
-    "Name>_Arg_<Argument Number>_Buffer_<Unique Memory Object Number>.bin\".  "
-    "Note that this is the same naming convention as with "
-    "DumpBuffersBeforeEnqueue, so the changes resulting from an enqueue can be "
-    "determined by diff'ing the preEnqueue folder with the postEnqueue folder.")
-CLI_CONTROL(std::string, DumpBuffersForKernel, "",
-            "If set, the Intercept Layer for OpenCL Applications will only "
-            "dump buffer, SVM, and USM kernel arguments when the specified "
-            "kernel is enqueued.  This control is ignored unless "
-            "DumpBuffersBeforeEnqueue or DumpBuffersAfterEnqueue are enabled.")
-CLI_CONTROL(
-    bool, DumpImagesBeforeEnqueue, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump image kernel arguments before calls to "
-    "clEnqueueNDRangeKernel().  Only images that are kernel arguments for the "
-    "kernel being enqueued are dumped.  Images are dumped as raw binary data "
-    "to a \"memDumpPreEnqueue\" subdirectory of the dump directory.  The file "
-    "names will have the form \"Enqueue_<Enqueue Number>_Kernel_<Kernel "
-    "Name>_Arg_<Argument Number>_Image_<Unique Memory Object "
-    "Number>_<Width>x<Height>x<Depth>_<Element Size>bpp.raw\".")
-CLI_CONTROL(
-    bool, DumpImagesAfterEnqueue, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will dump image kernel arguments after calls to clEnqueueNDRangeKernel(). "
-    " Only images that are kernel arguments for the kernel being enqueued are "
-    "dumped.  Images are dumped as raw binary data to a \"memDumpPostEnqueue\" "
-    "subdirectory of the dump directory.  The file names will have the form "
-    "\"Enqueue_<Enqueue Number>_Kernel_<Kernel Name>_Arg_<Argument "
-    "Number>_Image_<Unique Memory Object "
-    "Number>_<Width>x<Height>x<Depth>_<Element Size>bpp.raw\".  Note that this "
-    "is the same naming convention as with DumpImagesBeforeEnqueue, so the "
-    "changes resulting from an enqueue can be determined by diff'ing the "
-    "preEnqueue folder with the postEnqueue folder.")
-CLI_CONTROL(std::string, DumpImagesForKernel, "",
-            "If set, the Intercept Layer for OpenCL Applications will only "
-            "dump image kernel arguments when the specified kernel is "
-            "enqueued.  This control is ignored unless DumpImagesBeforeEnqueue "
-            "or DumpImagesAfterEnqueue are enabled.")
-CLI_CONTROL(cl_uint, DumpBuffersMinEnqueue, 0,
-            "The Intercept Layer for OpenCL Applications will only dump "
-            "buffer, SVM, and USM kernel arguments when the enqueue counter is "
-            "greater than this value, inclusive.")
-CLI_CONTROL(cl_uint, DumpBuffersMaxEnqueue, UINT_MAX,
-            "The Intercept Layer for OpenCL Applications will only dump "
-            "buffer, SVM, and USM kernel arguments when the enqueue counter is "
-            "less than this value, inclusive.")
-CLI_CONTROL(
-    cl_uint, DumpImagesMinEnqueue, 0,
-    "The Intercept Layer for OpenCL Applications will only dump image kernel "
-    "arguments when the enqueue counter is greater than this value, inclusive.")
-CLI_CONTROL(
-    cl_uint, DumpImagesMaxEnqueue, UINT_MAX,
-    "The Intercept Layer for OpenCL Applications will only dump image kernel "
-    "arguments when the enqueue counter is less than this value, inclusive.")
-CLI_CONTROL(
-    cl_uint, DumpArgumentsOnSetMinEnqueue, 0,
-    "The Intercept Layer for OpenCL Applications will only dump argument "
-    "values when the enqueue counter is greater than this value, inclusive.")
-CLI_CONTROL(
-    cl_uint, DumpArgumentsOnSetMaxEnqueue, UINT_MAX,
-    "The Intercept Layer for OpenCL Applications will only dump kernel "
-    "arguments when the enqueue counter is less than this value, inclusive.")
-CLI_CONTROL(
-    bool, InjectBuffers, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will look to inject potentially modified buffer, SVM, and USM contents "
-    "before calls to clEnqueueNDRangeKernel().  Only buffers that are kernel "
-    "arguments for the kernel being enqueued may be injected.  The file name "
-    "to inject will have the form \"Enqueue_<Enqueue Number>_Kernel_<Kernel "
-    "Name>_Arg_<Argument Number>_Buffer_<Unique Memory Object Number>.bin\", "
-    "which matches the file name for dumped buffers.")
-CLI_CONTROL(
-    bool, InjectImages, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will look to inject potentially modified image contents before calls to "
-    "clEnqueueNDRangeKernel().  Only images that are kernel arguments for the "
-    "kernel being enqueued may be injected.  The file name to inject will have "
-    "the form \"Enqueue_<Enqueue Number>_Kernel_<Kernel Name>_Arg_<Argument "
-    "Number>_Image_<Unique Memory Object "
-    "Number>_<Width>x<Height>x<Depth>_<Element Size>bpp.raw\", which matches "
-    "the file name for dumped images.")
+CLI_CONTROL( bool,          DumpBufferHashes,                       false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump hashes of a buffer, SVM, or USM allocation rather than the full contents of the buffer.  This can be useful to identify which kernel enqueues generate different results without requiring a large amount of disk space." )
+CLI_CONTROL( bool,          DumpImageHashes,                        false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump hashes of an image rather than the full contents of the image.  This can be useful to identify which kernel enqueues generate different results without requiring a large amount of disk space." )
+CLI_CONTROL( bool,          DumpArgumentsOnSet,                     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump the argument value on calls to clSetKernelArg(). Arguments are dumped as raw binary data.  The file names will have the form \"SetKernelArg_<Enqueue Number>_Kernel_<Kernel Name>_Arg_<Argument Number>.bin\"." )
+CLI_CONTROL( bool,          DumpBuffersAfterCreate,                 false, "If set, the Intercept Layer for OpenCL Applications will dump buffers to a file after creation.  This control still honors the enqueue counter limits, even though no enqueues are involved during buffer creation.  Currently only works for cl_mem buffers created from host pointers." )
+CLI_CONTROL( bool,          DumpBuffersAfterMap,                    false, "If set, the Intercept Layer for OpenCL Applications will dump the contents of a buffer to a file after the buffer is mapped.  Only valid if the buffer is NOT mapped with CL_MAP_WRITE_INVALIDATE_REGION.  If the buffer was mapped non-blocking, this may insert a clFinish() into the command queue, which may have functional or performance implications." )
+CLI_CONTROL( bool,          DumpBuffersBeforeUnmap,                 false, "If set, the Intercept Layer for OpenCL Applications will dump the contents of a buffer to a file immediately before the buffer is unmapped.  This is done by inserting a blocking clEnqueueMapBuffer() (and matching clEnqueueUnmapMemObject()) into the command queue, which may have functional or performance implications." )
+CLI_CONTROL( bool,          DumpBuffersBeforeEnqueue,               false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump buffer, SVM, and USM kernel arguments before calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued are dumped.  Buffers are dumped as raw binary data to a \"memDumpPreEnqueue\" subdirectory of the dump directory.  The file names will have the form \"Enqueue_<Enqueue Number>_Kernel_<Kernel Name>_Arg_<Argument Number>_Buffer_<Unique Memory Object Number>.bin\"." )
+CLI_CONTROL( bool,          DumpBuffersAfterEnqueue,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump buffer, SVM, and USM kernel arguments after calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued are dumped.  Buffers are dumped as raw binary data to a \"memDumpPostEnqueue\" subdirectory of the dump directory.  The file names will have the form \"Enqueue_<Enqueue Number>_Kernel_<Kernel Name>_Arg_<Argument Number>_Buffer_<Unique Memory Object Number>.bin\".  Note that this is the same naming convention as with DumpBuffersBeforeEnqueue, so the changes resulting from an enqueue can be determined by diff'ing the preEnqueue folder with the postEnqueue folder." )
+CLI_CONTROL( std::string,   DumpBuffersForKernel,                   "",    "If set, the Intercept Layer for OpenCL Applications will only dump buffer, SVM, and USM kernel arguments when the specified kernel is enqueued.  This control is ignored unless DumpBuffersBeforeEnqueue or DumpBuffersAfterEnqueue are enabled." )
+CLI_CONTROL( bool,          DumpImagesBeforeEnqueue,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump image kernel arguments before calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued are dumped.  Images are dumped as raw binary data to a \"memDumpPreEnqueue\" subdirectory of the dump directory.  The file names will have the form \"Enqueue_<Enqueue Number>_Kernel_<Kernel Name>_Arg_<Argument Number>_Image_<Unique Memory Object Number>_<Width>x<Height>x<Depth>_<Element Size>bpp.raw\"." )
+CLI_CONTROL( bool,          DumpImagesAfterEnqueue,                 false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump image kernel arguments after calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued are dumped.  Images are dumped as raw binary data to a \"memDumpPostEnqueue\" subdirectory of the dump directory.  The file names will have the form \"Enqueue_<Enqueue Number>_Kernel_<Kernel Name>_Arg_<Argument Number>_Image_<Unique Memory Object Number>_<Width>x<Height>x<Depth>_<Element Size>bpp.raw\".  Note that this is the same naming convention as with DumpImagesBeforeEnqueue, so the changes resulting from an enqueue can be determined by diff'ing the preEnqueue folder with the postEnqueue folder." )
+CLI_CONTROL( std::string,   DumpImagesForKernel,                    "",    "If set, the Intercept Layer for OpenCL Applications will only dump image kernel arguments when the specified kernel is enqueued.  This control is ignored unless DumpImagesBeforeEnqueue or DumpImagesAfterEnqueue are enabled." )
+CLI_CONTROL( cl_uint,       DumpBuffersMinEnqueue,                  0,     "The Intercept Layer for OpenCL Applications will only dump buffer, SVM, and USM kernel arguments when the enqueue counter is greater than this value, inclusive." )
+CLI_CONTROL( cl_uint,       DumpBuffersMaxEnqueue,                  UINT_MAX, "The Intercept Layer for OpenCL Applications will only dump buffer, SVM, and USM kernel arguments when the enqueue counter is less than this value, inclusive." )
+CLI_CONTROL( cl_uint,       DumpImagesMinEnqueue,                   0,     "The Intercept Layer for OpenCL Applications will only dump image kernel arguments when the enqueue counter is greater than this value, inclusive." )
+CLI_CONTROL( cl_uint,       DumpImagesMaxEnqueue,                   UINT_MAX, "The Intercept Layer for OpenCL Applications will only dump image kernel arguments when the enqueue counter is less than this value, inclusive." )
+CLI_CONTROL( cl_uint,       DumpArgumentsOnSetMinEnqueue,           0,     "The Intercept Layer for OpenCL Applications will only dump argument values when the enqueue counter is greater than this value, inclusive." )
+CLI_CONTROL( cl_uint,       DumpArgumentsOnSetMaxEnqueue,           UINT_MAX, "The Intercept Layer for OpenCL Applications will only dump kernel arguments when the enqueue counter is less than this value, inclusive." )
+CLI_CONTROL( bool,          InjectBuffers,                          false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified buffer, SVM, and USM contents before calls to clEnqueueNDRangeKernel().  Only buffers that are kernel arguments for the kernel being enqueued may be injected.  The file name to inject will have the form \"Enqueue_<Enqueue Number>_Kernel_<Kernel Name>_Arg_<Argument Number>_Buffer_<Unique Memory Object Number>.bin\", which matches the file name for dumped buffers." )
+CLI_CONTROL( bool,          InjectImages,                           false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified image contents before calls to clEnqueueNDRangeKernel().  Only images that are kernel arguments for the kernel being enqueued may be injected.  The file name to inject will have the form \"Enqueue_<Enqueue Number>_Kernel_<Kernel Name>_Arg_<Argument Number>_Image_<Unique Memory Object Number>_<Width>x<Height>x<Depth>_<Element Size>bpp.raw\", which matches the file name for dumped images." )
 
-CLI_CONTROL_SEPARATOR(Device Partitioning Controls:)
-CLI_CONTROL(bool, AutoPartitionAllDevices, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will automatically partition parent devices and "
-            "return all parent devices and all sub-devices.")
-CLI_CONTROL(bool, AutoPartitionAllSubDevices, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will automatically partition parent devices and "
-            "return all sub-devices, but no parent devices.")
-CLI_CONTROL(bool, AutoPartitionSingleSubDevice, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will automatically partition parent devices and "
-            "return a single sub-device, but no other sub-devices or parent "
-            "devices or other sub-devices.")
-CLI_CONTROL(bool, AutoPartitionByAffinityDomain, true,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will try to automatically partition parent devices "
-            "by the next partitionable affinity domain.")
-CLI_CONTROL(cl_uint, AutoPartitionEqually, 1,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will try to automatically partition parent devices "
-            "into sub-devices with the specified number of compute units.")
+CLI_CONTROL_SEPARATOR( Device Partitioning Controls: )
+CLI_CONTROL( bool,          AutoPartitionAllDevices,                false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically partition parent devices and return all parent devices and all sub-devices." )
+CLI_CONTROL( bool,          AutoPartitionAllSubDevices,             false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically partition parent devices and return all sub-devices, but no parent devices." )
+CLI_CONTROL( bool,          AutoPartitionSingleSubDevice,           false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will automatically partition parent devices and return a single sub-device, but no other sub-devices or parent devices or other sub-devices." )
+CLI_CONTROL( bool,          AutoPartitionByAffinityDomain,          true,  "If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices by the next partitionable affinity domain." )
+CLI_CONTROL( cl_uint,       AutoPartitionEqually,                   1,     "If set to a nonzero value, the Intercept Layer for OpenCL Applications will try to automatically partition parent devices into sub-devices with the specified number of compute units." )
 
-CLI_CONTROL_SEPARATOR(Capture and Replay Controls:)
-CLI_CONTROL(bool, CaptureReplay, false,
-            "This is the top-level control for kernel capture and replay.")
-CLI_CONTROL(cl_uint, CaptureReplayMinEnqueue, 0,
-            "The Intercept Layer for OpenCL Applications will only enable "
-            "kernel capture and replay when the enqueue counter is greater "
-            "than this value, inclusive.")
-CLI_CONTROL(
-    cl_uint, CaptureReplayMaxEnqueue, UINT_MAX,
-    "The Intercept Layer for OpenCL Applications will stop kernel capture and "
-    "replay when the encounter is greater than this value, meaning that only "
-    "enqueues less than this value, inclusive, will be captured.")
-CLI_CONTROL(
-    std::string, CaptureReplayKernelName, "",
-    "If set, the Intercept Layer for OpenCL Applications will only enable "
-    "kernel capture and replay when the kernel name equals this name.")
-CLI_CONTROL(bool, CaptureReplayUniqueKernels, false,
-            "If set, the Intercept Layer for OpenCL Applications will only "
-            "enable kernel capture and replay if the kernel signature (i.e. "
-            "hash + kernelname) has not been seen already.")
-CLI_CONTROL(cl_uint, CaptureReplayNumKernelEnqueuesSkip, 0,
-            "The Intercept Layer for OpenCL Applications will skip this many "
-            "kernel enqueues before enabling kernel capture and replay.")
-CLI_CONTROL(cl_uint, CaptureReplayNumKernelEnqueuesCapture, UINT_MAX,
-            "The Intercept Layer for OpenCL Applications will only capture "
-            "this many kernel enqueues.")
+CLI_CONTROL_SEPARATOR( Capture and Replay Controls: )
+CLI_CONTROL( bool,          CaptureReplay,                          false, "This is the top-level control for kernel capture and replay." )
+CLI_CONTROL( cl_uint,       CaptureReplayMinEnqueue,                0,     "The Intercept Layer for OpenCL Applications will only enable kernel capture and replay when the enqueue counter is greater than this value, inclusive." )
+CLI_CONTROL( cl_uint,       CaptureReplayMaxEnqueue,                UINT_MAX, "The Intercept Layer for OpenCL Applications will stop kernel capture and replay when the encounter is greater than this value, meaning that only enqueues less than this value, inclusive, will be captured." )
+CLI_CONTROL( std::string,   CaptureReplayKernelName,                "",     "If set, the Intercept Layer for OpenCL Applications will only enable kernel capture and replay when the kernel name equals this name.")
+CLI_CONTROL( bool,          CaptureReplayUniqueKernels,             false,  "If set, the Intercept Layer for OpenCL Applications will only enable kernel capture and replay if the kernel signature (i.e. hash + kernelname) has not been seen already." )
+CLI_CONTROL( cl_uint,       CaptureReplayNumKernelEnqueuesSkip,     0,      "The Intercept Layer for OpenCL Applications will skip this many kernel enqueues before enabling kernel capture and replay.")
+CLI_CONTROL( cl_uint,       CaptureReplayNumKernelEnqueuesCapture,  UINT_MAX, "The Intercept Layer for OpenCL Applications will only capture this many kernel enqueues.")
 
-CLI_CONTROL_SEPARATOR(AubCapture Controls:)
-CLI_CONTROL(
-    bool, AubCapture, false,
-    "This is the top-level control for aub capture.  The Intercept Layer for "
-    "OpenCL Applications doesn't implement aub capture itself, but can be used "
-    "to selectively enable and disable aub capture via other methods.")
-CLI_CONTROL(bool, AubCaptureKDC, false,
-            "If set, the Intercept Layer for OpenCL Applications will use the "
-            "older kdc.exe method of aub capture.  By default, the newer NEO "
-            "method of aub capture will be used.  This control is ignored for "
-            "all non-Windows operating systems.")
-CLI_CONTROL(
-    bool, AubCaptureIndividualEnqueues, false,
-    "If set, the Intercept Layer for OpenCL Applications will start aub "
-    "capture before a kernel enqueue, and will also stop aub capture "
-    "immediately after the kernel enqueue.  Each file will have the form "
-    "\"AubCapture_Enqueue_<Enqueue Number>_kernel_<Kernel Name>\".  Note that "
-    "non-kernel enqueues such as calls to clEnqueueReadBuffer() and "
-    "clEnqueueWriteBuffer() will NOT be aub captured when this control is set. "
-    " The AubCaptureMinEnqueue and AubCaptureMaxEnqueue controls are still "
-    "honored when AubCaptureIndividualEnqueues is set.")
-CLI_CONTROL(
-    cl_uint, AubCaptureMinEnqueue, 0,
-    "The Intercept Layer for OpenCL Applications will only enable aub capture "
-    "when the enqueue counter is greater than this value, inclusive.")
-CLI_CONTROL(
-    cl_uint, AubCaptureMaxEnqueue, UINT_MAX,
-    "The Intercept Layer for OpenCL Applications will stop aub capture when "
-    "the encounter is greater than this value, meaning that only enqueues less "
-    "than this value, inclusive, will be captured.  If the enqueue counter "
-    "never reaches this value, the Intercept Layer for OpenCL Applications "
-    "will stop aub capture when the it is unloaded.")
-CLI_CONTROL(std::string, AubCaptureKernelName, "",
-            "If set, the Intercept Layer for OpenCL Applications will only "
-            "enable aub capture when the kernel name equals this name.")
-CLI_CONTROL(std::string, AubCaptureKernelGWS, "",
-            "If set, the Intercept Layer for OpenCL Applications will only "
-            "enable aub capture when the NDRange global work size matches this "
-            "string.  The string should have the form \"XxYxZ\".  The wildcard "
-            "\"*\" matches all global work sizes.")
-CLI_CONTROL(
-    std::string, AubCaptureKernelLWS, "",
-    "If set, the Intercept Layer for OpenCL Applications will only enable aub "
-    "capture when the NDRange local work size matches this string.  The string "
-    "should have the form \"XxYxZ\".  The wildcard \"*\" matches all local "
-    "work sizes, and the string \"NULL\" matches a NULL local work size.")
-CLI_CONTROL(
-    bool, AubCaptureUniqueKernels, false,
-    "If set, the Intercept Layer for OpenCL Applications will only enable aub "
-    "capture if the kernel signature (i.e. hash + kernelname + gws + lws) has "
-    "not been seen already.  The behavior of this control is well-defined when "
-    "AubCaptureIndividualEnqueues is not set, but it doesn't make much sense "
-    "without AubCaptureIndividualEnqueues.")
-CLI_CONTROL(
-    cl_uint, AubCaptureNumKernelEnqueuesSkip, 0,
-    "The Intercept Layer for OpenCL Applications will skip this many kernel "
-    "enqueues before enabling aub capture.  The behavior of this control is "
-    "well-defined when AubCaptureIndividualEnqueues is not set, but it doesn't "
-    "make much sense without AubCaptureIndividualEnqueues.")
-CLI_CONTROL(cl_uint, AubCaptureNumKernelEnqueuesCapture, UINT_MAX,
-            "The Intercept Layer for OpenCL Applications will only capture "
-            "this many kernel enqueues.  The behavior of this control is "
-            "well-defined when AubCaptureIndividualEnqueues is not set, but it "
-            "doesn't make much sense without AubCaptureIndividualEnqueues.")
-CLI_CONTROL(cl_uint, AubCaptureStartWait, 0,
-            "The Intercept Layer for OpenCL Applications will wait for this "
-            "many milliseconds before beginning aub capture.")
-CLI_CONTROL(cl_uint, AubCaptureEndWait, 0,
-            "The Intercept Layer for OpenCL Applications will wait for this "
-            "many milliseconds before ending aub capture.")
+CLI_CONTROL_SEPARATOR( AubCapture Controls: )
+CLI_CONTROL( bool,          AubCapture,                             false, "This is the top-level control for aub capture.  The Intercept Layer for OpenCL Applications doesn't implement aub capture itself, but can be used to selectively enable and disable aub capture via other methods." )
+CLI_CONTROL( bool,          AubCaptureKDC,                          false, "If set, the Intercept Layer for OpenCL Applications will use the older kdc.exe method of aub capture.  By default, the newer NEO method of aub capture will be used.  This control is ignored for all non-Windows operating systems." )
+CLI_CONTROL( bool,          AubCaptureIndividualEnqueues,           false, "If set, the Intercept Layer for OpenCL Applications will start aub capture before a kernel enqueue, and will also stop aub capture immediately after the kernel enqueue.  Each file will have the form \"AubCapture_Enqueue_<Enqueue Number>_kernel_<Kernel Name>\".  Note that non-kernel enqueues such as calls to clEnqueueReadBuffer() and clEnqueueWriteBuffer() will NOT be aub captured when this control is set.  The AubCaptureMinEnqueue and AubCaptureMaxEnqueue controls are still honored when AubCaptureIndividualEnqueues is set." )
+CLI_CONTROL( cl_uint,       AubCaptureMinEnqueue,                   0,     "The Intercept Layer for OpenCL Applications will only enable aub capture when the enqueue counter is greater than this value, inclusive." )
+CLI_CONTROL( cl_uint,       AubCaptureMaxEnqueue,                   UINT_MAX, "The Intercept Layer for OpenCL Applications will stop aub capture when the encounter is greater than this value, meaning that only enqueues less than this value, inclusive, will be captured.  If the enqueue counter never reaches this value, the Intercept Layer for OpenCL Applications will stop aub capture when the it is unloaded." )
+CLI_CONTROL( std::string,   AubCaptureKernelName,                   "",     "If set, the Intercept Layer for OpenCL Applications will only enable aub capture when the kernel name equals this name.")
+CLI_CONTROL( std::string,   AubCaptureKernelGWS,                    "",     "If set, the Intercept Layer for OpenCL Applications will only enable aub capture when the NDRange global work size matches this string.  The string should have the form \"XxYxZ\".  The wildcard \"*\" matches all global work sizes.")
+CLI_CONTROL( std::string,   AubCaptureKernelLWS,                    "",     "If set, the Intercept Layer for OpenCL Applications will only enable aub capture when the NDRange local work size matches this string.  The string should have the form \"XxYxZ\".  The wildcard \"*\" matches all local work sizes, and the string \"NULL\" matches a NULL local work size.")
+CLI_CONTROL( bool,          AubCaptureUniqueKernels,                false,  "If set, the Intercept Layer for OpenCL Applications will only enable aub capture if the kernel signature (i.e. hash + kernelname + gws + lws) has not been seen already.  The behavior of this control is well-defined when AubCaptureIndividualEnqueues is not set, but it doesn't make much sense without AubCaptureIndividualEnqueues." )
+CLI_CONTROL( cl_uint,       AubCaptureNumKernelEnqueuesSkip,        0,      "The Intercept Layer for OpenCL Applications will skip this many kernel enqueues before enabling aub capture.  The behavior of this control is well-defined when AubCaptureIndividualEnqueues is not set, but it doesn't make much sense without AubCaptureIndividualEnqueues.")
+CLI_CONTROL( cl_uint,       AubCaptureNumKernelEnqueuesCapture,     UINT_MAX, "The Intercept Layer for OpenCL Applications will only capture this many kernel enqueues.  The behavior of this control is well-defined when AubCaptureIndividualEnqueues is not set, but it doesn't make much sense without AubCaptureIndividualEnqueues.")
+CLI_CONTROL( cl_uint,       AubCaptureStartWait,                    0,      "The Intercept Layer for OpenCL Applications will wait for this many milliseconds before beginning aub capture.")
+CLI_CONTROL( cl_uint,       AubCaptureEndWait,                      0,      "The Intercept Layer for OpenCL Applications will wait for this many milliseconds before ending aub capture.")
 
-CLI_CONTROL_SEPARATOR(Execution Controls:)
-CLI_CONTROL(
-    bool, NoErrors, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will cause all OpenCL APIs to return a successful error status.")
-CLI_CONTROL(uint64_t, ExitOnEnqueueCount, 0,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will exit the application when the enqueue counter "
-            "reaches the specified value.  This can be useful to debug "
-            "sporadic issues by exiting an application immediately, without "
-            "needing to wait for the application to exit normally.")
-CLI_CONTROL(
-    bool, NullContextCallback, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will force the context callback to be NULL.  With both context callback "
-    "logging and NULL context callback set, the context callback will still be "
-    "logged, but any application context callback will not be called.")
-CLI_CONTROL(bool, FinishAfterEnqueue, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications inserts a call to clFinish() after every enqueue.  "
-            "The command queue that the command was just enqueued to is passed "
-            "to clFinish().  This can be used to debug possible timing or "
-            "resource management issues and will likely impact performance.")
-CLI_CONTROL(
-    bool, FlushAfterEnqueue, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "inserts a call to clFlush() after every enqueue.  The command queue that "
-    "the command was just enqueued to is passed to clFlush().  This can also "
-    "be used to debug possible timing or resource management issues and is "
-    "slightly less obtrusive than FinishAfterEnqueue but still will likely "
-    "impact performance.  If both FinishAfterEnqueue and FlushAfterEnqueue are "
-    "nonzero then the Intercept Layer for OpenCL Applications will only insert "
-    "a call to clFinish() after every enqueue, because clFinish() implies "
-    "clFlush().")
-CLI_CONTROL(
-    bool, FlushAfterEnqueueBarrier, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "inserts a call to clFlush() after every barrier enqueue.  The command "
-    "queue that the command was just enqueued to is passed to clFlush().  This "
-    "has been useful to debug out-of-order queue issues.")
-CLI_CONTROL(
-    bool, InOrderQueue, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will force all queues to be created in-order.  This can be used for "
-    "performance analysis, but may lead to deadlocks in some cases.")
-CLI_CONTROL(
-    bool, NoProfilingQueue, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will force all queues to be created without event profiling support.  "
-    "This can be used for performance analysis, but may lead to errors if the "
-    "application requires event profiling.")
-CLI_CONTROL(bool, DummyOutOfOrderQueue, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will create and destroy a dummy out-of-order queue.  "
-            "This may be useful for performance analysis.")
-CLI_CONTROL(
-    bool, NullEnqueue, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will silently ignore any enqueue.  This can be used for performance "
-    "analysis, but will likely cause errors if the application relies on any "
-    "sort of information from OpenCL events and should be used carefully.")
-CLI_CONTROL(
-    bool, NullLocalWorkSize, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will force the local work size argument to clEnqueueNDRangeKernel() to be "
-    "NULL, which causes the OpenCL implementation to pick the local work size. "
-    "Note that this control takes effect before NullLocalWorkSizeX / "
-    "NullLocalWorkSizeY / NullLocalWorkSizeZ (see below), so enabling both "
-    "controls will have the effect of forcing a specific local work size.")
-CLI_CONTROL(
-    size_t, NullLocalWorkSizeX, 0,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will set the local work size that will be used if an application passes "
-    "NULL as the local work size to clEnqueueNDRangeKernel().  1D dispatches "
-    "will only look at NullLocalWorkSizeX, 2D dispatches will only look at "
-    "NullLocalWorkSizeX and NullLocalWorkSizeY, while 3D dispatches will look "
-    "at NullLocalWorkSizeX, NullLocalWorkSizeY, and NullLocalWorkSizeZ.  If "
-    "the specified values for NullLocalWorkSize do not evenly divide the "
-    "global work size then the specified values of NullLocalWorkSize will not "
-    "take effect.")
-CLI_CONTROL(
-    size_t, NullLocalWorkSizeY, 0,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will set the local work size that will be used if an application passes "
-    "NULL as the local work size to clEnqueueNDRangeKernel().  1D dispatches "
-    "will only look at NullLocalWorkSizeX, 2D dispatches will only look at "
-    "NullLocalWorkSizeX and NullLocalWorkSizeY, while 3D dispatches will look "
-    "at NullLocalWorkSizeX, NullLocalWorkSizeY, and NullLocalWorkSizeZ.  If "
-    "the specified values for NullLocalWorkSize do not evenly divide the "
-    "global work size then the specified values of NullLocalWorkSize will not "
-    "take effect.")
-CLI_CONTROL(
-    size_t, NullLocalWorkSizeZ, 0,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will set the local work size that will be used if an application passes "
-    "NULL as the local work size to clEnqueueNDRangeKernel().  1D dispatches "
-    "will only look at NullLocalWorkSizeX, 2D dispatches will only look at "
-    "NullLocalWorkSizeX and NullLocalWorkSizeY, while 3D dispatches will look "
-    "at NullLocalWorkSizeX, NullLocalWorkSizeY, and NullLocalWorkSizeZ.  If "
-    "the specified values for NullLocalWorkSize do not evenly divide the "
-    "global work size then the specified values of NullLocalWorkSize will not "
-    "take effect.")
-CLI_CONTROL(
-    bool, InitializeBuffers, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will initialize the contents of allocated buffers with zero.  Only valid "
-    "for non-COPY_HOST_PTR and non-USE_HOST_PTR allocations.")
-CLI_CONTROL(
-    cl_uint, DefaultQueuePriorityHint, 0,
-    "If set to a nonzero value, and if no other priority hint is specified by "
-    "the application, the Intercept Layer for OpencL Applications will attempt "
-    "to create a command queue with this priority hint value.  Note: HIGH "
-    "priority is 1, MED priority is 2, and LOW priority is 4.")
-CLI_CONTROL(
-    cl_uint, DefaultQueueThrottleHint, 0,
-    "If set to a nonzero value, and if no other throttle hint is specified by "
-    "the application, the Intercept Layer for OpencL Applications will attempt "
-    "to create a command queue with this throttle hint value.  Note: HIGH "
-    "throttle is 1, MED throttle is 2, and LOW throttle is 4.")
-CLI_CONTROL(bool, RelaxAllocationLimits, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will attempt to relax allocation limits to enable "
-            "allocations larger than CL_DEVICE_MAX_MEM_ALLOC_SIZE.")
+CLI_CONTROL_SEPARATOR( Execution Controls: )
+CLI_CONTROL( bool,          NoErrors,                               false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will cause all OpenCL APIs to return a successful error status." )
+CLI_CONTROL( uint64_t,      ExitOnEnqueueCount,                     0,     "If set to a nonzero value, the Intercept Layer for OpenCL Applications will exit the application when the enqueue counter reaches the specified value.  This can be useful to debug sporadic issues by exiting an application immediately, without needing to wait for the application to exit normally." )
+CLI_CONTROL( bool,          NullContextCallback,                    false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will force the context callback to be NULL.  With both context callback logging and NULL context callback set, the context callback will still be logged, but any application context callback will not be called." )
+CLI_CONTROL( bool,          FinishAfterEnqueue,                     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications inserts a call to clFinish() after every enqueue.  The command queue that the command was just enqueued to is passed to clFinish().  This can be used to debug possible timing or resource management issues and will likely impact performance." )
+CLI_CONTROL( bool,          FlushAfterEnqueue,                      false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications inserts a call to clFlush() after every enqueue.  The command queue that the command was just enqueued to is passed to clFlush().  This can also be used to debug possible timing or resource management issues and is slightly less obtrusive than FinishAfterEnqueue but still will likely impact performance.  If both FinishAfterEnqueue and FlushAfterEnqueue are nonzero then the Intercept Layer for OpenCL Applications will only insert a call to clFinish() after every enqueue, because clFinish() implies clFlush()." )
+CLI_CONTROL( bool,          FlushAfterEnqueueBarrier,               false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications inserts a call to clFlush() after every barrier enqueue.  The command queue that the command was just enqueued to is passed to clFlush().  This has been useful to debug out-of-order queue issues." )
+CLI_CONTROL( bool,          InOrderQueue,                           false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will force all queues to be created in-order.  This can be used for performance analysis, but may lead to deadlocks in some cases." )
+CLI_CONTROL( bool,          NoProfilingQueue,                       false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will force all queues to be created without event profiling support.  This can be used for performance analysis, but may lead to errors if the application requires event profiling." )
+CLI_CONTROL( bool,          DummyOutOfOrderQueue,                   false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will create and destroy a dummy out-of-order queue.  This may be useful for performance analysis." )
+CLI_CONTROL( bool,          NullEnqueue,                            false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will silently ignore any enqueue.  This can be used for performance analysis, but will likely cause errors if the application relies on any sort of information from OpenCL events and should be used carefully." )
+CLI_CONTROL( bool,          NullLocalWorkSize,                      false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will force the local work size argument to clEnqueueNDRangeKernel() to be NULL, which causes the OpenCL implementation to pick the local work size. Note that this control takes effect before NullLocalWorkSizeX / NullLocalWorkSizeY / NullLocalWorkSizeZ (see below), so enabling both controls will have the effect of forcing a specific local work size." )
+CLI_CONTROL( size_t,        NullLocalWorkSizeX,                     0,     "If set to a nonzero value, the Intercept Layer for OpenCL Applications will set the local work size that will be used if an application passes NULL as the local work size to clEnqueueNDRangeKernel().  1D dispatches will only look at NullLocalWorkSizeX, 2D dispatches will only look at NullLocalWorkSizeX and NullLocalWorkSizeY, while 3D dispatches will look at NullLocalWorkSizeX, NullLocalWorkSizeY, and NullLocalWorkSizeZ.  If the specified values for NullLocalWorkSize do not evenly divide the global work size then the specified values of NullLocalWorkSize will not take effect." )
+CLI_CONTROL( size_t,        NullLocalWorkSizeY,                     0,     "If set to a nonzero value, the Intercept Layer for OpenCL Applications will set the local work size that will be used if an application passes NULL as the local work size to clEnqueueNDRangeKernel().  1D dispatches will only look at NullLocalWorkSizeX, 2D dispatches will only look at NullLocalWorkSizeX and NullLocalWorkSizeY, while 3D dispatches will look at NullLocalWorkSizeX, NullLocalWorkSizeY, and NullLocalWorkSizeZ.  If the specified values for NullLocalWorkSize do not evenly divide the global work size then the specified values of NullLocalWorkSize will not take effect." )
+CLI_CONTROL( size_t,        NullLocalWorkSizeZ,                     0,     "If set to a nonzero value, the Intercept Layer for OpenCL Applications will set the local work size that will be used if an application passes NULL as the local work size to clEnqueueNDRangeKernel().  1D dispatches will only look at NullLocalWorkSizeX, 2D dispatches will only look at NullLocalWorkSizeX and NullLocalWorkSizeY, while 3D dispatches will look at NullLocalWorkSizeX, NullLocalWorkSizeY, and NullLocalWorkSizeZ.  If the specified values for NullLocalWorkSize do not evenly divide the global work size then the specified values of NullLocalWorkSize will not take effect." )
+CLI_CONTROL( bool,          InitializeBuffers,                      false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will initialize the contents of allocated buffers with zero.  Only valid for non-COPY_HOST_PTR and non-USE_HOST_PTR allocations." )
+CLI_CONTROL( cl_uint,       DefaultQueuePriorityHint,               0,     "If set to a nonzero value, and if no other priority hint is specified by the application, the Intercept Layer for OpencL Applications will attempt to create a command queue with this priority hint value.  Note: HIGH priority is 1, MED priority is 2, and LOW priority is 4." )
+CLI_CONTROL( cl_uint,       DefaultQueueThrottleHint,               0,     "If set to a nonzero value, and if no other throttle hint is specified by the application, the Intercept Layer for OpencL Applications will attempt to create a command queue with this throttle hint value.  Note: HIGH throttle is 1, MED throttle is 2, and LOW throttle is 4." )
+CLI_CONTROL( bool,          RelaxAllocationLimits,                  false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will attempt to relax allocation limits to enable allocations larger than CL_DEVICE_MAX_MEM_ALLOC_SIZE." )
 
-CLI_CONTROL_SEPARATOR(Platform and Device Query Overrides:)
-CLI_CONTROL(std::string, PlatformName, "",
-            "If set to a non-empty value, the clGetPlatformInfo() query for "
-            "CL_PLATFORM_NAME will return this string instead of the true "
-            "platform name.")
-CLI_CONTROL(std::string, PlatformVendor, "",
-            "If set to a non-empty value, the clGetPlatformInfo() query for "
-            "CL_PLATFORM_VENDOR will return this string instead of the true "
-            "platform vendor.")
-CLI_CONTROL(std::string, PlatformProfile, "",
-            "If set to a non-empty value, the clGetPlatformInfo() query for "
-            "CL_PLATFORM_PROFILE will return this string instead of the true "
-            "platform profile.")
-CLI_CONTROL(std::string, PlatformVersion, "",
-            "If set to a non-empty string, the clGetPlatformInfo() query for "
-            "CL_PLATFORM_VERSION will return this string instead of the true "
-            "platform version.")
-CLI_CONTROL(cl_uint, DeviceTypeFilter, CL_DEVICE_TYPE_ALL,
-            "Hides all device types that are not in the filter.  Note: "
-            "CL_DEVICE_TYPE_CPU = 2, CL_DEVICE_TYPE_GPU = 4, "
-            "CL_DEVICE_TYPE_ACCELERATOR = 8, CL_DEVICE_TYPE_CUSTOM = 16.")
-CLI_CONTROL(
-    cl_uint, DeviceType, 0,
-    "If set to a non-zero value, the clGetDeviceInfo() query for "
-    "CL_DEVICE_TYPE will return this value instead of the true device type.  "
-    "In addition, calls to clGetDeviceIDs() for this device type will return "
-    "all devices, not just devices of the requested type.  This can be used to "
-    "enumerate all devices (even CPUs) as GPUs, or vice versa.")
-CLI_CONTROL(
-    std::string, DeviceName, "",
-    "If set to a non-empty string, the clGetDeviceInfo() query for "
-    "CL_DEVICE_NAME will return this value instead of the true device name.")
-CLI_CONTROL(std::string, DeviceVendor, "",
-            "If set to a non-empty string, the clGetDeviceInfo() query for "
-            "CL_DEVICE_VENDOR will return this value instead of the true "
-            "device vendor.")
-CLI_CONTROL(std::string, DeviceProfile, "",
-            "If set to a non-empty string, the clGetDeviceInfo() query for "
-            "CL_DEVICE_PROFILE will return this value instead of the true "
-            "device profile.")
-CLI_CONTROL(std::string, DeviceVersion, "",
-            "If set to a non-empty string, the clGetDeviceInfo() query for "
-            "CL_DEVICE_VERSION will return this value instead of the true "
-            "device version.")
-CLI_CONTROL(std::string, DeviceCVersion, "",
-            "If set to a non-empty string, the clGetDeviceInfo() query for "
-            "CL_DEVICE_OPENCL_C_VERSION will return this value instead of the "
-            "true device version.")
-CLI_CONTROL(std::string, DeviceExtensions, "",
-            "If set to a non-empty string, the clGetDeviceInfo() query for "
-            "CL_DEVICE_EXTENSIONS will return this value instead of the true "
-            "device extensions string.")
-CLI_CONTROL(std::string, DeviceILVersion, "",
-            "If set to a non-empty string, the clGetDeviceInfo() query for "
-            "CL_DEVICE_IL_VERSION will return this value instead of the true "
-            "device intermediate language versions.")
-CLI_CONTROL(cl_uint, DeviceVendorID, 0,
-            "If set to a non-zero value, the clGetDeviceInfo() query for "
-            "CL_DEVICE_VENDOR will return this value instead of the true "
-            "device vendor ID.")
-CLI_CONTROL(cl_uint, DeviceMaxComputeUnits, 0,
-            "If set to a non-zero value, the clGetDeviceInfo() query for "
-            "CL_DEVICE_MAX_COMPUTE_UNITS will return this value instead of the "
-            "true device max compute units.")
-CLI_CONTROL(cl_uint, DevicePreferredVectorWidthChar, UINT_MAX,
-            "If set to a non-negative value, the clGetDeviceInfo() query for "
-            "CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR will return this value "
-            "instead of the true device preferred vector width.")
-CLI_CONTROL(cl_uint, DevicePreferredVectorWidthShort, UINT_MAX,
-            "If set to a non-negative value, the clGetDeviceInfo() query for "
-            "CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT will return this value "
-            "instead of the true device preferred vector width.")
-CLI_CONTROL(cl_uint, DevicePreferredVectorWidthInt, UINT_MAX,
-            "If set to a non-negative value, the clGetDeviceInfo() query for "
-            "CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT will return this value "
-            "instead of the true device preferred vector width.")
-CLI_CONTROL(cl_uint, DevicePreferredVectorWidthLong, UINT_MAX,
-            "If set to a non-negative value, the clGetDeviceInfo() query for "
-            "CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG will return this value "
-            "instead of the true device preferred vector width.")
-CLI_CONTROL(cl_uint, DevicePreferredVectorWidthHalf, UINT_MAX,
-            "If set to a non-negative value, the clGetDeviceInfo() query for "
-            "CL_DEVICE_PREFERRED_VECTOR_WIDTH_HALF will return this value "
-            "instead of the true device preferred vector width.")
-CLI_CONTROL(cl_uint, DevicePreferredVectorWidthFloat, UINT_MAX,
-            "If set to a non-negative value, the clGetDeviceInfo() query for "
-            "CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT will return this value "
-            "instead of the true device preferred vector width.")
-CLI_CONTROL(cl_uint, DevicePreferredVectorWidthDouble, UINT_MAX,
-            "If set to a non-negative value, the clGetDeviceInfo() query for "
-            "CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE will return this value "
-            "instead of the true device preferred vector width.")
-CLI_CONTROL(std::string, DriverVersion, "",
-            "If set to a non-empty string, the clGetDeviceInfo() query for "
-            "CL_DRIVER_VERSION will return this value instead of the true "
-            "driver version.")
-CLI_CONTROL(std::string, PrependDeviceExtensions, "",
-            "If set to a non-empty string, the clGetDeviceInfo() query for "
-            "CL_DEVICE_EXTENSIONS will return this value followed by the true "
-            "device extensions string.")
+CLI_CONTROL_SEPARATOR( Platform and Device Query Overrides: )
+CLI_CONTROL( std::string,   PlatformName,                           "",    "If set to a non-empty value, the clGetPlatformInfo() query for CL_PLATFORM_NAME will return this string instead of the true platform name." )
+CLI_CONTROL( std::string,   PlatformVendor,                         "",    "If set to a non-empty value, the clGetPlatformInfo() query for CL_PLATFORM_VENDOR will return this string instead of the true platform vendor." )
+CLI_CONTROL( std::string,   PlatformProfile,                        "",    "If set to a non-empty value, the clGetPlatformInfo() query for CL_PLATFORM_PROFILE will return this string instead of the true platform profile." )
+CLI_CONTROL( std::string,   PlatformVersion,                        "",    "If set to a non-empty string, the clGetPlatformInfo() query for CL_PLATFORM_VERSION will return this string instead of the true platform version." )
+CLI_CONTROL( cl_uint,       DeviceTypeFilter,                       CL_DEVICE_TYPE_ALL, "Hides all device types that are not in the filter.  Note: CL_DEVICE_TYPE_CPU = 2, CL_DEVICE_TYPE_GPU = 4, CL_DEVICE_TYPE_ACCELERATOR = 8, CL_DEVICE_TYPE_CUSTOM = 16." )
+CLI_CONTROL( cl_uint,       DeviceType,                             0,     "If set to a non-zero value, the clGetDeviceInfo() query for CL_DEVICE_TYPE will return this value instead of the true device type.  In addition, calls to clGetDeviceIDs() for this device type will return all devices, not just devices of the requested type.  This can be used to enumerate all devices (even CPUs) as GPUs, or vice versa." )
+CLI_CONTROL( std::string,   DeviceName,                             "",    "If set to a non-empty string, the clGetDeviceInfo() query for CL_DEVICE_NAME will return this value instead of the true device name." )
+CLI_CONTROL( std::string,   DeviceVendor,                           "",    "If set to a non-empty string, the clGetDeviceInfo() query for CL_DEVICE_VENDOR will return this value instead of the true device vendor." )
+CLI_CONTROL( std::string,   DeviceProfile,                          "",    "If set to a non-empty string, the clGetDeviceInfo() query for CL_DEVICE_PROFILE will return this value instead of the true device profile." )
+CLI_CONTROL( std::string,   DeviceVersion,                          "",    "If set to a non-empty string, the clGetDeviceInfo() query for CL_DEVICE_VERSION will return this value instead of the true device version." )
+CLI_CONTROL( std::string,   DeviceCVersion,                         "",    "If set to a non-empty string, the clGetDeviceInfo() query for CL_DEVICE_OPENCL_C_VERSION will return this value instead of the true device version." )
+CLI_CONTROL( std::string,   DeviceExtensions,                       "",    "If set to a non-empty string, the clGetDeviceInfo() query for CL_DEVICE_EXTENSIONS will return this value instead of the true device extensions string." )
+CLI_CONTROL( std::string,   DeviceILVersion,                        "",    "If set to a non-empty string, the clGetDeviceInfo() query for CL_DEVICE_IL_VERSION will return this value instead of the true device intermediate language versions." )
+CLI_CONTROL( cl_uint,       DeviceVendorID,                         0,     "If set to a non-zero value, the clGetDeviceInfo() query for CL_DEVICE_VENDOR will return this value instead of the true device vendor ID." )
+CLI_CONTROL( cl_uint,       DeviceMaxComputeUnits,                  0,     "If set to a non-zero value, the clGetDeviceInfo() query for CL_DEVICE_MAX_COMPUTE_UNITS will return this value instead of the true device max compute units." )
+CLI_CONTROL( cl_uint,       DevicePreferredVectorWidthChar,         UINT_MAX, "If set to a non-negative value, the clGetDeviceInfo() query for CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR will return this value instead of the true device preferred vector width." )
+CLI_CONTROL( cl_uint,       DevicePreferredVectorWidthShort,        UINT_MAX, "If set to a non-negative value, the clGetDeviceInfo() query for CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT will return this value instead of the true device preferred vector width." )
+CLI_CONTROL( cl_uint,       DevicePreferredVectorWidthInt,          UINT_MAX, "If set to a non-negative value, the clGetDeviceInfo() query for CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT will return this value instead of the true device preferred vector width." )
+CLI_CONTROL( cl_uint,       DevicePreferredVectorWidthLong,         UINT_MAX, "If set to a non-negative value, the clGetDeviceInfo() query for CL_DEVICE_PREFERRED_VECTOR_WIDTH_LONG will return this value instead of the true device preferred vector width." )
+CLI_CONTROL( cl_uint,       DevicePreferredVectorWidthHalf,         UINT_MAX, "If set to a non-negative value, the clGetDeviceInfo() query for CL_DEVICE_PREFERRED_VECTOR_WIDTH_HALF will return this value instead of the true device preferred vector width." )
+CLI_CONTROL( cl_uint,       DevicePreferredVectorWidthFloat,        UINT_MAX, "If set to a non-negative value, the clGetDeviceInfo() query for CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT will return this value instead of the true device preferred vector width." )
+CLI_CONTROL( cl_uint,       DevicePreferredVectorWidthDouble,       UINT_MAX, "If set to a non-negative value, the clGetDeviceInfo() query for CL_DEVICE_PREFERRED_VECTOR_WIDTH_DOUBLE will return this value instead of the true device preferred vector width." )
+CLI_CONTROL( std::string,   DriverVersion,                          "",    "If set to a non-empty string, the clGetDeviceInfo() query for CL_DRIVER_VERSION will return this value instead of the true driver version." )
+CLI_CONTROL( std::string,   PrependDeviceExtensions,                "",    "If set to a non-empty string, the clGetDeviceInfo() query for CL_DEVICE_EXTENSIONS will return this value followed by the true device extensions string." )
 
-CLI_CONTROL_SEPARATOR(Precompiled Kernel and Builtin Kernel Override Controls:)
-CLI_CONTROL(
-    bool, ForceByteBufferOverrides, false,
-    "If set to a nonzero value, each of the buffer functions that are "
-    "overridden (via one or more of the keys below) will use a byte-wise "
-    "operation to read/write/copy the buffer (default behavior is to try to "
-    "copy multiple bytes at a time, if possible).  Note: Requires OpenCL 1.1 "
-    "or the \"byte addressable store\" extension.")
-CLI_CONTROL(bool, OverrideReadBuffer, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will use a kernel to implement clEnqueueReadBuffer() "
-            "instead of the implementation's clEnqueueReadBuffer().  Note: "
-            "Requires OpenCL 1.1 or the \"byte addressable store\" extension.")
-CLI_CONTROL(
-    bool, OverrideWriteBuffer, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will use a kernel to implement clEnqueueWriteBuffer() instead of the "
-    "implementation's clEnqueueWriteBuffer().  Note: Requires OpenCL 1.1 or "
-    "the \"byte addressable store\" extension.")
-CLI_CONTROL(bool, OverrideCopyBuffer, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will use a kernel to implement clEnqueueCopyBuffer() "
-            "instead of the implementation's clEnqueueCopyBuffer().  Note: "
-            "Requires OpenCL 1.1 or the \"byte addressable store\" extension.")
-CLI_CONTROL(bool, OverrideReadImage, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will use a kernel to implement clEnqueueReadImage() "
-            "instead of the implementation's clEnqueueReadImage().  Only 2D "
-            "images are currently supported.")
-CLI_CONTROL(bool, OverrideWriteImage, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will use a kernel to implement clEnqueueWriteImage() "
-            "instead of the implementation's clEnqueueWriteImage().  Only 2D "
-            "images are currently supported.")
-CLI_CONTROL(bool, OverrideCopyImage, false,
-            "If set to a nonzero value, the Intercept Layer for OpenCL "
-            "Applications will use a kernel to implement clEnqueueCopyImage() "
-            "instead of the implementation's clEnqueueCopyImage().  Only 2D "
-            "images are currently supported.")
-CLI_CONTROL(
-    bool, OverrideBuiltinKernels, false,
-    "If set to a nonzero value, the Intercept Layer for OpenCL Applications "
-    "will use its own version of the built-in OpenCL kernels that may be "
-    "accessed via clCreateProgramWithBuiltInKernels(). At present, only the "
-    "VME block_motion_estimate_intel kernel is implemented.")
+CLI_CONTROL_SEPARATOR( Precompiled Kernel and Builtin Kernel Override Controls: )
+CLI_CONTROL( bool,          ForceByteBufferOverrides,               false, "If set to a nonzero value, each of the buffer functions that are overridden (via one or more of the keys below) will use a byte-wise operation to read/write/copy the buffer (default behavior is to try to copy multiple bytes at a time, if possible).  Note: Requires OpenCL 1.1 or the \"byte addressable store\" extension." )
+CLI_CONTROL( bool,          OverrideReadBuffer,                     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will use a kernel to implement clEnqueueReadBuffer() instead of the implementation's clEnqueueReadBuffer().  Note: Requires OpenCL 1.1 or the \"byte addressable store\" extension." )
+CLI_CONTROL( bool,          OverrideWriteBuffer,                    false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will use a kernel to implement clEnqueueWriteBuffer() instead of the implementation's clEnqueueWriteBuffer().  Note: Requires OpenCL 1.1 or the \"byte addressable store\" extension." )
+CLI_CONTROL( bool,          OverrideCopyBuffer,                     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will use a kernel to implement clEnqueueCopyBuffer() instead of the implementation's clEnqueueCopyBuffer().  Note: Requires OpenCL 1.1 or the \"byte addressable store\" extension." )
+CLI_CONTROL( bool,          OverrideReadImage,                      false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will use a kernel to implement clEnqueueReadImage() instead of the implementation's clEnqueueReadImage().  Only 2D images are currently supported." )
+CLI_CONTROL( bool,          OverrideWriteImage,                     false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will use a kernel to implement clEnqueueWriteImage() instead of the implementation's clEnqueueWriteImage().  Only 2D images are currently supported." )
+CLI_CONTROL( bool,          OverrideCopyImage,                      false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will use a kernel to implement clEnqueueCopyImage() instead of the implementation's clEnqueueCopyImage().  Only 2D images are currently supported." )
+CLI_CONTROL( bool,          OverrideBuiltinKernels,                 false, "If set to a nonzero value, the Intercept Layer for OpenCL Applications will use its own version of the built-in OpenCL kernels that may be accessed via clCreateProgramWithBuiltInKernels(). At present, only the VME block_motion_estimate_intel kernel is implemented." )
