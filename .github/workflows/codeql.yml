@@ -35,6 +35,7 @@ jobs:
       uses: github/codeql-action/init@e46ed2cbd01164d986452f91f178727624ae40d7 # v4.35.3
       with:
         languages: cpp
+        build-mode: manual
 
     - name: Create Build Directory
       run: cmake -E make_directory ${{runner.workspace}}/build
