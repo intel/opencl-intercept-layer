@@ -447,6 +447,10 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will only
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will omit the program number from dumped file names and hash tracking.  This can produce deterministic results even if programs are built in a non-deterministic order (say, by multiple threads).
 
+##### `OmitCompileCount` (bool)
+
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will omit the compile count from dumped file names and hash tracking.  This can reduce the number of files that are dumped if the same program is compiled multiple times.
+
 ##### `SimpleDumpProgramSource` (bool)
 
 If set to a nonzero value, the Intercept Layer for OpenCL Applications will dump the last string(s) passed to clCreateProgramWithSource() to the file kernel.cl, and the last program options passed to clBuildProgram() to the file kernel.txt.  These files will be dumped to the application's working directory.  If an application fails to compile a program and exits the program immediately after detecting a compile failure SimpleDumpProgram may be all that is needed to identify the program and program options that are failing to compile.
@@ -477,7 +481,7 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will look
 
 ##### `InjectProgramBinaries` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified kernel binaries via clCreateProgramWithBinary() in place of program text for each call to clCreateProgramWithSource(). This is typically done to reduce program compilation time or to use known good program binaries.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified kernel binaries via clCreateProgramWithBinary() for each call to clCreateProgramWithSource() or clCreateProgramWithBinary(). This can be used to reduce program compilation time, use known good program binaries, or replace application-provided binaries with modified program binaries.
 
 ##### `RejectProgramBinaries` (bool)
 

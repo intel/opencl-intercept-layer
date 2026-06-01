@@ -122,7 +122,8 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_COMPUTE_UNITS );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_WORK_GROUP_SIZE );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_WORK_ITEM_SIZES );
+    // CL_DEVICE_MAX_WORK_ITEM_SIZES was deprecated and replaced by:
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_WORK_GROUP_SIZES );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_VECTOR_WIDTH_CHAR );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_VECTOR_WIDTH_SHORT );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT );
@@ -228,6 +229,16 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_DEVICE_ENQUEUE_CAPABILITIES );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_PIPE_SUPPORT );
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LATEST_CONFORMANCE_VERSION_PASSED );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_UUID );
+    ADD_ENUM_NAME( m_cl_int, CL_DRIVER_UUID );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LUID_VALID );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LUID );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NODE_MASK );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_INTEGER_DOT_PRODUCT_CAPABILITIES );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_INTEGER_DOT_PRODUCT_ACCELERATION_PROPERTIES_8BIT );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_EXTENDED_INSTRUCTION_SETS );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_EXTENSIONS );
+    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_CAPABILITIES );
 
     /* cl_device_fp_config - bitfield */
     ADD_ENUM_NAME( m_cl_device_fp_config, CL_FP_DENORM );
@@ -655,12 +666,12 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_COMMAND_RELEASE_D3D11_OBJECTS_KHR );
 #endif
 
-    // cl_khr_device_uuid
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_UUID_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DRIVER_UUID_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LUID_VALID_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_LUID_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_NODE_MASK_KHR );
+    // cl_khr_device_uuid - promoted to OpenCL 3.1
+    //CL_DEVICE_UUID_KHR
+    //CL_DRIVER_UUID_KHR
+    //CL_DEVICE_LUID_VALID_KHR
+    //CL_DEVICE_LUID_KHR
+    //CL_DEVICE_NODE_MASK_KHR
 
 #if defined(_WIN32)
     // cl_khr_dx9_media_sharing
@@ -763,14 +774,14 @@ CEnumNameMap::CEnumNameMap()
     //CL_COMMAND_BUFFER_STATE_FINALIZED_KHR                 2
 
     // cl_khr_extended_versioning extension
-    // Most enums for this extension were added to OpenCL 3.0.
-    //CL_PLATFORM_NUMERIC_VERSION_KHR                  0x0906
-    //CL_PLATFORM_EXTENSIONS_WITH_VERSION_KHR          0x0907
-    //CL_DEVICE_NUMERIC_VERSION_KHR                    0x105E
+    // Most enums for this extension were promoted to OpenCL 3.0.
+    //CL_PLATFORM_NUMERIC_VERSION_KHR
+    //CL_PLATFORM_EXTENSIONS_WITH_VERSION_KHR
+    //CL_DEVICE_NUMERIC_VERSION_KHR
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_OPENCL_C_NUMERIC_VERSION_KHR );
-    //CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR            0x1060
-    //CL_DEVICE_ILS_WITH_VERSION_KHR                   0x1061
-    //CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR      0x1062
+    //CL_DEVICE_EXTENSIONS_WITH_VERSION_KHR
+    //CL_DEVICE_ILS_WITH_VERSION_KHR
+    //CL_DEVICE_BUILT_IN_KERNELS_WITH_VERSION_KHR
 
     // cl_khr_external_memory
     ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_EXTERNAL_MEMORY_IMPORT_HANDLE_TYPES_KHR );
@@ -827,16 +838,16 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_ICD_SUFFIX_KHR );
     ADD_ENUM_NAME( m_cl_int, CL_PLATFORM_NOT_FOUND_KHR );
 
-    // cl_khr_il_program
-    // These enums are core in OpenCL 2.1.
-    //CL_DEVICE_IL_VERSION_KHR                        0x105B
-    //CL_PROGRAM_IL_KHR                               0x1169
+    // cl_khr_il_program - promoted to OpenCL 2.1
+    //CL_DEVICE_IL_VERSION_KHR
+    //CL_PROGRAM_IL_KHR
 
     // cl_khr_initalize_memory
     ADD_ENUM_NAME( m_cl_int, CL_CONTEXT_MEMORY_INITIALIZE_KHR );
 
-    // cl_khr_integer_dot_product
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_INTEGER_DOT_PRODUCT_CAPABILITIES_KHR );
+    // cl_khr_integer_dot_product - promoted to OpenCL 3.1
+    //CL_DEVICE_INTEGER_DOT_PRODUCT_CAPABILITIES_KHR
+    //CL_DEVICE_INTEGER_DOT_PRODUCT_ACCELERATION_PROPERTIES_8BIT_KHR
 
     // cl_khr_kernel_clock
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_KERNEL_CLOCK_CAPABILITIES_KHR );
@@ -866,18 +877,17 @@ CEnumNameMap::CEnumNameMap()
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIR_VERSIONS );
     ADD_ENUM_NAME( m_cl_int, CL_PROGRAM_BINARY_TYPE_INTERMEDIATE );
 
-    // cl_khr_spirv_queries
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_EXTENDED_INSTRUCTION_SETS_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_EXTENSIONS_KHR );
-    ADD_ENUM_NAME( m_cl_int, CL_DEVICE_SPIRV_CAPABILITIES_KHR );
+    // cl_khr_spirv_queries - promoted to OpenCL 3.1
+    //CL_DEVICE_SPIRV_EXTENDED_INSTRUCTION_SETS_KHR
+    //CL_DEVICE_SPIRV_EXTENSIONS_KHR
+    //CL_DEVICE_SPIRV_CAPABILITIES_KHR
 
     // cl_khr_subgroup_named_barrier
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_MAX_NAMED_BARRIER_COUNT_KHR );
 
-    // cl_khr_subgroups
-    // These enums were promoted to core in OpenCL 2.1.
-    //CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR    0x2033
-    //CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE_KHR       0x2034
+    // cl_khr_subgroups - promoted to OpenCL 2.1
+    //CL_KERNEL_MAX_SUB_GROUP_SIZE_FOR_NDRANGE_KHR
+    //CL_KERNEL_SUB_GROUP_COUNT_FOR_NDRANGE_KHR
 
     // cl_khr_terminate_context
     ADD_ENUM_NAME( m_cl_int, CL_DEVICE_TERMINATE_CAPABILITY_KHR );

@@ -68,7 +68,7 @@ public:
                         }                                           \
                         else                                        \
                         {                                           \
-                            ret += "<unknown>";                     \
+                            ret += "<Unknown>";                     \
                         }                                           \
                         e &= ~check;                                \
                     }                                               \

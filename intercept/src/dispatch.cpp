@@ -2050,14 +2050,25 @@ CL_API_ENTRY cl_program CL_API_CALL CLIRN(clCreateProgramWithBinary)(
         }
         else
         {
-            retVal = pIntercept->dispatch().clCreateProgramWithBinary(
-                context,
-                num_devices,
-                device_list,
-                lengths,
-                binaries,
-                binary_status,
-                errcode_ret );
+            if( pIntercept->config().InjectProgramBinaries )
+            {
+                retVal = pIntercept->createProgramWithInjectionBinaries(
+                    hash,
+                    context,
+                    errcode_ret );
+            }
+
+            if( retVal == NULL )
+            {
+                retVal = pIntercept->dispatch().clCreateProgramWithBinary(
+                    context,
+                    num_devices,
+                    device_list,
+                    lengths,
+                    binaries,
+                    binary_status,
+                    errcode_ret );
+            }
         }
 
         HOST_PERFORMANCE_TIMING_END();
@@ -7544,6 +7555,47 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// OpenCL 3.1
+CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSize(
+    cl_command_queue commandQueue,
+    cl_kernel kernel,
+    cl_uint workDim,
+    const size_t *globalWorkOffset,
+    const size_t *globalWorkSize,
+    size_t *suggestedLocalWorkSize)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept && pIntercept->dispatch().clGetKernelSuggestedLocalWorkSize )
+    {
+        GET_ENQUEUE_COUNTER();
+        CALL_LOGGING_ENTER_KERNEL(
+            kernel,
+            "queue = %p, kernel = %p",
+            commandQueue,
+            kernel );
+        HOST_PERFORMANCE_TIMING_START();
+
+        cl_int retVal = pIntercept->dispatch().clGetKernelSuggestedLocalWorkSize(
+            commandQueue,
+            kernel,
+            workDim,
+            globalWorkOffset,
+            globalWorkSize,
+            suggestedLocalWorkSize );
+
+        HOST_PERFORMANCE_TIMING_END();
+        CHECK_ERROR( retVal );
+        CALL_LOGGING_EXIT( retVal );
+
+        return retVal;
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_khr_external_memory
 CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireExternalMemObjectsKHR(
     cl_command_queue command_queue,
@@ -8924,6 +8976,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_khr_suggested_local_work_size
+// This function should stay in sync with clGetKernelSuggestedLocalWorkSize, above.
 CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
     cl_command_queue commandQueue,
     cl_kernel kernel,
