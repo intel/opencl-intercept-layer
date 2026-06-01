@@ -1908,16 +1908,17 @@ void CLIntercept::getPlatformInfoString(
     if( platform && m_PlatformInfoMap.find(platform) != m_PlatformInfoMap.end() )
     {
         str += m_PlatformInfoMap.at(platform).Name;
-        {
-            char    s[256];
-            CLI_SPRINTF( s, 256, " (%p)",
-                platform );
-            str += s;
-        }
     }
     else
     {
-        str += "ERROR";
+        str += "Unknown";
+    }
+
+    {
+        char    s[256];
+        CLI_SPRINTF( s, 256, " (%p)",
+            platform );
+        str += s;
     }
 }
 
