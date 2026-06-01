@@ -8985,6 +8985,7 @@ CL_API_ENTRY cl_int CL_API_CALL clSetPerformanceConfigurationINTEL(
 ///////////////////////////////////////////////////////////////////////////////
 //
 // cl_khr_suggested_local_work_size
+// This function should stay in sync with clGetKernelSuggestedLocalWorkSize, above.
 CL_API_ENTRY cl_int CL_API_CALL clGetKernelSuggestedLocalWorkSizeKHR(
     cl_command_queue commandQueue,
     cl_kernel kernel,
