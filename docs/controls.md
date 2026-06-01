@@ -477,7 +477,7 @@ If set to a nonzero value, the Intercept Layer for OpenCL Applications will look
 
 ##### `InjectProgramBinaries` (bool)
 
-If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified kernel binaries via clCreateProgramWithBinary() in place of program text for each call to clCreateProgramWithSource(). This is typically done to reduce program compilation time or to use known good program binaries.
+If set to a nonzero value, the Intercept Layer for OpenCL Applications will look to inject potentially modified kernel binaries via clCreateProgramWithBinary() for each call to clCreateProgramWithSource() or clCreateProgramWithBinary(). This can be used to reduce program compilation time, use known good program binaries, or replace application-provided binaries with modified program binaries.
 
 ##### `RejectProgramBinaries` (bool)
 
