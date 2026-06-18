@@ -7902,7 +7902,8 @@ void CLIntercept::dumpCaptureReplayKernelSource(
         errorCode = dispatch().clGetProgramInfo(program, CL_PROGRAM_SOURCE, sourceSize, source.data(), nullptr);
         if( errorCode == CL_SUCCESS )
         {
-            std::ofstream output(dumpDirectory + "kernel.cl", std::ios::out | std::ios::binary);
+            std::ofstream output;
+            Utils::OpenOutputFile(output, dumpDirectory + "kernel.cl", std::ios::out | std::ios::binary);
             output.write(source.data(), sourceSize);
         }
     }
@@ -7917,7 +7918,8 @@ void CLIntercept::dumpCaptureReplayKernelSource(
         errorCode = dispatch().clGetProgramInfo(program, CL_PROGRAM_IL, ilSize, il.data(), nullptr);
         if( errorCode == CL_SUCCESS )
         {
-            std::ofstream output(dumpDirectory + "kernel.spv", std::ios::out | std::ios::binary);
+            std::ofstream output;
+            Utils::OpenOutputFile(output, dumpDirectory + "kernel.spv", std::ios::out | std::ios::binary);
             output.write(il.data(), ilSize);
         }
     }
@@ -7948,7 +7950,8 @@ void CLIntercept::dumpCaptureReplayKernelSource(
         {
             for (size_t device = 0; device != num_devices; ++device)
             {
-                std::ofstream output(dumpDirectory + "DeviceBinary" + std::to_string(device) + ".bin", std::ios::out | std::ios::binary);
+                std::ofstream output;
+                Utils::OpenOutputFile(output, dumpDirectory + "DeviceBinary" + std::to_string(device) + ".bin", std::ios::out | std::ios::binary);
                 output.write(reinterpret_cast<char const*>(binaries[device].data()), binaries[device].size());
             }
         }
@@ -7965,7 +7968,8 @@ void CLIntercept::dumpCaptureReplayKernelInfo(
     const size_t* gws,
     const size_t* lws )
 {
-    std::ofstream output{dumpDirectory + "worksizes.txt"};
+    std::ofstream output;
+    Utils::OpenOutputFile(output, dumpDirectory + "worksizes.txt");
 
     // Print the values of the worksizes and offsets on a line in the order:
     // gws
@@ -8000,7 +8004,8 @@ void CLIntercept::dumpCaptureReplayKernelInfo(
     dispatch().clGetContextInfo(context, CL_CONTEXT_DEVICES, sizeof(cl_device_id), &device, nullptr);
 
     {
-        std::ofstream outputBuildOptions{dumpDirectory + "buildOptions.txt"};
+        std::ofstream outputBuildOptions;
+        Utils::OpenOutputFile(outputBuildOptions, dumpDirectory + "buildOptions.txt");
 
         size_t buildOptionsSize = 0;
         dispatch().clGetProgramBuildInfo(program, device, CL_PROGRAM_BUILD_OPTIONS, 0, nullptr, &buildOptionsSize);
@@ -8015,7 +8020,8 @@ void CLIntercept::dumpCaptureReplayKernelInfo(
     }
 
     std::string kernelName = getShortKernelName(kernel);
-    std::ofstream outputKernelName{dumpDirectory + "kernelName.txt"};
+    std::ofstream outputKernelName;
+    Utils::OpenOutputFile(outputKernelName, dumpDirectory + "kernelName.txt");
     outputKernelName << kernelName;
 
     cl_uint numArgs = 0;
@@ -8023,7 +8029,8 @@ void CLIntercept::dumpCaptureReplayKernelInfo(
 
     if( numArgs )
     {
-        std::ofstream outputArgTypes{dumpDirectory + "ArgumentDataTypes.txt"};
+        std::ofstream outputArgTypes;
+        Utils::OpenOutputFile(outputArgTypes, dumpDirectory + "ArgumentDataTypes.txt");
         for( cl_uint idx = 0; idx != numArgs; ++idx )
         {
             size_t argTypeNameSize = 0;
@@ -8052,7 +8059,8 @@ void CLIntercept::dumpCaptureReplayKernelArguments(
         const auto index = arg.first;
         const auto& value = arg.second;
         std::string fileName{dumpDirectory + "Argument" + std::to_string(index) + ".bin"};
-        std::ofstream out{fileName, std::ios::out | std::ios::binary};
+        std::ofstream out;
+        Utils::OpenOutputFile(out, fileName, std::ios::out | std::ios::binary);
         out.write(reinterpret_cast<char const*>(value.data()), value.size());
     }
 
@@ -8062,7 +8070,8 @@ void CLIntercept::dumpCaptureReplayKernelArguments(
         const auto index = arg.first;
         const auto value = arg.second;
         std::string fileName{dumpDirectory + "Local" + std::to_string(index) + ".txt"};
-        std::ofstream out{fileName};
+        std::ofstream out;
+        Utils::OpenOutputFile(out, fileName);
         out << std::to_string(value);
     }
 
@@ -8075,7 +8084,8 @@ void CLIntercept::dumpCaptureReplayKernelArguments(
         {
             const SImageInfo&   info = m_ImageInfoMap[ value ];
             std::string fileName{dumpDirectory + "Image_MetaData_" + std::to_string(index) + ".txt"};
-            std::ofstream out{fileName};
+            std::ofstream out;
+        Utils::OpenOutputFile(out, fileName);
             out << info.Region[0] << '\n'
                 << info.Region[1] << '\n'
                 << info.Region[2] << '\n'
@@ -8089,7 +8099,8 @@ void CLIntercept::dumpCaptureReplayKernelArguments(
         else
         {
             std::string fileName{dumpDirectory + "SVM_Arg_Offset_" + std::to_string(index) + ".txt"};
-            std::ofstream out{fileName};
+            std::ofstream out;
+        Utils::OpenOutputFile(out, fileName);
             out << arg.second.Offset << '\n';
         }
     }
@@ -8100,7 +8111,8 @@ void CLIntercept::dumpCaptureReplayKernelArguments(
         const auto index = arg.first;
         const auto& value = arg.second;
         std::string fileName{dumpDirectory + "Sampler" + std::to_string(index) + ".txt"};
-        std::ofstream out{fileName};
+        std::ofstream out;
+        Utils::OpenOutputFile(out, fileName);
         out << value;
     }
 }
@@ -9524,12 +9536,14 @@ void CLIntercept::startCaptureReplay(
             pPythonScript,
             pythonScriptLength ) )
     {
-        std::ofstream outputPythonScript{fileNamePrefix + "run.py", std::ios::out | std::ios::binary};
+        std::ofstream outputPythonScript;
+        Utils::OpenOutputFile(outputPythonScript, fileNamePrefix + "run.py", std::ios::out | std::ios::binary);
         outputPythonScript.write(pPythonScript, pythonScriptLength);
     }
 
     {
-        std::ofstream outputKernelNumber{fileNamePrefix + "enqueueNumber.txt"};
+        std::ofstream outputKernelNumber;
+        Utils::OpenOutputFile(outputKernelNumber, fileNamePrefix + "enqueueNumber.txt");
         outputKernelNumber << std::to_string(enqueueCounter) << '\n';
     }
 
