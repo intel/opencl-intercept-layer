@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Windows.h>
+#include <algorithm>
 #include <string>
 #include <stdint.h>
 
@@ -304,9 +305,17 @@ inline void Services::MakeDumpDirectories(
     pos = fileName.find( "/", ++pos );
     while( pos != std::string::npos )
     {
-        CreateDirectoryA(
-            fileName.substr( 0, pos ).c_str(),
-            NULL );
+        // Use the \\?\ prefix with the wide-character API to support paths
+        // longer than MAX_PATH (260 characters).  The \\?\ prefix requires
+        // backslashes, so convert any forward slashes in the path.
+        std::string dirPath = "\\\\?\\" + fileName.substr( 0, pos );
+        std::replace( dirPath.begin(), dirPath.end(), '/', '\\' );
+        int wLen = MultiByteToWideChar(
+            CP_UTF8, 0, dirPath.c_str(), -1, NULL, 0 );
+        std::wstring wDirPath( wLen, 0 );
+        MultiByteToWideChar(
+            CP_UTF8, 0, dirPath.c_str(), -1, &wDirPath[0], wLen );
+        CreateDirectoryW( wDirPath.c_str(), NULL );
 
         pos = fileName.find( "/", ++pos );
     }

@@ -20,6 +20,58 @@ bool debug = false;
 
 static std::string commandLine = "";
 
+// Read the PE header machine type from a file on disk.
+static USHORT getFileMachineType(const char* filePath)
+{
+    HANDLE hFile = CreateFileA(
+        filePath, GENERIC_READ,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        NULL, OPEN_EXISTING, 0, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        return IMAGE_FILE_MACHINE_UNKNOWN;
+    }
+
+    USHORT machine = IMAGE_FILE_MACHINE_UNKNOWN;
+    IMAGE_DOS_HEADER dosHeader = {};
+    DWORD bytesRead = 0;
+
+    if (ReadFile(hFile, &dosHeader, sizeof(dosHeader), &bytesRead, NULL) &&
+        bytesRead == sizeof(dosHeader) &&
+        dosHeader.e_magic == IMAGE_DOS_SIGNATURE)
+    {
+        if (SetFilePointer(hFile, dosHeader.e_lfanew, NULL, FILE_BEGIN) != INVALID_SET_FILE_POINTER)
+        {
+            DWORD ntSignature = 0;
+            IMAGE_FILE_HEADER fileHeader = {};
+            if (ReadFile(hFile, &ntSignature, sizeof(ntSignature), &bytesRead, NULL) &&
+                bytesRead == sizeof(ntSignature) &&
+                ntSignature == IMAGE_NT_SIGNATURE &&
+                ReadFile(hFile, &fileHeader, sizeof(fileHeader), &bytesRead, NULL) &&
+                bytesRead == sizeof(fileHeader))
+            {
+                machine = fileHeader.Machine;
+            }
+        }
+    }
+
+    CloseHandle(hFile);
+    return machine;
+}
+
+// Get the PE header machine type of a running process by querying its image path.
+static USHORT getProcessMachineType(HANDLE hProcess)
+{
+    char imagePath[MAX_PATH] = {};
+    DWORD size = MAX_PATH;
+    if (!QueryFullProcessImageNameA(hProcess, 0, imagePath, &size))
+    {
+        return IMAGE_FILE_MACHINE_UNKNOWN;
+    }
+    DEBUG("process image path: %s\n", imagePath);
+    return getFileMachineType(imagePath);
+}
+
 static bool checkWow64(HANDLE parent, HANDLE child)
 {
     BOOL parentWow64 = FALSE;
@@ -33,6 +85,40 @@ static bool checkWow64(HANDLE parent, HANDLE child)
         fprintf(stderr, "This is the %d-bit version of cliloader, but the target application is a %d-bit application.\n",
             parentWow64 ? 32 : 64,
             childWow64 ? 32 : 64 );
+        fprintf(stderr, "Execution will continue, but intercepting and profiling will be disabled.\n");
+        return false;
+    }
+
+    // Check for machine type mismatch by comparing PE header machine types directly.
+    // IsWow64Process only detects 32-bit (WoW64) processes and cannot distinguish
+    // ARM64EC from pure ARM64 — both run natively on ARM64 hardware so IsWow64Process
+    // and IsWow64Process2 return the same values for both. However, their PE header
+    // machine types differ: ARM64EC uses IMAGE_FILE_MACHINE_AMD64 (0x8664) while
+    // pure ARM64 uses IMAGE_FILE_MACHINE_ARM64 (0xAA64). CreateRemoteThread fails
+    // with ERROR_INVALID_HANDLE when injecting from an ARM64EC process into a pure
+    // ARM64 process because the LoadLibraryA address from the ARM64EC kernel32.dll
+    // is not valid in the pure ARM64 process address space.
+    USHORT parentMachineType = getProcessMachineType(parent);
+    USHORT childMachineType = getProcessMachineType(child);
+
+    DEBUG("parent PE machine type: 0x%04X, child PE machine type: 0x%04X\n",
+        parentMachineType, childMachineType);
+
+    if (parentMachineType != IMAGE_FILE_MACHINE_UNKNOWN &&
+        childMachineType != IMAGE_FILE_MACHINE_UNKNOWN &&
+        parentMachineType != childMachineType)
+    {
+        auto machineStr = [](USHORT machine) -> const char* {
+            switch (machine) {
+                case IMAGE_FILE_MACHINE_AMD64: return "x64/ARM64EC";
+                case IMAGE_FILE_MACHINE_ARM64: return "ARM64";
+                case IMAGE_FILE_MACHINE_I386:  return "x86";
+                default:                       return "unknown";
+            }
+        };
+        fprintf(stderr, "This is the %s version of cliloader, but the target application is a %s application.\n",
+            machineStr(parentMachineType),
+            machineStr(childMachineType));
         fprintf(stderr, "Execution will continue, but intercepting and profiling will be disabled.\n");
         return false;
     }

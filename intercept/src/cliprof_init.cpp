@@ -43,23 +43,33 @@ static void replaceFunction(
 
 #define REPLACE_FUNCTION( _name, _fname ) if( !strcmp(_name, #_fname) ) { replaceFunction( firstThunk, _fname ); }
 
-extern "C" __declspec(dllexport)
-DWORD cliprof_init( void* dummy )
+// Patch the IAT of a single loaded module for all opencl.dll imports.
+static void patchModuleIAT( char* base )
 {
-    char *base = (char*)GetModuleHandle(NULL);
+    // Validate DOS header:
+    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)(base);
+    if( dosHeader->e_magic != IMAGE_DOS_SIGNATURE )
+    {
+        return;
+    }
 
     // Get pointer to NT headers:
-    PIMAGE_DOS_HEADER dosHeader = (PIMAGE_DOS_HEADER)(base);
     PIMAGE_NT_HEADERS ntHeaders = (PIMAGE_NT_HEADERS)(base + dosHeader->e_lfanew);
     if( ntHeaders->Signature != IMAGE_NT_SIGNATURE )
     {
-        return false;
+        return;
     }
 
     // Get pointer to import directory:
     DWORD importOffset =
         ntHeaders->OptionalHeader.
         DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+
+    if( importOffset == 0 )
+    {
+        return;
+    }
+
     PIMAGE_IMPORT_DESCRIPTOR importDesc =
         (PIMAGE_IMPORT_DESCRIPTOR)(base + importOffset);
 
@@ -218,6 +228,35 @@ DWORD cliprof_init( void* dummy )
             }
         }
         importDesc++;
+    }
+}
+
+extern "C" __declspec(dllexport)
+DWORD cliprof_init( void* dummy )
+{
+    // Patch the IAT of all loaded modules, not just the main executable.
+    // This is necessary for applications that use OpenCL indirectly through
+    // another DLL (e.g., SYCL runtime DLLs like sycl7.dll) rather than
+    // importing opencl.dll directly in the main executable.
+    HMODULE hModules[1024] = {};
+    DWORD cbNeeded = 0;
+
+    if( EnumProcessModules(
+            GetCurrentProcess(),
+            hModules,
+            sizeof(hModules),
+            &cbNeeded ) )
+    {
+        DWORD numModules = cbNeeded / sizeof(HMODULE);
+        for( DWORD i = 0; i < numModules; i++ )
+        {
+            patchModuleIAT( (char*)hModules[i] );
+        }
+    }
+    else
+    {
+        // Fallback: patch only the main executable.
+        patchModuleIAT( (char*)GetModuleHandle(NULL) );
     }
 
     return 0;
