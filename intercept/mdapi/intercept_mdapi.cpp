@@ -373,6 +373,8 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
 //
 void CLIntercept::getMDAPICountersFromStream( void )
 {
+    // Note, this is called under m_EventList.CheckMutex.
+
     // We should only get here when time based sampling is enabled.
     CLI_ASSERT( config().DevicePerfCounterTimeBasedSampling );
 
@@ -417,53 +419,40 @@ void CLIntercept::getMDAPICountersFromEvent(
     const std::string& name,
     const cl_event event )
 {
+    // Note, this is called under m_EventList.CheckMutex.
+
     // We should only get here when event based sampling is enabled.
     CLI_ASSERT( config().DevicePerfCounterEventBasedSampling );
 
     if( m_pMDHelper )
     {
-        const size_t reportSize = m_pMDHelper->GetQueryReportSize();
-
-        std::vector<char>   report(reportSize);
+        std::vector<char>&  report = m_pMDHelper->GetWorkingReportData();
 
         size_t  outputSize = 0;
         cl_int  errorCode = dispatch().clGetEventProfilingInfo(
             event,
             CL_PROFILING_COMMAND_PERFCOUNTERS_INTEL,
-            reportSize,
+            report.size(),
             report.data(),
             &outputSize );
-
-        std::lock_guard<std::mutex> lock(m_Mutex);
 
         if( errorCode == CL_SUCCESS )
         {
             // Check: The size of the queried report should be the expected size.
-            CLI_ASSERT( outputSize == reportSize );
+            CLI_ASSERT( outputSize == report.size() );
 
-            std::vector<MetricsDiscovery::TTypedValue_1_0> results;
-            std::vector<MetricsDiscovery::TTypedValue_1_0> maxValues;
-            std::vector<MetricsDiscovery::TTypedValue_1_0> ioInfoValues; // unused
-
-            uint32_t numResults = m_pMDHelper->GetMetricsFromReports(
-                1,
-                report.data(),
-                results,
-                maxValues );
-
+            uint32_t numResults = m_pMDHelper->GetMetricsFromReport();
             if( numResults )
             {
+                std::lock_guard<std::mutex> lock(m_Mutex);
+
                 m_pMDHelper->PrintMetricValues(
                     m_MetricDump,
                     name,
-                    numResults,
-                    results,
-                    maxValues,
-                    ioInfoValues );
+                    numResults );
                 m_pMDHelper->AggregateMetrics(
                     m_MetricAggregations,
-                    name,
-                    results );
+                    name );
             }
         }
         else
@@ -479,6 +468,8 @@ void CLIntercept::getMDAPICountersFromEvent(
                 NULL );
             if( type == CL_COMMAND_NDRANGE_KERNEL )
             {
+                std::lock_guard<std::mutex> lock(m_Mutex);
+
                 logf("Couldn't get MDAPI data for kernel!  clGetEventProfilingInfo returned '%s' (%08X)!\n",
                     enumName().name(errorCode).c_str(),
                     errorCode );

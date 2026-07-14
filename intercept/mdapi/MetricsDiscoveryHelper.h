@@ -55,8 +55,9 @@ public:
         bool includeMaxValues );
     static void Delete( MDHelper*& pMDHelper );
 
+    std::vector<char>&  GetWorkingReportData();
+
     uint32_t GetMetricsConfiguration();
-    uint32_t GetQueryReportSize();
 
     bool    ActivateMetricSet();
     void    DeactivateMetricSet();
@@ -64,6 +65,7 @@ public:
     void    SetMetricSetFiltering(
                 TMetricApiType apiMask );
 
+    uint32_t GetMetricsFromReport();
     uint32_t GetMetricsFromReports(
                 const uint32_t numReports,
                 const char* pData,
@@ -91,11 +93,18 @@ public:
     void    PrintMetricValues(
                 std::ostream& os,
                 const std::string& name,
+                const uint32_t numResults );
+    void    PrintMetricValues(
+                std::ostream& os,
+                const std::string& name,
                 const uint32_t numResults,
                 const std::vector<TTypedValueLatest>& results,
                 const std::vector<TTypedValueLatest>& maxValues,
                 const std::vector<TTypedValueLatest>& ioInfoValues );
 
+    void    AggregateMetrics(
+                CMetricAggregations& aggregations,
+                const std::string& name );
     void    AggregateMetrics(
                 CMetricAggregations& aggregations,
                 const std::string& name,
@@ -104,6 +113,8 @@ public:
 private:
     MDHelper(uint32_t apiMask);
     ~MDHelper();
+    MDHelper(MDHelper const&) = delete;
+    MDHelper& operator=(MDHelper const&) = delete;
 
     bool InitMetricsDiscovery(
         const std::string& metricsLibraryName,
@@ -150,14 +161,23 @@ private:
     IConcurrentGroupLatest* m_ConcurrentGroup;
     IMetricSetLatest*       m_MetricSet;
 
+    // Working data for event based sampling:
+    std::vector<char>       m_WorkingReportData;    // passed to clGetEventProfilingInfo
+    std::vector<TTypedValueLatest>  m_WorkingResults;
+    std::vector<TTypedValueLatest>  m_WorkingMaxValues;
+
     // Report data for time based sampling:
     std::vector<char>       m_SavedReportData;
     uint32_t                m_NumSavedReports;
-
-private:
-    MDHelper(MDHelper const&);
-    void operator=(MDHelper const&);
 };
+
+/************************************************************************/
+/* GetWorkingReportData                                                 */
+/************************************************************************/
+inline std::vector<char>& MDHelper::GetWorkingReportData()
+{
+    return m_WorkingReportData;
+}
 
 /************************************************************************/
 /* GetMetricsConfiguration                                              */
@@ -165,14 +185,6 @@ private:
 inline uint32_t MDHelper::GetMetricsConfiguration()
 {
     return ( m_MetricSet != NULL ) ? m_MetricSet->GetParams()->ApiSpecificId.OCL : 0;
-}
-
-/************************************************************************/
-/* GetQueryReportSize                                                   */
-/************************************************************************/
-inline uint32_t MDHelper::GetQueryReportSize()
-{
-    return ( m_MetricSet != NULL ) ? m_MetricSet->GetParams()->QueryReportSize : 0;
 }
 
 }
