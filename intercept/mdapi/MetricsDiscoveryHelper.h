@@ -56,6 +56,8 @@ public:
     static void Delete( MDHelper*& pMDHelper );
 
     std::vector<char>&  GetWorkingReportData();
+    std::vector<TTypedValueLatest>& GetWorkingResults();
+    std::vector<TTypedValueLatest>& GetWorkingMaxValues();
 
     uint32_t GetMetricsConfiguration();
 
@@ -65,7 +67,6 @@ public:
     void    SetMetricSetFiltering(
                 TMetricApiType apiMask );
 
-    uint32_t GetMetricsFromReport();
     uint32_t GetMetricsFromReports(
                 const uint32_t numReports,
                 const char* pData,
@@ -93,18 +94,11 @@ public:
     void    PrintMetricValues(
                 std::ostream& os,
                 const std::string& name,
-                const uint32_t numResults );
-    void    PrintMetricValues(
-                std::ostream& os,
-                const std::string& name,
                 const uint32_t numResults,
                 const std::vector<TTypedValueLatest>& results,
                 const std::vector<TTypedValueLatest>& maxValues,
                 const std::vector<TTypedValueLatest>& ioInfoValues );
 
-    void    AggregateMetrics(
-                CMetricAggregations& aggregations,
-                const std::string& name );
     void    AggregateMetrics(
                 CMetricAggregations& aggregations,
                 const std::string& name,
@@ -171,17 +165,21 @@ private:
     uint32_t                m_NumSavedReports;
 };
 
-/************************************************************************/
-/* GetWorkingReportData                                                 */
-/************************************************************************/
 inline std::vector<char>& MDHelper::GetWorkingReportData()
 {
     return m_WorkingReportData;
 }
 
-/************************************************************************/
-/* GetMetricsConfiguration                                              */
-/************************************************************************/
+inline std::vector<TTypedValueLatest>& MDHelper::GetWorkingResults()
+{
+    return m_WorkingResults;
+}
+
+inline std::vector<TTypedValueLatest>& MDHelper::GetWorkingMaxValues()
+{
+    return m_WorkingMaxValues;
+}
+
 inline uint32_t MDHelper::GetMetricsConfiguration()
 {
     return ( m_MetricSet != NULL ) ? m_MetricSet->GetParams()->ApiSpecificId.OCL : 0;

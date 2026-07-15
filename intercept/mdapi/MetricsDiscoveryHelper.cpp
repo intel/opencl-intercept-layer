@@ -621,18 +621,6 @@ void MDHelper::SetMetricSetFiltering( TMetricApiType apiMask )
 }
 
 /************************************************************************/
-/* GetMetricsFromReport                                                 */
-/************************************************************************/
-uint32_t MDHelper::GetMetricsFromReport()
-{
-    return GetMetricsFromReports(
-        1,
-        m_WorkingReportData.data(),
-        m_WorkingResults,
-        m_WorkingMaxValues );
-}
-
-/************************************************************************/
 /* GetMetricsFromReports                                                */
 /************************************************************************/
 uint32_t MDHelper::GetMetricsFromReports(
@@ -994,24 +982,6 @@ void MDHelper::PrintMetricUnits(std::ostream& os )
 void MDHelper::PrintMetricValues(
     std::ostream& os,
     const std::string& name,
-    uint32_t numResults )
-{
-    std::vector<TTypedValueLatest>  IOInfoValues;   // unused
-    return PrintMetricValues(
-        os,
-        name,
-        numResults,
-        m_WorkingResults,
-        m_WorkingMaxValues,
-        IOInfoValues );
-}
-
-/************************************************************************/
-/* PrintMetricValues                                                    */
-/************************************************************************/
-void MDHelper::PrintMetricValues(
-    std::ostream& os,
-    const std::string& name,
     const uint32_t numResults,
     const std::vector<TTypedValueLatest>& results,
     const std::vector<TTypedValueLatest>& maxValues,
@@ -1062,19 +1032,6 @@ void MDHelper::PrintMetricValues(
 
         os << std::endl;
     }
-}
-
-/************************************************************************/
-/* AggregateMetrics                                                     */
-/************************************************************************/
-void MDHelper::AggregateMetrics(
-    CMetricAggregations& aggregations,
-    const std::string& name )
-{
-    return AggregateMetrics(
-        aggregations,
-        name,
-        m_WorkingResults );
 }
 
 /************************************************************************/

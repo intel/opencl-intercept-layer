@@ -427,6 +427,9 @@ void CLIntercept::getMDAPICountersFromEvent(
     if( m_pMDHelper )
     {
         std::vector<char>&  report = m_pMDHelper->GetWorkingReportData();
+        std::vector<MetricsDiscovery::TTypedValue_1_0>& results = m_pMDHelper->GetWorkingResults();
+        std::vector<MetricsDiscovery::TTypedValue_1_0>& maxValues = m_pMDHelper->GetWorkingMaxValues();
+        std::vector<MetricsDiscovery::TTypedValue_1_0> ioInfoValues;    // unused
 
         size_t  outputSize = 0;
         cl_int  errorCode = dispatch().clGetEventProfilingInfo(
@@ -441,7 +444,11 @@ void CLIntercept::getMDAPICountersFromEvent(
             // Check: The size of the queried report should be the expected size.
             CLI_ASSERT( outputSize == report.size() );
 
-            uint32_t numResults = m_pMDHelper->GetMetricsFromReport();
+            uint32_t numResults = m_pMDHelper->GetMetricsFromReports(
+                1,
+                report.data(),
+                results,
+                maxValues );
             if( numResults )
             {
                 std::lock_guard<std::mutex> lock(m_Mutex);
@@ -449,10 +456,14 @@ void CLIntercept::getMDAPICountersFromEvent(
                 m_pMDHelper->PrintMetricValues(
                     m_MetricDump,
                     name,
-                    numResults );
+                    numResults,
+                    results,
+                    maxValues,
+                    ioInfoValues );
                 m_pMDHelper->AggregateMetrics(
                     m_MetricAggregations,
-                    name );
+                    name,
+                    results );
             }
         }
         else
