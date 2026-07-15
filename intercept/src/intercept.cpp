@@ -518,10 +518,12 @@ bool CLIntercept::init()
         log( "Read OpenCL file name from user parameters: " + libName + "\n" );
         log( "Trying to load dispatch from: " + libName + "\n" );
 
+#if !defined(OPENCL_NATIVE_LAYER)
         if( initDispatch( libName ) )
         {
             log( "... success!\n" );
         }
+#endif
     }
     else
     {

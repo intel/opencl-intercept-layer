@@ -4,6 +4,18 @@
 
 LIBRARY opencl.dll
 EXPORTS
+; ==========================================================
+; OpenCL Native Layer Entry Points
+;
+; Required exclusively by the Khronos ICD Loader to
+; negotiate and initialize the layer (via OPENCL_LAYERS).
+; ==========================================================
+    clGetLayerInfo
+    clInitLayer
+
+; ==========================================================
+; Standard OpenCL APIs
+; ==========================================================
     clBuildProgram
     clCloneKernel
     clCompileProgram
