@@ -129,8 +129,8 @@ CLIntercept::CLIntercept( void* pGlobalData )
 {
     m_ProcessId = m_OS.GetProcessID();
 
-    m_Dispatch = {0};
-    m_DispatchX[NULL] = {0};
+    m_Dispatch = {};
+    m_DispatchX[NULL] = {};
 
     m_OpenCLLibraryHandle = NULL;
 
@@ -215,7 +215,7 @@ CLIntercept::~CLIntercept()
     // OpenCL functions get called.  Note that this means we do potentially
     // leave some events, kernels, or programs un-released, but since
     // the process is terminating, that's probably OK.
-    m_Dispatch = {0};
+    m_Dispatch = {};
 
 #if defined(USE_MDAPI)
     if( m_pMDHelper )
