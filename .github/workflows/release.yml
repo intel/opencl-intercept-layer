@@ -29,7 +29,7 @@ jobs:
       id-token: write
 
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     # This isn't working currently, see https://github.com/actions/checkout/issues/1467.
     # Instead, get the git information manually with the step below.
     #   with:
@@ -62,7 +62,7 @@ jobs:
 
     - name: Update Python (Windows)
       if: matrix.os == 'windows-latest'
-      uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6.3.0
+      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: '3.12'
 
@@ -70,7 +70,7 @@ jobs:
       if: |
         startsWith(github.ref, 'refs/tags/') &&
         matrix.os == 'windows-latest'
-      uses: sigstore/gh-action-sigstore-python@5b79a39c381910c090341a2c9b0bf022c8b387e1 #v3.4.0
+      uses: sigstore/gh-action-sigstore-python@790bc6befb9d733738f18d8f895854b453640ec9 #v3.5.0
       with:
         inputs: |
           ./build/clintercept-*.zip
@@ -79,7 +79,7 @@ jobs:
       if: |
         startsWith(github.ref, 'refs/tags/') &&
         matrix.os == 'ubuntu-latest'
-      uses: sigstore/gh-action-sigstore-python@5b79a39c381910c090341a2c9b0bf022c8b387e1 #v3.4.0
+      uses: sigstore/gh-action-sigstore-python@790bc6befb9d733738f18d8f895854b453640ec9 #v3.5.0
       with:
         inputs: |
           ./build/clintercept-*.tar.gz
@@ -88,7 +88,7 @@ jobs:
       if: |
         startsWith(github.ref, 'refs/tags/') &&
         matrix.os == 'windows-latest'
-      uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
+      uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
       with:
         draft: true
         files: |
@@ -99,7 +99,7 @@ jobs:
       if: |
         startsWith(github.ref, 'refs/tags/') &&
         matrix.os == 'ubuntu-latest'
-      uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3.0.1
+      uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
       with:
         draft: true
         files: |
