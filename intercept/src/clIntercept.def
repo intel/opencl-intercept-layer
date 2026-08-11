@@ -85,6 +85,7 @@ EXPORTS
     clGetKernelArgInfo
     clGetKernelInfo
     clGetKernelSubGroupInfo
+    clGetKernelSuggestedLocalWorkSize
     clGetKernelWorkGroupInfo
     clGetMemObjectInfo
     clGetPipeInfo

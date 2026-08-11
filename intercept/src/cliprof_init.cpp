@@ -171,6 +171,7 @@ DWORD cliprof_init( void* dummy )
                     REPLACE_FUNCTION( name, clGetKernelArgInfo );
                     REPLACE_FUNCTION( name, clGetKernelInfo );
                     REPLACE_FUNCTION( name, clGetKernelSubGroupInfo );
+                    REPLACE_FUNCTION( name, clGetKernelSuggestedLocalWorkSize );
                     REPLACE_FUNCTION( name, clGetKernelWorkGroupInfo );
                     REPLACE_FUNCTION( name, clGetMemObjectInfo );
                     REPLACE_FUNCTION( name, clGetPipeInfo );
