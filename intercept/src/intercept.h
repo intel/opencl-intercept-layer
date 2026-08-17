@@ -61,6 +61,8 @@ public:
     static bool Create( void* pGlobalData, CLIntercept*& pIntercept );
     static void Delete( CLIntercept*& pIntercept );
 
+    void initLayer(cl_icd_dispatch& layer_dispatch, const cl_icd_dispatch* target_dispatch);
+
     void    report();
 
     void    callLoggingEnter(
@@ -841,7 +843,6 @@ public:
 #endif
 
     const cl_icd_dispatch&  dispatch() const;
-    cl_icd_dispatch&  dispatch();
 
     const CLdispatchX&  dispatchX( cl_accelerator_intel accelerator ) const;
     const CLdispatchX&  dispatchX( cl_command_queue queue ) const;
@@ -1589,12 +1590,6 @@ cl_int CLIntercept::writeParamToMemory(
 ///////////////////////////////////////////////////////////////////////////////
 //
 inline const cl_icd_dispatch& CLIntercept::dispatch() const
-{
-    return m_Dispatch;
-}
-
-
-inline cl_icd_dispatch& CLIntercept::dispatch()
 {
     return m_Dispatch;
 }

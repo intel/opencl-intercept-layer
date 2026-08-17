@@ -10,12 +10,6 @@
 
 #include "CL/cl_icd.h"
 
-#define INIT_NATIVE_LAYER_FUNCTION(funcname) \
-    dispatch.funcname = CLIRN(funcname)
-
-void initDispatchTableForNativeLayer(
-    cl_icd_dispatch& dispatch );
-
 // Dispatch table for extension APIs:
 
 struct CLdispatchX
