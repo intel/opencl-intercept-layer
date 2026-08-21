@@ -2491,10 +2491,19 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramSpecializationConstant)(
     if( pIntercept && pIntercept->dispatch().clSetProgramSpecializationConstant )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER( "program = %p, spec_id = %u, spec_size = %zu",
+        std::string specConstString;
+        if( pIntercept->config().CallLogging )
+        {
+            pIntercept->getSpecConstantString(
+                spec_size,
+                spec_value,
+                specConstString );
+        }
+        CALL_LOGGING_ENTER( "program = %p, spec_id = %u, spec_size = %zu%s",
             program,
             spec_id,
-            spec_size );
+            spec_size,
+            specConstString.c_str() );
         HOST_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = pIntercept->dispatch().clSetProgramSpecializationConstant(
