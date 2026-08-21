@@ -3170,6 +3170,44 @@ void CLIntercept::getCreateSubBufferArgsString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+void CLIntercept::getSpecConstantString(
+    size_t spec_size,
+    const void* spec_value,
+    std::string& str ) const
+{
+    if( spec_value != NULL )
+    {
+        char    s[256];
+
+        if( spec_size == sizeof(cl_uchar) )
+        {
+            cl_uchar*   pData = (cl_uchar*)spec_value;
+            CLI_SPRINTF( s, 256, ", spec_value = 0x%x",
+                pData[0] );
+        }
+        else if( spec_size == sizeof(cl_uint) )
+        {
+            cl_uint*    pData = (cl_uint*)spec_value;
+            CLI_SPRINTF( s, 256, ", spec_value = 0x%x",
+                pData[0] );
+        }
+        else if( spec_size == sizeof(cl_ulong) )
+        {
+            cl_ulong*   pData = (cl_ulong*)spec_value;
+            CLI_SPRINTF( s, 256, ", spec_value = 0x%" PRIx64,
+                pData[0] );
+        }
+
+        str = s;
+    }
+    else
+    {
+        str = ", spec_value = NULL";
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::logCLInfo()
 {
     if( m_LoggedCLInfo == false )

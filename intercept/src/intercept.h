@@ -204,6 +204,10 @@ public:
                 cl_buffer_create_type createType,
                 const void *createInfo,
                 std::string& str ) const;
+    void    getSpecConstantString(
+                size_t spec_size,
+                const void* spec_value,
+                std::string& str ) const;
 
     void    logCLInfo();
     void    logBuild(
