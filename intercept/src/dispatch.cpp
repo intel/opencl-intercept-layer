@@ -4928,7 +4928,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
                 global_work_offset,
                 global_work_size,
                 local_work_size );
-            DEVICE_PERFORMANCE_TIMING_START( event );
+            DEVICE_PERFORMANCE_TIMING_START_KERNEL( event );
             HOST_PERFORMANCE_TIMING_START();
 
 //            ITT_ADD_PARAM_AS_METADATA(command_queue);
@@ -5029,7 +5029,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
                 eventWaitListString.c_str());
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             GET_TIMING_TAGS_KERNEL( command_queue, kernel, 0, NULL, NULL, NULL );
-            DEVICE_PERFORMANCE_TIMING_START( event );
+            DEVICE_PERFORMANCE_TIMING_START_KERNEL( event );
             HOST_PERFORMANCE_TIMING_START();
 
             retVal = pIntercept->dispatch().clEnqueueTask(

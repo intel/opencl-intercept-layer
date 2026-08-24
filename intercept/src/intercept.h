@@ -3391,6 +3391,28 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
           pIntercept->config().ITTPerformanceTiming ||                      \
           pIntercept->config().ChromePerformanceTiming ||                   \
           pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
+        !pIntercept->config().DevicePerformanceTimingKernelsOnly &&         \
+        pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) &&\
+        pIntercept->checkConditionalTiming();                               \
+    if( doDevicePerformanceTiming )                                         \
+    {                                                                       \
+        queuedTime = CLIntercept::clock::now();                             \
+        if( pEvent == NULL )                                                \
+        {                                                                   \
+            pEvent = &local_event;                                          \
+            isLocalEvent = true;                                            \
+        }                                                                   \
+    }
+
+#define DEVICE_PERFORMANCE_TIMING_START_KERNEL( pEvent )                    \
+    CLIntercept::clock::time_point   queuedTime;                            \
+    cl_event    local_event = NULL;                                         \
+    bool        isLocalEvent = false;                                       \
+    bool        doDevicePerformanceTiming =                                 \
+        ( pIntercept->config().DevicePerformanceTiming ||                   \
+          pIntercept->config().ITTPerformanceTiming ||                      \
+          pIntercept->config().ChromePerformanceTiming ||                   \
+          pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
         pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) &&\
         pIntercept->checkConditionalTiming();                               \
     if( doDevicePerformanceTiming )                                         \
