@@ -94,7 +94,7 @@ extern "C" CL_API_ENTRY cl_int CL_API_CALL clGetLayerInfo(
                 if (param_value_size < sizeof(version))
                     return CL_INVALID_VALUE;
 
-                std::memcpy(param_value, &version, sizeof(version));
+                CLI_MEMCPY(param_value, param_value_size, &version, sizeof(version));
             }
             return CL_SUCCESS;
         }
@@ -107,7 +107,7 @@ extern "C" CL_API_ENTRY cl_int CL_API_CALL clGetLayerInfo(
                 if (param_value_size < sizeof(name))
                     return CL_INVALID_VALUE;
 
-                std::memcpy(param_value, name, sizeof(name));
+                CLI_MEMCPY(param_value, param_value_size, name, sizeof(name));
             }
             return CL_SUCCESS;
         }
