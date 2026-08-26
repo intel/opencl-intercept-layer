@@ -3429,8 +3429,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     if( doDevicePerformanceTiming &&                                        \
         ( errorCode == CL_SUCCESS ) && ( pEvent != NULL ) )                 \
     {                                                                       \
-        if( !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
-            ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
+        if( ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
               std::string(__FUNCTION__) != "clEnqueueUnmapMemObject" ) )    \
         {                                                                   \
             /*TOOL_OVERHEAD_TIMING_START();*/                               \
@@ -3454,8 +3453,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     if( doDevicePerformanceTiming &&                                        \
         ( errorCode == CL_SUCCESS ) && ( pEvent != NULL ) )                 \
     {                                                                       \
-        if( !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
-            ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
+        if( ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
               std::string(__FUNCTION__) != "clEnqueueUnmapMemObject" ) )    \
         {                                                                   \
             /*TOOL_OVERHEAD_TIMING_START();*/                               \
