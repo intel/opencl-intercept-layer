@@ -2244,11 +2244,16 @@ inline CObjectTracker& CLIntercept::objectTracker()
         pErrorCode = &localErrorCode;                                       \
     }
 
+// For map APIs, setup the error code pointer unconditionally:
+#define CHECK_ERROR_INIT_MAP( pErrorCode )                                  \
+    cl_int  localErrorCode = CL_SUCCESS;                                    \
+    if( pErrorCode == NULL )                                                \
+    {                                                                       \
+        pErrorCode = &localErrorCode;                                       \
+    }
+
 #define CHECK_ERROR( errorCode )                                            \
-    if( ( pIntercept->config().ErrorLogging ||                              \
-          pIntercept->config().ErrorAssert ||                               \
-          pIntercept->config().NoErrors ) &&                                \
-        ( errorCode != CL_SUCCESS ) )                                       \
+    if( errorCode != CL_SUCCESS )                                           \
     {                                                                       \
         if( pIntercept->config().ErrorLogging )                             \
         {                                                                   \
