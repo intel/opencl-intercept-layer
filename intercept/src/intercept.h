@@ -566,11 +566,6 @@ public:
                 cl_command_queue queue );
     void    checkRemoveQueue(
                 cl_command_queue queue );
-    void    addEvent(
-                cl_event event,
-                uint64_t enqueueCounter );
-    void    checkRemoveEvent(
-                cl_event event );
     void    addBuffer(
                 cl_mem buffer );
     void    addImage(
@@ -1286,9 +1281,6 @@ private:
     typedef std::list< cl_command_queue >   CQueueList;
     typedef std::map< cl_context, CQueueList >  CContextQueuesMap;
     CContextQueuesMap   m_ContextQueuesMap;
-
-    typedef std::map< cl_event, uint64_t >  CEventIdMap;
-    CEventIdMap m_EventIdMap;
 
     unsigned int    m_MemAllocNumber;
 
@@ -2456,22 +2448,6 @@ inline bool CLIntercept::checkDumpImageEnqueueLimits(
           pIntercept->config().Emulate_cl_intel_unified_shared_memory ) )   \
     {                                                                       \
         pIntercept->checkRemoveQueue( _queue );                             \
-    }
-
-#define ADD_EVENT( _event )                                                 \
-    if( ( _event ) &&                                                       \
-        ( pIntercept->config().ChromeCallLogging ||                         \
-          pIntercept->config().ChromePerformanceTiming ) )                  \
-    {                                                                       \
-        pIntercept->addEvent( _event, enqueueCounter );                     \
-    }
-
-#define REMOVE_EVENT( _event )                                              \
-    if( ( _event ) &&                                                       \
-        ( pIntercept->config().ChromeCallLogging ||                         \
-          pIntercept->config().ChromePerformanceTiming ) )                  \
-    {                                                                       \
-        pIntercept->checkRemoveEvent( _event );                             \
     }
 
 #define ADD_BUFFER( _buffer )                                               \
