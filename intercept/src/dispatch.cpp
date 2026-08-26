@@ -4550,8 +4550,18 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                 errcode_ret );
 
             HOST_PERFORMANCE_TIMING_END_WITH_TAG();
-            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, retVal, event );
-            DUMP_BUFFER_AFTER_MAP( command_queue, buffer, blocking_map, map_flags, retVal, offset, cb );
+            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG(
+                command_queue,
+                (retVal != NULL ? CL_SUCCESS : CL_INVALID_VALUE),
+                event );
+            DUMP_BUFFER_AFTER_MAP(
+                command_queue,
+                buffer,
+                blocking_map,
+                map_flags,
+                retVal,
+                offset,
+                cb );
             CHECK_ERROR( errcode_ret[0] );
             ADD_MAP_POINTER( retVal, map_flags, cb );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
@@ -4675,7 +4685,10 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                 errcode_ret );
 
             HOST_PERFORMANCE_TIMING_END_WITH_TAG();
-            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, retVal, event );
+            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG(
+                command_queue,
+                (retVal != NULL ? CL_SUCCESS : CL_INVALID_VALUE),
+                event );
             CHECK_ERROR( errcode_ret[0] );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             if( pIntercept->config().CallLogging )
