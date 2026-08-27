@@ -2244,11 +2244,16 @@ inline CObjectTracker& CLIntercept::objectTracker()
         pErrorCode = &localErrorCode;                                       \
     }
 
+// For map APIs, setup the error code pointer unconditionally:
+#define CHECK_ERROR_INIT_MAP( pErrorCode )                                  \
+    cl_int  localErrorCode = CL_SUCCESS;                                    \
+    if( pErrorCode == NULL )                                                \
+    {                                                                       \
+        pErrorCode = &localErrorCode;                                       \
+    }
+
 #define CHECK_ERROR( errorCode )                                            \
-    if( ( pIntercept->config().ErrorLogging ||                              \
-          pIntercept->config().ErrorAssert ||                               \
-          pIntercept->config().NoErrors ) &&                                \
-        ( errorCode != CL_SUCCESS ) )                                       \
+    if( errorCode != CL_SUCCESS )                                           \
     {                                                                       \
         if( pIntercept->config().ErrorLogging )                             \
         {                                                                   \
@@ -3391,6 +3396,28 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
           pIntercept->config().ITTPerformanceTiming ||                      \
           pIntercept->config().ChromePerformanceTiming ||                   \
           pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
+        !pIntercept->config().DevicePerformanceTimingKernelsOnly &&         \
+        pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) &&\
+        pIntercept->checkConditionalTiming();                               \
+    if( doDevicePerformanceTiming )                                         \
+    {                                                                       \
+        queuedTime = CLIntercept::clock::now();                             \
+        if( pEvent == NULL )                                                \
+        {                                                                   \
+            pEvent = &local_event;                                          \
+            isLocalEvent = true;                                            \
+        }                                                                   \
+    }
+
+#define DEVICE_PERFORMANCE_TIMING_START_KERNEL( pEvent )                    \
+    CLIntercept::clock::time_point   queuedTime;                            \
+    cl_event    local_event = NULL;                                         \
+    bool        isLocalEvent = false;                                       \
+    bool        doDevicePerformanceTiming =                                 \
+        ( pIntercept->config().DevicePerformanceTiming ||                   \
+          pIntercept->config().ITTPerformanceTiming ||                      \
+          pIntercept->config().ChromePerformanceTiming ||                   \
+          pIntercept->config().DevicePerfCounterEventBasedSampling ) &&     \
         pIntercept->checkDevicePerformanceTimingEnqueueLimits( enqueueCounter ) &&\
         pIntercept->checkConditionalTiming();                               \
     if( doDevicePerformanceTiming )                                         \
@@ -3407,8 +3434,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     if( doDevicePerformanceTiming &&                                        \
         ( errorCode == CL_SUCCESS ) && ( pEvent != NULL ) )                 \
     {                                                                       \
-        if( !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
-            ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
+        if( ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
               std::string(__FUNCTION__) != "clEnqueueUnmapMemObject" ) )    \
         {                                                                   \
             /*TOOL_OVERHEAD_TIMING_START();*/                               \
@@ -3432,8 +3458,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     if( doDevicePerformanceTiming &&                                        \
         ( errorCode == CL_SUCCESS ) && ( pEvent != NULL ) )                 \
     {                                                                       \
-        if( !pIntercept->config().DevicePerformanceTimingKernelsOnly &&     \
-            ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
+        if( ( !pIntercept->config().DevicePerformanceTimingSkipUnmap ||     \
               std::string(__FUNCTION__) != "clEnqueueUnmapMemObject" ) )    \
         {                                                                   \
             /*TOOL_OVERHEAD_TIMING_START();*/                               \
