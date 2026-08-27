@@ -2253,7 +2253,10 @@ inline CObjectTracker& CLIntercept::objectTracker()
     }
 
 #define CHECK_ERROR( errorCode )                                            \
-    if( errorCode != CL_SUCCESS )                                           \
+    if( ( pIntercept->config().ErrorLogging ||                              \
+          pIntercept->config().ErrorAssert ||                               \
+          pIntercept->config().NoErrors ) &&                                \
+        ( errorCode != CL_SUCCESS ) )                                       \
     {                                                                       \
         if( pIntercept->config().ErrorLogging )                             \
         {                                                                   \
