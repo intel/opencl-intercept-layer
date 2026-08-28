@@ -14153,7 +14153,7 @@ bool CLIntercept::initDispatch( void )
 #define INIT_NATIVE_LAYER_FUNC(funcname)                                    \
 {                                                                           \
     void** pfunc = (void**)( &layer_dispatch . funcname );                  \
-    *pfunc = reinterpret_cast<void*>(CLIRN(funcname));                      \
+    *pfunc = reinterpret_cast<void*>(funcname);                             \
 }
 
 void CLIntercept::initLayer(cl_icd_dispatch& layer_dispatch, const cl_icd_dispatch* target_dispatch)
