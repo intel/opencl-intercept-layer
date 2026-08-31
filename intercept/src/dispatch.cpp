@@ -2490,10 +2490,19 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clSetProgramSpecializationConstant)(
     if( pIntercept && pIntercept->dispatch().clSetProgramSpecializationConstant )
     {
         GET_ENQUEUE_COUNTER();
-        CALL_LOGGING_ENTER( "program = %p, spec_id = %u, spec_size = %zu",
+        std::string specConstString;
+        if( pIntercept->config().CallLogging )
+        {
+            pIntercept->getSpecConstantString(
+                spec_size,
+                spec_value,
+                specConstString );
+        }
+        CALL_LOGGING_ENTER( "program = %p, spec_id = %u, spec_size = %zu%s",
             program,
             spec_id,
-            spec_size );
+            spec_size,
+            specConstString.c_str() );
         HOST_PERFORMANCE_TIMING_START();
 
         cl_int  retVal = pIntercept->dispatch().clSetProgramSpecializationConstant(
@@ -3184,7 +3193,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseEvent)(
     if( pIntercept && pIntercept->dispatch().clReleaseEvent )
     {
         GET_ENQUEUE_COUNTER();
-        REMOVE_EVENT( event );
 
         cl_uint ref_count =
             pIntercept->config().CallLogging ?
@@ -3446,7 +3454,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
             PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_read );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3544,7 +3551,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
             PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_read );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3634,7 +3640,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
             PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_write );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3732,7 +3737,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
             PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_write );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3802,7 +3806,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillBuffer)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3888,7 +3891,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBuffer)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3979,7 +3981,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferRect)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4089,7 +4090,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
             PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_read );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4183,7 +4183,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
             PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_write );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4247,7 +4246,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueFillImage)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4329,7 +4327,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImage)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4395,7 +4392,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyImageToBuffer)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4461,7 +4457,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueCopyBufferToImage)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4526,7 +4521,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                 cb,
                 eventWaitListString.c_str() );
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
-            CHECK_ERROR_INIT( errcode_ret );
+            CHECK_ERROR_INIT_MAP( errcode_ret );
             GET_TIMING_TAGS_MAP( blocking_map, map_flags, cb );
             DEVICE_PERFORMANCE_TIMING_START( event );
             HOST_PERFORMANCE_TIMING_START();
@@ -4546,11 +4541,11 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                 errcode_ret );
 
             HOST_PERFORMANCE_TIMING_END_WITH_TAG();
-            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, retVal, event );
+            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, errcode_ret[0], event );
             DUMP_BUFFER_AFTER_MAP( command_queue, buffer, blocking_map, map_flags, retVal, offset, cb );
             CHECK_ERROR( errcode_ret[0] );
             ADD_MAP_POINTER( retVal, map_flags, cb );
-            ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
+            ADD_OBJECT_ALLOCATION_EVENT( errcode_ret[0], event );
             if( pIntercept->config().CallLogging )
             {
                 map_count = 0;
@@ -4566,7 +4561,6 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                 map_count,
                 retVal );
             PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_map );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4649,7 +4643,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                     eventWaitListString.c_str() );
             }
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
-            CHECK_ERROR_INIT( errcode_ret );
+            CHECK_ERROR_INIT_MAP( errcode_ret );
             GET_TIMING_TAGS_MAP( blocking_map, map_flags, 0 );
             DEVICE_PERFORMANCE_TIMING_START( event );
             HOST_PERFORMANCE_TIMING_START();
@@ -4671,9 +4665,9 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                 errcode_ret );
 
             HOST_PERFORMANCE_TIMING_END_WITH_TAG();
-            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, retVal, event );
+            DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, errcode_ret[0], event );
             CHECK_ERROR( errcode_ret[0] );
-            ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
+            ADD_OBJECT_ALLOCATION_EVENT( errcode_ret[0], event );
             if( pIntercept->config().CallLogging )
             {
                 map_count = 0;
@@ -4689,7 +4683,6 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                 map_count,
                 retVal );
             PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_map );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4775,7 +4768,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueUnmapMemObject)(
                     NULL );
             }
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event, "[ map count = %d ]", map_count );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4839,7 +4831,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMigrateMemObjects)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4926,7 +4917,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
                 global_work_offset,
                 global_work_size,
                 local_work_size );
-            DEVICE_PERFORMANCE_TIMING_START( event );
+            DEVICE_PERFORMANCE_TIMING_START_KERNEL( event );
             HOST_PERFORMANCE_TIMING_START();
 
 //            ITT_ADD_PARAM_AS_METADATA(command_queue);
@@ -4981,7 +4972,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNDRangeKernel)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         DUMP_BUFFERS_AFTER_ENQUEUE( kernel, command_queue );
@@ -5028,7 +5018,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
                 eventWaitListString.c_str());
             CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
             GET_TIMING_TAGS_KERNEL( command_queue, kernel, 0, NULL, NULL, NULL );
-            DEVICE_PERFORMANCE_TIMING_START( event );
+            DEVICE_PERFORMANCE_TIMING_START_KERNEL( event );
             HOST_PERFORMANCE_TIMING_START();
 
             retVal = pIntercept->dispatch().clEnqueueTask(
@@ -5043,7 +5033,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueTask)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5103,7 +5092,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueNativeKernel)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5146,7 +5134,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarker)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5290,7 +5277,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueMarkerWithWaitList)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5343,7 +5329,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueBarrierWithWaitList)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6247,7 +6232,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueAcquireGLObjects)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6315,7 +6299,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
             PROCESS_DATA_AND_FLUSH();
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6459,7 +6442,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMFree) (
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             ADD_POINTER_FREES( pfn_free_func, num_svm_pointers, svm_pointers );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6528,7 +6510,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
             PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_copy );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6595,7 +6576,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemFill) (
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6666,7 +6646,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
             PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_map );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6725,7 +6704,6 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMUnmap) (
             REMOVE_MAP_PTR( svm_ptr );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -7542,7 +7520,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMigrateMem(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            ADD_EVENT( event ? event[0] : NULL );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -7637,7 +7614,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireExternalMemObjectsKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -7694,7 +7670,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseExternalMemObjectsKHR(
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
                 PROCESS_DATA_AND_FLUSH();
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8025,7 +8000,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D10ObjectsKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8082,7 +8056,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
                 PROCESS_DATA_AND_FLUSH();
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8329,7 +8302,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireD3D11ObjectsKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8386,7 +8358,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
                 PROCESS_DATA_AND_FLUSH();
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8545,7 +8516,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9MediaSurfacesKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8602,7 +8572,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
                 PROCESS_DATA_AND_FLUSH();
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8761,7 +8730,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireDX9ObjectsINTEL(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8818,7 +8786,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
                 PROCESS_DATA_AND_FLUSH();
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -9729,7 +9696,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueAcquireVA_APIMediaSurfacesINTEL(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -9786,7 +9752,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
                 PROCESS_DATA_AND_FLUSH();
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -10472,7 +10437,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemsetINTEL(   // Deprecated
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
@@ -10543,7 +10507,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemFillINTEL(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
@@ -10616,7 +10579,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
                 PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
@@ -10685,7 +10647,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMigrateMemINTEL(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
@@ -10754,7 +10715,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemAdviseINTEL(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );
@@ -11005,7 +10965,6 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueCommandBufferKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                ADD_EVENT( event ? event[0] : NULL );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );

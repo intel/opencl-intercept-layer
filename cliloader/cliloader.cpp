@@ -539,6 +539,10 @@ static bool parseArguments(int argc, char *argv[])
                 checkSetEnv("CLI_DevicePerformanceTimingMaxEnqueue", argv[i]);
             }
         }
+        else if( !strcmp(argv[i], "-ko") || !strcmp(argv[i], "--kernels-only") )
+        {
+            checkSetEnv("CLI_DevicePerformanceTimingKernelsOnly", "1");
+        }
         else if( !strcmp(argv[i], "-l") || !strcmp(argv[i], "--leak-checking") )
         {
             checkSetEnv("CLI_LeakChecking", "1");
@@ -664,6 +668,7 @@ static bool parseArguments(int argc, char *argv[])
             "  --host-timing [-h]               Report Host API Execution Time\n"
             "  --min-enqueue <NUMBER>           Minimum Enqueue for Timing and Chrome Tracing\n"
             "  --max-enqueue <NUMBER>           Maximum Enqueue for Timing and Chrome Tracing\n"
+            "  --kernels-only [-ko]             Only Profile Kernels for Device Timing\n"
             "  --capture-enqueue <NUMBER>       Capture the Specified Kernel Enqueue\n"
             "  --capture-kernel <NAME>          Capture the Specified Kernel Name\n"
             "  --leak-checking [-l]             Track and Report OpenCL Leaks\n"
