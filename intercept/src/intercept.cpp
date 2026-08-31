@@ -13951,6 +13951,190 @@ bool CLIntercept::initDispatch( void )
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+#define INIT_NATIVE_LAYER_FUNC(funcname)                                    \
+{                                                                           \
+    void** pfunc = (void**)( &layer_dispatch . funcname );                  \
+    *pfunc = reinterpret_cast<void*>(funcname);                             \
+}
+
+void CLIntercept::initLayer(cl_icd_dispatch& layer_dispatch, const cl_icd_dispatch* target_dispatch)
+{
+    m_Dispatch = *target_dispatch;
+    layer_dispatch = *target_dispatch;
+
+    INIT_NATIVE_LAYER_FUNC( clGetPlatformIDs );
+    INIT_NATIVE_LAYER_FUNC( clGetPlatformInfo );
+    INIT_NATIVE_LAYER_FUNC( clGetDeviceIDs );
+    INIT_NATIVE_LAYER_FUNC( clGetDeviceInfo );
+    INIT_NATIVE_LAYER_FUNC( clCreateContext );
+    INIT_NATIVE_LAYER_FUNC( clCreateContextFromType );
+    INIT_NATIVE_LAYER_FUNC( clRetainContext );
+    INIT_NATIVE_LAYER_FUNC( clReleaseContext );
+    INIT_NATIVE_LAYER_FUNC( clGetContextInfo );
+    INIT_NATIVE_LAYER_FUNC( clCreateCommandQueue );
+    INIT_NATIVE_LAYER_FUNC( clRetainCommandQueue );
+    INIT_NATIVE_LAYER_FUNC( clReleaseCommandQueue );
+    INIT_NATIVE_LAYER_FUNC( clGetCommandQueueInfo );
+    INIT_NATIVE_LAYER_FUNC( clSetCommandQueueProperty );
+    INIT_NATIVE_LAYER_FUNC( clCreateBuffer );
+    INIT_NATIVE_LAYER_FUNC( clCreateImage2D );
+    INIT_NATIVE_LAYER_FUNC( clCreateImage3D );
+    INIT_NATIVE_LAYER_FUNC( clRetainMemObject );
+    INIT_NATIVE_LAYER_FUNC( clReleaseMemObject );
+    INIT_NATIVE_LAYER_FUNC( clGetSupportedImageFormats );
+    INIT_NATIVE_LAYER_FUNC( clGetMemObjectInfo );
+    INIT_NATIVE_LAYER_FUNC( clGetImageInfo );
+    INIT_NATIVE_LAYER_FUNC( clCreateSampler );
+    INIT_NATIVE_LAYER_FUNC( clRetainSampler );
+    INIT_NATIVE_LAYER_FUNC( clReleaseSampler );
+    INIT_NATIVE_LAYER_FUNC( clGetSamplerInfo );
+    INIT_NATIVE_LAYER_FUNC( clCreateProgramWithSource );
+    INIT_NATIVE_LAYER_FUNC( clCreateProgramWithBinary );
+    INIT_NATIVE_LAYER_FUNC( clRetainProgram );
+    INIT_NATIVE_LAYER_FUNC( clReleaseProgram );
+    INIT_NATIVE_LAYER_FUNC( clBuildProgram );
+    INIT_NATIVE_LAYER_FUNC( clUnloadCompiler );
+    INIT_NATIVE_LAYER_FUNC( clGetProgramInfo );
+    INIT_NATIVE_LAYER_FUNC( clGetProgramBuildInfo );
+    INIT_NATIVE_LAYER_FUNC( clCreateKernel );
+    INIT_NATIVE_LAYER_FUNC( clCreateKernelsInProgram );
+    INIT_NATIVE_LAYER_FUNC( clRetainKernel );
+    INIT_NATIVE_LAYER_FUNC( clReleaseKernel );
+    INIT_NATIVE_LAYER_FUNC( clSetKernelArg );
+    INIT_NATIVE_LAYER_FUNC( clGetKernelInfo );
+    INIT_NATIVE_LAYER_FUNC( clGetKernelWorkGroupInfo );
+    INIT_NATIVE_LAYER_FUNC( clWaitForEvents );
+    INIT_NATIVE_LAYER_FUNC( clGetEventInfo );
+    INIT_NATIVE_LAYER_FUNC( clRetainEvent );
+    INIT_NATIVE_LAYER_FUNC( clReleaseEvent );
+    INIT_NATIVE_LAYER_FUNC( clGetEventProfilingInfo );
+    INIT_NATIVE_LAYER_FUNC( clFlush );
+    INIT_NATIVE_LAYER_FUNC( clFinish );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueReadBuffer );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueWriteBuffer );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueCopyBuffer );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueReadImage );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueWriteImage );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueCopyImage );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueCopyImageToBuffer );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueCopyBufferToImage );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueMapBuffer );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueMapImage );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueUnmapMemObject );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueNDRangeKernel );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueTask );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueNativeKernel );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueMarker );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueWaitForEvents );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueBarrier );
+
+    INIT_NATIVE_LAYER_FUNC( clGetExtensionFunctionAddress );
+
+    // cl_khr_gl_sharing (optional)
+    // The entry points for this extension are exported from the ICD
+    // loader even though they are extension APIs.
+    INIT_NATIVE_LAYER_FUNC( clGetGLContextInfoKHR );
+
+#if defined (_WIN32) || defined (__linux__) || defined (__FreeBSD__)
+    INIT_NATIVE_LAYER_FUNC( clCreateFromGLBuffer );
+    INIT_NATIVE_LAYER_FUNC( clCreateFromGLTexture2D );
+    INIT_NATIVE_LAYER_FUNC( clCreateFromGLTexture3D );
+    INIT_NATIVE_LAYER_FUNC( clCreateFromGLRenderbuffer );
+    INIT_NATIVE_LAYER_FUNC( clGetGLObjectInfo );
+    INIT_NATIVE_LAYER_FUNC( clGetGLTextureInfo );   // OpenCL 1.2
+    INIT_NATIVE_LAYER_FUNC( clEnqueueAcquireGLObjects );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueReleaseGLObjects );
+#endif
+
+#if defined(_WIN32)
+    // cl_khr_d3d10_sharing
+    INIT_NATIVE_LAYER_FUNC( clGetDeviceIDsFromD3D10KHR );
+    INIT_NATIVE_LAYER_FUNC( clCreateFromD3D10BufferKHR );
+    INIT_NATIVE_LAYER_FUNC( clCreateFromD3D10Texture2DKHR );
+    INIT_NATIVE_LAYER_FUNC( clCreateFromD3D10Texture3DKHR );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueAcquireD3D10ObjectsKHR );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueReleaseD3D10ObjectsKHR );
+
+    // cl_khr_d3d11_sharing
+    INIT_NATIVE_LAYER_FUNC( clGetDeviceIDsFromD3D11KHR );
+    INIT_NATIVE_LAYER_FUNC( clCreateFromD3D11BufferKHR );
+    INIT_NATIVE_LAYER_FUNC( clCreateFromD3D11Texture2DKHR );
+    INIT_NATIVE_LAYER_FUNC( clCreateFromD3D11Texture3DKHR );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueAcquireD3D11ObjectsKHR );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueReleaseD3D11ObjectsKHR );
+
+    // cl_khr_dx9_media_sharing
+    INIT_NATIVE_LAYER_FUNC( clGetDeviceIDsFromDX9MediaAdapterKHR );
+    INIT_NATIVE_LAYER_FUNC( clCreateFromDX9MediaSurfaceKHR );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueAcquireDX9MediaSurfacesKHR );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueReleaseDX9MediaSurfacesKHR );
+#endif
+
+    INIT_NATIVE_LAYER_FUNC( clSetEventCallback );
+    INIT_NATIVE_LAYER_FUNC( clCreateSubBuffer );
+    INIT_NATIVE_LAYER_FUNC( clSetMemObjectDestructorCallback );
+    INIT_NATIVE_LAYER_FUNC( clCreateUserEvent );
+    INIT_NATIVE_LAYER_FUNC( clSetUserEventStatus );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueReadBufferRect );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueWriteBufferRect );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueCopyBufferRect );
+    INIT_NATIVE_LAYER_FUNC( clCreateEventFromGLsyncKHR );
+    INIT_NATIVE_LAYER_FUNC( clCreateSubDevices );
+    INIT_NATIVE_LAYER_FUNC( clRetainDevice );
+    INIT_NATIVE_LAYER_FUNC( clReleaseDevice );
+    INIT_NATIVE_LAYER_FUNC( clCreateImage );
+    INIT_NATIVE_LAYER_FUNC( clCreateProgramWithBuiltInKernels );
+    INIT_NATIVE_LAYER_FUNC( clCompileProgram );
+    INIT_NATIVE_LAYER_FUNC( clLinkProgram );
+    INIT_NATIVE_LAYER_FUNC( clUnloadPlatformCompiler );
+    INIT_NATIVE_LAYER_FUNC( clGetKernelArgInfo );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueFillBuffer );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueFillImage );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueMigrateMemObjects );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueMarkerWithWaitList );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueBarrierWithWaitList );
+    INIT_NATIVE_LAYER_FUNC( clGetExtensionFunctionAddressForPlatform );
+    INIT_NATIVE_LAYER_FUNC( clCreateFromGLTexture );
+
+#if !defined(__APPLE__)
+    // OpenCL 2.0 Entry Points (optional)
+    INIT_NATIVE_LAYER_FUNC( clCreateCommandQueueWithProperties );
+    INIT_NATIVE_LAYER_FUNC( clCreatePipe );
+    INIT_NATIVE_LAYER_FUNC( clGetPipeInfo );
+    INIT_NATIVE_LAYER_FUNC( clSVMAlloc );
+    INIT_NATIVE_LAYER_FUNC( clSVMFree );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueSVMFree );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueSVMMemcpy );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueSVMMemFill );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueSVMMap );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueSVMUnmap );
+    INIT_NATIVE_LAYER_FUNC( clCreateSamplerWithProperties );
+    INIT_NATIVE_LAYER_FUNC( clSetKernelArgSVMPointer );
+    INIT_NATIVE_LAYER_FUNC( clSetKernelExecInfo );
+    INIT_NATIVE_LAYER_FUNC( clGetKernelSubGroupInfoKHR );
+
+    // OpenCL 2.1 Entry Points (optional)
+    INIT_NATIVE_LAYER_FUNC( clCloneKernel );
+    INIT_NATIVE_LAYER_FUNC( clCreateProgramWithIL );
+    INIT_NATIVE_LAYER_FUNC( clEnqueueSVMMigrateMem );
+    INIT_NATIVE_LAYER_FUNC( clGetDeviceAndHostTimer );
+    INIT_NATIVE_LAYER_FUNC( clGetHostTimer );
+    INIT_NATIVE_LAYER_FUNC( clGetKernelSubGroupInfo );
+    INIT_NATIVE_LAYER_FUNC( clSetDefaultDeviceCommandQueue );
+
+    // OpenCL 2.2 Entry Points (optional)
+    INIT_NATIVE_LAYER_FUNC( clSetProgramReleaseCallback );
+    INIT_NATIVE_LAYER_FUNC( clSetProgramSpecializationConstant );
+
+    // OpenCL 3.0 Entry Points (optional)
+    INIT_NATIVE_LAYER_FUNC( clCreateBufferWithProperties );
+    INIT_NATIVE_LAYER_FUNC( clCreateImageWithProperties );
+    INIT_NATIVE_LAYER_FUNC( clSetContextDestructorCallback );
+#endif
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 void CLIntercept::dumpMemoryToFile(
     const std::string& fileName,
     bool hash,

@@ -61,6 +61,8 @@ public:
     static bool Create( void* pGlobalData, CLIntercept*& pIntercept );
     static void Delete( CLIntercept*& pIntercept );
 
+    void initLayer(cl_icd_dispatch& layer_dispatch, const cl_icd_dispatch* target_dispatch);
+
     void    report();
 
     void    callLoggingEnter(
