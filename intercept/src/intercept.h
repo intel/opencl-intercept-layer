@@ -2104,13 +2104,15 @@ inline CObjectTracker& CLIntercept::objectTracker()
 //
 #define BUILD_LOGGING_INIT()                                                \
     CLIntercept::clock::time_point  buildTimeStart;                         \
-    if( pIntercept->config().BuildLogging )                                 \
+    if( pIntercept->config().BuildLogging ||                                \
+        pIntercept->config().DumpProgramBuildLogs )                         \
     {                                                                       \
         buildTimeStart = CLIntercept::clock::now();                         \
     }
 
 #define BUILD_LOGGING( program, num_devices, device_list )                  \
-    if( pIntercept->config().BuildLogging )                                 \
+    if( pIntercept->config().BuildLogging ||                                \
+        pIntercept->config().DumpProgramBuildLogs )                         \
     {                                                                       \
         pIntercept->logBuild(                                               \
             buildTimeStart,                                                 \
