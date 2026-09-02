@@ -7446,6 +7446,7 @@ void CLIntercept::addImage(
         size_t  rowPitch = 0;
         size_t  slicePitch = 0;
         cl_image_format format;
+        cl_mem_object_type imageType;
 
         errorCode |= dispatch().clGetImageInfo(
             image,
@@ -7495,6 +7496,12 @@ void CLIntercept::addImage(
             sizeof(cl_image_format),
             &format,
             nullptr );
+        errorCode |= dispatch().clGetMemObjectInfo(
+            image,
+            CL_MEM_TYPE,
+            sizeof(imageType),
+            &imageType,
+            NULL );
 
         if( errorCode == CL_SUCCESS )
         {
@@ -7506,12 +7513,10 @@ void CLIntercept::addImage(
                 if( arraySize == 0 )
                 {
                     imageInfo.Region[1] = 1;            // 1D image
-                    imageInfo.ImageType = CL_MEM_OBJECT_IMAGE1D;
                 }
                 else
                 {
                     imageInfo.Region[1] = arraySize;    // 1D image array
-                    imageInfo.ImageType = CL_MEM_OBJECT_IMAGE1D_ARRAY;
                 }
             }
             else
@@ -7524,21 +7529,19 @@ void CLIntercept::addImage(
                 if( arraySize == 0 )
                 {
                     imageInfo.Region[2] = 1;            // 2D image
-                    imageInfo.ImageType = CL_MEM_OBJECT_IMAGE2D;
                 }
                 else
                 {
                     imageInfo.Region[2] = arraySize;    // 2D image array
-                    imageInfo.ImageType = CL_MEM_OBJECT_IMAGE2D_ARRAY;
                 }
             }
             else
             {
                 CLI_ASSERT( arraySize == 0 );
                 imageInfo.Region[2] = depth;            // 3D image
-                imageInfo.ImageType = CL_MEM_OBJECT_IMAGE3D;
             }
 
+            imageInfo.ImageType = imageType;
             imageInfo.ElementSize = elementSize;
             imageInfo.Format = format;
             imageInfo.RowPitch = rowPitch;
