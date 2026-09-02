@@ -179,6 +179,23 @@ This causes each instance of the application to dump to a unique directory.
 
 Some other setups may choose set a unique `DumpDir` for each process instance via environment variables, although setting `AppendPid` is usually sufficient and a much simpler solution.
 
+## What does "CLIntercept is shutting down, but N events are unprocessed" mean?
+
+This is a warning about missing device performance timing information.
+Device performance timing works by attaching events to device commands when the commands are enqueued.
+The events are then added to a device performance timing list for eventual processing, typically when the application synchronizes with the host.
+If the application shuts down while events are still on the device performance timing list, the remaining events will not be processed.
+Note that the OpenCL Intercept Layer cannot safely process events during shutdown because other OpenCL libraries or drivers may have been unloaded already.
+
+Events will typically be unprocessed for one of two reasons:
+
+* If an application enqueues a non-blocking command without making any other calls that cause the device performance timing list to be processed, then the event may be unprocessed when the application terminates.
+This may especially happen if the application does not flush the queue after enqueueing the non-blocking command.
+Setting `FlushAfterEnqueue` or `FinishAfterEnqueue` will usually enable these events to be processed, however these controls can have a large impact on performance and should be used with caution.
+* To reduce overhead, the OpenCL Intercept Layer typically processes the device performance timing list on a separate thread.
+If the application enqueues a lot of commands, then the device performance timing list may take a lot of time to process, and the separate thread may still be processing events when the application terminates.
+Disabling `MultiThreadedProcessing` will cause these events to be processed on the main application thread instead, which increases overhead, but will usually enable the events to be processed prior to application exit.
+
 ## How do I submit a bug?
 
 Please file a GitHub issue to report a bug.

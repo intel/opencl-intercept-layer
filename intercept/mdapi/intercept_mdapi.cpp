@@ -373,6 +373,8 @@ cl_command_queue CLIntercept::createMDAPICommandQueue(
 //
 void CLIntercept::getMDAPICountersFromStream( void )
 {
+    // Note, this is called under m_EventList.CheckMutex.
+
     // We should only get here when time based sampling is enabled.
     CLI_ASSERT( config().DevicePerfCounterTimeBasedSampling );
 
@@ -417,75 +419,72 @@ void CLIntercept::getMDAPICountersFromEvent(
     const std::string& name,
     const cl_event event )
 {
+    // Note, this is called under m_EventList.CheckMutex.
+
     // We should only get here when event based sampling is enabled.
     CLI_ASSERT( config().DevicePerfCounterEventBasedSampling );
 
     if( m_pMDHelper )
     {
-        const size_t reportSize = m_pMDHelper->GetQueryReportSize();
+        std::vector<char>&  report = m_pMDHelper->GetWorkingReportData();
+        std::vector<MetricsDiscovery::TTypedValue_1_0>& results = m_pMDHelper->GetWorkingResults();
+        std::vector<MetricsDiscovery::TTypedValue_1_0>& maxValues = m_pMDHelper->GetWorkingMaxValues();
+        std::vector<MetricsDiscovery::TTypedValue_1_0> ioInfoValues;    // unused
 
-        char*   pReport = new char[ reportSize ];
-        if( pReport )
+        size_t  outputSize = 0;
+        cl_int  errorCode = dispatch().clGetEventProfilingInfo(
+            event,
+            CL_PROFILING_COMMAND_PERFCOUNTERS_INTEL,
+            report.size(),
+            report.data(),
+            &outputSize );
+
+        if( errorCode == CL_SUCCESS )
         {
-            size_t  outputSize = 0;
-            cl_int  errorCode = dispatch().clGetEventProfilingInfo(
-                event,
-                CL_PROFILING_COMMAND_PERFCOUNTERS_INTEL,
-                reportSize,
-                pReport,
-                &outputSize );
+            // Check: The size of the queried report should be the expected size.
+            CLI_ASSERT( outputSize == report.size() );
 
-            if( errorCode == CL_SUCCESS )
+            uint32_t numResults = m_pMDHelper->GetMetricsFromReports(
+                1,
+                report.data(),
+                results,
+                maxValues );
+            if( numResults )
             {
-                // Check: The size of the queried report should be the expected size.
-                CLI_ASSERT( outputSize == reportSize );
+                std::lock_guard<std::mutex> lock(m_Mutex);
 
-                std::vector<MetricsDiscovery::TTypedValue_1_0> results;
-                std::vector<MetricsDiscovery::TTypedValue_1_0> maxValues;
-                std::vector<MetricsDiscovery::TTypedValue_1_0> ioInfoValues; // unused
-
-                uint32_t numResults = m_pMDHelper->GetMetricsFromReports(
-                    1,
-                    pReport,
+                m_pMDHelper->PrintMetricValues(
+                    m_MetricDump,
+                    name,
+                    numResults,
                     results,
-                    maxValues );
-
-                if( numResults )
-                {
-                    m_pMDHelper->PrintMetricValues(
-                        m_MetricDump,
-                        name,
-                        numResults,
-                        results,
-                        maxValues,
-                        ioInfoValues );
-                    m_pMDHelper->AggregateMetrics(
-                        m_MetricAggregations,
-                        name,
-                        results );
-                }
+                    maxValues,
+                    ioInfoValues );
+                m_pMDHelper->AggregateMetrics(
+                    m_MetricAggregations,
+                    name,
+                    results );
             }
-            else
+        }
+        else
+        {
+            // Currently, MDAPI data is only included for kernels, so only
+            // report an errors for kernel events.
+            cl_command_type type = 0;
+            dispatch().clGetEventInfo(
+                event,
+                CL_EVENT_COMMAND_TYPE,
+                sizeof(type),
+                &type,
+                NULL );
+            if( type == CL_COMMAND_NDRANGE_KERNEL )
             {
-                // Currently, MDAPI data is only included for kernels, so only
-                // report an errors for kernel events.
-                cl_command_type type = 0;
-                dispatch().clGetEventInfo(
-                    event,
-                    CL_EVENT_COMMAND_TYPE,
-                    sizeof(type),
-                    &type,
-                    NULL );
-                if( type == CL_COMMAND_NDRANGE_KERNEL )
-                {
-                    logf("Couldn't get MDAPI data for kernel!  clGetEventProfilingInfo returned '%s' (%08X)!\n",
-                        enumName().name(errorCode).c_str(),
-                        errorCode );
-                }
-            }
+                std::lock_guard<std::mutex> lock(m_Mutex);
 
-            delete [] pReport;
-            pReport = NULL;
+                logf("Couldn't get MDAPI data for kernel!  clGetEventProfilingInfo returned '%s' (%08X)!\n",
+                    enumName().name(errorCode).c_str(),
+                    errorCode );
+            }
         }
     }
 }

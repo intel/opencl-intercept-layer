@@ -56,6 +56,7 @@ public:
     }
 
     void addThreadMetadata(
+            const std::string& threadName,
             uint64_t threadId,
             uint32_t threadNumber )
     {
@@ -63,7 +64,8 @@ public:
         m_TraceFile
             << "{\"ph\":\"M\",\"name\":\"thread_name\",\"pid\":" << m_ProcessId
             << ",\"tid\":" << threadId
-            << ",\"args\":{\"name\":\"Host Thread " << threadId
+            << ",\"args\":{\"name\":\"" << threadName << " "
+            //<< threadId
             << "\"}},\n";
         m_TraceFile
             << "{\"ph\":\"M\",\"name\":\"thread_sort_index\",\"pid\":" << m_ProcessId

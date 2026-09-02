@@ -401,6 +401,10 @@ static bool parseArguments(int argc, char *argv[])
             set_LD_LIBRARY_PATH = false;
         }
 #endif
+        else if ( !strcmp(argv[i], "-nt") || !strcmp(argv[i], "--no-threads") )
+        {
+            checkSetEnv("CLI_MultiThreadedProcessing", "0");
+        }
         else if( !strcmp(argv[i], "-q") || !strcmp(argv[i], "--quiet") )
         {
             checkSetEnv("CLI_SuppressLogging", "1");
@@ -517,6 +521,24 @@ static bool parseArguments(int argc, char *argv[])
         {
             checkSetEnv("CLI_HostPerformanceTiming", "1");
         }
+        else if( !strcmp(argv[i], "--min-enqueue") )
+        {
+            ++i;
+            if( i < argc )
+            {
+                checkSetEnv("CLI_HostPerformanceTimingMinEnqueue", argv[i]);
+                checkSetEnv("CLI_DevicePerformanceTimingMinEnqueue", argv[i]);
+            }
+        }
+        else if( !strcmp(argv[i], "--max-enqueue") )
+        {
+            ++i;
+            if( i < argc )
+            {
+                checkSetEnv("CLI_HostPerformanceTimingMaxEnqueue", argv[i]);
+                checkSetEnv("CLI_DevicePerformanceTimingMaxEnqueue", argv[i]);
+            }
+        }
         else if( !strcmp(argv[i], "-ko") || !strcmp(argv[i], "--kernels-only") )
         {
             checkSetEnv("CLI_DevicePerformanceTimingKernelsOnly", "1");
@@ -614,11 +636,12 @@ static bool parseArguments(int argc, char *argv[])
             "  --metrics                        Print All MDAPI Metrics and Exit\n"
             "  --mdapi-devices                  Print All MDAPI Devices and Exit\n"
 #if defined(_WIN32)
-            "  --no-DLL-load                    Do not load the Intercept DLL into the child process\n"
+            "  --no-DLL-load                    Do Not Load the Intercept DLL Into The Child Process\n"
 #else // not Windows
-            "  --no-LD_PRELOAD                  Do not set LD_PRELOAD\n"
-            "  --no-LD_LIBRARY_PATH             Do not set LD_LIBRARY_PATH\n"
+            "  --no-LD_PRELOAD                  Do Not Set LD_PRELOAD\n"
+            "  --no-LD_LIBRARY_PATH             Do Not Set LD_LIBRARY_PATH\n"
 #endif
+            "  --no-threads [-nt]               Do Not Create Additional Processing Threads\n"
             "\n"
             "  --quiet [-q]                     Disable Logging\n"
             "  --call-logging [-c]              Trace Host API Calls\n"
@@ -643,6 +666,8 @@ static bool parseArguments(int argc, char *argv[])
             "  --mdapi-group <NAME>             Choose MDAPI Metrics to Collect (Intel GPU Only)\n"
             "  --mdapi-device <INDEX>           Choose MDAPI Device for Metrics (Intel GPU Only)\n"
             "  --host-timing [-h]               Report Host API Execution Time\n"
+            "  --min-enqueue <NUMBER>           Minimum Enqueue for Timing and Chrome Tracing\n"
+            "  --max-enqueue <NUMBER>           Maximum Enqueue for Timing and Chrome Tracing\n"
             "  --kernels-only [-ko]             Only Profile Kernels for Device Timing\n"
             "  --capture-enqueue <NUMBER>       Capture the Specified Kernel Enqueue\n"
             "  --capture-kernel <NAME>          Capture the Specified Kernel Name\n"

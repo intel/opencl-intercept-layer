@@ -6,8 +6,8 @@
 #pragma once
 
 #include <atomic>
-#include <chrono>
 #include <cinttypes>
+#include <condition_variable>
 #include <fstream>
 #include <list>
 #include <vector>
@@ -16,6 +16,7 @@
 #include <queue>
 #include <set>
 #include <sstream>
+#include <thread>
 #include <unordered_map>
 
 #include <stdint.h>
@@ -25,6 +26,7 @@
 #include "chrometracer.h"
 #include "cmdbufrecorder.h"
 #include "enummap.h"
+#include "eventlist.h"
 #include "dispatch.h"
 #include "objtracker.h"
 
@@ -52,16 +54,14 @@ class CLIntercept
     struct SConfig;
 
 public:
-#if defined(CLINTERCEPT_HIGH_RESOLUTON_CLOCK)
-    using clock = std::chrono::high_resolution_clock;
-#else
-    using clock = std::chrono::steady_clock;
-#endif
-
     static bool Create( void* pGlobalData, CLIntercept*& pIntercept );
     static void Delete( CLIntercept*& pIntercept );
 
-    void initLayer(cl_icd_dispatch& layer_dispatch, const cl_icd_dispatch* target_dispatch);
+    void    initLayer(
+                cl_icd_dispatch& layer_dispatch,
+                const cl_icd_dispatch* target_dispatch);
+    void    notifyProcessingThread();
+    void    processData();
 
     void    report();
 
@@ -903,7 +903,7 @@ public:
                 const size_t* gws,
                 const size_t* lws);
 
-    unsigned int    getThreadNumber( uint64_t threadId );
+    uint32_t    getThreadNumber( const char* threadName, uint64_t threadId );
 
     void    saveProgramNumber( const cl_program program );
     unsigned int    getProgramNumber() const;
@@ -1083,6 +1083,7 @@ private:
 
     std::ofstream   m_InterceptLog;
     CChromeTracer   m_ChromeTrace;
+    CEventList      m_EventList;
 
     mutable char    m_StringBuffer[CLI_STRING_BUFFER_SIZE];
 
@@ -1092,7 +1093,7 @@ private:
 
     clock::time_point   m_StartTime;
 
-    typedef std::map< uint64_t, unsigned int>   CThreadNumberMap;
+    typedef std::map< uint64_t, uint32_t >  CThreadNumberMap;
     CThreadNumberMap    m_ThreadNumberMap;
 
     typedef std::map< cl_device_id, std::vector<cl_device_id> > CSubDeviceCacheMap;
@@ -1101,6 +1102,15 @@ private:
     unsigned int    m_EventsChromeTraced;
 
     unsigned int    m_ProgramNumber;
+
+    // Multi-threaded processing and flushing:
+
+    std::thread     m_ProcessingThread;
+    std::mutex      m_ProcessingConditionMutex;
+    std::condition_variable m_ProcessingConditionVariable;
+    std::atomic<bool>   m_ProcessingDone;
+
+    static void processingThreadFunc( CLIntercept* pIntercept );
 
     // This defines a mapping between a sub-device handle and information
     // about the sub-device.
@@ -1257,9 +1267,6 @@ private:
         int64_t             ProfilingDeltaNS;
         cl_event            Event;
     };
-
-    typedef std::list< SEventListNode > CEventList;
-    CEventList  m_EventList;
 
 #if defined(USE_MDAPI)
     MetricsDiscovery::MDHelper* m_pMDHelper;
@@ -2105,11 +2112,11 @@ inline CObjectTracker& CLIntercept::objectTracker()
 ///////////////////////////////////////////////////////////////////////////////
 //
 #define BUILD_LOGGING_INIT()                                                \
-    CLIntercept::clock::time_point  buildTimeStart;                         \
+    clock::time_point  buildTimeStart;                                      \
     if( pIntercept->config().BuildLogging ||                                \
         pIntercept->config().DumpProgramBuildLogs )                         \
     {                                                                       \
-        buildTimeStart = CLIntercept::clock::now();                         \
+        buildTimeStart = clock::now();                                      \
     }
 
 #define BUILD_LOGGING( program, num_devices, device_list )                  \
@@ -3265,7 +3272,7 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
 }
 
 #define HOST_PERFORMANCE_TIMING_START()                                     \
-    CLIntercept::clock::time_point   cpuStart, cpuEnd;                      \
+    clock::time_point   cpuStart, cpuEnd;                                   \
     bool    doHostPerformanceTiming =                                       \
         ( pIntercept->config().ChromeCallLogging ||                         \
           pIntercept->config().HostPerformanceTiming ) &&                   \
@@ -3273,13 +3280,13 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
         pIntercept->checkConditionalTiming();                               \
     if( doHostPerformanceTiming )                                           \
     {                                                                       \
-        cpuStart = CLIntercept::clock::now();                               \
+        cpuStart = clock::now();                                            \
     }
 
 #define HOST_PERFORMANCE_TIMING_END()                                       \
     if( doHostPerformanceTiming )                                           \
     {                                                                       \
-        cpuEnd = CLIntercept::clock::now();                                 \
+        cpuEnd = clock::now();                                              \
         if( pIntercept->config().HostPerformanceTiming )                    \
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
@@ -3293,7 +3300,7 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
 #define HOST_PERFORMANCE_TIMING_END_WITH_TAG()                              \
     if( doHostPerformanceTiming )                                           \
     {                                                                       \
-        cpuEnd = CLIntercept::clock::now();                                 \
+        cpuEnd = clock::now();                                              \
         if( pIntercept->config().HostPerformanceTiming )                    \
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
@@ -3305,7 +3312,7 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
     }
 
 #define TOOL_OVERHEAD_TIMING_START()                                        \
-    CLIntercept::clock::time_point   toolStart, toolEnd;                    \
+    clock::time_point   toolStart, toolEnd;                                 \
     bool    doToolOverheadTiming =                                          \
         pIntercept->config().ToolOverheadTiming &&                          \
         ( pIntercept->config().ChromeCallLogging ||                         \
@@ -3314,13 +3321,13 @@ inline bool CLIntercept::checkHostPerformanceTimingEnqueueLimits(
         pIntercept->checkConditionalTiming();                               \
     if( doToolOverheadTiming )                                              \
     {                                                                       \
-        toolStart = CLIntercept::clock::now();                              \
+        toolStart = clock::now();                                           \
     }
 
 #define TOOL_OVERHEAD_TIMING_END( _tag )                                    \
     if( doToolOverheadTiming )                                              \
     {                                                                       \
-        toolEnd = CLIntercept::clock::now();                                \
+        toolEnd = clock::now();                                             \
         if( pIntercept->config().HostPerformanceTiming )                    \
         {                                                                   \
             pIntercept->updateHostTimingStats(                              \
@@ -3395,7 +3402,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     }
 
 #define DEVICE_PERFORMANCE_TIMING_START( pEvent )                           \
-    CLIntercept::clock::time_point   queuedTime;                            \
+    clock::time_point   queuedTime;                                         \
     cl_event    local_event = NULL;                                         \
     bool        isLocalEvent = false;                                       \
     bool        doDevicePerformanceTiming =                                 \
@@ -3408,7 +3415,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         pIntercept->checkConditionalTiming();                               \
     if( doDevicePerformanceTiming )                                         \
     {                                                                       \
-        queuedTime = CLIntercept::clock::now();                             \
+        queuedTime = clock::now();                                          \
         if( pEvent == NULL )                                                \
         {                                                                   \
             pEvent = &local_event;                                          \
@@ -3417,7 +3424,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
     }
 
 #define DEVICE_PERFORMANCE_TIMING_START_KERNEL( pEvent )                    \
-    CLIntercept::clock::time_point   queuedTime;                            \
+    clock::time_point   queuedTime;                                         \
     cl_event    local_event = NULL;                                         \
     bool        isLocalEvent = false;                                       \
     bool        doDevicePerformanceTiming =                                 \
@@ -3429,7 +3436,7 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         pIntercept->checkConditionalTiming();                               \
     if( doDevicePerformanceTiming )                                         \
     {                                                                       \
-        queuedTime = CLIntercept::clock::now();                             \
+        queuedTime = clock::now();                                          \
         if( pEvent == NULL )                                                \
         {                                                                   \
             pEvent = &local_event;                                          \
@@ -3505,31 +3512,6 @@ inline bool CLIntercept::checkDevicePerformanceTimingEnqueueLimits(
         }                                                                   \
     }
 
-#define DEVICE_PERFORMANCE_TIMING_CHECK()                                   \
-    if( pIntercept->config().DevicePerformanceTiming ||                     \
-        pIntercept->config().ITTPerformanceTiming ||                        \
-        pIntercept->config().ChromePerformanceTiming ||                     \
-        pIntercept->config().DevicePerfCounterEventBasedSampling ||         \
-        pIntercept->config().DevicePerfCounterTimeBasedSampling )           \
-    {                                                                       \
-        TOOL_OVERHEAD_TIMING_START();                                       \
-        pIntercept->checkTimingEvents();                                    \
-        TOOL_OVERHEAD_TIMING_END( "(device timing overhead)" );             \
-    }
-
-#define DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( _condition )           \
-    if( ( _condition ) &&                                                   \
-        ( pIntercept->config().DevicePerformanceTiming ||                   \
-          pIntercept->config().ITTPerformanceTiming ||                      \
-          pIntercept->config().ChromePerformanceTiming ||                   \
-          pIntercept->config().DevicePerfCounterEventBasedSampling ||       \
-          pIntercept->config().DevicePerfCounterTimeBasedSampling ) )       \
-    {                                                                       \
-        TOOL_OVERHEAD_TIMING_START();                                       \
-        pIntercept->checkTimingEvents();                                    \
-        TOOL_OVERHEAD_TIMING_END( "(device timing overhead)" );             \
-    }
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 inline void CLIntercept::flushChromeTraceBuffering()
@@ -3537,27 +3519,20 @@ inline void CLIntercept::flushChromeTraceBuffering()
     m_ChromeTrace.flush();
 }
 
-#define FLUSH_CHROME_TRACE_BUFFERING()                                      \
-    if( pIntercept->config().ChromeTraceBufferSize &&                       \
-        pIntercept->config().ChromeTraceBufferingBlockingCallFlush &&       \
-        ( pIntercept->config().ChromeCallLogging ||                         \
-          pIntercept->config().ChromePerformanceTiming ) )                  \
+#define PROCESS_DATA_AND_FLUSH()                                            \
+    if( pIntercept->config().MultiThreadedProcessing )                      \
     {                                                                       \
-        TOOL_OVERHEAD_TIMING_START();                                       \
-        pIntercept->flushChromeTraceBuffering();                            \
-        TOOL_OVERHEAD_TIMING_END( "(chrome trace flush overhead)" );        \
+        pIntercept->notifyProcessingThread();                               \
+    }                                                                       \
+    else                                                                    \
+    {                                                                       \
+        pIntercept->processData();                                          \
     }
 
-#define FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( _condition )              \
-    if( ( _condition ) &&                                                   \
-        pIntercept->config().ChromeTraceBufferSize &&                       \
-        pIntercept->config().ChromeTraceBufferingBlockingCallFlush &&       \
-        ( pIntercept->config().ChromeCallLogging ||                         \
-          pIntercept->config().ChromePerformanceTiming ) )                  \
+#define PROCESS_DATA_AND_FLUSH_CONDITIONAL( _condition )                    \
+    if( _condition )                                                        \
     {                                                                       \
-        TOOL_OVERHEAD_TIMING_START();                                       \
-        pIntercept->flushChromeTraceBuffering();                            \
-        TOOL_OVERHEAD_TIMING_END( "(chrome trace flush overhead)" );        \
+        PROCESS_DATA_AND_FLUSH();                                           \
     }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -3700,10 +3675,12 @@ inline std::string CLIntercept::getShortKernelNameWithHash(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-inline unsigned int CLIntercept::getThreadNumber( uint64_t threadId )
+inline uint32_t CLIntercept::getThreadNumber(
+    const char* threadName,
+    uint64_t threadId )
 {
     CThreadNumberMap::const_iterator iter = m_ThreadNumberMap.find( threadId );
-    unsigned int    threadNumber = 0;
+    uint32_t    threadNumber = 0;
 
     if( iter != m_ThreadNumberMap.end() )
     {
@@ -3711,12 +3688,12 @@ inline unsigned int CLIntercept::getThreadNumber( uint64_t threadId )
     }
     else
     {
-        threadNumber = (unsigned int)m_ThreadNumberMap.size();
+        threadNumber = static_cast<uint32_t>(m_ThreadNumberMap.size());
         m_ThreadNumberMap[ threadId ] = threadNumber;
 
         if( m_Config.ChromeCallLogging )
         {
-            m_ChromeTrace.addThreadMetadata( threadId, threadNumber );
+            m_ChromeTrace.addThreadMetadata( threadName, threadId, threadNumber );
         }
     }
 
