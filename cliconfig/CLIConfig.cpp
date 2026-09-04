@@ -620,7 +620,7 @@ BOOL CAboutPage::OnInitDialog()
 
     CComboBox*  pPlatformComboBox = (CComboBox*)GetDlgItem(IDC_PLATFORM_LIST);
 
-    HMODULE hModule = ::LoadLibraryA( "opencl.dll" );
+    HMODULE hModule = ::LoadLibraryExA( "opencl.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32 );
     if( hModule )
     {
         pfnGetPlatformIDs   dclGetPlatformIDs = (pfnGetPlatformIDs)::GetProcAddress( hModule, "clGetPlatformIDs" );
@@ -686,6 +686,10 @@ BOOL CAboutPage::OnInitDialog()
         }
 
         ::FreeLibrary( hModule );
+    }
+    else
+    {
+        pPlatformComboBox->AddString(L"Could not load OpenCL ICD loader!");
     }
 
     pPlatformComboBox->SetCurSel(0);
@@ -780,16 +784,13 @@ void CAboutPage::OnPlatformListChange()
     CComboBox*  pPlatformComboBox = (CComboBox*)GetDlgItem(IDC_PLATFORM_LIST);
     CComboBox*  pDeviceComboBox = (CComboBox*)GetDlgItem(IDC_DEVICE_LIST);
 
-    // First, delete any existing strings in the device list.
-    for( int i = pDeviceComboBox->GetCount() - 1; i >= 0; i-- )
-    {
-        pDeviceComboBox->DeleteString( i );
-    }
+    // First, delete any existing strings in the device info list.
+    pDeviceComboBox->ResetContent();
 
     // Get the currently selected platform index.
     cl_uint platformIndex = pPlatformComboBox->GetCurSel();
 
-    HMODULE hModule = ::LoadLibraryA( "opencl.dll" );
+    HMODULE hModule = ::LoadLibraryExA( "opencl.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32 );
     if( hModule )
     {
         pfnGetDeviceIDs   dclGetDeviceIDs = (pfnGetDeviceIDs)::GetProcAddress( hModule, "clGetDeviceIDs" );
@@ -817,7 +818,7 @@ void CAboutPage::OnPlatformListChange()
         }
         else
         {
-            pDeviceComboBox->AddString(L"No OpenCL platforms detected!");
+            pDeviceComboBox->AddString(L"Unexpected error getting device IDs!");
         }
 
         m_Devices.resize( numDevices );
@@ -854,6 +855,10 @@ void CAboutPage::OnPlatformListChange()
 
         ::FreeLibrary( hModule );
     }
+    else
+    {
+        pDeviceComboBox->AddString(L"Could not load OpenCL ICD loader!");
+    }
 
     pDeviceComboBox->SetCurSel(0);
 
@@ -866,62 +871,62 @@ void CAboutPage::OnDeviceListChange()
     CListBox*   pDeviceInfoList = (CListBox*)GetDlgItem(IDC_DEVICE_INFO);
 
     // First, delete any existing strings in the device info list.
-    for( int i = pDeviceInfoList->GetCount() - 1; i >= 0; i-- )
-    {
-        pDeviceInfoList->DeleteString( i );
-    }
+    pDeviceInfoList->ResetContent();
 
     // Get the currently selected device index.
     cl_uint deviceIndex = pDeviceComboBox->GetCurSel();
-    if( deviceIndex < m_Devices.size() )
+
+    HMODULE hModule = ::LoadLibraryExA( "opencl.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32 );
+    if( hModule )
     {
-        HMODULE hModule = ::LoadLibraryA( "opencl.dll" );
-        if( hModule )
+        pfnGetDeviceInfo  dclGetDeviceInfo = (pfnGetDeviceInfo)::GetProcAddress( hModule, "clGetDeviceInfo" );
+
+        cl_int  errorCode = CL_SUCCESS;
+
+        if( errorCode == CL_SUCCESS &&
+            dclGetDeviceInfo &&
+            deviceIndex < m_Devices.size() )
         {
-            pfnGetDeviceInfo  dclGetDeviceInfo = (pfnGetDeviceInfo)::GetProcAddress( hModule, "clGetDeviceInfo" );
+            std::vector<char>   vendor;
+            errorCode |= GetDeviceInfoString(
+                dclGetDeviceInfo,
+                m_Devices[deviceIndex],
+                CL_DEVICE_VENDOR,
+                vendor );
+            std::vector<char>   version;
+            errorCode |= GetDeviceInfoString(
+                dclGetDeviceInfo,
+                m_Devices[deviceIndex],
+                CL_DEVICE_VERSION,
+                version );
+            std::vector<char>   driverVersion;
+            errorCode |= GetDeviceInfoString(
+                dclGetDeviceInfo,
+                m_Devices[deviceIndex],
+                CL_DRIVER_VERSION,
+                driverVersion );
 
-            cl_int  errorCode = CL_SUCCESS;
-
-            if( dclGetDeviceInfo )
+            if( errorCode == CL_SUCCESS )
             {
-                std::vector<char>   vendor;
-                errorCode |= GetDeviceInfoString(
-                    dclGetDeviceInfo,
-                    m_Devices[deviceIndex],
-                    CL_DEVICE_VENDOR,
-                    vendor );
-                std::vector<char>   version;
-                errorCode |= GetDeviceInfoString(
-                    dclGetDeviceInfo,
-                    m_Devices[deviceIndex],
-                    CL_DEVICE_VERSION,
-                    version );
-                std::vector<char>   driverVersion;
-                errorCode |= GetDeviceInfoString(
-                    dclGetDeviceInfo,
-                    m_Devices[deviceIndex],
-                    CL_DRIVER_VERSION,
-                    driverVersion );
-
-                if( errorCode == CL_SUCCESS )
-                {
-                    int n = 0;
-                    pDeviceInfoList->InsertString(n++, ToWString(vendor).c_str() );
-                    pDeviceInfoList->InsertString(n++, ToWString(version).c_str() );
-                    pDeviceInfoList->InsertString(n++, ToWString(driverVersion).c_str() );
-                }
-                else
-                {
-                    pDeviceInfoList->InsertString(0, L"Error getting device info!");
-                }
+                pDeviceInfoList->AddString(ToWString(vendor).c_str());
+                pDeviceInfoList->AddString(ToWString(version).c_str());
+                pDeviceInfoList->AddString(ToWString(driverVersion).c_str());
             }
             else
             {
-                pDeviceInfoList->InsertString(0, L"Error getting device info function pointer!");
+                pDeviceInfoList->AddString(L"Error getting device info!");
             }
-
-            ::FreeLibrary( hModule );
         }
+        else
+        {
+            pDeviceInfoList->AddString(L"Unexpected error getting device info!");
+        }
+
+        ::FreeLibrary( hModule );
+    }
+    else
+    {
+        pDeviceInfoList->AddString(L"Could not load OpenCL ICD loader!");
     }
 }
 
