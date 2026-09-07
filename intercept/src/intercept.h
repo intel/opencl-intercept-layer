@@ -61,7 +61,11 @@ public:
     static bool Create( void* pGlobalData, CLIntercept*& pIntercept );
     static void Delete( CLIntercept*& pIntercept );
 
-    void initLayer(cl_icd_dispatch& layer_dispatch, const cl_icd_dispatch* target_dispatch);
+    void    initLayer(
+                cl_uint num_entries,
+                const cl_icd_dispatch *target_dispatch,
+                cl_uint *num_entries_out,
+                const cl_icd_dispatch **layer_dispatch_ret );
 
     void    report();
 
@@ -684,23 +688,23 @@ public:
     void    initBuiltinKernelOverrides(
                 const cl_context context );
 
-    cl_int  writeStringToMemory(
-                size_t param_value_size,
-                const std::string& param,
-                size_t* param_value_size_ret,
-                char* pointer ) const;
+    static cl_int   writeStringToMemory(
+                        size_t param_value_size,
+                        const std::string& param,
+                        size_t* param_value_size_ret,
+                        char* pointer );
     template< class T >
-    cl_int  writeVectorToMemory(
-                size_t param_value_size,
-                const std::vector<T>& param,
-                size_t* param_value_size_ret,
-                T* pointer ) const;
+    static cl_int   writeVectorToMemory(
+                        size_t param_value_size,
+                        const std::vector<T>& param,
+                        size_t* param_value_size_ret,
+                        T* pointer );
     template< class T >
-    cl_int  writeParamToMemory(
-                size_t param_value_size,
-                T param,
-                size_t* param_value_size_ret,
-                T* pointer ) const;
+    static cl_int   writeParamToMemory(
+                        size_t param_value_size,
+                        T param,
+                        size_t* param_value_size_ret,
+                        T* pointer );
 
     bool    overrideGetPlatformInfo(
                 cl_platform_id platform,
@@ -1007,19 +1011,19 @@ public:
     cl_int  finishAll(
                 cl_context conetxt );
 
-private:
-    static const char* sc_URL;
-    static const char* sc_DumpDirectoryName;
-    static const char* sc_ReportFileName;
-    static const char* sc_LogFileName;
-    static const char* sc_TraceFileName;
-    static const char* sc_PerfCountersFileNamePrefix;
-
 #if defined(CLINTERCEPT_CMAKE)
-    static const char* sc_GitDescribe;
-    static const char* sc_GitRefSpec;
-    static const char* sc_GitHash;
+    static const char* const sc_GitDescribe;
+    static const char* const sc_GitRefSpec;
+    static const char* const sc_GitHash;
 #endif
+
+private:
+    static const char* const sc_URL;
+    static const char* const sc_DumpDirectoryName;
+    static const char* const sc_ReportFileName;
+    static const char* const sc_LogFileName;
+    static const char* const sc_TraceFileName;
+    static const char* const sc_PerfCountersFileNamePrefix;
 
     CLIntercept( void* pGlobalData );
     ~CLIntercept();
@@ -1532,7 +1536,7 @@ cl_int CLIntercept::writeVectorToMemory(
     size_t param_value_size,
     const std::vector<T>& param,
     size_t *param_value_size_ret,
-    T* pointer ) const
+    T* pointer )
 {
     cl_int  errorCode = CL_SUCCESS;
 
@@ -1565,7 +1569,7 @@ cl_int CLIntercept::writeParamToMemory(
     size_t param_value_size,
     T param,
     size_t *param_value_size_ret,
-    T* pointer ) const
+    T* pointer )
 {
     cl_int  errorCode = CL_SUCCESS;
 
