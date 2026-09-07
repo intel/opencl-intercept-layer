@@ -6,6 +6,6 @@
 
 #include "intercept.h"
 
-const char* CLIntercept::sc_GitDescribe = "@GIT_DESCRIBE@";
-const char* CLIntercept::sc_GitRefSpec = "@GIT_REFSPEC@";
-const char* CLIntercept::sc_GitHash = "@GIT_SHA1@";
+const char* const CLIntercept::sc_GitDescribe = "@GIT_DESCRIBE@";
+const char* const CLIntercept::sc_GitRefSpec = "@GIT_REFSPEC@";
+const char* const CLIntercept::sc_GitHash = "@GIT_SHA1@";

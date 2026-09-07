@@ -38,12 +38,7 @@
 #endif
 #endif
 
-// Since we just need the symbol clGetPlatformIDs, we can use any OpenCL
-// version.
-#if !defined(CL_TARGET_OPENCL_VERSION)
-#define CL_TARGET_OPENCL_VERSION 100
-#endif
-#include "CL/cl.h"
+void CLIntercept_Load(void);
 
 namespace OS
 {
@@ -75,7 +70,8 @@ public:
                 const std::string& str ) const;
 
     void*   LoadLibrary(
-                const std::string& libraryName ) const;
+                const std::string& libraryName,
+                const bool deepBind = false ) const;
     void    UnloadLibrary(
                 void*& pLibrary ) const;
 
@@ -192,7 +188,8 @@ inline void Services::OutputDebugString(
 }
 
 inline void* Services::LoadLibrary(
-    const std::string& libraryName ) const
+    const std::string& libraryName,
+    const bool deepBind ) const
 {
     void* pLibrary = dlopen( libraryName.c_str(), RTLD_NOW | RTLD_GLOBAL );
     //if( pLibrary == NULL )
@@ -298,9 +295,10 @@ inline bool Services::GetCLInterceptName(
     std::string& name ) const
 {
     Dl_info info;
-    if( dladdr( (void*)clGetPlatformIDs, &info ) )
+    if( dladdr( (void*)CLIntercept_Load, &info ) )
     {
         name = info.dli_fname;
+        return true;
     }
     return false;
 }

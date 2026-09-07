@@ -52,7 +52,8 @@ public:
                 const std::string& str ) const;
 
     void*   LoadLibrary(
-                const std::string& libraryName ) const;
+                const std::string& libraryName,
+                const bool deepBind = false ) const;
     void    UnloadLibrary(
                 void*& pLibrary ) const;
 
@@ -145,9 +146,11 @@ inline void Services::OutputDebugString(
 }
 
 inline void* Services::LoadLibrary(
-    const std::string& libraryName ) const
+    const std::string& libraryName,
+    const bool deepBind ) const
 {
-    void* pLibrary = dlopen( libraryName.c_str(), RTLD_NOW );
+    const int flags = RTLD_NOW | (deepBind ? RTLD_FIRST : 0);
+    void* pLibrary = dlopen( libraryName.c_str(), flags );
     return pLibrary;
 }
 
@@ -241,6 +244,7 @@ inline bool Services::GetCLInterceptName(
     if( dladdr( (void*)CLIntercept_Load, &info ) )
     {
         name = info.dli_fname;
+        return true;
     }
     return false;
 }
