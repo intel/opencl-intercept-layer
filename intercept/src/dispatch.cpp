@@ -992,9 +992,10 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
 
         if( pIntercept->config().CaptureReplay )
         {
-            // Make sure that there are no device only buffers
-            // Since we need them to replay the kernel
-            flags &= ~CL_MEM_HOST_NO_ACCESS;
+            // Make sure that there are no device only or host write only
+            // buffers, since we need to read buffer contents back on the
+            // host to dump and replay the kernel.
+            flags &= ~( CL_MEM_HOST_NO_ACCESS | CL_MEM_HOST_WRITE_ONLY );
         }
         INITIALIZE_BUFFER_CONTENTS_INIT( flags, size, host_ptr );
         CHECK_ERROR_INIT( errcode_ret );
@@ -1052,6 +1053,13 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
             flags,
             size,
             host_ptr );
+        if( pIntercept->config().CaptureReplay )
+        {
+            // Make sure that there are no device only or host write only
+            // buffers, since we need to read buffer contents back on the
+            // host to dump and replay the kernel.
+            flags &= ~( CL_MEM_HOST_NO_ACCESS | CL_MEM_HOST_WRITE_ONLY );
+        }
         INITIALIZE_BUFFER_CONTENTS_INIT( flags, size, host_ptr );
         CHECK_ERROR_INIT( errcode_ret );
         HOST_PERFORMANCE_TIMING_START();
@@ -1305,6 +1313,14 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
         CHECK_ERROR_INIT( errcode_ret );
         HOST_PERFORMANCE_TIMING_START();
 
+        if( pIntercept->config().CaptureReplay )
+        {
+            // Make sure that there are no device only or host write only
+            // images, since we need to read image contents back on the
+            // host to dump and replay the kernel.
+            flags &= ~( CL_MEM_HOST_NO_ACCESS | CL_MEM_HOST_WRITE_ONLY );
+        }
+
         cl_mem  retVal = pIntercept->dispatch().clCreateImage(
             context,
             flags,
@@ -1394,6 +1410,14 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImageWithProperties)(
 
         CHECK_ERROR_INIT( errcode_ret );
         HOST_PERFORMANCE_TIMING_START();
+
+        if( pIntercept->config().CaptureReplay )
+        {
+            // Make sure that there are no device only or host write only
+            // images, since we need to read image contents back on the
+            // host to dump and replay the kernel.
+            flags &= ~( CL_MEM_HOST_NO_ACCESS | CL_MEM_HOST_WRITE_ONLY );
+        }
 
         cl_mem  retVal = pIntercept->dispatch().clCreateImageWithProperties(
             context,
