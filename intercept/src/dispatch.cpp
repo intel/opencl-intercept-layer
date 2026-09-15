@@ -9273,6 +9273,82 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSVMSuggestedTypeIndexKHR(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// cl_khr_unified_svm
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMemcpyWithPropertiesKHR(
+    cl_command_queue command_queue,
+    cl_svm_copy_properties_khr* properties,
+    cl_bool blocking_copy,
+    void* dst_ptr,
+    const void* src_ptr,
+    size_t size,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
+        if( dispatchX.clEnqueueSVMMemcpyWithPropertiesKHR )
+        {
+            cl_int  retVal = CL_SUCCESS;
+
+            INCREMENT_ENQUEUE_COUNTER();
+            CHECK_AUBCAPTURE_START( command_queue );
+
+            if( pIntercept->config().NullEnqueue == false )
+            {
+                const std::string eventWaitListString = getFormattedEventWaitList(
+                    pIntercept,
+                    num_events_in_wait_list,
+                    event_wait_list);
+
+                CALL_LOGGING_ENTER( "queue = %p, properties = %p, %s, dst_ptr = %p, src_ptr = %p, size = %zu%s",
+                    command_queue,
+                    properties,
+                    blocking_copy ? "blocking" : "non-blocking",
+                    dst_ptr,
+                    src_ptr,
+                    size,
+                    eventWaitListString.c_str() );
+                CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+                GET_TIMING_TAGS_BLOCKING( blocking_copy, size );
+                DEVICE_PERFORMANCE_TIMING_START( event );
+                HOST_PERFORMANCE_TIMING_START();
+
+                retVal = dispatchX.clEnqueueSVMMemcpyWithPropertiesKHR(
+                    command_queue,
+                    properties,
+                    blocking_copy,
+                    dst_ptr,
+                    src_ptr,
+                    size,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event );
+
+                HOST_PERFORMANCE_TIMING_END_WITH_TAG();
+                DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, retVal, event );
+                CHECK_ERROR( retVal );
+                ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
+                CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
+                DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_copy );
+                FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_copy );
+            }
+
+            FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
+            CHECK_AUBCAPTURE_STOP( command_queue );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // cl_ext_image_requirements_info
 CL_API_ENTRY cl_int CL_API_CALL clGetImageRequirementsInfoEXT(
     cl_context context,
