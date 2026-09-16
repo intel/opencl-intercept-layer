@@ -1015,6 +1015,7 @@ typedef cl_properties       cl_svm_alloc_properties_khr;
 typedef cl_bitfield         cl_svm_alloc_access_flags_khr;
 typedef cl_properties       cl_svm_free_properties_khr;
 typedef cl_bitfield         cl_svm_free_flags_khr;
+typedef cl_properties       cl_svm_copy_properties_khr;
 typedef cl_uint             cl_svm_pointer_info_khr;
 
 #define CL_SVM_ALLOC_ASSOCIATED_DEVICE_HANDLE_KHR           0x2078
@@ -1069,6 +1070,18 @@ cl_int CL_API_CALL clGetSVMSuggestedTypeIndexKHR(
     const cl_svm_alloc_properties_khr* properties,
     size_t size,
     cl_uint* suggested_svm_type_index);
+
+extern CL_API_ENTRY
+cl_int CL_API_CALL clEnqueueSVMMemcpyWithPropertiesKHR(
+    cl_command_queue command_queue,
+    cl_svm_copy_properties_khr* properties,
+    cl_bool blocking_copy,
+    void* dst_ptr,
+    const void* src_ptr,
+    size_t size,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event);
 
 ///////////////////////////////////////////////////////////////////////////////
 // cl_ext_atomic_counters

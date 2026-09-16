@@ -13389,6 +13389,7 @@ void* CLIntercept::getExtensionFunctionAddress(
         CHECK_RETURN_EXTENSION_FUNCTION( clSVMFreeWithPropertiesKHR );
         CHECK_RETURN_EXTENSION_FUNCTION( clGetSVMPointerInfoKHR );
         CHECK_RETURN_EXTENSION_FUNCTION( clGetSVMSuggestedTypeIndexKHR );
+        CHECK_RETURN_EXTENSION_FUNCTION( clEnqueueSVMMemcpyWithPropertiesKHR );
     }
 
     // cl_ext_buffer_device_address
