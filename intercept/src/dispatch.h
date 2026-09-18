@@ -521,6 +521,18 @@ struct CLdispatchX
         size_t size,
         cl_uint* suggested_svm_type_index);
 
+    // cl_khr_unified_svm
+    cl_int  (CL_API_CALL *clEnqueueSVMMemcpyWithPropertiesKHR) (
+        cl_command_queue command_queue,
+        cl_svm_copy_properties_khr* properties,
+        cl_bool blocking_copy,
+        void* dst_ptr,
+        const void* src_ptr,
+        size_t size,
+        cl_uint num_events_in_wait_list,
+        const cl_event* event_wait_list,
+        cl_event* event);
+
     // cl_ext_buffer_device_address
     cl_int  (CL_API_CALL *clSetKernelArgDevicePointerEXT) (
         cl_kernel kernel,

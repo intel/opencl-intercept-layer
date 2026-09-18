@@ -991,9 +991,10 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBuffer)(
 
         if( pIntercept->config().CaptureReplay )
         {
-            // Make sure that there are no device only buffers
-            // Since we need them to replay the kernel
-            flags &= ~CL_MEM_HOST_NO_ACCESS;
+            // Make sure that there are no device only or host write only
+            // buffers, since we need to read buffer contents back on the
+            // host to dump and replay the kernel.
+            flags &= ~( CL_MEM_HOST_NO_ACCESS | CL_MEM_HOST_WRITE_ONLY );
         }
         INITIALIZE_BUFFER_CONTENTS_INIT( flags, size, host_ptr );
         CHECK_ERROR_INIT( errcode_ret );
@@ -1051,6 +1052,13 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateBufferWithProperties)(
             flags,
             size,
             host_ptr );
+        if( pIntercept->config().CaptureReplay )
+        {
+            // Make sure that there are no device only or host write only
+            // buffers, since we need to read buffer contents back on the
+            // host to dump and replay the kernel.
+            flags &= ~( CL_MEM_HOST_NO_ACCESS | CL_MEM_HOST_WRITE_ONLY );
+        }
         INITIALIZE_BUFFER_CONTENTS_INIT( flags, size, host_ptr );
         CHECK_ERROR_INIT( errcode_ret );
         HOST_PERFORMANCE_TIMING_START();
@@ -1304,6 +1312,14 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImage)(
         CHECK_ERROR_INIT( errcode_ret );
         HOST_PERFORMANCE_TIMING_START();
 
+        if( pIntercept->config().CaptureReplay )
+        {
+            // Make sure that there are no device only or host write only
+            // images, since we need to read image contents back on the
+            // host to dump and replay the kernel.
+            flags &= ~( CL_MEM_HOST_NO_ACCESS | CL_MEM_HOST_WRITE_ONLY );
+        }
+
         cl_mem  retVal = pIntercept->dispatch().clCreateImage(
             context,
             flags,
@@ -1393,6 +1409,14 @@ CL_API_ENTRY cl_mem CL_API_CALL CLIRN(clCreateImageWithProperties)(
 
         CHECK_ERROR_INIT( errcode_ret );
         HOST_PERFORMANCE_TIMING_START();
+
+        if( pIntercept->config().CaptureReplay )
+        {
+            // Make sure that there are no device only or host write only
+            // images, since we need to read image contents back on the
+            // host to dump and replay the kernel.
+            flags &= ~( CL_MEM_HOST_NO_ACCESS | CL_MEM_HOST_WRITE_ONLY );
+        }
 
         cl_mem  retVal = pIntercept->dispatch().clCreateImageWithProperties(
             context,
@@ -2698,6 +2722,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
                 program,
                 kernel_name );
             if( pIntercept->config().KernelInfoLogging ||
+                pIntercept->config().KernelArgInfoLogging ||
                 pIntercept->config().PreferredWorkGroupSizeMultipleLogging )
             {
                 pIntercept->logKernelInfo(
@@ -2774,6 +2799,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateKernelsInProgram)(
                 program,
                 num_kernels_ret[0] );
             if( pIntercept->config().KernelInfoLogging ||
+                pIntercept->config().KernelArgInfoLogging ||
                 pIntercept->config().PreferredWorkGroupSizeMultipleLogging )
             {
                 pIntercept->logKernelInfo(
@@ -9225,6 +9251,82 @@ CL_API_ENTRY cl_int CL_API_CALL clGetSVMSuggestedTypeIndexKHR(
     }
 
     NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_CONTEXT);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// cl_khr_unified_svm
+CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMemcpyWithPropertiesKHR(
+    cl_command_queue command_queue,
+    cl_svm_copy_properties_khr* properties,
+    cl_bool blocking_copy,
+    void* dst_ptr,
+    const void* src_ptr,
+    size_t size,
+    cl_uint num_events_in_wait_list,
+    const cl_event* event_wait_list,
+    cl_event* event)
+{
+    CLIntercept*    pIntercept = GetIntercept();
+
+    if( pIntercept )
+    {
+        const auto& dispatchX = pIntercept->dispatchX(command_queue);
+        if( dispatchX.clEnqueueSVMMemcpyWithPropertiesKHR )
+        {
+            cl_int  retVal = CL_SUCCESS;
+
+            INCREMENT_ENQUEUE_COUNTER();
+            CHECK_AUBCAPTURE_START( command_queue );
+
+            if( pIntercept->config().NullEnqueue == false )
+            {
+                const std::string eventWaitListString = getFormattedEventWaitList(
+                    pIntercept,
+                    num_events_in_wait_list,
+                    event_wait_list);
+
+                CALL_LOGGING_ENTER( "queue = %p, properties = %p, %s, dst_ptr = %p, src_ptr = %p, size = %zu%s",
+                    command_queue,
+                    properties,
+                    blocking_copy ? "blocking" : "non-blocking",
+                    dst_ptr,
+                    src_ptr,
+                    size,
+                    eventWaitListString.c_str() );
+                CHECK_EVENT_LIST( num_events_in_wait_list, event_wait_list, event );
+                GET_TIMING_TAGS_BLOCKING( blocking_copy, size );
+                DEVICE_PERFORMANCE_TIMING_START( event );
+                HOST_PERFORMANCE_TIMING_START();
+
+                retVal = dispatchX.clEnqueueSVMMemcpyWithPropertiesKHR(
+                    command_queue,
+                    properties,
+                    blocking_copy,
+                    dst_ptr,
+                    src_ptr,
+                    size,
+                    num_events_in_wait_list,
+                    event_wait_list,
+                    event );
+
+                HOST_PERFORMANCE_TIMING_END_WITH_TAG();
+                DEVICE_PERFORMANCE_TIMING_END_WITH_TAG( command_queue, retVal, event );
+                CHECK_ERROR( retVal );
+                ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
+                CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
+                DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_copy );
+                FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_copy );
+            }
+
+            FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
+            CHECK_AUBCAPTURE_STOP( command_queue );
+
+            return retVal;
+        }
+    }
+
+    NULL_FUNCTION_POINTER_RETURN_ERROR(CL_INVALID_COMMAND_QUEUE);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
