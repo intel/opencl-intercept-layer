@@ -2723,6 +2723,7 @@ CL_API_ENTRY cl_kernel CL_API_CALL CLIRN(clCreateKernel)(
                 program,
                 kernel_name );
             if( pIntercept->config().KernelInfoLogging ||
+                pIntercept->config().KernelArgInfoLogging ||
                 pIntercept->config().PreferredWorkGroupSizeMultipleLogging )
             {
                 pIntercept->logKernelInfo(
@@ -2799,6 +2800,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clCreateKernelsInProgram)(
                 program,
                 num_kernels_ret[0] );
             if( pIntercept->config().KernelInfoLogging ||
+                pIntercept->config().KernelArgInfoLogging ||
                 pIntercept->config().PreferredWorkGroupSizeMultipleLogging )
             {
                 pIntercept->logKernelInfo(
