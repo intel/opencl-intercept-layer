@@ -9315,8 +9315,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMemcpyWithPropertiesKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-                DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_copy );
-                FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_copy );
+                PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_copy );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
