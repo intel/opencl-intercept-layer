@@ -1735,6 +1735,46 @@ cl_int CLIntercept::getKernelInfoString(
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+cl_int CLIntercept::getKernelArgInfoString(
+    cl_kernel kernel,
+    cl_uint arg_index,
+    cl_kernel_arg_info param_name,
+    std::string& str ) const
+{
+    cl_int  errorCode = CL_SUCCESS;
+    size_t  size = 0;
+
+    errorCode = dispatch().clGetKernelArgInfo(
+        kernel,
+        arg_index,
+        param_name,
+        0,
+        nullptr,
+        &size );
+
+    if( errorCode == CL_SUCCESS )
+    {
+        str.assign( size, ' ' );
+        errorCode = dispatch().clGetKernelArgInfo(
+            kernel,
+            arg_index,
+            param_name,
+            size,
+            &str[0],
+            nullptr );
+        str.pop_back(); // remove the NUL terminator
+    }
+
+    if( errorCode != CL_SUCCESS )
+    {
+        str.clear();
+    }
+
+    return errorCode;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
 cl_int CLIntercept::allocateAndGetProgramDeviceList(
     cl_program program,
     cl_uint& numDevices,
@@ -3541,119 +3581,207 @@ void CLIntercept::logKernelInfo(
             cl_kernel   kernel = kernels[ numKernels ];
 
             const std::string& kernelName = getShortKernelNameWithHash(kernel);
-            log( "Kernel Info for: " + kernelName + "\n" );
 
-            for( cl_uint i = 0; i < numDevices; i++ )
+            if( config().KernelInfoLogging ||
+                config().PreferredWorkGroupSizeMultipleLogging )
             {
-                std::string deviceName;
-                errorCode = getDeviceInfoString(
-                    deviceList[i],
-                    CL_DEVICE_NAME,
-                    deviceName );
+                log( "Kernel Info for: " + kernelName + "\n" );
 
+                for( cl_uint i = 0; i < numDevices; i++ )
+                {
+                    std::string deviceName;
+                    errorCode = getDeviceInfoString(
+                        deviceList[i],
+                        CL_DEVICE_NAME,
+                        deviceName );
+
+                    cl_uint args = 0;
+                    errorCode |= dispatch().clGetKernelInfo(
+                        kernel,
+                        CL_KERNEL_NUM_ARGS,
+                        sizeof(args),
+                        &args,
+                        NULL );
+
+                    size_t  pwgsm = 0;
+                    errorCode |= dispatch().clGetKernelWorkGroupInfo(
+                        kernel,
+                        deviceList[i],
+                        CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
+                        sizeof(pwgsm),
+                        &pwgsm,
+                        NULL );
+                    size_t  wgs = 0;
+                    errorCode |= dispatch().clGetKernelWorkGroupInfo(
+                        kernel,
+                        deviceList[i],
+                        CL_KERNEL_WORK_GROUP_SIZE,
+                        sizeof(wgs),
+                        &wgs,
+                        NULL );
+                    size_t  rwgs[3] = {0, 0, 0};
+                    errorCode |= dispatch().clGetKernelWorkGroupInfo(
+                        kernel,
+                        deviceList[i],
+                        CL_KERNEL_COMPILE_WORK_GROUP_SIZE,
+                        sizeof(rwgs),
+                        rwgs,
+                        NULL );
+                    cl_ulong pms = 0;
+                    errorCode |= dispatch().clGetKernelWorkGroupInfo(
+                        kernel,
+                        deviceList[i],
+                        CL_KERNEL_PRIVATE_MEM_SIZE,
+                        sizeof(pms),
+                        &pms,
+                        NULL );
+                    cl_ulong lms = 0;
+                    errorCode |= dispatch().clGetKernelWorkGroupInfo(
+                        kernel,
+                        deviceList[i],
+                        CL_KERNEL_LOCAL_MEM_SIZE,
+                        sizeof(lms),
+                        &lms,
+                        NULL );
+                    cl_ulong sms = 0;
+                    cl_int errorCode_sms = dispatch().clGetKernelWorkGroupInfo(
+                        kernel,
+                        deviceList[i],
+                        CL_KERNEL_SPILL_MEM_SIZE_INTEL,
+                        sizeof(sms),
+                        &sms,
+                        NULL );
+                    cl_uint regCount = 0;
+                    cl_int errorCode_regCount = dispatch().clGetKernelWorkGroupInfo(
+                        kernel,
+                        deviceList[i],
+                        CL_KERNEL_REGISTER_COUNT_INTEL,
+                        sizeof(regCount),
+                        &regCount,
+                        NULL );
+                    if( errorCode == CL_SUCCESS )
+                    {
+                        logf( "    For device: %s\n", deviceName.c_str() );
+                        if( config().KernelInfoLogging )
+                        {
+                            logf( "        Num Args: %u\n", args);
+                        }
+                        if( config().KernelInfoLogging ||
+                            config().PreferredWorkGroupSizeMultipleLogging )
+                        {
+                            logf( "        Preferred Work Group Size Multiple: %zu\n", pwgsm);
+                        }
+                        if( config().KernelInfoLogging )
+                        {
+                            logf( "        Max Work Group Size: %zu\n", wgs);
+                            if( rwgs[0] != 0 || rwgs[1] != 0 || rwgs[2] != 0 )
+                            {
+                                logf( "        Required Work Group Size: < %zu, %zu, %zu >\n",
+                                    rwgs[0], rwgs[1], rwgs[2]);
+                            }
+                            logf( "        Private Mem Size: %u\n", (cl_uint)pms);
+                            logf( "        Local Mem Size: %u\n", (cl_uint)lms);
+                            if( errorCode_sms == CL_SUCCESS )
+                            {
+                                logf( "        Spill Mem Size: %u\n", (cl_uint)sms);
+                            }
+                            if( errorCode_regCount == CL_SUCCESS )
+                            {
+                                logf( "        Register Count: %u\n", regCount);
+                            }
+                        }
+                    }
+                    else if( !deviceName.empty() )
+                    {
+                        logf( "Error querying kernel info for device %s!\n", deviceName.c_str() );
+                    }
+                    else
+                    {
+                        logf( "Error querying kernel info!\n" );
+                    }
+                }
+            }
+
+            if( config().KernelArgInfoLogging )
+            {
                 cl_uint args = 0;
-                errorCode |= dispatch().clGetKernelInfo(
+                errorCode = dispatch().clGetKernelInfo(
                     kernel,
                     CL_KERNEL_NUM_ARGS,
                     sizeof(args),
                     &args,
                     NULL );
-
-                size_t  pwgsm = 0;
-                errorCode |= dispatch().clGetKernelWorkGroupInfo(
-                    kernel,
-                    deviceList[i],
-                    CL_KERNEL_PREFERRED_WORK_GROUP_SIZE_MULTIPLE,
-                    sizeof(pwgsm),
-                    &pwgsm,
-                    NULL );
-                size_t  wgs = 0;
-                errorCode |= dispatch().clGetKernelWorkGroupInfo(
-                    kernel,
-                    deviceList[i],
-                    CL_KERNEL_WORK_GROUP_SIZE,
-                    sizeof(wgs),
-                    &wgs,
-                    NULL );
-                size_t  rwgs[3] = {0, 0, 0};
-                errorCode |= dispatch().clGetKernelWorkGroupInfo(
-                    kernel,
-                    deviceList[i],
-                    CL_KERNEL_COMPILE_WORK_GROUP_SIZE,
-                    sizeof(rwgs),
-                    rwgs,
-                    NULL );
-                cl_ulong pms = 0;
-                errorCode |= dispatch().clGetKernelWorkGroupInfo(
-                    kernel,
-                    deviceList[i],
-                    CL_KERNEL_PRIVATE_MEM_SIZE,
-                    sizeof(pms),
-                    &pms,
-                    NULL );
-                cl_ulong lms = 0;
-                errorCode |= dispatch().clGetKernelWorkGroupInfo(
-                    kernel,
-                    deviceList[i],
-                    CL_KERNEL_LOCAL_MEM_SIZE,
-                    sizeof(lms),
-                    &lms,
-                    NULL );
-                cl_ulong sms = 0;
-                cl_int errorCode_sms = dispatch().clGetKernelWorkGroupInfo(
-                    kernel,
-                    deviceList[i],
-                    CL_KERNEL_SPILL_MEM_SIZE_INTEL,
-                    sizeof(sms),
-                    &sms,
-                    NULL );
-                cl_uint regCount = 0;
-                cl_int errorCode_regCount = dispatch().clGetKernelWorkGroupInfo(
-                    kernel,
-                    deviceList[i],
-                    CL_KERNEL_REGISTER_COUNT_INTEL,
-                    sizeof(regCount),
-                    &regCount,
-                    NULL );
-                if( errorCode == CL_SUCCESS )
+                if( errorCode != CL_SUCCESS )
                 {
-                    logf( "    For device: %s\n", deviceName.c_str() );
-                    if( config().KernelInfoLogging )
-                    {
-                        logf( "        Num Args: %u\n", args);
-                    }
-                    if( config().KernelInfoLogging ||
-                        config().PreferredWorkGroupSizeMultipleLogging )
-                    {
-                        logf( "        Preferred Work Group Size Multiple: %zu\n", pwgsm);
-                    }
-                    if( config().KernelInfoLogging )
-                    {
-                        logf( "        Max Work Group Size: %zu\n", wgs);
-                        if( rwgs[0] != 0 || rwgs[1] != 0 || rwgs[2] != 0 )
-                        {
-                            logf( "        Required Work Group Size: < %zu, %zu, %zu >\n",
-                                rwgs[0], rwgs[1], rwgs[2]);
-                        }
-                        logf( "        Private Mem Size: %u\n", (cl_uint)pms);
-                        logf( "        Local Mem Size: %u\n", (cl_uint)lms);
-                        if( errorCode_sms == CL_SUCCESS )
-                        {
-                            logf( "        Spill Mem Size: %u\n", (cl_uint)sms);
-                        }
-                        if( errorCode_regCount == CL_SUCCESS )
-                        {
-                            logf( "        Register Count: %u\n", regCount);
-                        }
-                    }
-                }
-                else if( !deviceName.empty() )
-                {
-                    logf( "Error querying kernel info for device %s!\n", deviceName.c_str() );
+                    logf( "Error querying number of kernel arguments!\n" );
                 }
                 else
                 {
-                    logf( "Error querying kernel info!\n" );
+                    log( "Kernel Arg Info for: " + kernelName + "\n" );
+
+                    for( cl_uint i = 0; i < args; i++ )
+                    {
+                        std::string typeName;
+                        errorCode = getKernelArgInfoString(
+                            kernel,
+                            i,
+                            CL_KERNEL_ARG_TYPE_NAME,
+                            typeName );
+
+                        std::string argName;
+                        errorCode |= getKernelArgInfoString(
+                            kernel,
+                            i,
+                            CL_KERNEL_ARG_NAME,
+                            argName );
+
+                        cl_kernel_arg_type_qualifier typeQualifier =
+                            CL_KERNEL_ARG_TYPE_NONE;
+                        dispatch().clGetKernelArgInfo(
+                            kernel,
+                            i,
+                            CL_KERNEL_ARG_TYPE_QUALIFIER,
+                            sizeof(typeQualifier),
+                            &typeQualifier,
+                            nullptr );
+
+                        cl_kernel_arg_address_qualifier addressQualifier =
+                            CL_KERNEL_ARG_ADDRESS_PRIVATE;
+                        dispatch().clGetKernelArgInfo(
+                            kernel,
+                            i,
+                            CL_KERNEL_ARG_ADDRESS_QUALIFIER,
+                            sizeof(addressQualifier),
+                            &addressQualifier,
+                            nullptr );
+
+                        cl_kernel_arg_access_qualifier accessQualifier =
+                            CL_KERNEL_ARG_ACCESS_NONE;
+                        dispatch().clGetKernelArgInfo(
+                            kernel,
+                            i,
+                            CL_KERNEL_ARG_ACCESS_QUALIFIER,
+                            sizeof(accessQualifier),
+                            &accessQualifier,
+                            nullptr );
+
+                        if( errorCode == CL_SUCCESS )
+                        {
+                            logf("    Arg %2u: %s %s\n", i, typeName.c_str(), argName.c_str());
+                            if( typeQualifier != CL_KERNEL_ARG_TYPE_NONE ) {
+                                logf( "        TYPE_QUALIFIER: %s\n",
+                                    enumName().name_kernel_arg_type_qualifier( typeQualifier ).c_str() );
+                            }
+                            if( accessQualifier != CL_KERNEL_ARG_ACCESS_NONE ) {
+                                logf( "        ACCESS_QUALIFIER: %s\n",
+                                    enumName().name( accessQualifier ).c_str() );
+                            }
+                            if( addressQualifier != CL_KERNEL_ARG_ADDRESS_PRIVATE ) {
+                                logf( "        ADDRESS_QUALIFIER: %s\n",
+                                    enumName().name( addressQualifier ).c_str() );
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -7899,14 +8027,13 @@ void CLIntercept::dumpCaptureReplayKernelInfo(
         std::ofstream outputArgTypes{dumpDirectory + "ArgumentDataTypes.txt"};
         for( cl_uint idx = 0; idx != numArgs; ++idx )
         {
-            size_t argTypeNameSize = 0;
-            dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, 0, nullptr, &argTypeNameSize);
-
-            std::string argTypeName(argTypeNameSize, ' ');
-            int error = dispatch().clGetKernelArgInfo(kernel, idx, CL_KERNEL_ARG_TYPE_NAME, argTypeNameSize, &argTypeName[0], nullptr);
-            if( error == CL_SUCCESS )
+            std::string argTypeName;
+            if( getKernelArgInfoString(
+                    kernel,
+                    idx,
+                    CL_KERNEL_ARG_TYPE_NAME,
+                    argTypeName ) == CL_SUCCESS )
             {
-                argTypeName.pop_back();
                 outputArgTypes << argTypeName << '\n';
             }
         }

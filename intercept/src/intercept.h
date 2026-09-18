@@ -127,6 +127,11 @@ public:
                 cl_kernel kernel,
                 cl_kernel_info param_name,
                 std::string& str ) const;
+    cl_int  getKernelArgInfoString(
+                cl_kernel kernel,
+                cl_uint arg_index,
+                cl_kernel_arg_info param_name,
+                std::string& str ) const;
     cl_int  allocateAndGetProgramDeviceList(
                 cl_program program,
                 cl_uint& numDevices,
