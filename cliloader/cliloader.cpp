@@ -405,6 +405,10 @@ static bool parseArguments(int argc, char *argv[])
         {
             checkSetEnv("CLI_MultiThreadedProcessing", "0");
         }
+        else if ( !strcmp(argv[i], "-mt") || !strcmp(argv[i], "--threads") )
+        {
+            checkSetEnv("CLI_MultiThreadedProcessing", "1");
+        }
         else if( !strcmp(argv[i], "-q") || !strcmp(argv[i], "--quiet") )
         {
             checkSetEnv("CLI_SuppressLogging", "1");
@@ -642,6 +646,7 @@ static bool parseArguments(int argc, char *argv[])
             "  --no-LD_LIBRARY_PATH             Do Not Set LD_LIBRARY_PATH\n"
 #endif
             "  --no-threads [-nt]               Do Not Create Additional Processing Threads\n"
+            "  --threads [-mt]                  Create Additional Processing Threads\n"
             "\n"
             "  --quiet [-q]                     Disable Logging\n"
             "  --call-logging [-c]              Trace Host API Calls\n"

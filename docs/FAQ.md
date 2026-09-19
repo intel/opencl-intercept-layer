@@ -192,7 +192,7 @@ Events will typically be unprocessed for one of two reasons:
 * If an application enqueues a non-blocking command without making any other calls that cause the device performance timing list to be processed, then the event may be unprocessed when the application terminates.
 This may especially happen if the application does not flush the queue after enqueueing the non-blocking command.
 Setting `FlushAfterEnqueue` or `FinishAfterEnqueue` will usually enable these events to be processed, however these controls can have a large impact on performance and should be used with caution.
-* To reduce overhead, the OpenCL Intercept Layer typically processes the device performance timing list on a separate thread.
+* To reduce overhead, the OpenCL Intercept Layer may process the device performance timing list on a separate thread.
 If the application enqueues a lot of commands, then the device performance timing list may take a lot of time to process, and the separate thread may still be processing events when the application terminates.
 Disabling `MultiThreadedProcessing` will cause these events to be processed on the main application thread instead, which increases overhead, but will usually enable the events to be processed prior to application exit.
 
