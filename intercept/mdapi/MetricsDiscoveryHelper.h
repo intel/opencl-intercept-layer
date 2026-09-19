@@ -55,8 +55,11 @@ public:
         bool includeMaxValues );
     static void Delete( MDHelper*& pMDHelper );
 
+    std::vector<char>&  GetWorkingReportData();
+    std::vector<TTypedValueLatest>& GetWorkingResults();
+    std::vector<TTypedValueLatest>& GetWorkingMaxValues();
+
     uint32_t GetMetricsConfiguration();
-    uint32_t GetQueryReportSize();
 
     bool    ActivateMetricSet();
     void    DeactivateMetricSet();
@@ -104,6 +107,8 @@ public:
 private:
     MDHelper(uint32_t apiMask);
     ~MDHelper();
+    MDHelper(MDHelper const&) = delete;
+    MDHelper& operator=(MDHelper const&) = delete;
 
     bool InitMetricsDiscovery(
         const std::string& metricsLibraryName,
@@ -150,29 +155,34 @@ private:
     IConcurrentGroupLatest* m_ConcurrentGroup;
     IMetricSetLatest*       m_MetricSet;
 
+    // Working data for event based sampling:
+    std::vector<char>       m_WorkingReportData;    // passed to clGetEventProfilingInfo
+    std::vector<TTypedValueLatest>  m_WorkingResults;
+    std::vector<TTypedValueLatest>  m_WorkingMaxValues;
+
     // Report data for time based sampling:
     std::vector<char>       m_SavedReportData;
     uint32_t                m_NumSavedReports;
-
-private:
-    MDHelper(MDHelper const&);
-    void operator=(MDHelper const&);
 };
 
-/************************************************************************/
-/* GetMetricsConfiguration                                              */
-/************************************************************************/
+inline std::vector<char>& MDHelper::GetWorkingReportData()
+{
+    return m_WorkingReportData;
+}
+
+inline std::vector<TTypedValueLatest>& MDHelper::GetWorkingResults()
+{
+    return m_WorkingResults;
+}
+
+inline std::vector<TTypedValueLatest>& MDHelper::GetWorkingMaxValues()
+{
+    return m_WorkingMaxValues;
+}
+
 inline uint32_t MDHelper::GetMetricsConfiguration()
 {
     return ( m_MetricSet != NULL ) ? m_MetricSet->GetParams()->ApiSpecificId.OCL : 0;
-}
-
-/************************************************************************/
-/* GetQueryReportSize                                                   */
-/************************************************************************/
-inline uint32_t MDHelper::GetQueryReportSize()
-{
-    return ( m_MetricSet != NULL ) ? m_MetricSet->GetParams()->QueryReportSize : 0;
 }
 
 }

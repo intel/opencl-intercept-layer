@@ -545,6 +545,19 @@ bool MDHelper::FindMetricSetForDevice(
     {
         DebugPrint("MetricSet not found.\n");
     }
+    else if (!(m_APIMask & API_TYPE_IOSTREAM))
+    {
+        // Setup working vectors for event-based sampling:
+        const uint32_t reportSize = m_MetricSet->GetParams()->QueryReportSize;
+        m_WorkingReportData.resize(reportSize);
+
+        const uint32_t resultsSize =
+            m_MetricSet->GetParams()->MetricsCount +
+            m_MetricSet->GetParams()->InformationCount;
+        m_WorkingResults.resize(resultsSize);
+        m_WorkingMaxValues.resize(resultsSize);
+        // note: IO info is not used
+    }
 
     return found;
 }

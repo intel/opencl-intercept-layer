@@ -104,7 +104,6 @@ configure_file(src/git_version.rc.in "${CMAKE_CURRENT_BINARY_DIR}/git_version.rc
 
 # When set, this is used for guessing the location of the real OpenCL ICD loader.
 if(CMAKE_LIBRARY_ARCHITECTURE)
-    message(STATUS "CMAKE_LIBRARY_ARCHITECTURE is: ${CMAKE_LIBRARY_ARCHITECTURE}")
     target_compile_definitions(OpenCL PRIVATE CLINTERCEPT_LIBRARY_ARCHITECTURE="${CMAKE_LIBRARY_ARCHITECTURE}")
 endif()
 
@@ -134,20 +133,45 @@ if(WIN32)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
        ${CMAKE_SYSTEM_NAME} STREQUAL "Android")
     # conditionally enabled on Linux and Android
+
+    # If using the lld linker, we need to set linker emulation flags
+    if(NOT DEFINED LLD_EMULATION_FLAGS)
+        get_filename_component(LINKER_EXECUTABLE ${CMAKE_LINKER} NAME)
+        if(LINKER_EXECUTABLE MATCHES "lld" OR
+            ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD") # default on FreeBSD?
+            if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386" OR
+                ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
+                set(LLD_EMULATION_FLAGS "-melf_i386")
+            elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64" OR
+                    ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "amd64")
+                set(LLD_EMULATION_FLAGS "-melf_x86_64")
+            elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
+                set(LLD_EMULATION_FLAGS "-maarch64elf")
+            elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
+                set(LLD_EMULATION_FLAGS "-melf64lriscv")
+            elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm" OR
+                    ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7")
+                set(LLD_EMULATION_FLAGS "-marmelf")
+            else()
+                message(STATUS "Unknown system processor ${CMAKE_SYSTEM_PROCESSOR} for lld target emulation flags!")
+            endif()
+        endif()
+    endif()
+
     if(ENABLE_KERNEL_OVERRIDES)
         target_compile_definitions(OpenCL PRIVATE USE_KERNEL_OVERRIDES)
 
         set(CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/kernels)
         add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary -z noexecstack
+            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary ${LLD_EMULATION_FLAGS} -z noexecstack
                 kernels/precompiled_kernels.cl
                 -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/precompiled_kernels.o
             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kernels/precompiled_kernels.cl
         )
         add_custom_command(OUTPUT ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}
-            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary -z noexecstack
+            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary ${LLD_EMULATION_FLAGS} -z noexecstack
                 kernels/builtin_kernels.cl
                 -o ${CLINTERCEPT_KERNELS_OUTPUT_DIRECTORY}/builtin_kernels.o
             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/kernels/builtin_kernels.cl
@@ -163,7 +187,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
         set(CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/scripts)
         add_custom_command(OUTPUT ${CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY}/run_py.o
             COMMAND ${CMAKE_COMMAND} -E make_directory ${CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY}
-            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary -z noexecstack
+            COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_LINKER} -r -b binary ${LLD_EMULATION_FLAGS} -z noexecstack
                 scripts/run.py
                 -o ${CLINTERCEPT_SCRIPTS_OUTPUT_DIRECTORY}/run_py.o
             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/scripts/run.py
@@ -248,6 +272,12 @@ if(ENABLE_ITT)
     target_include_directories(OpenCL PRIVATE ${VTUNE_INCLUDE_DIR})
     message(STATUS "VTune ITTNotify Lib is: ${VTUNE_ITTNOTIFY_LIB}")
     target_link_libraries(OpenCL ${VTUNE_ITTNOTIFY_LIB} ${CMAKE_THREAD_LIBS_INIT})
+endif()
+
+# Thread Sanitizer Support (optional)
+if(ENABLE_TSAN)
+    target_compile_options(OpenCL PRIVATE -fsanitize=thread)
+    target_link_options(OpenCL PRIVATE -fsanitize=thread)
 endif()
 
 if(WIN32)

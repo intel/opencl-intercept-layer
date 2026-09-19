@@ -83,3 +83,16 @@
 #endif
 
 #define CLI_STRING_BUFFER_SIZE (16 * 1024)
+
+#include <chrono>
+
+namespace
+{
+
+#if defined(CLINTERCEPT_HIGH_RESOLUTON_CLOCK)
+    using clock = std::chrono::high_resolution_clock;
+#else
+    using clock = std::chrono::steady_clock;
+#endif
+
+};
