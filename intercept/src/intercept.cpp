@@ -693,19 +693,26 @@ void CLIntercept::processingThreadFunc( CLIntercept* pIntercept )
 
     while( true )
     {
-        // Note: We need to check whether processing is done while holding the
-        // processing condition lock.  This avoids a deadlock in the case where
-        // the processing thread checks the done flag and gets interrupted, then
-        // the main thread sets the done flag and notifies this processing
-        // thread, then the processing thread waits on the notification that
-        // will never come.
+        // Note: Wait until processing is needed or processing is done. Doing
+        // this as a condition variable predicate avoids waiting for a
+        // notification that will never come in the case where another thread
+        // sets the done flag or requests processing and notifies this thread
+        // while this thread is processing data or is about to wait for a
+        // notification.
         {
             std::unique_lock<std::mutex> lock( pIntercept->m_ProcessingConditionMutex );
+
+            pIntercept->m_ProcessingConditionVariable.wait( lock, [pIntercept]
+                {
+                    return
+                        pIntercept->m_ProcessingNeeded ||
+                        pIntercept->m_ProcessingDone.load();
+                } );
+            pIntercept->m_ProcessingNeeded = false;
             if (pIntercept->m_ProcessingDone.load())
             {
                 break;
             }
-            pIntercept->m_ProcessingConditionVariable.wait( lock );
         }
 
         pIntercept->processData();
@@ -741,6 +748,14 @@ void CLIntercept::notifyProcessingThread()
     if( needsTimingCheck(this) ||
         needsChromeTraceFlush(this) )
     {
+        // Note: We need to set the flag indicating that processing is needed
+        // while holding the processing condition lock.  This ensures that the
+        // notification is not missed if it arrives while the processing thread
+        // is processing data or is about to wait for a notification.
+        {
+            std::lock_guard<std::mutex> lock(m_ProcessingConditionMutex);
+            m_ProcessingNeeded = true;
+        }
         m_ProcessingConditionVariable.notify_one();
     }
 }
@@ -6757,10 +6772,17 @@ void CLIntercept::checkTimingEvents()
 {
     std::lock_guard<std::mutex> lock(m_EventList.CheckMutex);
 
-    CEventList::const_iterator  current = m_EventList.begin();
-    CEventList::const_iterator  next;
+    // Move the nodes to check out of the event list and into a local list.
+    // This way the nodes are only accessed by this thread, and other threads
+    // can continue to add nodes to the event list while the events are being
+    // checked.  Any nodes that are not processed are returned to the event
+    // list when the check is complete.
+    CEventList::CNodeList   nodes;
+    m_EventList.takeNodes( nodes );
 
-    while( current != m_EventList.end() )
+    CEventList::CNodeList::iterator current = nodes.begin();
+
+    while( current != nodes.end() )
     {
         if( config().MultiThreadedProcessing &&
             m_ProcessingDone.load() == true )
@@ -6773,9 +6795,6 @@ void CLIntercept::checkTimingEvents()
 
         cl_int  errorCode = CL_SUCCESS;
         cl_int  eventStatus = 0;
-
-        next = current;
-        ++next;
 
         const CEventList::Node& node = *current;
 
@@ -6931,7 +6950,13 @@ void CLIntercept::checkTimingEvents()
 
                 dispatch().clReleaseEvent( node.Event );
 
-                m_EventList.erase( current );
+                current = nodes.erase( current );
+            }
+            else
+            {
+                // The event is not complete yet, so keep it and check it
+                // again the next time events are checked.
+                ++current;
             }
             break;
         case CL_INVALID_EVENT:
@@ -6943,17 +6968,20 @@ void CLIntercept::checkTimingEvents()
                 // list.
                 logf( "Unexpectedly got CL_INVALID_EVENT for an event from %s!\n",
                     node.Name.c_str() );
-
-                m_EventList.erase( current );
             }
+            current = nodes.erase( current );
             break;
         default:
             // nothing
+            ++current;
             break;
         }
-
-        current = next;
     }
+
+    // Return any nodes that were not processed to the event list.  Note that
+    // this also returns nodes that were skipped when shutting down, so they
+    // can be counted and reported as unprocessed events.
+    m_EventList.returnNodes( nodes );
 
 #if defined(USE_MDAPI)
     if( config().DevicePerfCounterTimeBasedSampling )

@@ -1114,6 +1114,7 @@ private:
     std::mutex      m_ProcessingConditionMutex;
     std::condition_variable m_ProcessingConditionVariable;
     std::atomic<bool>   m_ProcessingDone{false};
+    bool            m_ProcessingNeeded = false;
 
     static void processingThreadFunc( CLIntercept* pIntercept );
 

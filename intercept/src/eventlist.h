@@ -15,6 +15,9 @@
 class CEventList
 {
 public:
+    // This mutex serializes checking the events in the event list.  It is
+    // held by the caller for the duration of a check, which ensures that only
+    // one thread checks events at a time.
     std::mutex  CheckMutex;
 
     struct Node
@@ -29,7 +32,7 @@ public:
         cl_event            Event;
     };
 
-    using const_iterator = std::list<Node>::const_iterator;
+    using CNodeList = std::list<Node>;
 
     CEventList() = default;
     ~CEventList() = default;
@@ -42,20 +45,21 @@ public:
         m_EventList.push_back( std::move(node) );
     }
 
-    void    erase( const_iterator iterator )
+    // Moves all nodes out of the event list and into the caller's list, so
+    // the caller can check the events without holding a lock.
+    void    takeNodes( CNodeList& nodes )
     {
         std::lock_guard<std::mutex> lock(m_Mutex);
-        m_EventList.erase( iterator );
+        nodes.splice( nodes.end(), m_EventList );
     }
 
-    const_iterator begin() const
+    // Returns nodes that were not processed to the front of the event list,
+    // so the nodes in the event list remain ordered oldest to newest, even if
+    // nodes were added while the events were being checked.
+    void    returnNodes( CNodeList& nodes )
     {
-        return m_EventList.begin();
-    }
-
-    const_iterator end() const
-    {
-        return m_EventList.end();
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_EventList.splice( m_EventList.begin(), nodes );
     }
 
     size_t size()
@@ -67,5 +71,5 @@ public:
 private:
     std::mutex  m_Mutex;
 
-    std::list<Node> m_EventList;
+    CNodeList   m_EventList;
 };
