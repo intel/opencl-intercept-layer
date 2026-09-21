@@ -389,6 +389,10 @@ void CLIntercept::getMDAPICountersFromStream( void )
             bool report = m_pMDHelper->SaveReportsFromStream();
             if( report )
             {
+                // Lock the main mutex to protect writes to the metric dump
+                // file.
+                std::lock_guard<std::mutex> lock(m_Mutex);
+
                 uint32_t numResults = m_pMDHelper->GetMetricsFromSavedReports(
                     results,
                     maxValues );
@@ -451,6 +455,8 @@ void CLIntercept::getMDAPICountersFromEvent(
                 maxValues );
             if( numResults )
             {
+                // Lock the main mutex to protect writes to the metric dump
+                // file and the aggregated metrics.
                 std::lock_guard<std::mutex> lock(m_Mutex);
 
                 m_pMDHelper->PrintMetricValues(

@@ -64,8 +64,7 @@ public:
         m_TraceFile
             << "{\"ph\":\"M\",\"name\":\"thread_name\",\"pid\":" << m_ProcessId
             << ",\"tid\":" << threadId
-            << ",\"args\":{\"name\":\"" << threadName << " "
-            //<< threadId
+            << ",\"args\":{\"name\":\"" << threadName
             << "\"}},\n";
         m_TraceFile
             << "{\"ph\":\"M\",\"name\":\"thread_sort_index\",\"pid\":" << m_ProcessId

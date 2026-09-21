@@ -95,4 +95,4 @@ namespace
     using clock = std::chrono::steady_clock;
 #endif
 
-};
+}

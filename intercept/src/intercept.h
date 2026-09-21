@@ -1094,7 +1094,7 @@ private:
 
     bool        m_LoggedCLInfo;
 
-    std::atomic<uint64_t>   m_EnqueueCounter;
+    std::atomic<uint64_t>   m_EnqueueCounter{0};
 
     clock::time_point   m_StartTime;
 
@@ -1113,7 +1113,7 @@ private:
     std::thread     m_ProcessingThread;
     std::mutex      m_ProcessingConditionMutex;
     std::condition_variable m_ProcessingConditionVariable;
-    std::atomic<bool>   m_ProcessingDone;
+    std::atomic<bool>   m_ProcessingDone{false};
 
     static void processingThreadFunc( CLIntercept* pIntercept );
 
@@ -1257,21 +1257,6 @@ private:
 
     typedef std::unordered_map< std::string, std::string >  CLongKernelNameMap;
     CLongKernelNameMap  m_LongKernelNameMap;
-
-    // This is a list of pending events that haven't been added to the
-    // device timing stats map yet.
-
-    struct SEventListNode
-    {
-        cl_device_id        Device;
-        unsigned int        QueueNumber;
-        std::string         Name;
-        uint64_t            EnqueueCounter;
-        clock::time_point   QueuedTime;
-        bool                UseProfilingDelta;
-        int64_t             ProfilingDeltaNS;
-        cl_event            Event;
-    };
 
 #if defined(USE_MDAPI)
     MetricsDiscovery::MDHelper* m_pMDHelper;

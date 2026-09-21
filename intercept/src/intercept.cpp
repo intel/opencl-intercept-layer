@@ -136,8 +136,6 @@ CLIntercept::CLIntercept( void* pGlobalData )
 
     m_LoggedCLInfo = false;
 
-    m_EnqueueCounter.store(0, std::memory_order_relaxed);
-
     m_EventsChromeTraced = 0;
     m_ProgramNumber = 0;
     m_KernelID = 0;
@@ -179,14 +177,7 @@ CLIntercept::CLIntercept( void* pGlobalData )
 //
 CLIntercept::~CLIntercept()
 {
-    if( m_EventList.size() > 0 )
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-
-        logf( "CLIntercept is shutting down, but %zu events are unprocessed!\n",
-            m_EventList.size() );
-    }
-    if( m_Config.MultiThreadedProcessing )
+    if( m_ProcessingThread.joinable() )
     {
         // Note: We need to hold the processing condition lock while setting the
         // done flag. This avoids a deadlock if this thread sets the done flag
@@ -199,6 +190,13 @@ CLIntercept::~CLIntercept()
         }
         m_ProcessingConditionVariable.notify_all();
         m_ProcessingThread.join();
+    }
+    if( m_EventList.size() > 0 )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        logf( "CLIntercept is shutting down, but %zu events are unprocessed!\n",
+            m_EventList.size() );
     }
 
     stopAubCapture( NULL );
@@ -672,7 +670,6 @@ bool CLIntercept::init()
 
     if( m_Config.MultiThreadedProcessing )
     {
-        m_ProcessingDone.store(false);
         m_ProcessingThread = std::thread( CLIntercept::processingThreadFunc, this );
         log( "Processing Thread Started!\n" );
     }
@@ -687,8 +684,12 @@ bool CLIntercept::init()
 void CLIntercept::processingThreadFunc( CLIntercept* pIntercept )
 {
     // This names the processing thread.
-    uint64_t    threadId = pIntercept->OS().GetThreadID();
-    pIntercept->getThreadNumber( "Host Processing Thread", threadId );
+    {
+        std::lock_guard<std::mutex> lock(pIntercept->m_Mutex);
+
+        uint64_t    threadId = pIntercept->OS().GetThreadID();
+        pIntercept->getThreadNumber( "Host Processing Thread", threadId );
+    }
 
     while( true )
     {
@@ -712,10 +713,36 @@ void CLIntercept::processingThreadFunc( CLIntercept* pIntercept )
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Helper functions:
+
+static bool needsTimingCheck(CLIntercept* pIntercept)
+{
+    return
+        pIntercept->config().DevicePerformanceTiming ||
+        pIntercept->config().ITTPerformanceTiming ||
+        pIntercept->config().ChromePerformanceTiming ||
+        pIntercept->config().DevicePerfCounterEventBasedSampling ||
+        pIntercept->config().DevicePerfCounterTimeBasedSampling;
+}
+
+static bool needsChromeTraceFlush(CLIntercept* pIntercept)
+{
+    return
+        pIntercept->config().ChromeTraceBufferSize &&
+        pIntercept->config().ChromeTraceBufferingBlockingCallFlush &&
+        ( pIntercept->config().ChromeCallLogging ||
+          pIntercept->config().ChromePerformanceTiming );
+}
+
+///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::notifyProcessingThread()
 {
-    m_ProcessingConditionVariable.notify_one();
+    if( needsTimingCheck(this) ||
+        needsChromeTraceFlush(this) )
+    {
+        m_ProcessingConditionVariable.notify_one();
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -726,20 +753,13 @@ void CLIntercept::processData()
 
     GET_ENQUEUE_COUNTER();
 
-    if( pIntercept->config().DevicePerformanceTiming ||
-        pIntercept->config().ITTPerformanceTiming ||
-        pIntercept->config().ChromePerformanceTiming ||
-        pIntercept->config().DevicePerfCounterEventBasedSampling ||
-        pIntercept->config().DevicePerfCounterTimeBasedSampling )
+    if( needsTimingCheck(this) )
     {
         TOOL_OVERHEAD_TIMING_START();
         pIntercept->checkTimingEvents();
         TOOL_OVERHEAD_TIMING_END( "(device timing overhead)" );
     }
-    if( pIntercept->config().ChromeTraceBufferSize &&
-        pIntercept->config().ChromeTraceBufferingBlockingCallFlush &&
-        ( pIntercept->config().ChromeCallLogging ||
-          pIntercept->config().ChromePerformanceTiming ) )
+    if( needsChromeTraceFlush(this) )
     {
         TOOL_OVERHEAD_TIMING_START();
         pIntercept->flushChromeTraceBuffering();
@@ -3832,7 +3852,7 @@ void CLIntercept::logKernelInfo(
 
                         cl_kernel_arg_type_qualifier typeQualifier =
                             CL_KERNEL_ARG_TYPE_NONE;
-                        dispatch().clGetKernelArgInfo(
+                        errorCode |= dispatch().clGetKernelArgInfo(
                             kernel,
                             i,
                             CL_KERNEL_ARG_TYPE_QUALIFIER,
@@ -3842,7 +3862,7 @@ void CLIntercept::logKernelInfo(
 
                         cl_kernel_arg_address_qualifier addressQualifier =
                             CL_KERNEL_ARG_ADDRESS_PRIVATE;
-                        dispatch().clGetKernelArgInfo(
+                        errorCode |= dispatch().clGetKernelArgInfo(
                             kernel,
                             i,
                             CL_KERNEL_ARG_ADDRESS_QUALIFIER,
@@ -3852,7 +3872,7 @@ void CLIntercept::logKernelInfo(
 
                         cl_kernel_arg_access_qualifier accessQualifier =
                             CL_KERNEL_ARG_ACCESS_NONE;
-                        dispatch().clGetKernelArgInfo(
+                        errorCode |= dispatch().clGetKernelArgInfo(
                             kernel,
                             i,
                             CL_KERNEL_ARG_ACCESS_QUALIFIER,
@@ -3863,18 +3883,26 @@ void CLIntercept::logKernelInfo(
                         if( errorCode == CL_SUCCESS )
                         {
                             logf("    Arg %2u: %s %s\n", i, typeName.c_str(), argName.c_str());
-                            if( typeQualifier != CL_KERNEL_ARG_TYPE_NONE ) {
+                            if( typeQualifier != CL_KERNEL_ARG_TYPE_NONE )
+                            {
                                 logf( "        TYPE_QUALIFIER: %s\n",
                                     enumName().name_kernel_arg_type_qualifier( typeQualifier ).c_str() );
                             }
-                            if( accessQualifier != CL_KERNEL_ARG_ACCESS_NONE ) {
+                            if( accessQualifier != CL_KERNEL_ARG_ACCESS_NONE )
+                            {
                                 logf( "        ACCESS_QUALIFIER: %s\n",
                                     enumName().name( accessQualifier ).c_str() );
                             }
-                            if( addressQualifier != CL_KERNEL_ARG_ADDRESS_PRIVATE ) {
+                            if( addressQualifier != CL_KERNEL_ARG_ADDRESS_PRIVATE )
+                            {
                                 logf( "        ADDRESS_QUALIFIER: %s\n",
                                     enumName().name( addressQualifier ).c_str() );
                             }
+                        }
+                        else
+                        {
+                            logf( "    Error querying info for arg %u!\n", i );
+                            break;
                         }
                     }
                 }
@@ -6638,6 +6666,8 @@ void CLIntercept::addTimingEvent(
     const cl_command_queue queue,
     cl_event event )
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     if( event == NULL )
     {
         logf( "Unexpectedly got a NULL timing event for %s, check for OpenCL errors!\n",
@@ -6668,8 +6698,6 @@ void CLIntercept::addTimingEvent(
 
     if( device )
     {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-
         // Cache the device info if it's not cached already, since we'll print
         // the device name and other device properties as part of the report.
         cacheDeviceInfo( device );
