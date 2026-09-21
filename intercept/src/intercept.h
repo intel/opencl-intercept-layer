@@ -2345,11 +2345,7 @@ inline CObjectTracker& CLIntercept::objectTracker()
                 e );                                                        \
             TOOL_OVERHEAD_TIMING_END( "(finish after enqueue)" );           \
         }                                                                   \
-        {                                                                   \
-            TOOL_OVERHEAD_TIMING_START();                                   \
-            pIntercept->checkTimingEvents();                                \
-            TOOL_OVERHEAD_TIMING_END( "(device timing overhead)" );         \
-        }                                                                   \
+        PROCESS_DATA_AND_FLUSH();                                           \
     }                                                                       \
     else if( pIntercept->config().FlushAfterEnqueue )                       \
     {                                                                       \
