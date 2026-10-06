@@ -16,6 +16,67 @@ OpenCL Applications or to revert back to normal operation.
 
 See the [cliloader](cliloader.md) documentation for more detail.
 
+## As an ICD Loader Layer
+
+The Intercept Layer for OpenCL Applications can be loaded by the OpenCL ICD
+loader as an ICD loader layer.
+When used as an ICD loader layer, the OpenCL ICD loader is responsible for
+loading and initializing the Intercept Layer for OpenCL applications, then
+calling it instead of calling through a dispatch table to the target ICD.
+
+To setup the Intercept Layer for OpenCL Applications as an ICD loader layer, set
+the `OPENCL_LAYERS` environment variable so it includes the Intercept Layer for
+OpenCL Applications library.
+This will usually be a full path to the library, for example:
+
+```sh
+$ export OPENCL_LAYERS="/path/to/libOpenCL.so"
+```
+
+or:
+
+```sh
+> set OPENCL_LAYERS="c:\path\to\OpenCL.dll"
+```
+
+The Intercept Layer for OpenCL Applications may also be configured as a system
+ICD loader layer.
+Please consult your OpenCL ICD loader documentation for information about
+installing and using system layers.
+
+When the Intercept Layer for OpenCL Applications is used as an ICD loader layer,
+it will first go through typical initialization when it is initially loaded:
+
+```
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+CLIntercept (64-bit) is loading...
+<more loading information>
+... loading complete.
+```
+
+Then, it will go through a separate layer initialization, initiated by the
+OpenCL ICD loader:
+
+```
+CLIntercept layer is initializing...
+... layer initialization complete.
+```
+
+After the Intercept Layer for OpenCL Applications has been initialized as an ICD
+loader layer, it should operate the same as if it were installed and enabled
+through other mechanisms.
+
+For more information about ICD loader layers, please refer to the
+[cl_loader_layers](https://github.com/KhronosGroup/OpenCL-Docs/blob/main/extensions/cl_loader_layers.asciidoc)
+documentation, or follow the [OpenCL Layers Tutorial](https://github.com/Kerilk/OpenCL-Layers-Tutorial).
+
+To troubleshoot issues using the Intercept Layer for OpenCL Applications as an
+ICD loader layer, consider setting the `OCL_ICD_ENABLE_TRACE` environment
+variable (for the Khronos
+[OpenCL-ICD-Loader](https://github.com/KhronosGroup/OpenCL-ICD-Loader)) or the
+`OCL_ICD_DEBUG` environment variable (for the
+[ocl-icd](https://github.com/OCL-dev/ocl-icd) loader).
+
 ## Windows
 
 ### Local Install

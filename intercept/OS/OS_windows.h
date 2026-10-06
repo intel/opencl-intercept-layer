@@ -41,7 +41,8 @@ public:
                 const std::string& str ) const;
 
     void*   LoadLibrary(
-                const std::string& libraryName ) const;
+                const std::string& libraryName,
+                bool deepBind = false ) const;
     void    UnloadLibrary(
                 void*& pLibrary ) const;
 
@@ -223,7 +224,8 @@ inline void Services::OutputDebugString(
 }
 
 inline void* Services::LoadLibrary(
-    const std::string& libraryName ) const
+    const std::string& libraryName,
+    const bool ) const
 {
     HMODULE hModule = ::LoadLibraryA( libraryName.c_str() );
     return hModule;

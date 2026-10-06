@@ -12,6 +12,7 @@ EXPORTS
 ; ==========================================================
     clGetLayerInfo
     clInitLayer
+    clInitLayerWithProperties
 
 ; ==========================================================
 ; Standard OpenCL APIs
