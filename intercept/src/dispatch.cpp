@@ -643,8 +643,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clReleaseContext)(
         ADD_OBJECT_RELEASE( context );
         --ref_count;
         CALL_LOGGING_EXIT( retVal, "[ ref count = %d ]", ref_count );
-        DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( ref_count == 0 );
-        FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( ref_count == 0 );
+        PROCESS_DATA_AND_FLUSH_CONDITIONAL( ref_count == 0 );
 
 #if 0
         pIntercept->report();
@@ -3097,8 +3096,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clWaitForEvents)(
         HOST_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         CALL_LOGGING_EXIT( retVal );
-        DEVICE_PERFORMANCE_TIMING_CHECK();
-        FLUSH_CHROME_TRACE_BUFFERING();
+        PROCESS_DATA_AND_FLUSH();
 
         return retVal;
     }
@@ -3396,8 +3394,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clFinish)(
         HOST_PERFORMANCE_TIMING_END();
         CHECK_ERROR( retVal );
         CALL_LOGGING_EXIT( retVal );
-        DEVICE_PERFORMANCE_TIMING_CHECK();
-        FLUSH_CHROME_TRACE_BUFFERING();
+        PROCESS_DATA_AND_FLUSH();
 
         return retVal;
     }
@@ -3482,8 +3479,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBuffer)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_read );
-            FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_read );
+            PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_read );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3580,8 +3576,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadBufferRect)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_read );
-            FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_read );
+            PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_read );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3670,8 +3665,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBuffer)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_write );
-            FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_write );
+            PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_write );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -3768,8 +3762,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteBufferRect)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_write );
-            FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_write );
+            PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_write );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4122,8 +4115,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReadImage)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_read );
-            FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_read );
+            PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_read );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4216,8 +4208,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWriteImage)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_write );
-            FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_write );
+            PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_write );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4595,8 +4586,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapBuffer)(
                 "[ map count = %d ] returned %p",
                 map_count,
                 retVal );
-            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_map );
-            FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_map );
+            PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_map );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -4718,8 +4708,7 @@ CL_API_ENTRY void* CL_API_CALL CLIRN(clEnqueueMapImage)(
                 "[ map count = %d ] returned %p",
                 map_count,
                 retVal );
-            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_map );
-            FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_map );
+            PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_map );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -5223,8 +5212,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueWaitForEvents)(
             HOST_PERFORMANCE_TIMING_END();
             CHECK_ERROR( retVal );
             CALL_LOGGING_EXIT( retVal );
-            DEVICE_PERFORMANCE_TIMING_CHECK();
-            FLUSH_CHROME_TRACE_BUFFERING();
+            PROCESS_DATA_AND_FLUSH();
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6336,8 +6324,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueReleaseGLObjects)(
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT( retVal, event );
-            DEVICE_PERFORMANCE_TIMING_CHECK();
-            FLUSH_CHROME_TRACE_BUFFERING();
+            PROCESS_DATA_AND_FLUSH();
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6548,8 +6535,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMemcpy) (
             CHECK_ERROR( retVal );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_copy );
-            FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_copy );
+            PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_copy );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -6685,8 +6671,7 @@ CL_API_ENTRY cl_int CL_API_CALL CLIRN(clEnqueueSVMMap) (
             ADD_MAP_POINTER( svm_ptr, map_flags, size );
             ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
             CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-            DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_map );
-            FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_map );
+            PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_map );
         }
 
         FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -7710,8 +7695,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseExternalMemObjectsKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-                FLUSH_CHROME_TRACE_BUFFERING();
+                PROCESS_DATA_AND_FLUSH();
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8097,8 +8081,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D10ObjectsKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-                FLUSH_CHROME_TRACE_BUFFERING();
+                PROCESS_DATA_AND_FLUSH();
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8400,8 +8383,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseD3D11ObjectsKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-                FLUSH_CHROME_TRACE_BUFFERING();
+                PROCESS_DATA_AND_FLUSH();
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8615,8 +8597,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9MediaSurfacesKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-                FLUSH_CHROME_TRACE_BUFFERING();
+                PROCESS_DATA_AND_FLUSH();
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -8830,8 +8811,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseDX9ObjectsINTEL(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-                FLUSH_CHROME_TRACE_BUFFERING();
+                PROCESS_DATA_AND_FLUSH();
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -9335,8 +9315,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueSVMMemcpyWithPropertiesKHR(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-                DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking_copy );
-                FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking_copy );
+                PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking_copy );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -9873,8 +9852,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueReleaseVA_APIMediaSurfacesINTEL(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT( retVal, event );
-                DEVICE_PERFORMANCE_TIMING_CHECK();
-                FLUSH_CHROME_TRACE_BUFFERING();
+                PROCESS_DATA_AND_FLUSH();
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( command_queue );
@@ -10408,8 +10386,7 @@ clMemBlockingFreeINTEL(
             CHECK_ERROR( retVal );
             ADD_POINTER_FREE( ptr );
             CALL_LOGGING_EXIT( retVal );
-            DEVICE_PERFORMANCE_TIMING_CHECK();
-            FLUSH_CHROME_TRACE_BUFFERING();
+            PROCESS_DATA_AND_FLUSH();
 
             return retVal;
         }
@@ -10702,8 +10679,7 @@ CL_API_ENTRY cl_int CL_API_CALL clEnqueueMemcpyINTEL(
                 CHECK_ERROR( retVal );
                 ADD_OBJECT_ALLOCATION_EVENT( retVal, event );
                 CALL_LOGGING_EXIT_EVENT_WITH_TAG( retVal, event );
-                DEVICE_PERFORMANCE_TIMING_CHECK_CONDITIONAL( blocking );
-                FLUSH_CHROME_TRACE_BUFFERING_CONDITIONAL( blocking );
+                PROCESS_DATA_AND_FLUSH_CONDITIONAL( blocking );
             }
 
             FINISH_OR_FLUSH_AFTER_ENQUEUE( queue );

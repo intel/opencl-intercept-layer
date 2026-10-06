@@ -129,14 +129,12 @@ CLIntercept::CLIntercept( void* pGlobalData )
 {
     m_ProcessId = m_OS.GetProcessID();
 
-    m_Dispatch = {0};
-    m_DispatchX[NULL] = {0};
+    m_Dispatch = {};
+    m_DispatchX[NULL] = {};
 
     m_OpenCLLibraryHandle = NULL;
 
     m_LoggedCLInfo = false;
-
-    m_EnqueueCounter.store(0, std::memory_order_relaxed);
 
     m_EventsChromeTraced = 0;
     m_ProgramNumber = 0;
@@ -179,6 +177,28 @@ CLIntercept::CLIntercept( void* pGlobalData )
 //
 CLIntercept::~CLIntercept()
 {
+    if( m_ProcessingThread.joinable() )
+    {
+        // Note: We need to hold the processing condition lock while setting the
+        // done flag. This avoids a deadlock if this thread sets the done flag
+        // and notifies the processing thread between the time the processing
+        // thread checked the done flag and before it is waiting for
+        // notification.
+        {
+            std::lock_guard<std::mutex> lock(m_ProcessingConditionMutex);
+            m_ProcessingDone.store(true);
+        }
+        m_ProcessingConditionVariable.notify_all();
+        m_ProcessingThread.join();
+    }
+    if( m_EventList.size() > 0 )
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+
+        logf( "CLIntercept is shutting down, but %zu events are unprocessed!\n",
+            m_EventList.size() );
+    }
+
     stopAubCapture( NULL );
     report();
 
@@ -187,13 +207,13 @@ CLIntercept::~CLIntercept()
     log( "CLIntercept is shutting down...\n" );
 
     // Set the dispatch to the dummy dispatch.  The destructor is called
-    // as the process is terminating.  We don't know when each DLL gets
+    // as the process is terminating.  We don't know when drivers have been
     // unloaded, so it's not safe to call into any OpenCL functions in
     // our destructor.  Setting to the dummy dispatch ensures that no
     // OpenCL functions get called.  Note that this means we do potentially
     // leave some events, kernels, or programs un-released, but since
     // the process is terminating, that's probably OK.
-    m_Dispatch = {0};
+    m_Dispatch = {};
 
 #if defined(USE_MDAPI)
     if( m_pMDHelper )
@@ -648,9 +668,118 @@ bool CLIntercept::init()
         m_ChromeTrace.addStartTimeMetadata( usStartTime );
     }
 
+    if( m_Config.MultiThreadedProcessing )
+    {
+        m_ProcessingThread = std::thread( CLIntercept::processingThreadFunc, this );
+        log( "Processing Thread Started!\n" );
+    }
+
     log( "... loading complete.\n" );
 
     return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::processingThreadFunc( CLIntercept* pIntercept )
+{
+    // This names the processing thread.
+    {
+        std::lock_guard<std::mutex> lock(pIntercept->m_Mutex);
+
+        uint64_t    threadId = pIntercept->OS().GetThreadID();
+        pIntercept->getThreadNumber( "Host Processing Thread", threadId );
+    }
+
+    while( true )
+    {
+        // Note: Wait until processing is needed or processing is done. Doing
+        // this as a condition variable predicate avoids waiting for a
+        // notification that will never come in the case where another thread
+        // sets the done flag or requests processing and notifies this thread
+        // while this thread is processing data or is about to wait for a
+        // notification.
+        {
+            std::unique_lock<std::mutex> lock( pIntercept->m_ProcessingConditionMutex );
+
+            pIntercept->m_ProcessingConditionVariable.wait( lock, [pIntercept]
+                {
+                    return
+                        pIntercept->m_ProcessingNeeded ||
+                        pIntercept->m_ProcessingDone.load();
+                } );
+            pIntercept->m_ProcessingNeeded = false;
+            if (pIntercept->m_ProcessingDone.load())
+            {
+                break;
+            }
+        }
+
+        pIntercept->processData();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Helper functions:
+
+static bool needsTimingCheck(CLIntercept* pIntercept)
+{
+    return
+        pIntercept->config().DevicePerformanceTiming ||
+        pIntercept->config().ITTPerformanceTiming ||
+        pIntercept->config().ChromePerformanceTiming ||
+        pIntercept->config().DevicePerfCounterEventBasedSampling ||
+        pIntercept->config().DevicePerfCounterTimeBasedSampling;
+}
+
+static bool needsChromeTraceFlush(CLIntercept* pIntercept)
+{
+    return
+        pIntercept->config().ChromeTraceBufferSize &&
+        pIntercept->config().ChromeTraceBufferingBlockingCallFlush &&
+        ( pIntercept->config().ChromeCallLogging ||
+          pIntercept->config().ChromePerformanceTiming );
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::notifyProcessingThread()
+{
+    if( needsTimingCheck(this) ||
+        needsChromeTraceFlush(this) )
+    {
+        // Note: We need to set the flag indicating that processing is needed
+        // while holding the processing condition lock.  This ensures that the
+        // notification is not missed if it arrives while the processing thread
+        // is processing data or is about to wait for a notification.
+        {
+            std::lock_guard<std::mutex> lock(m_ProcessingConditionMutex);
+            m_ProcessingNeeded = true;
+        }
+        m_ProcessingConditionVariable.notify_one();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+void CLIntercept::processData()
+{
+    CLIntercept* pIntercept = this;
+
+    GET_ENQUEUE_COUNTER();
+
+    if( needsTimingCheck(this) )
+    {
+        TOOL_OVERHEAD_TIMING_START();
+        pIntercept->checkTimingEvents();
+        TOOL_OVERHEAD_TIMING_END( "(device timing overhead)" );
+    }
+    if( needsChromeTraceFlush(this) )
+    {
+        TOOL_OVERHEAD_TIMING_START();
+        pIntercept->flushChromeTraceBuffering();
+        TOOL_OVERHEAD_TIMING_END( "(chrome trace flush overhead)" );
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1302,7 +1431,7 @@ void CLIntercept::getCallLoggingPrefix(
         }
         if( m_Config.CallLoggingThreadNumber )
         {
-            unsigned int    threadNumber = getThreadNumber( threadId );
+            uint32_t    threadNumber = getThreadNumber( "Host Thread", threadId );
             ss << "TNum = ";
             ss << threadNumber;
             ss << " ";
@@ -1571,6 +1700,7 @@ void CLIntercept::cachePlatformInfo()
 void CLIntercept::cacheDeviceInfo(
     cl_device_id device )
 {
+    // TODO: Can we be smarter here and return the found device info?
     if( device && m_DeviceInfoMap.find(device) == m_DeviceInfoMap.end() )
     {
         SDeviceInfo&    deviceInfo = m_DeviceInfoMap[device];
@@ -3972,7 +4102,7 @@ void CLIntercept::logKernelInfo(
 
                         cl_kernel_arg_type_qualifier typeQualifier =
                             CL_KERNEL_ARG_TYPE_NONE;
-                        dispatch().clGetKernelArgInfo(
+                        errorCode |= dispatch().clGetKernelArgInfo(
                             kernel,
                             i,
                             CL_KERNEL_ARG_TYPE_QUALIFIER,
@@ -3982,7 +4112,7 @@ void CLIntercept::logKernelInfo(
 
                         cl_kernel_arg_address_qualifier addressQualifier =
                             CL_KERNEL_ARG_ADDRESS_PRIVATE;
-                        dispatch().clGetKernelArgInfo(
+                        errorCode |= dispatch().clGetKernelArgInfo(
                             kernel,
                             i,
                             CL_KERNEL_ARG_ADDRESS_QUALIFIER,
@@ -3992,7 +4122,7 @@ void CLIntercept::logKernelInfo(
 
                         cl_kernel_arg_access_qualifier accessQualifier =
                             CL_KERNEL_ARG_ACCESS_NONE;
-                        dispatch().clGetKernelArgInfo(
+                        errorCode |= dispatch().clGetKernelArgInfo(
                             kernel,
                             i,
                             CL_KERNEL_ARG_ACCESS_QUALIFIER,
@@ -4003,18 +4133,26 @@ void CLIntercept::logKernelInfo(
                         if( errorCode == CL_SUCCESS )
                         {
                             logf("    Arg %2u: %s %s\n", i, typeName.c_str(), argName.c_str());
-                            if( typeQualifier != CL_KERNEL_ARG_TYPE_NONE ) {
+                            if( typeQualifier != CL_KERNEL_ARG_TYPE_NONE )
+                            {
                                 logf( "        TYPE_QUALIFIER: %s\n",
                                     enumName().name_kernel_arg_type_qualifier( typeQualifier ).c_str() );
                             }
-                            if( accessQualifier != CL_KERNEL_ARG_ACCESS_NONE ) {
+                            if( accessQualifier != CL_KERNEL_ARG_ACCESS_NONE )
+                            {
                                 logf( "        ACCESS_QUALIFIER: %s\n",
                                     enumName().name( accessQualifier ).c_str() );
                             }
-                            if( addressQualifier != CL_KERNEL_ARG_ADDRESS_PRIVATE ) {
+                            if( addressQualifier != CL_KERNEL_ARG_ADDRESS_PRIVATE )
+                            {
                                 logf( "        ADDRESS_QUALIFIER: %s\n",
                                     enumName().name( addressQualifier ).c_str() );
                             }
+                        }
+                        else
+                        {
+                            logf( "    Error querying info for arg %u!\n", i );
+                            break;
                         }
                     }
                 }
@@ -6787,9 +6925,7 @@ void CLIntercept::addTimingEvent(
         return;
     }
 
-    m_EventList.emplace_back();
-
-    SEventListNode& node = m_EventList.back();
+    CEventList::Node    node;
 
     cl_device_id device = NULL;
     dispatch().clGetCommandQueueInfo(
@@ -6798,10 +6934,6 @@ void CLIntercept::addTimingEvent(
         sizeof(device),
         &device,
         NULL );
-
-    // Cache the device info if it's not cached already, since we'll print
-    // the device name and other device properties as part of the report.
-    cacheDeviceInfo( device );
 
     dispatch().clRetainEvent( event );
 
@@ -6816,6 +6948,10 @@ void CLIntercept::addTimingEvent(
 
     if( device )
     {
+        // Cache the device info if it's not cached already, since we'll print
+        // the device name and other device properties as part of the report.
+        cacheDeviceInfo( device );
+
         const SDeviceInfo& deviceInfo = m_DeviceInfoMap[device];
 
         // Note: Even though ideally the intercept timer and the host timer should advance
@@ -6861,26 +6997,41 @@ void CLIntercept::addTimingEvent(
             //    hostTimeNS );
         }
     }
+
+    m_EventList.addNode(std::move(node));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
 void CLIntercept::checkTimingEvents()
 {
-    std::lock_guard<std::mutex> lock(m_Mutex);
+    std::lock_guard<std::mutex> lock(m_EventList.CheckMutex);
 
-    CEventList::iterator    current = m_EventList.begin();
-    CEventList::iterator    next;
+    // Move the nodes to check out of the event list and into a local list.
+    // This way the nodes are only accessed by this thread, and other threads
+    // can continue to add nodes to the event list while the events are being
+    // checked.  Any nodes that are not processed are returned to the event
+    // list when the check is complete.
+    CEventList::CNodeList   nodes;
+    m_EventList.takeNodes( nodes );
 
-    while( current != m_EventList.end() )
+    CEventList::CNodeList::iterator current = nodes.begin();
+
+    while( current != nodes.end() )
     {
+        if( config().MultiThreadedProcessing &&
+            m_ProcessingDone.load() == true )
+        {
+            // If we are shutting down, drivers may have been unloaded, so it is
+            // no longer safe to make calls to check events and process data.
+            // There is not much else we can do, so just stop processing.
+            break;
+        }
+
         cl_int  errorCode = CL_SUCCESS;
         cl_int  eventStatus = 0;
 
-        next = current;
-        ++next;
-
-        const SEventListNode& node = *current;
+        const CEventList::Node& node = *current;
 
         errorCode = dispatch().clGetEventInfo(
             node.Event,
@@ -6929,6 +7080,8 @@ void CLIntercept::checkTimingEvents()
                         NULL );
                     if( errorCode == CL_SUCCESS )
                     {
+                        std::lock_guard<std::mutex> lock(m_Mutex);
+
                         cl_ulong delta = commandEnd - commandStart;
 
                         SDeviceTimingStats& deviceTimingStats = m_DeviceTimingStatsMap[node.Device][node.Name];
@@ -7032,27 +7185,38 @@ void CLIntercept::checkTimingEvents()
 
                 dispatch().clReleaseEvent( node.Event );
 
-                m_EventList.erase( current );
+                current = nodes.erase( current );
+            }
+            else
+            {
+                // The event is not complete yet, so keep it and check it
+                // again the next time events are checked.
+                ++current;
             }
             break;
         case CL_INVALID_EVENT:
             {
+                std::lock_guard<std::mutex> lock(m_Mutex);
+
                 // This is unexpected.  We retained the event when we
                 // added it to the list.  Remove the event from the
                 // list.
                 logf( "Unexpectedly got CL_INVALID_EVENT for an event from %s!\n",
                     node.Name.c_str() );
-
-                m_EventList.erase( current );
             }
+            current = nodes.erase( current );
             break;
         default:
             // nothing
+            ++current;
             break;
         }
-
-        current = next;
     }
+
+    // Return any nodes that were not processed to the event list.  Note that
+    // this also returns nodes that were skipped when shutting down, so they
+    // can be counted and reported as unprocessed events.
+    m_EventList.returnNodes( nodes );
 
 #if defined(USE_MDAPI)
     if( config().DevicePerfCounterTimeBasedSampling )
@@ -14679,7 +14843,7 @@ void CLIntercept::chromeCallLoggingExit(
     uint64_t    threadId = OS().GetThreadID();
 
     // This will name the thread if it is not named already.
-    getThreadNumber( threadId );
+    getThreadNumber( "Host Thread", threadId );
 
     using ns = std::chrono::nanoseconds;
     uint64_t    nsStart =
