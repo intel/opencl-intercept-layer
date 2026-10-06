@@ -72,6 +72,7 @@ set(CLINTERCEPT_SOURCE_FILES
     src/instrumentation.h
     src/intercept.cpp
     src/intercept.h
+    src/layer.cpp
     src/main.cpp
     src/objtracker.cpp
     src/objtracker.h
