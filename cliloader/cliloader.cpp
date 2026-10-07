@@ -20,6 +20,58 @@ bool debug = false;
 
 static std::string commandLine = "";
 
+// Read the PE header machine type from a file on disk.
+static USHORT getFileMachineType(const char* filePath)
+{
+    HANDLE hFile = CreateFileA(
+        filePath, GENERIC_READ,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        NULL, OPEN_EXISTING, 0, NULL);
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        return IMAGE_FILE_MACHINE_UNKNOWN;
+    }
+
+    USHORT machine = IMAGE_FILE_MACHINE_UNKNOWN;
+    IMAGE_DOS_HEADER dosHeader = {};
+    DWORD bytesRead = 0;
+
+    if (ReadFile(hFile, &dosHeader, sizeof(dosHeader), &bytesRead, NULL) &&
+        bytesRead == sizeof(dosHeader) &&
+        dosHeader.e_magic == IMAGE_DOS_SIGNATURE)
+    {
+        if (SetFilePointer(hFile, dosHeader.e_lfanew, NULL, FILE_BEGIN) != INVALID_SET_FILE_POINTER)
+        {
+            DWORD ntSignature = 0;
+            IMAGE_FILE_HEADER fileHeader = {};
+            if (ReadFile(hFile, &ntSignature, sizeof(ntSignature), &bytesRead, NULL) &&
+                bytesRead == sizeof(ntSignature) &&
+                ntSignature == IMAGE_NT_SIGNATURE &&
+                ReadFile(hFile, &fileHeader, sizeof(fileHeader), &bytesRead, NULL) &&
+                bytesRead == sizeof(fileHeader))
+            {
+                machine = fileHeader.Machine;
+            }
+        }
+    }
+
+    CloseHandle(hFile);
+    return machine;
+}
+
+// Get the PE header machine type of a running process by querying its image path.
+static USHORT getProcessMachineType(HANDLE hProcess)
+{
+    char imagePath[MAX_PATH] = {};
+    DWORD size = MAX_PATH;
+    if (!QueryFullProcessImageNameA(hProcess, 0, imagePath, &size))
+    {
+        return IMAGE_FILE_MACHINE_UNKNOWN;
+    }
+    DEBUG("process image path: %s\n", imagePath);
+    return getFileMachineType(imagePath);
+}
+
 static bool checkWow64(HANDLE parent, HANDLE child)
 {
     BOOL parentWow64 = FALSE;
@@ -35,6 +87,42 @@ static bool checkWow64(HANDLE parent, HANDLE child)
             childWow64 ? 32 : 64 );
         fprintf(stderr, "Execution will continue, but intercepting and profiling will be disabled.\n");
         return false;
+    }
+
+    // IsWow64Process cannot distinguish ARM64EC (PE machine type x64) from pure
+    // ARM64, so compare PE machine types instead.  Injecting across the two fails
+    // because the LoadLibraryA address is not valid in the other process.
+    USHORT parentMachineType = getProcessMachineType(parent);
+    USHORT childMachineType = getProcessMachineType(child);
+
+    DEBUG("parent PE machine type: 0x%04X, child PE machine type: 0x%04X\n",
+        parentMachineType, childMachineType);
+
+    if (parentMachineType != IMAGE_FILE_MACHINE_UNKNOWN &&
+        childMachineType != IMAGE_FILE_MACHINE_UNKNOWN &&
+        parentMachineType != childMachineType)
+    {
+        auto machineStr = [](USHORT machine) -> const char* {
+            switch (machine) {
+                case IMAGE_FILE_MACHINE_AMD64: return "x64/ARM64EC";
+                case IMAGE_FILE_MACHINE_ARM64: return "ARM64";
+                case IMAGE_FILE_MACHINE_I386:  return "x86";
+                default:                       return "unknown";
+            }
+        };
+        fprintf(stderr, "This is the %s version of cliloader, but the target application is a %s application.\n",
+            machineStr(parentMachineType),
+            machineStr(childMachineType));
+        fprintf(stderr, "Execution will continue, but intercepting and profiling will be disabled.\n");
+        return false;
+    }
+    else if (parentMachineType == IMAGE_FILE_MACHINE_UNKNOWN ||
+             childMachineType == IMAGE_FILE_MACHINE_UNKNOWN)
+    {
+        // Could be false positive, so we deliberately fail open: proceed with injection
+        // and let any real incompatibility surface as a CreateRemoteThread /
+        // LoadLibrary failure later
+        fprintf(stderr, "Warning: could not determine PE machine type for one or both processes, architecture compatibility check was not applied.\n");
     }
 
     return true;
@@ -678,33 +766,51 @@ int main(int argc, char *argv[])
 
 #if defined(_WIN32)
 
-    // Get the existing value of the "SuppressLogging" control.
-    // We will suppress logging while loading the intercept DLL
-    // into this process, to avoid seeing loading twice.
-    char* envVal = NULL;
-    size_t  len = 0;
-    errno_t err = _dupenv_s( &envVal, &len, "CLI_SuppressLogging" );
-    DEBUG("CLI_SuppressLogging is currently: %s\n", envVal ? envVal : "");
-
-    SETENV("CLI_SuppressLogging", "1");
+    // Used below to suppress controls that would cause the intercept DLL to
+    // create dumpdirectories/files while it is loaded into this (cliloader) process;
+    // the child (profiled) process must not inherit these overrides
+    class ScopedEnvOverride
+    {
+    public:
+        ScopedEnvOverride(const char* name, const char* overrideVal) :
+            m_name(name)
+        {
+            size_t len = 0;
+            _dupenv_s(&m_savedValue, &len, name);
+            SETENV(name, overrideVal);
+        }
+        ~ScopedEnvOverride()
+        {
+            SETENV(m_name.c_str(), m_savedValue ? m_savedValue : "");
+            if (m_savedValue) free(m_savedValue);
+        }
+        ScopedEnvOverride(const ScopedEnvOverride&) = delete;
+        ScopedEnvOverride& operator=(const ScopedEnvOverride&) = delete;
+    private:
+        std::string m_name;
+        char* m_savedValue = NULL;
+    };
 
     std::string dllpath = path + "\\opencl.dll";
     DEBUG("path to OpenCL.dll is: %s\n", dllpath.c_str());
 
-    // First things first.  Load the intercept DLL into this process, and
-    // try to get the function pointer to the init function.  If we can't
-    // do this, there's no need to go further.
-    HMODULE dll = LoadLibraryA(dllpath.c_str());
-    if( dll == NULL )
+    HMODULE dll = NULL;
     {
-        die("loading DLL");
-    }
-    DEBUG("loaded DLL\n");
+        ScopedEnvOverride suppressLogging("CLI_SuppressLogging", "1");
+        ScopedEnvOverride logToFile("CLI_LogToFile", "0");
+        ScopedEnvOverride chromeCallLogging("CLI_ChromeCallLogging", "0");
+        ScopedEnvOverride chromePerformanceTiming("CLI_ChromePerformanceTiming", "0");
+        ScopedEnvOverride reportToFile("CLI_ReportToFile", "0");
 
-    SETENV("CLI_SuppressLogging", envVal ? envVal : "");
-    if( envVal )
-    {
-        free( envVal );
+        // Load the intercept DLL into this process, and
+        // try to get the function pointer to the init function
+        dll = LoadLibraryA(dllpath.c_str());
+        if( dll == NULL )
+        {
+            die("loading DLL");
+        }
+        DEBUG("loaded DLL\n");
+
     }
 
     LPTHREAD_START_ROUTINE cliprof_init = (LPTHREAD_START_ROUTINE)GetProcAddress(
