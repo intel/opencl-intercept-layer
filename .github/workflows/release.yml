@@ -15,12 +15,14 @@ jobs:
   release:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm]
         include:
           - os: windows-latest
             windows-arch: x64
           - os: windows-latest
             windows-arch: Win32
+          - os: windows-11-arm
+            windows-arch: ARM64
 
     runs-on: ${{matrix.os}}
 
@@ -49,7 +51,7 @@ jobs:
       shell: bash
       working-directory: ./build
       run: |
-        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+        if [[ -n "${{ matrix.windows-arch }}" ]]; then
           cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -A ${{ matrix.windows-arch }} $GITHUB_WORKSPACE
         else
           cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE                               $GITHUB_WORKSPACE
@@ -61,7 +63,7 @@ jobs:
       run: cmake --build . --parallel --config $BUILD_TYPE --target package
 
     - name: Update Python (Windows)
-      if: matrix.os == 'windows-latest'
+      if: runner.os == 'Windows'
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
       with:
         python-version: '3.12'
@@ -69,7 +71,7 @@ jobs:
     - name: Sign (Windows zip)
       if: |
         startsWith(github.ref, 'refs/tags/') &&
-        matrix.os == 'windows-latest'
+        runner.os == 'Windows'
       uses: sigstore/gh-action-sigstore-python@790bc6befb9d733738f18d8f895854b453640ec9 #v3.5.0
       with:
         inputs: |
@@ -78,7 +80,7 @@ jobs:
     - name: Sign (Linux tgz)
       if: |
         startsWith(github.ref, 'refs/tags/') &&
-        matrix.os == 'ubuntu-latest'
+        runner.os == 'Linux'
       uses: sigstore/gh-action-sigstore-python@790bc6befb9d733738f18d8f895854b453640ec9 #v3.5.0
       with:
         inputs: |
@@ -87,7 +89,7 @@ jobs:
     - name: Release (Windows zip)
       if: |
         startsWith(github.ref, 'refs/tags/') &&
-        matrix.os == 'windows-latest'
+        runner.os == 'Windows'
       uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       with:
         draft: true
@@ -98,7 +100,7 @@ jobs:
     - name: Release (Linux tgz)
       if: |
         startsWith(github.ref, 'refs/tags/') &&
-        matrix.os == 'ubuntu-latest'
+        runner.os == 'Linux'
       uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       with:
         draft: true

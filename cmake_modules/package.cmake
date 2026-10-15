@@ -46,6 +46,15 @@ else()
     endif()
 endif()
 
+# By default CPack names packages by OS and pointer size only, so give Arm packages a distinct name.
+if(NOT DEFINED CPACK_SYSTEM_NAME)
+    if(WIN32 AND CMAKE_CXX_COMPILER_ARCHITECTURE_ID STREQUAL "ARM64")
+        set(CPACK_SYSTEM_NAME "win-arm64")
+    elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux" AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)$")
+        set(CPACK_SYSTEM_NAME "Linux-aarch64")
+    endif()
+endif()
+
 set(CPACK_COMPONENT_INSTALL ON)
 set(CPACK_DEB_COMPONENT_INSTALL ON)
 set(CPACK_RPM_COMPONENT_INSTALL ON)
