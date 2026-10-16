@@ -12,21 +12,21 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  release:
+  build:
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm]
         include:
           - os: windows-latest
             windows-arch: x64
           - os: windows-latest
             windows-arch: Win32
+          - os: windows-11-arm
+            windows-arch: ARM64
+          - os: windows-11-arm
+            windows-arch: ARM64EC
 
     runs-on: ${{matrix.os}}
-
-    permissions:
-      contents: write
-      id-token: write
 
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -49,7 +49,7 @@ jobs:
       shell: bash
       working-directory: ./build
       run: |
-        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+        if [[ -n "${{ matrix.windows-arch }}" ]]; then
           cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -A ${{ matrix.windows-arch }} $GITHUB_WORKSPACE
         else
           cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE                               $GITHUB_WORKSPACE
@@ -60,48 +60,42 @@ jobs:
       shell: bash
       run: cmake --build . --parallel --config $BUILD_TYPE --target package
 
-    - name: Update Python (Windows)
-      if: matrix.os == 'windows-latest'
-      uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+    - name: Upload Package
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
-        python-version: '3.12'
-
-    - name: Sign (Windows zip)
-      if: |
-        startsWith(github.ref, 'refs/tags/') &&
-        matrix.os == 'windows-latest'
-      uses: sigstore/gh-action-sigstore-python@790bc6befb9d733738f18d8f895854b453640ec9 #v3.5.0
-      with:
-        inputs: |
+        name: package-${{ matrix.os }}${{ matrix.windows-arch && format('-{0}', matrix.windows-arch) || '' }}
+        path: |
           ./build/clintercept-*.zip
+          ./build/clintercept-*.tar.gz
+        if-no-files-found: error
 
-    - name: Sign (Linux tgz)
-      if: |
-        startsWith(github.ref, 'refs/tags/') &&
-        matrix.os == 'ubuntu-latest'
+  # Sign and release on Linux, since the signing tools do not install on Windows on Arm.
+  release:
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+
+    steps:
+    - name: Download Packages
+      uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        pattern: package-*
+        path: ./packages
+        merge-multiple: true
+
+    - name: Sign
       uses: sigstore/gh-action-sigstore-python@790bc6befb9d733738f18d8f895854b453640ec9 #v3.5.0
       with:
         inputs: |
-          ./build/clintercept-*.tar.gz
+          ./packages/clintercept-*
 
-    - name: Release (Windows zip)
-      if: |
-        startsWith(github.ref, 'refs/tags/') &&
-        matrix.os == 'windows-latest'
+    - name: Release
       uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
       with:
         draft: true
         files: |
-          ./build/clintercept-*.zip
-          ./build/clintercept-*.zip.sigstore.json
-
-    - name: Release (Linux tgz)
-      if: |
-        startsWith(github.ref, 'refs/tags/') &&
-        matrix.os == 'ubuntu-latest'
-      uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
-      with:
-        draft: true
-        files: |
-          ./build/clintercept-*.tar.gz
-          ./build/clintercept-*.tar.gz.sigstore.json
+          ./packages/clintercept-*

@@ -35,12 +35,16 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest]
         include:
           - os: windows-latest
             windows-arch: x64
           - os: windows-latest
             windows-arch: Win32
+          - os: windows-11-arm
+            windows-arch: ARM64
+          - os: windows-11-arm
+            windows-arch: ARM64EC
 
     runs-on: ${{matrix.os}}
 
@@ -48,24 +52,24 @@ jobs:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
     - name: Create Build Directory
-      run: cmake -E make_directory ${{runner.workspace}}/build
+      run: cmake -E make_directory ./build
 
     - name: Run CMake
       shell: bash
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ./build
       run: |
-        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+        if [[ -n "${{ matrix.windows-arch }}" ]]; then
           cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE -A ${{ matrix.windows-arch }} $GITHUB_WORKSPACE
         else
           cmake -DENABLE_CLILOADER=1 -DCMAKE_BUILD_TYPE=$BUILD_TYPE                               $GITHUB_WORKSPACE
         fi
 
     - name: Build
-      working-directory: ${{runner.workspace}}/build
+      working-directory: ./build
       shell: bash
       run: cmake --build . --parallel 4 --config $BUILD_TYPE
 
     #- name: Test
-    #  working-directory: ${{runner.workspace}}/build
+    #  working-directory: ./build
     #  shell: bash
     #  run: ctest -C $BUILD_TYPE
