@@ -138,8 +138,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
     # If using the lld linker, we need to set linker emulation flags
     if(NOT DEFINED LLD_EMULATION_FLAGS)
         get_filename_component(LINKER_EXECUTABLE ${CMAKE_LINKER} NAME)
-        if(LINKER_EXECUTABLE MATCHES "lld" OR
-            ${CMAKE_SYSTEM_NAME} STREQUAL "FreeBSD") # default on FreeBSD?
+        if(LINKER_EXECUTABLE MATCHES "lld")
             if(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i386" OR
                 ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "i686")
                 set(LLD_EMULATION_FLAGS "-melf_i386")
@@ -151,7 +150,8 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Linux" OR
             elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "riscv64")
                 set(LLD_EMULATION_FLAGS "-melf64lriscv")
             elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "arm" OR
-                    ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7")
+                    ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7" OR
+                    ${CMAKE_SYSTEM_PROCESSOR} STREQUAL "armv7-a")
                 set(LLD_EMULATION_FLAGS "-marmelf")
             else()
                 message(STATUS "Unknown system processor ${CMAKE_SYSTEM_PROCESSOR} for lld target emulation flags!")
