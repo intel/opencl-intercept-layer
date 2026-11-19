@@ -37,7 +37,7 @@ struct cliControl
 static const std::vector<cliControl> controls =
 {
     { true, "Startup Controls:", "", ""},
-    { false, "BreakOnLoad", "bool", "If set to a nonzero value, the Intercept Layer for OpenCL Applications will break into the debugger when the DLL is loaded." },
+    { false, "BreakOnLoad", "bool", "If set to a nonzero value, the Intercept Layer for OpenCL Applications will break into the debugger when it is loaded." },
     { false, "std::string", "OpenCLFileName", "Used to control the DLL or Shared Library that the Intercept Layer for OpenCL Applications loads to make real OpenCL calls. If present, only this file name is loaded. If omitted, the Intercept Layer for OpenCL Applications will search a default set of real OpenCL file names." },
 #include "src/controls.h"
 };
