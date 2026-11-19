@@ -15399,6 +15399,7 @@ cl_int CLIntercept::emulatedMemFree(
                     usmContextInfo.SharedAllocVector.begin(),
                     usmContextInfo.SharedAllocVector.end(),
                     ptr ) );
+            break;
         default:
             CLI_ASSERT( 0 );
             break;
@@ -15717,7 +15718,8 @@ cl_int CLIntercept::setUSMKernelExecInfo(
                 ( setDeviceAllocs ? usmContextInfo.DeviceAllocVector.size() : 0 ) +
                 ( setSharedAllocs ? usmContextInfo.SharedAllocVector.size() : 0 );
 
-            std::vector<const void*>  combined( count );
+            std::vector<const void*>  combined;
+            combined.reserve( count );
 
             combined.insert(
                 combined.end(),
