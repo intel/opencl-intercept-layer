@@ -15601,6 +15601,8 @@ cl_int CLIntercept::emulatedGetMemAllocInfoINTEL(
         return CL_INVALID_VALUE;
     }
 
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     SUSMContextInfo&    usmContextInfo = m_USMContextInfoMap[context];
 
     if( usmContextInfo.AllocMap.empty() )
@@ -15777,6 +15779,8 @@ cl_int CLIntercept::setUSMKernelExecInfo(
     cl_command_queue commandQueue,
     cl_kernel kernel )
 {
+    std::lock_guard<std::mutex> lock(m_Mutex);
+
     const SUSMKernelInfo& usmKernelInfo = m_USMKernelInfoMap[ kernel ];
 
     cl_int  errorCode = CL_SUCCESS;
@@ -15794,8 +15798,6 @@ cl_int CLIntercept::setUSMKernelExecInfo(
             NULL );
 
         const SUSMContextInfo& usmContextInfo = m_USMContextInfoMap[context];
-
-        std::lock_guard<std::mutex> lock(m_Mutex);
 
         bool    hasSVMPtrs =
                     !usmKernelInfo.SVMPtrs.empty();
