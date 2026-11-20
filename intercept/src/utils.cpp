@@ -10,6 +10,10 @@
 #include <fstream>
 #include <string>
 
+#if defined(_WIN32)
+#include <Windows.h>
+#endif
+
 #ifdef __cpp_lib_bitops
 #include <bit>
 #endif
@@ -107,6 +111,30 @@ uint32_t CountLeadingZeroes(uint64_t value)
     }
 
     return count;
+#endif
+}
+
+void OpenOutputFile(
+    std::ofstream& os,
+    const std::string& fileName,
+    std::ios::openmode mode )
+{
+#if defined(_WIN32)
+    // Use the \\?\ prefix with the wide-character API to support file paths
+    // longer than MAX_PATH (260 characters).  The \\?\ prefix requires
+    // backslashes, so convert any forward slashes in the path.
+    {
+        std::string longPath = "\\\\?\\" + fileName;
+        std::replace( longPath.begin(), longPath.end(), '/', '\\' );
+        int wLen = MultiByteToWideChar(
+            CP_UTF8, 0, longPath.c_str(), -1, NULL, 0 );
+        std::wstring wFileName( wLen, 0 );
+        MultiByteToWideChar(
+            CP_UTF8, 0, longPath.c_str(), -1, &wFileName[0], wLen );
+        os.open( wFileName.c_str(), mode );
+    }
+#else
+    os.open( fileName.c_str(), mode );
 #endif
 }
 
